@@ -37,40 +37,22 @@ const ContentProvider: React.FC<ContentProviderProps> = ({ children }) => {
 
   return (
     <div className="w-screen h-screen md:h-[100vh] flex flex-col relative">
-      <div
-        className={cn(
-          "w-full lg:max-w-[65rem] mx-auto lg:flex p-4 relative md:!h-screen md:!max-h-screen",
-          {
-            "pb-[calc(max(env(safe-area-inset-bottom), 16px) - 16px)]": user,
-          },
-        )}
-        style={{
-          height: contentHeight,
-          maxHeight: contentHeight,
-        }}
-      >
-        <NavigationBar ref={bottomBarRef} />
-
-        <ThemeProvider>
-          <div className="relative z-[51]">
-            <toast.ToastContainer
-              stacked
-              newestOnTop
-              theme={theme === "system" ? "light" : theme}
-              autoClose={2500}
-              draggablePercent={60}
-              className="!mb-16 z-[51]"
-              transition={toast.Flip}
-              position="bottom-center"
-              pauseOnHover={false}
-            />
-          </div>
-          <div className="w-full h-full flex flex-col relative z-10 overflow-auto scrollbar-hide md:scrollbar-visible md:px-4">
-            {user && <SettingsComponent />}
-            {children}
-          </div>
-        </ThemeProvider>
-      </div>
+      <ThemeProvider>
+        <div className="relative z-[51]">
+          <toast.ToastContainer
+            stacked
+            newestOnTop
+            theme={theme === "system" ? "light" : theme}
+            autoClose={2500}
+            draggablePercent={60}
+            className="!mb-16 z-[51]"
+            transition={toast.Flip}
+            position="bottom-center"
+            pauseOnHover={false}
+          />
+        </div>
+        {children}
+      </ThemeProvider>
     </div>
   );
 };

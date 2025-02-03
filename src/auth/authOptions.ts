@@ -2,6 +2,7 @@ import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
+import loggerServer from "@/loggerServer";
 
 const prisma = new PrismaClient();
 
@@ -18,4 +19,22 @@ export const authOptions: AuthOptions = {
     strategy: "jwt", // This is the default value
   },
   secret: process.env.NEXTAUTH_SECRET,
+  events: {
+    createUser: async message => {
+      try {
+        await prisma.userMetadata.create({
+          data: {
+            userId: message.user.id,
+          },
+        });
+      } catch (error: any) {
+        await prisma.user.delete({
+          where: {
+            id: message.user.id,
+          },
+        });
+        throw error;
+      }
+    },
+  },
 };

@@ -19,8 +19,19 @@ const config = {
     },
     extend: {
       fontFamily: {
-        montserrat: ["Montserrat", "Hauora", "sans-serif"],
-        hauora: ["Hauora", "Montserrat", "sans-serif"],
+        sans: ['"SF Pro Display"', "system-ui", "sans-serif"],
+        display: ['"SF Pro Display"', "system-ui", "sans-serif"],
+      },
+      fontWeight: {
+        thin: "100",
+        ultralight: "200",
+        light: "300",
+        regular: "400",
+        medium: "500",
+        semibold: "600",
+        bold: "700",
+        heavy: "800",
+        black: "900",
       },
       colors: {
         border: "hsl(var(--border))",

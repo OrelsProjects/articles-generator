@@ -2,59 +2,147 @@
 @tailwind components;
 @tailwind utilities;
 
+/* SF Pro Display Font Declarations */
 @font-face {
-  font-family: "Montserrat";
-  src: url("/fonts/Montserrat-VariableFont_wght.ttf") format("truetype");
+  font-family: "SF Pro Display";
+  src: url("/fonts/SFPRODISPLAYBLACKITALIC.OTF") format("opentype");
+  font-weight: 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src: url("/fonts/SFPRODISPLAYHEAVYITALIC.OTF") format("opentype");
+  font-weight: 800;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src: url("/fonts/SFPRODISPLAYBOLD.OTF") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src: url("/fonts/SFPRODISPLAYSEMIBOLDITALIC.OTF") format("opentype");
+  font-weight: 600;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src: url("/fonts/SFPRODISPLAYMEDIUM.OTF") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src: url("/fonts/SFPRODISPLAYREGULAR.OTF") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src: url("/fonts/SFPRODISPLAYLIGHTITALIC.OTF") format("opentype");
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src: url("/fonts/SFPRODISPLAYTHINITALIC.OTF") format("opentype");
+  font-weight: 200;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src: url("/fonts/SFPRODISPLAYULTRALIGHTITALIC.OTF") format("opentype");
+  font-weight: 100;
+  font-style: italic;
 }
 
 @layer base {
   :root {
-    /* FBF8F4 */
-    --background: 36 42% 97%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 142.1 63% 49%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 329 75% 56%;
-    --secondary-foreground: 309 9% 90.37%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 90%;
-    --radius: 0.75rem;
+    --background: 338.2 0% 100%;
+    --foreground: 180 1% 21%;
+    --card: 338.2 0% 100%;
+    --card-foreground: 340 0% 8.6%;
+    --popover: 338.2 0% 100%;
+    --popover-foreground: 340 0% 8.6%;
+    --primary: 202.7 83.3% 60.2%;
+    --primary-foreground: 208.4 85.2% 4.2%;
+    --secondary: 334.3 0% 90.9%;
+    --secondary-foreground: 340 0% 38.6%;
+    --muted: 334.3 0% 81.9%;
+    --muted-foreground: 340 0% 38.6%;
+    --accent: 334.3 0% 81.9%;
+    --accent-foreground: 340 0% 28.6%;
+    --destructive: 4 80.5% 55.7%;
+    --destructive-foreground: 340 0% 8.6%;
+    --border: 340 0% 38.6%;
+    --input: 340 0% 38.6%;
+    --ring: 202.7 83.3% 60.2%;
+    --radius: 0.5rem;
+    --chart-1: 202.7 83.3% 60.2%;
+    --chart-2: 334.3 0% 90.9%;
+    --chart-3: 334.3 0% 81.9%;
+    --chart-4: 334.3 0% 91.9%;
+    --chart-5: 202.7 83.3% 70.2%;
 
-    --primary-lighter: 142 62% 59%;
-    --contracts-in-row: 2;
-    --contracts-in-row-mobile: 1;
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 0 0% 38%;
+    --sidebar-primary: 203 83% 57%;
+    --sidebar-primary-foreground: 208.4 85.2% 4.2%;
+    --sidebar-accent: 0 0% 79%;
+    --sidebar-accent-foreground: 340 0% 28.6%;
+    --sidebar-border: 0 0% 36%;
+    --sidebar-ring: 203 83% 57%;
   }
 
   .dark {
-    /* 1C1F26 */
-    --background: 220 15% 13%;
-    --foreground: 0 0% 95%;
-    --card: 220 17% 18%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 95%;
-    /* --primary: 329 75% 56%;
-    --primary-foreground: 144.9 80.4% 10%; */
-    --muted: 0 0% 15%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 12 6.5% 15.1%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 85.7% 97.3%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 90%;
+    --background: 338.2 10% 10%;
+    --foreground: 340 10% 90%;
+    --card: 338.2 10% 10%;
+    --card-foreground: 340 10% 90%;
+    --popover: 338.2 10% 10%;
+    --popover-foreground: 340 10% 90%;
+    --primary: 202.7 93.3% 39.8%;
+    --primary-foreground: 208.4 95.2% 90%;
+    --secondary: 334.3 10% 10%;
+    --secondary-foreground: 340 10% 61.4%;
+    --muted: 334.3 10% 18%;
+    --muted-foreground: 340 10% 61.4%;
+    --accent: 334.3 10% 18%;
+    --accent-foreground: 340 10% 71.4%;
+    --destructive: 4 90.5% 44.3%;
+    --destructive-foreground: 340 10% 90%;
+    --border: 340 10% 61.4%;
+    --input: 340 10% 61.4%;
+    --ring: 202.7 93.3% 39.8%;
+    --radius: 0.5rem;
+    --chart-1: 202.7 93.3% 30;
+    --chart-2: 334.3 10% 60%;
+    --chart-3: 334.3 10% 51%;
+    --chart-4: 334.3 10% 60%;
+    --chart-5: 202.7 93.3% 40.2%;
+
+    --sidebar-background: 338 10% 2%;
+    --sidebar-foreground: 340 10% 56%;
+    --sidebar-primary: 203 93% 32%;
+    --sidebar-primary-foreground: 208.4 95.2% 90%;
+    --sidebar-accent: 334 10% 10%;
+    --sidebar-accent-foreground: 340 10% 71.4%;
+    --sidebar-border: 340 10% 53%;
+    --sidebar-ring: 203 93% 32%;
+  }
+
+  html {
+    font-family: "SF Pro Display", system-ui, sans-serif;
   }
 }
 
@@ -170,4 +258,105 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* TipTap */
+.tiptap p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+/* General list item styling */
+li {
+  position: relative;
+  padding-left: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.5;
+}
+
+/* Apply dots only to unordered lists */
+ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: hsl(var(--foreground) / 0.7);
+}
+
+/* Nested dots for unordered lists */
+ul ul li::before {
+  width: 5px;
+  height: 5px;
+  background-color: hsl(var(--foreground) / 0.5);
+}
+
+ul ul ul li::before {
+  width: 4px;
+  height: 4px;
+  background-color: hsl(var(--foreground) / 0.4);
+}
+
+/* Ordered list styling */
+ol {
+  counter-reset: level1;
+  list-style: none;
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+ol > li {
+  counter-increment: level1;
+}
+
+ol > li::before {
+  content: counter(level1) ".";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 500;
+}
+
+/* Second level: a, b, c... */
+ol ol {
+  counter-reset: level2;
+  padding-left: 1.5em;
+}
+
+ol ol > li {
+  counter-increment: level2;
+}
+
+ol ol > li::before {
+  content: counter(level2, lower-alpha) ".";
+}
+
+/* Third level: i, ii, iii... */
+ol ol ol {
+  counter-reset: level3;
+}
+
+ol ol ol > li {
+  counter-increment: level3;
+}
+
+ol ol ol > li::before {
+  content: counter(level3, lower-roman) ".";
+}
+
+/* Fourth level: back to numbers */
+ol ol ol ol {
+  counter-reset: level4;
+}
+
+ol ol ol ol > li {
+  counter-increment: level4;
+}
+
+ol ol ol ol > li::before {
+  content: counter(level4) ".";
 }

@@ -41,8 +41,8 @@ export async function DELETE(req: NextRequest): Promise<any> {
     if (!session.user?.userId) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    await prisma.appUser.delete({
-      where: { userId: session.user?.userId },
+    await prisma.user.delete({
+      where: { id: session.user?.userId },
     });
     return NextResponse.json({}, { status: 200 });
   } catch (error: any) {

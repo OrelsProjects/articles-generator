@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import "@/../firebase.config";
 import type { Viewport } from "next";
 
 import AuthProvider from "@/app/providers/AuthProvider";

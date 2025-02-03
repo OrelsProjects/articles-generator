@@ -76,7 +76,7 @@ export default function AuthProvider({
         pathname.includes("register") ||
         pathname === "/"
       ) {
-        router.push("/plans", { preserveQuery: true });
+        router.push("/home", { preserveQuery: true });
       }
     } else {
       if (!pathname.includes("login") && !pathname.includes("register")) {

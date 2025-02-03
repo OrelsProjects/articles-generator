@@ -75,7 +75,7 @@ export default function Layout({ children }: RootLayoutProps) {
   initLogger();
 
   return (
-    <html lang="en" className={cn("antialiased", Gabarito.className)}>
+    <html lang="en" className={cn("antialiased font-sans")}>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
