@@ -2,7 +2,11 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 
 export async function extractContent(url: string) {
-  const html = await axios.get(url);
+  let validUrl = url;
+  if (!validUrl.includes("https://") && !validUrl.includes("http://")) {
+    validUrl = `https://${validUrl}`;
+  }
+  const html = await axios.get(validUrl);
   const $ = cheerio.load(html.data);
   // Extract the first image URL from the <img> tag inside the <picture> element
   const imageUrl = $("picture img").first().attr("src") || "";

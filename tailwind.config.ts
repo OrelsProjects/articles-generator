@@ -1,4 +1,7 @@
 import type { Config } from "tailwindcss";
+const {
+  default: flattenColorPalette,
+} = require("tailwindcss/lib/util/flattenColorPalette");
 
 const config = {
   darkMode: ["class"],
@@ -21,17 +24,6 @@ const config = {
       fontFamily: {
         sans: ['"SF Pro Display"', "system-ui", "sans-serif"],
         display: ['"SF Pro Display"', "system-ui", "sans-serif"],
-      },
-      fontWeight: {
-        thin: "100",
-        ultralight: "200",
-        light: "300",
-        regular: "400",
-        medium: "500",
-        semibold: "600",
-        bold: "700",
-        heavy: "800",
-        black: "900",
       },
       colors: {
         border: "hsl(var(--border))",
@@ -91,5 +83,16 @@ const config = {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
+function addVariablesForColors({ addBase, theme }: any) {
+  let allColors = flattenColorPalette(theme("colors"));
+  let newVars = Object.fromEntries(
+    Object.entries(allColors).map(([key, val]) => [`--${key}`, val]),
+  );
+
+  addBase({
+    ":root": newVars,
+  });
+}
 
 export default config;

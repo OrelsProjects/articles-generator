@@ -15,6 +15,12 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET as string,
     }),
   ],
+  callbacks: {
+    async session({ session, token }) {
+      session.user.id = token.sub as string;
+      return session;
+    },
+  },
   session: {
     strategy: "jwt", // This is the default value
   },

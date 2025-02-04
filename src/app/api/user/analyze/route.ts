@@ -13,69 +13,83 @@ export async function POST(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  const userMetadata = await prisma.userMetadata.findUnique({
-    where: {
-      userId: "67a0ba04b3ad91ede7091e2b",
-    },
-    include: {
-      publication: true,
-    },
-  });
-
-  const publicationMetadata = userMetadata?.publication;
-
-  const { substackUrl } = await req.json();
-  const userArticles = await axios.get<Article[]>(
-    `http://localhost:3002/get-user-articles?substackUrl=${substackUrl}&limit=30`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-  const userArticlesData = userArticles.data;
-  const { image, title, description } = await extractContent(substackUrl);
-
-  const messages = generateDescriptionPrompt(
-    description,
-    userArticlesData.map(article => ({
-      title: article.search_engine_title || article.title || "",
-      subtitle: article.search_engine_description || article.description || "",
-    })),
-  );
-
-  const generatedDescription = await runPrompt(messages, "openai/gpt-4o");
-
-  const descriptionObject: { about: string } = JSON.parse(generatedDescription);
-
-  if (publicationMetadata) {
-    await prisma.publicationMetadata.update({
+  try {
+    const userMetadata = await prisma.userMetadata.findUnique({
       where: {
-        id: publicationMetadata.id,
+        userId: session.user.id,
       },
-      data: {
-        generatedDescription: descriptionObject.about,
-      },
-    });
-  } else {
-    const publication = await prisma.publicationMetadata.create({
-      data: {
-        publicationUrl: substackUrl,
-        image,
-        title,
-        description,
-        generatedDescription: descriptionObject.about,
+      include: {
+        publication: true,
       },
     });
-    await prisma.userMetadata.update({
-      where: {
-        userId: "67a0ba04b3ad91ede7091e2b",
+
+    const publicationMetadata = userMetadata?.publication;
+
+    const { url } = await req.json();
+    const userArticles = await axios.get<Article[]>(
+      `http://localhost:3002/get-user-articles?substackUrl=${url}&limit=15&includeBody=true`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-      data: {
-        publication: { connect: { id: publication.id } },
-      },
-    });
+    );
+    const userArticlesData = userArticles.data;
+    const { image, title, description } = await extractContent(url);
+
+    // TODO limit by wordcount, so you dont have too many articles and the api request doesnt fail
+    const messages = generateDescriptionPrompt(description, userArticlesData);
+
+    const generatedDescription = await runPrompt(messages, "openai/gpt-4o");
+
+    const descriptionObject: {
+      about: string;
+      writingStyle: string;
+      topics: string;
+    } = JSON.parse(generatedDescription);
+
+    let publicationId: string | null = publicationMetadata?.id || null;
+
+    if (publicationMetadata) {
+      await prisma.publicationMetadata.update({
+        where: {
+          id: publicationMetadata.id,
+        },
+        data: {
+          generatedDescription: descriptionObject.about,
+          writingStyle: descriptionObject.writingStyle,
+          topics: descriptionObject.topics,
+        },
+      });
+    } else {
+      const publication = await prisma.publicationMetadata.create({
+        data: {
+          publicationUrl: url,
+          image,
+          title,
+          description,
+          generatedDescription: descriptionObject.about,
+          writingStyle: descriptionObject.writingStyle,
+          topics: descriptionObject.topics,
+        },
+      });
+      await prisma.userMetadata.update({
+        where: {
+          userId: session.user.id,
+        },
+        data: {
+          publication: { connect: { id: publication.id } },
+        },
+      });
+      publicationId = publication.id;
+    }
+    return NextResponse.json({ publicationId });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
-  return NextResponse.json(userArticlesData);
 }
+

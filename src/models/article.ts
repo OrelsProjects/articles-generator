@@ -24,4 +24,5 @@ export interface Article {
   search_engine_title: string;
   social_title: string;
   truncated_body_text: string;
+  body_text?: string;
 }

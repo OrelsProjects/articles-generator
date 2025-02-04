@@ -3,3 +3,9 @@ export interface Idea {
   title: string;
   subtitle: string;
 }
+
+export interface Outline {
+  title: string;
+  subtitle: string;
+  outline: string;
+}

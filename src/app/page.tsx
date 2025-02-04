@@ -8,6 +8,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 function App() {
   return (
@@ -15,20 +16,14 @@ function App() {
       {/* Hero Section */}
       <header className="container mx-auto px-6 py-16 max-w-6xl">
         <nav className="flex justify-between items-center mb-16">
-          <div className="flex items-center space-x-2"> 
+          <div className="flex items-center space-x-2">
             <Brain className="w-8 h-8 text-indigo-600" />
             <span className="text-xl font-bold">ArticleGenius</span>
           </div>
           <div className="flex space-x-6">
-            <Button variant="link">
-              Features
-            </Button>
-            <Button variant="link">
-              Pricing
-            </Button>
-            <Button>
-              Get Started
-            </Button>
+            <Button variant="link">Features</Button>
+            <Button variant="link">Pricing</Button>
+            <Button>Get Started</Button>
           </div>
         </nav>
 
@@ -43,9 +38,11 @@ function App() {
             millions of data points.
           </p>
           <div className="flex space-x-4">
-            <Button >
-              Start Writing Now
-              <ChevronRight className="w-5 h-5 ml-2" />
+            <Button asChild>
+              <Link href="/login">
+                Start Writing Now
+                <ChevronRight className="w-5 h-5 ml-2" />
+              </Link>
             </Button>
             <Button variant="outline">View Demo</Button>
           </div>
@@ -134,7 +131,9 @@ function App() {
                   alt={testimonial.name}
                   className="w-16 h-16 rounded-full mx-auto mb-4"
                 />
-                <p className="text-gray-600 mb-4">&quot;{testimonial.quote}&quot;</p>
+                <p className="text-gray-600 mb-4">
+                  &quot;{testimonial.quote}&quot;
+                </p>
                 <p className="font-semibold">{testimonial.name}</p>
                 <p className="text-sm text-gray-500">{testimonial.role}</p>
               </div>
@@ -154,7 +153,9 @@ function App() {
             ArticleGenius to produce high-quality content faster than ever
             before.
           </p>
-          <Button>Get Started Free</Button>
+          <Button asChild>
+            <Link href="/login">Get Started Free</Link>
+          </Button>
         </div>
       </section>
 

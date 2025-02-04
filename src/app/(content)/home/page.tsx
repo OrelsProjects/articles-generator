@@ -1,34 +1,17 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import TextEditor from "@/components/ui/text-editor";
-import axios from "axios";
-import React, { useState } from "react";
-import { toast } from "react-toastify";
+import TextEditor from "@/components/ui/text-editor/text-editor";
+import { useAppSelector } from "@/lib/hooks/redux";
+import React from "react";
 
 export default function Home() {
-  const [articles, setArticles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { publicationIds } = useAppSelector(state => state.publications);
 
-  const analyze = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.post("api/user/analyze", {
-        // substackUrl: "https://theindiepreneur.substack.com",
-        substackUrl: "https://emdiary.substack.com/",
-      });
-      setArticles(res.data);
-    } catch (error) {
-      toast.error("Error analyzing articles");
-    } finally {
-      setLoading(false);
-    }
-  };
+  console.log(publicationIds);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <Button onClick={analyze}>Analyze</Button>
-      <TextEditor />
+      <TextEditor publicationId={publicationIds[0] || null} />
     </div>
   );
 }

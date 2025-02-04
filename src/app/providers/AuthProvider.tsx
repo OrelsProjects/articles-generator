@@ -15,6 +15,8 @@ import { useSession } from "next-auth/react";
 import AppUser from "@/models/appUser";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { addPublicationId } from "@/lib/features/publications/publicationSlice";
+import axios from "axios";
 
 export default function AuthProvider({
   children,
@@ -31,17 +33,23 @@ export default function AuthProvider({
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    userId?: string | null;
+    id?: string | null;
   }) => {
     try {
       const appUser: AppUser = {
         displayName: user?.name || null,
         email: user?.email || "",
         photoURL: user?.image || null,
-        userId: user?.userId || "",
+        userId: user?.id || "",
         settings: {},
       };
       dispatch(setUserAction(appUser));
+
+      const publicationIdResponse = await axios.get("/api/user/publications");
+      const { publicationId } = publicationIdResponse.data;
+      if (publicationId) {
+        dispatch(addPublicationId(publicationId));
+      }
     } catch (error: any) {
       console.error(error);
       dispatch(setUserAction(null));

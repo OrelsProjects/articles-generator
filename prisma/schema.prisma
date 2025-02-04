@@ -116,6 +116,8 @@ model PublicationMetadata {
   description    String?
 
   generatedDescription String?
+  writingStyle         String?
+  topics               String?
 
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt

@@ -1,9 +1,9 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { runPrompt } from "@/lib/openRouter";
-import { generateIdeasPrompt } from "@/lib/prompts";
+import { generateIdeasPrompt, generateOutlinePrompt } from "@/lib/prompts";
 import { Article } from "@/models/article";
-import { Idea } from "@/models/idea";
+import { Idea, Outline } from "@/models/idea";
 import axios from "axios";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -14,6 +14,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
+    const title = req.nextUrl.searchParams.get("title");
+    const subtitle = req.nextUrl.searchParams.get("subtitle");
+    if (!title || !subtitle) {
+      return NextResponse.json(
+        { error: "Title and subtitle are required" },
+        { status: 400 },
+      );
+    }
+
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId: session.user.id,
@@ -31,13 +40,12 @@ export async function GET(req: NextRequest) {
         { status: 403 },
       );
     }
-
     const inspirations = await axios.get<Article[]>(
-      `http://localhost:3002/search?q=${publicationMetadata.generatedDescription}&limit=20`,
+      `http://localhost:3002/search?q=title:${title} AND subtitle:${subtitle}&limit=20&includeBody=true`,
     );
 
     const userArticlesResponse = await axios.get<Article[]>(
-      `http://localhost:3002/get-user-articles?substackUrl=${publicationMetadata.publicationUrl}&limit=60`,
+      `http://localhost:3002/get-user-articles?substackUrl=${publicationMetadata.publicationUrl}&limit=10&includeBody=true`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -45,19 +53,32 @@ export async function GET(req: NextRequest) {
       },
     );
 
-    const messages = generateIdeasPrompt(
+    const messages = generateOutlinePrompt(
+      title,
+      subtitle,
       publicationMetadata.generatedDescription,
-      userArticlesResponse.data,
-      inspirations.data.map(inspiration => ({
-        title: inspiration.title,
-        subtitle: inspiration.subtitle,
-      })),
+      inspirations.data,
     );
 
-    const ideasString = await runPrompt(messages, "openai/gpt-4o");
-    const ideas: Idea[] = JSON.parse(ideasString);
+    const outlineString = await runPrompt(
+      messages,
+      "anthropic/claude-3.5-sonnet",
+    );
 
-    return NextResponse.json(ideas);
+    let outline: any | null = null;
+
+    try {
+      const sanitizedString = outlineString.replace(/\r?\n/g, "\\n");
+      outline = JSON.parse(sanitizedString) as { outline: string };
+    } catch (error) {
+      console.error(error);
+    }
+
+    return NextResponse.json({
+      outline: outline?.outline,
+      title,
+      subtitle,
+    });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

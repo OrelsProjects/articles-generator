@@ -1,16 +1,73 @@
 import { Article } from "@/models/article";
+import { PublicationMetadata } from "@prisma/client";
 
-export const generateIdeasPrompt = (
+export const generateOutlinePrompt = (
+  title: string,
+  subtitle: string,
   publicationDescription: string,
-  articles: Article[],
+  topArticles: Article[],
 ) => [
   {
     role: "system",
     content: `
-    You are a helpful, creative and engaging assistant that generates ideas for 1000-words+ articles.
-    You will be given a list of article names and the description of the publication.
-    You will need to generate 10 ideas for articles that are relevant to the publication.
-    They should be original, unique and engaging.
+     You are an expert articles writer and your expertise is guided by the following publication description:
+      "${publicationDescription}"
+
+      The user will provide 5 top articles. 
+      Use the editorial focus and style implied by the publication description to ensure your outline aligns with the brand's voice and target audience.
+
+      The premise of the new article is: "${title}" and "${subtitle}"
+
+      Based on the knowledge and style from these 5 articles—and the editorial direction from the publication—craft a detailed outline for the new article. 
+      Use headings (h2 to h6) and provide brief notes or bullet points under each heading to clarify what belongs there. 
+
+      Don't include the title of the article in the outline (h1).
+
+      **Write in a human, natural voice that doesn't sound AI-generated.**
+
+      The response should be in .md format.
+
+      The response should always be structured in the following JSON format, without any other text or formatting:
+      {"outline": "<generated outline>"}
+    `,
+  },
+  {
+    role: "user",
+    content: `
+      Top Articles:
+      ${topArticles.map((article, index) => `Article ${index + 1}: ${article.body_text}`).join("\n")}
+    `,
+  },
+];
+
+export const generateIdeasPrompt = (
+  publication: PublicationMetadata,
+  articles: Article[],
+  inspirations: {
+    title: string;
+    subtitle: string;
+  }[] = [],
+) => [
+  {
+    role: "system",
+    content: `
+    ${publication.generatedDescription}
+
+    ${publication.writingStyle}
+    
+    Analyze the user's previous articles and the description of their publications.
+    Based on this analysis, generate a list of original, and engaging article ideas that can resemble the inspiration ones,
+    but align with the publication description.
+
+    Use the user's articles to avoid repeating the exact same ideas.
+
+    Ensure that the ideas are diverse in topics and formats, incorporating current trends and emerging themes relevant to the user's audience.
+    For each idea, provide a brief summary that highlights the key angle, potential insights, and why it would resonate with readers.
+    Include at least 10 distinct article ideas.
+
+    Write with human-writing style, natural language, and avoid sounding like AI generated.
+
+    Use inspirations to generate good ideas, titles and subtitles.
 
     For each idea, you should provide the following information:
     - Name of the article
@@ -29,17 +86,17 @@ export const generateIdeasPrompt = (
     role: "user",
     content: `
     Publication Description: ${publicationDescription}
-    Articles: ${articles.map((article, index) => `Article ${index + 1}: Title: ${article.title}, Subtitle: ${article.subtitle}`).join("\n")}
+    User's articles: ${articles.map((article, index) => `Article ${index + 1}: Title: ${article.title}, Subtitle: ${article.subtitle}`).join("\n")}
+
+    Inspirations:
+    ${inspirations.map((inspiration, index) => `Inspiration ${index + 1}: ${inspiration.title} - ${inspiration.subtitle}`).join("\n")}
     `,
   },
 ];
 
 export const generateDescriptionPrompt = (
   description: string,
-  topArticles: {
-    title: string;
-    subtitle: string;
-  }[],
+  topArticles: Article[],
 ) => [
   {
     role: "system",
@@ -50,13 +107,11 @@ export const generateDescriptionPrompt = (
 - About them: who they are, what they do, what they like, projects they're working on (if any). Write like you're asking someone to mimic that person
 - Topics: topics they write about 
 - Writing style: Describe their writing style and tone. It's important to stress the writing characteristics like short and concise, or detailed, use of metaphors, technical depth, etc. Be as detailed as possible
-- Questions: Write 4 interesting questions related to the profile (using first-person writing style)
 
 The response should always be structured in JSON format, with proper escape string for clarity and consistency. Here is an example of the JSON response expected:
 {
   "about": "<generated about them>",
   "topics": "<generated topics>",
-  "questions": "<generated questions as array of strings>",
   "writingStyle": "<generated writing style>"
 }
     `,
@@ -65,7 +120,7 @@ The response should always be structured in JSON format, with proper escape stri
     role: "user",
     content: `
       Description: ${description}
-      Top Articles: ${topArticles.map(article => `- ${article.title} - ${article.subtitle}`).join("\n")}
+      Top Articles: ${topArticles.map((article, i) => `Article ${i + 1}: Title: ${article.title} \n Subtitle: ${article.subtitle} \n Body: ${article.body_text}`).join("\n")}
     `,
   },
 ];

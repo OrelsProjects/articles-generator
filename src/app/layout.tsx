@@ -92,7 +92,8 @@ export default function Layout({ children }: RootLayoutProps) {
             <StoreProvider>
               <SessionWrapper>
                 <TopLoaderProvider />
-                <AnimationProvider>{children}</AnimationProvider>
+                <AnimationProvider>
+                  {children}</AnimationProvider>
                 <ClientTrackersProvider />
               </SessionWrapper>
             </StoreProvider>

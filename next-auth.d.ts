@@ -3,7 +3,8 @@ import { DefaultSession } from "next-auth";
 // Extend the SessionUser interface
 declare module "next-auth" {
   interface SessionUser {
-    userId: string;
+    id: string;
+    publicationId?: string;
   }
 
   // Extend the Session interface
