@@ -1,12 +1,13 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { runPrompt } from "@/lib/openRouter";
-import { generateIdeasPrompt } from "@/lib/prompts";
+import { generateIdeasPrompt, generateOutlinePrompt } from "@/lib/prompts";
 import { Article } from "@/models/article";
 import { Idea } from "@/models/idea";
 import axios from "axios";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -14,6 +15,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
+    const topic = req.nextUrl.searchParams.get("topic");
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId: session.user.id,
@@ -33,7 +35,7 @@ export async function GET(req: NextRequest) {
     }
 
     const inspirations = await axios.get<Article[]>(
-      `http://localhost:3002/search?q=${publicationMetadata.generatedDescription}&limit=20`,
+      `http://localhost:3002/search?q=${topic || publicationMetadata.generatedDescription}&limit=10&includeBody=true`,
     );
 
     const userArticlesResponse = await axios.get<Article[]>(
@@ -46,18 +48,37 @@ export async function GET(req: NextRequest) {
     );
 
     const messages = generateIdeasPrompt(
-      publicationMetadata.generatedDescription,
-      userArticlesResponse.data,
-      inspirations.data.map(inspiration => ({
-        title: inspiration.title,
-        subtitle: inspiration.subtitle,
-      })),
+      publicationMetadata,
+      inspirations.data,
+      session.user.name || "",
     );
 
     const ideasString = await runPrompt(messages, "openai/gpt-4o");
-    const ideas: Idea[] = JSON.parse(ideasString);
+    const { ideas }: { ideas: Omit<Idea, "outline">[] } =
+      JSON.parse(ideasString);
 
-    return NextResponse.json(ideas);
+    const messagesForOutline = generateOutlinePrompt(
+      ideas.map((idea, index) => ({
+        id: index,
+        description: idea.description,
+      })),
+      publicationMetadata.generatedDescription,
+      userArticlesResponse.data,
+    );
+
+    const outlinesString = await runPrompt(messagesForOutline, "openai/gpt-4o");
+    const { outlines }: { outlines: { id: number; outline: string }[] } =
+      JSON.parse(outlinesString);
+
+    const ideasWithOutlines = ideas.map((idea, index) => ({
+      ...idea,
+      outline: outlines.find(outline => outline.id === index)?.outline,
+    }));
+
+    // write ideas to file
+    fs.writeFileSync("ideas.json", JSON.stringify(ideasWithOutlines, null, 2));
+
+    return NextResponse.json(ideasWithOutlines);
   } catch (error) {
     console.error(error);
     return NextResponse.json(

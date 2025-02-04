@@ -1,16 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Idea, Outline } from "@/models/idea";
+import { Idea } from "@/models/idea";
 
 export interface PublicationState {
   publicationIds: string[];
   ideas: Idea[];
-  outlines: { outline: Outline; idea: Idea }[];
 }
 
 export const initialState: PublicationState = {
   publicationIds: [],
   ideas: [],
-  outlines: [],
 };
 
 const publicationSlice = createSlice({
@@ -23,22 +21,13 @@ const publicationSlice = createSlice({
     setIdeas: (state, action: PayloadAction<Idea[]>) => {
       state.ideas = action.payload;
     },
-    setOutlines: (state, action: PayloadAction<{ outline: Outline; idea: Idea }[]>) => {
-      state.outlines = action.payload;
-    },
     addIdeas: (state, action: PayloadAction<Idea[]>) => {
       state.ideas.push(...action.payload);
-    },
-    addOutline: (
-      state,
-      action: PayloadAction<{ outline: Outline; idea: Idea }>,
-    ) => {
-      state.outlines.push(action.payload);
     },
   },
 });
 
-export const { setIdeas, setOutlines, addIdeas, addOutline, addPublicationId } =
+export const { setIdeas, addIdeas, addPublicationId } =
   publicationSlice.actions;
 
 export default publicationSlice.reducer;

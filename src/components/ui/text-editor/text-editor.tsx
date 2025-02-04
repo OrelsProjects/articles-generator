@@ -18,6 +18,7 @@ import { marked } from "marked";
 import { Input } from "@/components/ui/input";
 import { MenuBar } from "@/components/ui/text-editor/menu-bar";
 import { TopNav } from "@/components/ui/text-editor/top-navbar";
+import { Idea } from "@/models/idea";
 
 // A custom extension to map Enter key inside code blocks.
 const CustomKeymap = Extension.create({
@@ -139,15 +140,11 @@ const TextEditor = ({ publicationId }: { publicationId: string | null }) => {
   const [subtitle, setSubtitle] = useState("");
 
   // Callback to update title, subtitle, and editor content when the outline changes.
-  const handleOutlineUpdate = (outlineData: {
-    title: string;
-    subtitle: string;
-    outline: string;
-  }) => {
-    setTitle(outlineData.title);
-    setSubtitle(outlineData.subtitle);
-    if (outlineData.outline && editor) {
-      editor.commands.setContent(marked(outlineData.outline));
+  const handleOutlineUpdate = (idea: Idea) => {
+    setTitle(idea.title);
+    setSubtitle(idea.subtitle);
+    if (idea.outline && editor) {
+      editor.commands.setContent(marked(idea.outline));
     }
   };
 

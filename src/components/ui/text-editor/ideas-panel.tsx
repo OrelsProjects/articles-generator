@@ -3,24 +3,15 @@ import { Idea } from "@/models/idea";
 
 interface IdeasPanelProps {
   ideas: Idea[];
-  onSelectIdea: (idea: Idea, index: number) => void;
+  onSelectIdea: (idea: Idea) => void;
   onClose: () => void;
-  loadingIdeaIndex: number | null;
   disabled: boolean;
 }
-
-// A small spinner for idea items.
-const SmallLoadingSpinner = () => (
-  <div className="flex items-center justify-center">
-    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-  </div>
-);
 
 export const IdeasPanel = ({
   ideas,
   onSelectIdea,
   onClose,
-  loadingIdeaIndex,
   disabled,
 }: IdeasPanelProps) => {
   if (ideas.length === 0) return null;
@@ -37,29 +28,20 @@ export const IdeasPanel = ({
       </div>
       <div className="max-h-[60vh] overflow-y-auto">
         {ideas.map((idea: Idea, index: number) => {
-          const isLoading = loadingIdeaIndex === index;
-          // Disable if any idea is loading.
-          const isDisabled = loadingIdeaIndex !== null || disabled;
           return (
             <button
               key={index}
-              onClick={() => onSelectIdea(idea, index)}
-              disabled={isDisabled}
+              onClick={() => onSelectIdea(idea)}
+              disabled={disabled}
               className={`w-full p-4 text-left border-b border-gray-100 transition-colors group flex items-center gap-2 ${
-                isDisabled
+                disabled
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-gray-50"
               }`}
             >
               <div className="flex flex-col items-start gap-2">
                 <h4 className="font-medium text-gray-900 mb-1 flex-1">
-                  {isLoading ? (
-                    <span className="flex items-center gap-2">
-                      <SmallLoadingSpinner /> Loading...
-                    </span>
-                  ) : (
-                    idea.title
-                  )}
+                  {idea.title}
                 </h4>
                 <p className="text-sm text-gray-600">{idea.subtitle}</p>
               </div>

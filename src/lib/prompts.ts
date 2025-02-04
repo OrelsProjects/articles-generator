@@ -2,51 +2,60 @@ import { Article } from "@/models/article";
 import { PublicationMetadata } from "@prisma/client";
 
 export const generateOutlinePrompt = (
-  title: string,
-  subtitle: string,
+  ideaDescriptions: { id: number; description: string }[],
   publicationDescription: string,
   topArticles: Article[],
 ) => [
   {
     role: "system",
     content: `
-     You are an expert articles writer and your expertise is guided by the following publication description:
+      You are an expert article writer specializing in creating engaging, well-structured content tailored to specific audiences. Your work is guided by the following publication description:
       "${publicationDescription}"
 
-      The user will provide 5 top articles. 
-      Use the editorial focus and style implied by the publication description to ensure your outline aligns with the brand's voice and target audience.
+      The user will provide 5 top-performing articles. Analyze these articles to understand the publication's editorial focus, tone, and style. Ensure the outline aligns with the brand's voice and resonates with the target audience.
 
-      The premise of the new article is: "${title}" and "${subtitle}"
+      Here are multiple article ideas:
+      ${ideaDescriptions.map(idea => `- (${idea.id}): ${idea.description}`).join("\n")}
 
-      Based on the knowledge and style from these 5 articles—and the editorial direction from the publication—craft a detailed outline for the new article. 
-      Use headings (h2 to h6) and provide brief notes or bullet points under each heading to clarify what belongs there. 
+      Your task:
+      - Craft a detailed outline for EACH article idea provided, using insights from the top articles and the publication's editorial direction.
+      - Use clear, hierarchical headings (H2 to H6) to organize the structure logically.
+      - Include concise bullet points or brief notes under each heading to clarify key points, arguments, or ideas that should be covered.
 
-      Don't include the title of the article in the outline (h1).
+      Guidelines:
+      - Do NOT include the article title (H1) in the outline.
+      - Write in a natural, human-like voice, avoiding any robotic or AI-generated tone.
+      - Ensure the outline promotes clarity, coherence, and reader engagement.
 
-      **Write in a human, natural voice that doesn't sound AI-generated.**
+      The response should be in Markdown (.md) format.
 
-      The response should be in .md format.
-
-      The response should always be structured in the following JSON format, without any other text or formatting:
-      {"outline": "<generated outline>"}
+      The final output should be structured in the following JSON format, without any additional text or formatting:
+      {
+        "outlines": [
+          {
+            "id": <idea id>,
+            "outline": "<generated outline in Markdown format>"
+          }
+        ]
+      }
     `,
   },
   {
     role: "user",
     content: `
-      Top Articles:
-      ${topArticles.map((article, index) => `Article ${index + 1}: ${article.body_text}`).join("\n")}
+      Here are the top 5 articles for reference:
+      ${topArticles.map((article, index) => `Article ${index + 1}: ${article.body_text}`).join("\n\n")}
+
+      Analyze these articles carefully and generate comprehensive outlines for each provided idea description, including the corresponding ID for each.
     `,
   },
 ];
 
 export const generateIdeasPrompt = (
   publication: PublicationMetadata,
-  articles: Article[],
-  inspirations: {
-    title: string;
-    subtitle: string;
-  }[] = [],
+  topArticles: Article[],
+  userFullName: string,
+  topic?: string,
 ) => [
   {
     role: "system",
@@ -55,42 +64,51 @@ export const generateIdeasPrompt = (
 
     ${publication.writingStyle}
     
-    Analyze the user's previous articles and the description of their publications.
-    Based on this analysis, generate a list of original, and engaging article ideas that can resemble the inspiration ones,
-    but align with the publication description.
+    You are an expert content strategist and writer.
+    Your task is to generate 5 original article ideas for the user based on their publication description, topics they write about, and their writing style.
+    Additionally, consider the top 5 articles in the user's genre to ensure relevance and appeal. ${topic ? `
+    Put great emphasis on the topic: ${topic}
+      ` : ""}
 
-    Use the user's articles to avoid repeating the exact same ideas.
+    The response must be structured in JSON format with the following details:
 
-    Ensure that the ideas are diverse in topics and formats, incorporating current trends and emerging themes relevant to the user's audience.
-    For each idea, provide a brief summary that highlights the key angle, potential insights, and why it would resonate with readers.
-    Include at least 10 distinct article ideas.
+    {
+      "ideas": [
+        {
+          "title": "<Article Title>",
+          "subtitle": "<Article Subtitle>",
+          "description": "<Brief description of the article>",
+          "inspiration": "<Brief note on what inspired this idea, referencing relevant top articles or user topics>"
+        }
+      ]
+    }
 
-    Write with human-writing style, natural language, and avoid sounding like AI generated.
-
-    Use inspirations to generate good ideas, titles and subtitles.
-
-    For each idea, you should provide the following information:
-    - Name of the article
-    - Title
-    - Subtitle
-
-    The response should always be structured in the following JSON format, without any other text or formatting:
-  [{
-      "name": "<generated name>",
-      "title": "<generated title>",
-      "subtitle": "<generated subtitle>"
-  }]
-    `,
+    Guidelines for generating content:
+    - Ensure titles are compelling and relevant to the user's audience.
+    - Focus on originality while drawing subtle inspiration from popular content.
+    - Avoid generic topics; provide unique angles or fresh perspectives.
+    - Write in a human, natural voice that doesn't sound AI-generated.
+        `,
   },
   {
     role: "user",
     content: `
-    Publication Description: ${publicationDescription}
-    User's articles: ${articles.map((article, index) => `Article ${index + 1}: Title: ${article.title}, Subtitle: ${article.subtitle}`).join("\n")}
+    Below is the user's publication information:
+    - Name: ${userFullName}
+    - Description: ${publication.generatedDescription}
+    - Topics: ${publication.topics}
+    - Writing Style: ${publication.writingStyle}
 
-    Inspirations:
-    ${inspirations.map((inspiration, index) => `Inspiration ${index + 1}: ${inspiration.title} - ${inspiration.subtitle}`).join("\n")}
-    `,
+    Here are the top 5 articles in this genre:
+
+${topArticles
+  .map(
+    (article, index) =>
+      `Article ${index + 1}:\nTitle: ${article.title}\nFull article: ${article.body_text}`,
+  )
+  .join("\n\n")}
+
+Generate original article ideas with outlines based on this information.`,
   },
 ];
 

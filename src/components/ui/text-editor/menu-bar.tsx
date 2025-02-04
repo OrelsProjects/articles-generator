@@ -25,13 +25,30 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import axios from "axios";
-import { Idea, Outline } from "@/models/idea";
+import { Idea } from "@/models/idea";
 import { usePublication } from "@/lib/hooks/usePublication";
 import { IdeasPanel } from "@/components/ui/text-editor/ideas-panel";
 import { CreatePublicationButton } from "@/components/ui/text-editor/create-publication-button";
+import { MultiStepLoader } from "@/components/ui/multi-step-loader";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
-// A loading animation for the AI “thinking” indicator.
+// Define loading states for generating ideas
+const ideaLoadingStates = [
+  { text: "Analyzing publication style..." },
+  { text: "Gathering inspiration from top articles..." },
+  { text: "Crafting unique article ideas..." },
+  { text: "Refining ideas for clarity and impact..." },
+  { text: "Finalizing the best ideas..." },
+];
+
+// A loading animation for the AI "thinking" indicator.
 const AILoadingAnimation = () => (
   <div className="flex items-center gap-2 px-3 py-1.5">
     <div className="flex space-x-1">
@@ -45,7 +62,7 @@ const AILoadingAnimation = () => (
 
 interface MenuBarProps {
   editor: any;
-  onOutlineUpdate: (data: Outline) => void;
+  onOutlineUpdate: (idea: Idea) => void;
   publicationId: string | null;
 }
 
@@ -54,20 +71,23 @@ export const MenuBar = ({
   onOutlineUpdate,
   publicationId,
 }: MenuBarProps) => {
-  const { generateIdeas, generateOutline } = usePublication();
+  const { generateIdeas } = usePublication();
   const [isGenerating, setIsGenerating] = useState(false);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [showIdeas, setShowIdeas] = useState(false);
-  const [outline, setOutline] = useState<Outline | null>(null);
-  const [loadingIdeaIndex, setLoadingIdeaIndex] = useState<number | null>(null);
+  const [showTopicDialog, setShowTopicDialog] = useState(false);
+  const [topic, setTopic] = useState("");
 
-  const handleGenerateIdeas = async () => {
+  const handleGenerateIdeas = async (topic?: string) => {
     if (isGenerating) return;
     setIsGenerating(true);
     setShowIdeas(true);
     try {
-      const res = await axios.get("api/post/generate/ideas");
-      setIdeas(res.data);
+      const ideas = await generateIdeas(topic);
+      setIdeas(ideas);
+      if (ideas.length > 0) {
+        onOutlineUpdate(ideas[0]);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -75,29 +95,17 @@ export const MenuBar = ({
     }
   };
 
-  // Modified handler: now receives the index.
-  const handleSelectIdea = async (idea: Idea, index: number) => {
-    if (loadingIdeaIndex || isGenerating) return;
-    setLoadingIdeaIndex(index);
-    try {
-      const outline = await generateOutline(idea);
-      setOutline(outline);
-      onOutlineUpdate(outline);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingIdeaIndex(null);
-    }
+  const handleSelectIdea = async (idea: Idea) => {
+    onOutlineUpdate(idea);
   };
 
-  const testOnClick = () => {
-    if (outline) {
-      const randomNumber = Math.random();
-      onOutlineUpdate({
-        ...outline,
-        outline: outline.outline + randomNumber,
-      });
-    }
+  const handleGenerateButtonClick = () => {
+    setShowTopicDialog(true);
+  };
+
+  const handleDialogSubmit = () => {
+    setShowTopicDialog(false);
+    handleGenerateIdeas(topic);
   };
 
   if (!editor) return null;
@@ -233,7 +241,7 @@ export const MenuBar = ({
             variant="ghost"
             size="lg"
             className="px-4 gap-2"
-            onClick={handleGenerateIdeas}
+            onClick={handleGenerateButtonClick}
             disabled={isGenerating || !publicationId}
           >
             {isGenerating ? (
@@ -255,10 +263,34 @@ export const MenuBar = ({
           ideas={ideas}
           onSelectIdea={handleSelectIdea}
           onClose={() => setShowIdeas(false)}
-          loadingIdeaIndex={loadingIdeaIndex}
           disabled={isGenerating}
         />
       )}
+
+      {isGenerating && (
+        <MultiStepLoader
+          loadingStates={ideaLoadingStates}
+          loading={isGenerating}
+          duration={10000}
+          loop={false}
+        />
+      )}
+
+      <Dialog open={showTopicDialog} onOpenChange={setShowTopicDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Specify a Topic</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Enter a specific topic (optional)"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+          />
+          <DialogFooter>
+            <Button onClick={handleDialogSubmit}>Generate Ideas</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
