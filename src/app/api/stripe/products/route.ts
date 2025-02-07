@@ -1,12 +1,17 @@
 import { getStripeInstance } from "@/app/api/_payment/stripe";
+import { getCoupon } from "@/lib/stripe";
 import loggerServer from "@/loggerServer";
-import { Product } from "@/models/payment";
+import { PriceStructure, Pricing, Product } from "@/models/payment";
 import { NextRequest, NextResponse } from "next/server";
+
+// revalidate always
+export const revalidate = 0;
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME as string;
 
 export async function GET(req: NextRequest) {
   try {
+    const shouldGetLaunch = req.nextUrl.searchParams.get("shouldGetLaunch");
     const stripe = getStripeInstance();
     const { data: stripeProducts } = await stripe.products.list();
 
@@ -21,37 +26,76 @@ export async function GET(req: NextRequest) {
       );
 
     for (const stripeProduct of appProducts) {
-      const { data: stripePrices } = await stripe.prices.list({
+      const { data: priceData } = await stripe.prices.list({
         product: stripeProduct.id,
       });
-      stripePrices
-        .filter(stripePrice => stripePrice.active && stripePrice.unit_amount)
-        // only those that have StripeGuard
-        .map(stripePrice => {
-          const product: Product = {
-            id: stripeProduct.id,
-            name: stripeProduct.description || stripeProduct.name,
-            priceStructure: {
-              id: stripePrice.id,
-              currency: stripePrice.currency,
-              price: stripePrice.unit_amount! / 100,
-              tokens: parseInt(stripeProduct.metadata.tokens),
-            },
-            noCreditCard: stripeProduct.metadata.noCreditCard === "true",
-            features: stripeProduct.marketing_features.map(
-              feature => feature.name || "",
-            ),
-            recommended: stripeProduct.metadata.recommended === "true",
-          };
-          products.push(product);
-        });
+      const stripePrices = priceData.filter(
+        stripePrice => stripePrice.active && stripePrice.unit_amount,
+      );
+
+      const priceMonthly = stripePrices.find(
+        price => price.recurring?.interval === "month",
+      );
+      const priceYearly = stripePrices.find(
+        price => price.recurring?.interval === "year",
+      );
+
+      if (!priceMonthly || !priceYearly) {
+        return;
+      }
+
+      const priceMonthlyValue = priceMonthly.unit_amount || 0;
+      const priceYearlyValue = priceYearly.unit_amount || 0;
+
+      const priceMonthlyDollars = priceMonthlyValue / 100;
+      const priceYearlyDollars = priceYearlyValue / 100;
+
+      const priceMonthlyCents = priceMonthlyValue % 100;
+      const priceYearlyCents = priceYearlyValue % 100;
+
+      const priceStructure: Pricing = {
+        monthly: {
+          id: priceMonthly.id,
+          currency: priceMonthly.currency,
+          price: priceMonthlyValue,
+          dollars: priceMonthlyDollars,
+          cents: priceMonthlyCents,
+          tokens: parseInt(stripeProduct.metadata.tokens),
+        },
+        yearly: {
+          id: priceYearly.id,
+          currency: priceYearly.currency,
+          price: priceYearlyValue,
+          dollars: priceYearlyDollars,
+          cents: priceYearlyCents,
+          tokens: parseInt(stripeProduct.metadata.tokens),
+        },
+      };
+
+      const product: Product = {
+        id: stripeProduct.id,
+        name: stripeProduct.name,
+        description: stripeProduct.description || stripeProduct.name,
+        priceStructure,
+        noCreditCard: stripeProduct.metadata.noCreditCard === "true",
+        features: stripeProduct.marketing_features.map(
+          feature => feature.name || "",
+        ),
+        recommended: stripeProduct.metadata.recommended === "true",
+      };
+      products.push(product);
     }
 
     const productsSortedByPrice = products.sort(
-      (a, b) => b.priceStructure.price - a.priceStructure.price,
+      (a, b) => a.priceStructure.monthly.price - b.priceStructure.monthly.price,
     );
 
-    return NextResponse.json(productsSortedByPrice, { status: 200 });
+    const coupon = await getCoupon(stripe, shouldGetLaunch === "true");
+
+    return NextResponse.json(
+      { products: productsSortedByPrice, coupon },
+      { status: 200 },
+    );
   } catch (error: any) {
     loggerServer.error("Error getting products", "system", error);
     return NextResponse.json(

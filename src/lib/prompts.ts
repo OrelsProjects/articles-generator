@@ -1,14 +1,54 @@
-import { Article } from "@/models/article";
+import { Article, ArticleWithBody } from "@/models/article";
 import { PublicationMetadata } from "@prisma/client";
 
+export type OutlineLLMResponse = {
+  outlines: { id: number; outline: string }[];
+};
+
+export type IdeasLLMResponse = {
+  ideas: {
+    id?: string;
+    title: string;
+    subtitle: string;
+    description: string;
+    inspiration: string;
+  }[];
+};
+
+export const fixJsonPrompt = (json: string) => [
+  {
+    role: "system",
+    content: `
+    You are an expert JSON formatter.
+    Your task is to format the following JSON string into a valid JSON object, so I can JSON.parse it.
+    
+    The response should be in JSON format, without any additional text or formatting.
+    {
+      "json": "<formatted JSON string>"
+    }
+    `,
+  },
+  {
+    role: "user",
+    content: `
+    String to format:
+    ${json}
+    `,
+  },
+];
+
 export const generateOutlinePrompt = (
+  publication: PublicationMetadata,
   ideaDescriptions: { id: number; description: string }[],
   publicationDescription: string,
-  topArticles: Article[],
+  topArticles: ArticleWithBody[],
 ) => [
   {
     role: "system",
     content: `
+    ${publication.generatedDescription}
+    ${publication.writingStyle}
+
       You are an expert article writer specializing in creating engaging, well-structured content tailored to specific audiences. Your work is guided by the following publication description:
       "${publicationDescription}"
 
@@ -21,13 +61,14 @@ export const generateOutlinePrompt = (
       - Craft a detailed outline for EACH article idea provided, using insights from the top articles and the publication's editorial direction.
       - Use clear, hierarchical headings (H2 to H6) to organize the structure logically.
       - Include concise bullet points or brief notes under each heading to clarify key points, arguments, or ideas that should be covered.
-
+      
       Guidelines:
       - Do NOT include the article title (H1) in the outline.
       - Write in a natural, human-like voice, avoiding any robotic or AI-generated tone.
       - Ensure the outline promotes clarity, coherence, and reader engagement.
+      - Use h2 for the title of each section.
 
-      The response should be in Markdown (.md) format.
+      ** The response should be in Markdown (.md) format. **
 
       The final output should be structured in the following JSON format, without any additional text or formatting:
       {
@@ -53,24 +94,26 @@ export const generateOutlinePrompt = (
 
 export const generateIdeasPrompt = (
   publication: PublicationMetadata,
-  topArticles: Article[],
-  userFullName: string,
-  topic?: string,
+  topArticles: ArticleWithBody[],
+  options: {
+    topic?: string | null;
+    ideasCount: number;
+  } = {
+    ideasCount: 3,
+  },
 ) => [
   {
     role: "system",
     content: `
     ${publication.generatedDescription}
-
-    ${publication.writingStyle}
     
-    You are an expert content strategist and writer.
-    Your task is to generate 5 original article ideas for the user based on their publication description, topics they write about, and their writing style.
-    Additionally, consider the top 5 articles in the user's genre to ensure relevance and appeal. ${topic ? `
-    Put great emphasis on the topic: ${topic}
-      ` : ""}
-
-    The response must be structured in JSON format with the following details:
+    Your task is to generate ${options.ideasCount} original article ideas for the user based on ${
+      options?.topic
+        ? `the topic provided. Focus exclusively on this topic. Every idea must revolve strictly around this topic with no deviations.`
+        : "your publication description, topics you write about, and your writing style"
+    }.
+    Additionally, consider the top 5 articles in your genre to ensure relevance and appeal.
+    The response must be structured in JSON format with the following details, without any additional text or formatting:
 
     {
       "ideas": [
@@ -84,37 +127,44 @@ export const generateIdeasPrompt = (
     }
 
     Guidelines for generating content:
-    - Ensure titles are compelling and relevant to the user's audience.
+    - Ensure titles are compelling and relevant to your audience. Use the articles' titles and subtitles as templates for the ideas' titles and subtitles.
     - Focus on originality while drawing subtle inspiration from popular content.
     - Avoid generic topics; provide unique angles or fresh perspectives.
     - Write in a human, natural voice that doesn't sound AI-generated.
+    - Don't start all the words with a capital letter, unless absolutely necessary. It's okay to start the first word with a capital letter. Same goes for subtitles and headings.
+    - If the provided titles have emojis, use them in the generated titles.
         `,
   },
   {
     role: "user",
     content: `
-    Below is the user's publication information:
-    - Name: ${userFullName}
-    - Description: ${publication.generatedDescription}
+        ${
+          options?.topic
+            ? `The topic is: ${options.topic}. Ensure all generated ideas are strictly focused on this topic. No exceptions.`
+            : ` 
+    Below is your publication information:
     - Topics: ${publication.topics}
     - Writing Style: ${publication.writingStyle}
+    `
+        }
 
     Here are the top 5 articles in this genre:
 
 ${topArticles
   .map(
     (article, index) =>
-      `Article ${index + 1}:\nTitle: ${article.title}\nFull article: ${article.body_text}`,
+      `Article ${index + 1}:
+Title: ${article.title}
+Subtitle: ${article.subtitle}
+Full article: ${article.body_text}`,
   )
-  .join("\n\n")}
-
-Generate original article ideas with outlines based on this information.`,
+  .join("\n\n---\n\n")}`,
   },
 ];
 
 export const generateDescriptionPrompt = (
   description: string,
-  topArticles: Article[],
+  topArticles: ArticleWithBody[],
 ) => [
   {
     role: "system",

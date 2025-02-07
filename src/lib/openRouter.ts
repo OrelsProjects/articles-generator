@@ -4,7 +4,8 @@ import axios from "axios";
 export type Model =
   | "openai/gpt-4o"
   | "openai/gpt-4o-mini"
-  | "anthropic/claude-3.5-sonnet";
+  | "anthropic/claude-3.5-sonnet"
+  | "google/gemini-flash-1.5-8b";
 
 export async function runPrompt(
   messages: { role: string; content: string }[],
@@ -29,8 +30,7 @@ export async function runPrompt(
 
   let llmResponse = response.data.choices[0].message.content;
 
-  if (model.includes("openai")) {
-    // Remove ```json and ``` from response
+  if (!model.includes("anthropic")) {
     llmResponse = llmResponse.replace(/```json|```/g, "").trim();
   }
   return llmResponse;

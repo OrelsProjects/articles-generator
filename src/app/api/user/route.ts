@@ -23,7 +23,7 @@ export async function POST(req: NextRequest): Promise<any> {
     const body = await req.json();
     user = body as AppUser;
     user.email = sessionUser?.email || user.email;
-    user.photoURL = sessionUser?.image || user.photoURL;
+    user.image = sessionUser?.image || user.image;
   } catch (error: any) {
     Logger.error("Error initializing logger", user?.userId || "unknown", {
       error,
@@ -38,15 +38,15 @@ export async function DELETE(req: NextRequest): Promise<any> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
-    if (!session.user?.userId) {
+    if (!session.user?.id) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
     await prisma.user.delete({
-      where: { id: session.user?.userId },
+      where: { id: session.user?.id },
     });
     return NextResponse.json({}, { status: 200 });
   } catch (error: any) {
-    Logger.error("Error deleting user", session.user.userId, { error });
+    Logger.error("Error deleting user", session.user.id, { error });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

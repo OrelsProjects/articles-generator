@@ -1,8 +1,12 @@
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useRouter, useSearchParams } from "next/navigation";
 
+/**
+ * Options for the custom router.
+ * @param preserveQuery - Whether to preserve the query params. Default is true.
+ */
 export interface CustomRouterOptions {
-  preserveQuery: boolean;
+  preserveQuery?: boolean;
 }
 
 export function useCustomRouter() {
@@ -11,7 +15,7 @@ export function useCustomRouter() {
 
   const push = (
     href: string,
-    routerOptions?: CustomRouterOptions,
+    routerOptions: CustomRouterOptions = { preserveQuery: true },
     options?: NavigateOptions,
   ) => {
     // HACK: If relative URL given, stick the current host on the string passed to URL()

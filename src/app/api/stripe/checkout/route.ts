@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       mode: "payment",
       success_url: `${nextUrl.origin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${nextUrl.origin}/cancel`,
-      client_reference_id: session.user.userId,
+      client_reference_id: session.user.id,
       customer_email: session.user.email || "",
       metadata: {
         clientName: session.user.name || "",
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     loggerServer.error(
       "Error creating a checkout session",
-      session?.user?.userId || "Unknown user",
+      session?.user?.id || "Unknown user",
       error,
     );
     return NextResponse.json(

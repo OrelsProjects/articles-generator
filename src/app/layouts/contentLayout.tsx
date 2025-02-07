@@ -1,33 +1,26 @@
 "use client";
 
-import React from "react";
-import type { Viewport } from "next";
-
+import type * as React from "react";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/app/(content)/editor/sidebar";
 import AuthProvider from "@/app/providers/AuthProvider";
-import TopLoaderProvider from "@/app/providers/TopLoaderProvider";
 import AnimationProvider from "@/app/providers/AnimationProvider";
-import HeightProvider from "@/app/providers/HeightProvider";
-import ContentProvider from "@/app/providers/ContentProvider";
 
-interface RootLayoutProps {
+interface LayoutProps {
   children: React.ReactNode;
 }
 
-export default function ContentLayout({ children }: RootLayoutProps) {
+export function ContentLayout({ children }: LayoutProps) {
   return (
-    <main>
-      <AuthProvider>
-        <HeightProvider>
-          <ContentProvider>
-            <TopLoaderProvider />
+    <AuthProvider>
+      <SidebarProvider>
+        <div className="flex min-h-screen">
+          <AppSidebar />
+          <main className="flex-1">
             <AnimationProvider>{children}</AnimationProvider>
-          </ContentProvider>
-        </HeightProvider>
-      </AuthProvider>
-    </main>
+          </main>
+        </div>
+      </SidebarProvider>
+    </AuthProvider>
   );
 }
-
-export const viewport: Viewport = {
-  themeColor: "#121212",
-};

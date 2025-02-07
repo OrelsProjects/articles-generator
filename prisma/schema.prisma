@@ -13,6 +13,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum IdeaStatus {
+  new
+  used
+  archived
+}
+
+enum Plan {
+  free
+  pro
+  superPro
+}
+
 model User {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
@@ -26,7 +38,9 @@ model User {
 
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
-  UserMetadata UserMetadata[]
+  userMetadata UserMetadata[]
+  ideas        ideas[]
+  Payment      Payment[]
 
   @@map("users")
 }
@@ -102,6 +116,8 @@ model UserMetadata {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  plan Plan @default(free)
+
   publication PublicationMetadata? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -109,7 +125,9 @@ model UserMetadata {
 }
 
 model PublicationMetadata {
-  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  idInArticlesDb Int?
+
   publicationUrl String  @unique
   image          String?
   title          String?
@@ -119,11 +137,41 @@ model PublicationMetadata {
   writingStyle         String?
   topics               String?
 
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  UserMetadata UserMetadata?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userMetadata UserMetadata?
+  ideas        ideas[]
 
   @@map("publicationMetadata")
+}
+
+model ideas {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  publicationId String @db.ObjectId
+  userId        String @db.ObjectId
+
+  topic       String?
+  title       String
+  subtitle    String
+  description String
+  outline     String
+  inspiration String
+
+  status     IdeaStatus @default(new)
+  isFavorite Boolean    @default(false)
+
+  modelUsedForIdeas   String
+  modelUsedForOutline String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publication PublicationMetadata @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+
+  @@map("ideas")
 }
 
 model Payment {
@@ -141,6 +189,8 @@ model Payment {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("payments")
 }

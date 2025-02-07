@@ -68,77 +68,77 @@
 
 @layer base {
   :root {
-    --background: 338.2 0% 100%;
-    --foreground: 180 1% 21%;
-    --card: 338.2 0% 100%;
-    --card-foreground: 340 0% 8.6%;
-    --popover: 338.2 0% 100%;
-    --popover-foreground: 340 0% 8.6%;
-    --primary: 202.7 83.3% 60.2%;
-    --primary-foreground: 208.4 85.2% 4.2%;
-    --secondary: 334.3 0% 90.9%;
-    --secondary-foreground: 340 0% 38.6%;
-    --muted: 334.3 0% 81.9%;
-    --muted-foreground: 340 0% 38.6%;
-    --accent: 334.3 0% 81.9%;
-    --accent-foreground: 340 0% 28.6%;
-    --destructive: 4 80.5% 55.7%;
-    --destructive-foreground: 340 0% 8.6%;
-    --border: 340 0% 38.6%;
-    --input: 340 0% 38.6%;
-    --ring: 202.7 83.3% 60.2%;
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --primary: 24.6 95% 53.1%;
+    --primary-foreground: 60 9.1% 97.8%;
+    --secondary: 270 100% 70%;
+    --secondary-foreground: 255 100% 97.4%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 24.6 95% 53.1%;
     --radius: 0.5rem;
-    --chart-1: 202.7 83.3% 60.2%;
-    --chart-2: 334.3 0% 90.9%;
-    --chart-3: 334.3 0% 81.9%;
-    --chart-4: 334.3 0% 91.9%;
-    --chart-5: 202.7 83.3% 70.2%;
+    --chart-1: 24.6 95% 53.1%;
+    --chart-2: 60 4.8% 95.9%;
+    --chart-3: 60 4.8% 95.9%;
+    --chart-4: 60 4.8% 105.9%;
+    --chart-5: 24.6 95% 63.1%;
 
-    --sidebar-background: 0 0% 97%;
-    --sidebar-foreground: 0 0% 38%;
-    --sidebar-primary: 203 83% 57%;
-    --sidebar-primary-foreground: 208.4 85.2% 4.2%;
-    --sidebar-accent: 0 0% 79%;
-    --sidebar-accent-foreground: 340 0% 28.6%;
-    --sidebar-border: 0 0% 36%;
-    --sidebar-ring: 203 83% 57%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 24.6 95% 53.1%;
+    --sidebar-primary-foreground: 60 9.1% 97.8%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 338.2 10% 10%;
-    --foreground: 340 10% 90%;
-    --card: 338.2 10% 10%;
-    --card-foreground: 340 10% 90%;
-    --popover: 338.2 10% 10%;
-    --popover-foreground: 340 10% 90%;
-    --primary: 202.7 93.3% 39.8%;
-    --primary-foreground: 208.4 95.2% 90%;
-    --secondary: 334.3 10% 10%;
-    --secondary-foreground: 340 10% 61.4%;
-    --muted: 334.3 10% 18%;
-    --muted-foreground: 340 10% 61.4%;
-    --accent: 334.3 10% 18%;
-    --accent-foreground: 340 10% 71.4%;
-    --destructive: 4 90.5% 44.3%;
-    --destructive-foreground: 340 10% 90%;
-    --border: 340 10% 61.4%;
-    --input: 340 10% 61.4%;
-    --ring: 202.7 93.3% 39.8%;
+    --background: 20 14.3% 4.1%;
+    --foreground: 60 9.1% 97.8%;
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 60 9.1% 97.8%;
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 60 9.1% 97.8%;
+    --primary: 24.6 95% 53.1%;
+    --primary-foreground: 26 83.3% 14.1%;
+    --secondary: 270 90% 55%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 12 6.5% 15.1%;
+    --muted-foreground: 24 5.4% 63.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 12 6.5% 15.1%;
+    --input: 12 6.5% 15.1%;
+    --ring: 35.5 91.7% 32.9%;
     --radius: 0.5rem;
-    --chart-1: 202.7 93.3% 30;
-    --chart-2: 334.3 10% 60%;
-    --chart-3: 334.3 10% 51%;
-    --chart-4: 334.3 10% 60%;
-    --chart-5: 202.7 93.3% 40.2%;
+    --chart-1: 47.9 95.8% 53.1%;
+    --chart-2: 12 6.5% 15.1%;
+    --chart-3: 12 6.5% 15.1%;
+    --chart-4: 12 6.5% 25.1%;
+    --chart-5: 47.9 95.8% 63.1%;
 
-    --sidebar-background: 338 10% 2%;
-    --sidebar-foreground: 340 10% 56%;
-    --sidebar-primary: 203 93% 32%;
-    --sidebar-primary-foreground: 208.4 95.2% 90%;
-    --sidebar-accent: 334 10% 10%;
-    --sidebar-accent-foreground: 340 10% 71.4%;
-    --sidebar-border: 340 10% 53%;
-    --sidebar-ring: 203 93% 32%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 24.6 95% 53.1%;
+    --sidebar-primary-foreground: 60 9.1% 97.8%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   html {
@@ -159,96 +159,28 @@
     -ms-overflow-style: auto;
     scrollbar-width: auto;
   }
-
-  .shimmer-wrapper-dark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    background-image: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.8) 50%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    animation: shimmer 5s infinite linear;
-    background-repeat: no-repeat;
-    background-size: 200% 100%;
-  }
-  .shimmer-wrapper-dark-primary {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    background-image: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0) 0%,
-      hsl(var(--primary)) 50%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    animation: shimmer 5s infinite linear;
-    background-repeat: no-repeat;
-    background-size: 200% 100%;
-    opacity: 0.2;
+/* md screen */
+@media (min-width: 768px) {
+  /* Size */
+  ::-webkit-scrollbar {
+    width: 4px;
   }
 
-  .shimmer-wrapper {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    background-image: linear-gradient(
-      to right,
-      rgba(245, 245, 245, 0) 0%,
-      rgba(100, 80, 80, 0.1) 50%,
-      rgba(245, 245, 245, 0) 100%
-    );
-
-    animation: shimmer 5s infinite linear;
-    background-repeat: no-repeat;
-    background-size: 200% 100%;
+  /* Track */
+  ::-webkit-scrollbar-track,
+  .scrollbar-visible::-webkit-scrollbar-track {
+    border-radius: 999999px;
+    background: hsla(215.4, 16.3%, 46.9%, 0.2);
   }
 
-  .shimmer-wrapper-primary {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  /* Handle */
+  ::-webkit-scrollbar-thumb,
+  .scrollbar-visible::-webkit-scrollbar-thumb {
+    background: hsla(215.4, 16.3%, 46.9%, 0.5);
+    border-radius: 9999px;
+  }
+}
 
-    background-image: linear-gradient(
-      to right,
-      rgba(245, 245, 245, 0) 0%,
-      hsla(var(--primary)) 50%,
-      rgba(245, 245, 245, 0) 100%
-    );
-    animation: shimmer 5s infinite linear;
-    background-repeat: no-repeat;
-    background-size: 200% 100%;
-    opacity: 0.2;
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -250%;
-    }
-    100% {
-      background-position: 250%;
-    }
-  }
-
-  .shimmer-animation {
-    @apply shimmer-wrapper dark:shimmer-wrapper-dark;
-  }
-  .shimmer-animation-primary {
-    @apply shimmer-wrapper-primary dark:shimmer-wrapper-dark-primary;
-  }
 }
 
 @layer base {
@@ -259,7 +191,7 @@
     @apply bg-background text-foreground;
   }
 }
-
+/* 
 /* TipTap */
 .tiptap p.is-editor-empty:first-child::before {
   color: #adb5bd;
@@ -268,8 +200,9 @@
   height: 0;
   pointer-events: none;
 }
+
 /* General list item styling */
-li {
+.tiptap li {
   position: relative;
   padding-left: 1.5em;
   margin-bottom: 0.5em;
@@ -277,7 +210,7 @@ li {
 }
 
 /* Apply dots only to unordered lists */
-ul li::before {
+.tiptap ul li::before {
   content: "";
   position: absolute;
   left: 0;
@@ -289,31 +222,31 @@ ul li::before {
 }
 
 /* Nested dots for unordered lists */
-ul ul li::before {
+.tiptap ul ul li::before {
   width: 5px;
   height: 5px;
   background-color: hsl(var(--foreground) / 0.5);
 }
 
-ul ul ul li::before {
+.tiptap ul ul ul li::before {
   width: 4px;
   height: 4px;
   background-color: hsl(var(--foreground) / 0.4);
 }
 
 /* Ordered list styling */
-ol {
+.tiptap ol {
   counter-reset: level1;
   list-style: none;
   padding-left: 1.5em;
   margin-bottom: 1em;
 }
 
-ol > li {
+.tiptap ol > li {
   counter-increment: level1;
 }
 
-ol > li::before {
+.tiptap ol > li::before {
   content: counter(level1) ".";
   position: absolute;
   left: 0;
@@ -322,41 +255,41 @@ ol > li::before {
 }
 
 /* Second level: a, b, c... */
-ol ol {
+.tiptap ol ol {
   counter-reset: level2;
   padding-left: 1.5em;
 }
 
-ol ol > li {
+.tiptap ol ol > li {
   counter-increment: level2;
 }
 
-ol ol > li::before {
+.tiptap ol ol > li::before {
   content: counter(level2, lower-alpha) ".";
 }
 
 /* Third level: i, ii, iii... */
-ol ol ol {
+.tiptap ol ol ol {
   counter-reset: level3;
 }
 
-ol ol ol > li {
+.tiptap ol ol ol > li {
   counter-increment: level3;
 }
 
-ol ol ol > li::before {
+.tiptap ol ol ol > li::before {
   content: counter(level3, lower-roman) ".";
 }
 
 /* Fourth level: back to numbers */
-ol ol ol ol {
+.tiptap ol ol ol ol {
   counter-reset: level4;
 }
 
-ol ol ol ol > li {
+.tiptap ol ol ol ol > li {
   counter-increment: level4;
 }
 
-ol ol ol ol > li::before {
+.tiptap ol ol ol ol > li::before {
   content: counter(level4) ".";
 }

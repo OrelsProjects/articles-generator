@@ -12,6 +12,7 @@ import { Gabarito } from "@/lib/utils/fonts";
 import { Metadata, Viewport } from "next";
 import AnimationProvider from "@/app/providers/AnimationProvider";
 import { cn } from "@/lib/utils";
+import { ToastProvider } from "@/app/providers/ToastProvider";
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -92,8 +93,8 @@ export default function Layout({ children }: RootLayoutProps) {
             <StoreProvider>
               <SessionWrapper>
                 <TopLoaderProvider />
-                <AnimationProvider>
-                  {children}</AnimationProvider>
+                <ToastProvider />
+                <AnimationProvider>{children}</AnimationProvider>
                 <ClientTrackersProvider />
               </SessionWrapper>
             </StoreProvider>

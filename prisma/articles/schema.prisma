@@ -1,0 +1,164 @@
+generator client {
+    provider      = "prisma-client-js"
+    output        = "../generated/articles"
+    binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL_ARTICLES")
+}
+
+model AudioItem {
+    id       Int @id @default(autoincrement())
+    postId   Int @map("post_id")
+    voiceId  String @map("voice_id")
+    audioUrl String @map("audio_url")
+    type     String @map("type")
+    status   String @map("status")
+
+    @@map("audio_items")
+}
+
+model BylinePublicationUser {
+    id            String  @id
+    userId        String  @map("user_id")
+    publicationId String  @map("publication_id")
+    role          String  @map("role")
+    public        Boolean @map("public")
+    isPrimary     Boolean @map("is_primary")
+    bylineId      String  @map("byline_id")
+
+    @@map("byline_publication_users")
+}
+
+model Byline {
+    id                Int    @id @default(autoincrement())
+    name              String    @map("name")
+    handle            String    @map("handle")
+    previousName      String?   @map("previous_name")
+    photoUrl          String?   @map("photo_url")
+    bio               String?   @map("bio")
+    profileSetUpAt    DateTime? @map("profile_set_up_at")
+    twitterScreenName String?   @map("twitter_screen_name")
+    isGuest           Boolean   @map("is_guest")
+    bestsellerTier    String?   @map("bestseller_tier")
+
+    @@map("bylines")
+}
+
+model KnexMigration {
+    id            Int      @id @default(autoincrement())
+    name          String   @map("name")
+    batch         Int      @map("batch")
+    migrationTime DateTime @map("migration_time")
+
+    @@map("knex_migrations")
+}
+
+model KnexMigrationLock {
+    index    Int @id @map("index")
+    isLocked Int @map("is_locked")
+
+    @@map("knex_migration_locks")
+}
+
+model PodcastField {
+    id                         Int  @id @default(autoincrement())
+    postId                     Int  @map("post_id")
+    podcastEpisodeNumber       Int     @map("podcast_episode_number")
+    podcastSeasonNumber        Int     @map("podcast_season_number")
+    podcastEpisodeType         String  @map("podcast_episode_type")
+    shouldSyndicateToOtherFeed Boolean @map("should_syndicate_to_other_feed")
+    syndicateToSectionId       Int?    @map("syndicate_to_section_id")
+    hideFromFeed               Boolean @map("hide_from_feed")
+    freePodcastUrl             String? @map("free_podcast_url")
+    freePodcastDuration        Int?    @map("free_podcast_duration")
+
+    @@map("podcast_fields")
+}
+
+model PostByline {
+    id       Int @id @default(autoincrement())
+    postId   Int @map("post_id")
+    bylineId Int @map("byline_id")
+
+    @@map("post_bylines")
+}
+
+model Post {
+    id                      String    @id
+    publicationId           String    @map("publication_id")
+    title                   String    @map("title")
+    socialTitle             String?   @map("social_title")
+    searchEngineTitle       String?   @map("search_engine_title")
+    searchEngineDescription String?   @map("search_engine_description")
+    slug                    String    @map("slug")
+    postDate                DateTime? @map("post_date")
+    audience                String?   @map("audience")
+    canonicalUrl            String    @map("canonical_url")
+    reactions               Json?     @map("reactions")
+    subtitle                String?   @map("subtitle")
+    coverImage              String?   @map("cover_image")
+    coverImageIsSquare      Boolean?  @map("cover_image_is_square")
+    coverImageIsExplicit    Boolean?  @map("cover_image_is_explicit")
+    description             String?   @map("description")
+    bodyJson                Json?     @map("body_json")
+    bodyHtml                String?   @map("body_html")
+    truncatedBodyText       String?   @map("truncated_body_text")
+    wordcount               Int?      @map("wordcount")
+    postTags                Json?     @map("postTags")
+    reaction                Json?     @map("reaction")
+    reactionCount           Int?      @map("reaction_count")
+    commentCount            Int?      @map("comment_count")
+    childCommentCount       Int?      @map("child_comment_count")
+    hidden                  String?   @map("hidden")
+    explicit                Boolean?  @map("explicit")
+    emailFromName           String?   @map("email_from_name")
+    isGuest                 Boolean?  @map("is_guest")
+    bestsellerTier          String?   @map("bestseller_tier")
+    podcastEpisodeImageInfo Json?     @map("podcast_episode_image_info")
+
+    publications Publication[]
+
+    // gin index on canonicalUrl
+    @@index([canonicalUrl(ops: raw("text_ops"))], type: Gin)
+    @@map("posts")
+}
+
+model PublicationLink {
+    id          Int       @id @default(autoincrement())
+    url         String    @map("url")
+    startedAt   DateTime? @map("started_at")
+    completedAt DateTime? @map("completed_at")
+    status      String?   @map("status")
+
+    @@map("publication_links")
+}
+
+model Publication {
+    id                    Int   @id
+    name                  String   @map("name")
+    subdomain             String   @map("subdomain")
+    customDomain          String?  @map("custom_domain")
+    customDomainOptional  Boolean? @map("custom_domain_optional")
+    heroText              String?  @map("hero_text")
+    logoUrl               String?  @map("logo_url")
+    authorId              Int   @map("author_id")
+    themeVarBackgroundPop String?  @map("theme_var_background_pop")
+    createdAt             DateTime @map("created_at")
+    rssWebsiteUrl         String?  @map("rss_website_url")
+    emailFromName         String?  @map("email_from_name")
+    copyright             String?  @map("copyright")
+    foundingPlanName      String?  @map("founding_plan_name")
+    communityEnabled      Boolean? @map("community_enabled")
+    inviteOnly            Boolean? @map("invite_only")
+    paymentsState         String?  @map("payments_state")
+    language              String?  @map("language")
+    explicit              Boolean? @map("explicit")
+    isPersonalMode        Boolean? @map("is_personal_mode")
+
+    Posts Post[]
+
+    @@map("publications")
+}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 import prisma from "@/app/api/_db/db";
+import { PublicationResponse } from "@/models/publication";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -14,13 +15,39 @@ export async function GET(req: NextRequest) {
         userId: session.user.id,
       },
       include: {
-        publication: true,
+        publication: {
+          include: {
+            ideas: true,
+          },
+        },
       },
     });
 
-    const publicationId = userPublication?.publication?.id;
+    if (!userPublication?.publication) {
+      return NextResponse.json({ publicationId: null }, { status: 200 });
+    }
 
-    return NextResponse.json({publicationId});
+    const response: PublicationResponse = {
+      publicationId: userPublication?.publication?.id,
+      image: userPublication?.publication?.image,
+      title: userPublication?.publication?.title,
+      description: userPublication?.publication?.description,
+      ideas: userPublication?.publication?.ideas.map(idea => ({
+        id: idea.id,
+        topic: idea.topic,
+        title: idea.title,
+        subtitle: idea.subtitle,
+        outline: idea.outline,
+        description: idea.description,
+        inspiration: idea.inspiration,
+        status: idea.status,
+        isFavorite: idea.isFavorite,
+        modelUsedForIdeas: idea.modelUsedForIdeas,
+        modelUsedForOutline: idea.modelUsedForOutline,
+      })),
+    };
+
+    return NextResponse.json({ publication: response }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

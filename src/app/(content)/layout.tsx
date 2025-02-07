@@ -1,10 +1,18 @@
-import React from "react";
-import ContentLayout from "@/app/layouts/contentLayout";
+"use client";
 
-interface RootLayoutProps {
+import { AppSidebar } from "@/app/(content)/editor/sidebar";
+import AuthProvider from "@/app/providers/AuthProvider";
+import { SidebarProvider } from "@/components/ui/sidebar";
+
+export default function ContentLayout({
+  children,
+}: {
   children: React.ReactNode;
-}
-
-export default function Layout({ children }: RootLayoutProps) {
-  return <ContentLayout>{children}</ContentLayout>;
+}) {
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <AuthProvider>{children}</AuthProvider>
+    </SidebarProvider>
+  );
 }

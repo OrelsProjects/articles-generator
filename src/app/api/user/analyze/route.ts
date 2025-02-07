@@ -7,6 +7,9 @@ import axios from "axios";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { runPrompt } from "@/lib/openRouter";
+import { Publication } from "@/models/publication";
+import { getPublicationByUrl } from "@/lib/dal/publication";
+import { getUserArticlesWithBody } from "@/lib/dal/articles";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -23,22 +26,23 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const publicationMetadata = userMetadata?.publication;
+    let publicationMetadata = userMetadata?.publication;
 
     const { url } = await req.json();
-    const userArticles = await axios.get<Article[]>(
-      `http://localhost:3002/get-user-articles?substackUrl=${url}&limit=15&includeBody=true`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
-    const userArticlesData = userArticles.data;
-    const { image, title, description } = await extractContent(url);
 
+    const publications = await getPublicationByUrl(url);
+    const userPublication = publications[0];
+
+    const userArticles = userPublication
+      ? await getUserArticlesWithBody({ publicationId: userPublication.id }, 10)
+      : await getUserArticlesWithBody({ url }, 10);
+
+    const { image, title, description } = await extractContent(url);
+    const top10Articles = userArticles
+      .sort((a, b) => (b.reactionCount || 0) - (a.reactionCount || 0))
+      .slice(0, 10);
     // TODO limit by wordcount, so you dont have too many articles and the api request doesnt fail
-    const messages = generateDescriptionPrompt(description, userArticlesData);
+    const messages = generateDescriptionPrompt(description, top10Articles);
 
     const generatedDescription = await runPrompt(messages, "openai/gpt-4o");
 
@@ -47,8 +51,6 @@ export async function POST(req: NextRequest) {
       writingStyle: string;
       topics: string;
     } = JSON.parse(generatedDescription);
-
-    let publicationId: string | null = publicationMetadata?.id || null;
 
     if (publicationMetadata) {
       await prisma.publicationMetadata.update({
@@ -59,10 +61,11 @@ export async function POST(req: NextRequest) {
           generatedDescription: descriptionObject.about,
           writingStyle: descriptionObject.writingStyle,
           topics: descriptionObject.topics,
+          idInArticlesDb: userPublication?.id,
         },
       });
     } else {
-      const publication = await prisma.publicationMetadata.create({
+      publicationMetadata = await prisma.publicationMetadata.create({
         data: {
           publicationUrl: url,
           image,
@@ -71,6 +74,7 @@ export async function POST(req: NextRequest) {
           generatedDescription: descriptionObject.about,
           writingStyle: descriptionObject.writingStyle,
           topics: descriptionObject.topics,
+          idInArticlesDb: userPublication?.id,
         },
       });
       await prisma.userMetadata.update({
@@ -78,12 +82,21 @@ export async function POST(req: NextRequest) {
           userId: session.user.id,
         },
         data: {
-          publication: { connect: { id: publication.id } },
+          publication: { connect: { id: publicationMetadata.id } },
         },
       });
-      publicationId = publication.id;
     }
-    return NextResponse.json({ publicationId });
+
+    const publication: Publication = {
+      id: publicationMetadata.id,
+      image,
+      title,
+      description,
+    };
+
+    return NextResponse.json({
+      publication,
+    });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -92,4 +105,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

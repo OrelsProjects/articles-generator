@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
 import _ from "lodash";
-import AppUser, { AppUserSettings } from "@/models/appUser";
+import AppUser from "@/models/appUser";
 
 export type AuthStateType =
   | "anonymous"
@@ -47,24 +47,13 @@ const authSlice = createSlice({
       }
       state.state = action.payload.state ?? "authenticated";
     },
-    updateUserSettings: (
-      state,
-      action: PayloadAction<Partial<AppUserSettings>>,
-    ) => {
-      if (state.user) {
-        state.user = {
-          ...state.user,
-          settings: {
-            ...state.user.settings,
-            ...action.payload,
-          },
-        };
-      }
-    },
     setError: (state, action: PayloadAction<string | null>) => {
       console.error(action.payload);
       state.error = action.payload;
       state.loading = false;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
     },
     clearUser: state => {
       state.loading = false;
@@ -74,8 +63,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, updateUserSettings, setError, clearUser } =
-  authSlice.actions;
+export const { setUser, setError, clearUser, setLoading } = authSlice.actions;
 
 export const selectAuth = (state: RootState): AuthState => state.auth;
 

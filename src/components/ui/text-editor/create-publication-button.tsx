@@ -1,5 +1,5 @@
 import { usePublication } from "@/lib/hooks/usePublication";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
-import { AlertCircle, Link2 } from "lucide-react";
+import { AlertCircle, Link2, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { useAppSelector } from "@/lib/hooks/redux";
 
 const loadingStates = [
   { text: "Validating URL format..." },
@@ -24,11 +26,18 @@ const loadingStates = [
 
 export function CreatePublicationButton() {
   const { analyzePublication } = usePublication();
+  const { publications } = useAppSelector(state => state.publications);
 
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (publications.length > 0) {
+      setOpen(false);
+    }
+  }, [publications]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -54,7 +63,7 @@ export function CreatePublicationButton() {
         Connect Substack
       </Button>
 
-      <Dialog open={open || !loading} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Connect your Substack</DialogTitle>

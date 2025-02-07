@@ -13,7 +13,7 @@ const SettingsComponent: React.FC<SettingsComponentProps> = () => {
       <div className="p-2 rounded-lg w-full flex flex-col items-end">
         <CustomLink href="/settings" className="w-fit h-fit" preserveQuery>
           <UserAvatar
-            photoURL={user?.photoURL || "/images/default-profile.png"}
+            photoURL={user?.image || "/images/default-profile.png"}
             displayName={user?.displayName}
             imageClassName="rounded-full hover:cursor-pointer !w-12 !h-12 shadow-md"
             className="w-12 h-12 md:hover:shadow-lg md:hover:cursor-pointer rounded-full"

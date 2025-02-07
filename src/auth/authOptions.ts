@@ -18,6 +18,12 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async session({ session, token }) {
       session.user.id = token.sub as string;
+      const userMetadata = await prisma.userMetadata.findUnique({
+        where: {
+          userId: token.sub as string,
+        },
+      });
+      session.user.meta = { plan: userMetadata?.plan || "free" };
       return session;
     },
   },

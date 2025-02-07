@@ -3,11 +3,6 @@ import {
   Italic,
   Strikethrough,
   Code,
-  LinkIcon,
-  ImageIcon,
-  Headphones,
-  Video,
-  MessageSquare,
   List,
   ListOrdered,
   Undo,
@@ -15,6 +10,7 @@ import {
   ChevronDown,
   Sparkles,
   RefreshCcw,
+  Save,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,10 +20,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Idea } from "@/models/idea";
 import { usePublication } from "@/lib/hooks/usePublication";
-import { IdeasPanel } from "@/components/ui/text-editor/ideas-panel";
 import { CreatePublicationButton } from "@/components/ui/text-editor/create-publication-button";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import {
@@ -38,6 +33,22 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Publication } from "@/models/publication";
+import { useAppSelector } from "@/lib/hooks/redux";
+import { selectPublications } from "@/lib/features/publications/publicationSlice";
+import { toast } from "react-toastify";
+import { selectAuth } from "@/lib/features/auth/authSlice";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
@@ -52,44 +63,59 @@ const ideaLoadingStates = [
 const AILoadingAnimation = () => (
   <div className="flex items-center gap-2 px-3 py-1.5">
     <div className="flex space-x-1">
-      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+      <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
+      <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
+      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
     </div>
-    <span className="text-sm text-blue-500 font-medium">AI is thinking...</span>
+    <span className="text-sm text-primary font-medium">AI is thinking...</span>
   </div>
 );
 
 interface MenuBarProps {
   editor: any;
   onOutlineUpdate: (idea: Idea) => void;
-  publicationId: string | null;
+  publication: Publication | null;
+  hasChanges: boolean;
+  onSave: () => void;
 }
 
 export const MenuBar = ({
   editor,
   onOutlineUpdate,
-  publicationId,
+  publication,
+  hasChanges,
+  onSave: handleSave,
 }: MenuBarProps) => {
   const { generateIdeas } = usePublication();
+  const { ideas } = useAppSelector(selectPublications);
+  const { user } = useAppSelector(selectAuth);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [ideas, setIdeas] = useState<Idea[]>([]);
-  const [showIdeas, setShowIdeas] = useState(false);
   const [showTopicDialog, setShowTopicDialog] = useState(false);
+  const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [topic, setTopic] = useState("");
+
+  const canGenerateIdeas = useMemo(() => {
+    if (!user?.meta?.plan) return false;
+    return user.meta.plan !== "free";
+  }, [user?.meta?.plan]);
 
   const handleGenerateIdeas = async (topic?: string) => {
     if (isGenerating) return;
     setIsGenerating(true);
-    setShowIdeas(true);
     try {
       const ideas = await generateIdeas(topic);
-      setIdeas(ideas);
       if (ideas.length > 0) {
         onOutlineUpdate(ideas[0]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      if (error?.response?.status === 429) {
+        setShowLimitDialog(true);
+      } else {
+        toast.error(
+          "Something went wrong.. Try again please. Don't worry, we didn't take credits for it.",
+        );
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -112,7 +138,23 @@ export const MenuBar = ({
 
   return (
     <>
-      <div className="flex items-center justify-center gap-3 p-3">
+      <div className="flex items-center justify-center gap-3 p-3 border-b">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+        >
+          <Button
+            variant={"outline"}
+            onClick={handleSave}
+            className="flex gap-2 transition-all duration-300"
+            disabled={!hasChanges}
+          >
+            <Save className="w-4 h-4" />
+            Save
+          </Button>
+        </motion.div>
+
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -201,24 +243,6 @@ export const MenuBar = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <LinkIcon className="w-6 h-6" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <ImageIcon className="w-6 h-6" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Headphones className="w-6 h-6" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Video className="w-6 h-6" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <MessageSquare className="w-6 h-6" />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
@@ -236,20 +260,23 @@ export const MenuBar = ({
             <ListOrdered className="w-6 h-6" />
           </Button>
         </div>
-        {publicationId ? (
+        {publication ? (
           <Button
-            variant="ghost"
             size="lg"
             className="px-4 gap-2"
             onClick={handleGenerateButtonClick}
-            disabled={isGenerating || !publicationId}
+            disabled={isGenerating || !canGenerateIdeas || showLimitDialog}
           >
             {isGenerating ? (
               <AILoadingAnimation />
             ) : (
               <>
                 <Sparkles className="w-5 h-5" />
-                Generate Ideas
+                {canGenerateIdeas
+                  ? showLimitDialog
+                    ? "Daily limit reached"
+                    : "Generate ideas"
+                  : "Upgrade to generate ideas"}
               </>
             )}
           </Button>
@@ -257,15 +284,6 @@ export const MenuBar = ({
           <CreatePublicationButton />
         )}
       </div>
-
-      {showIdeas && (
-        <IdeasPanel
-          ideas={ideas}
-          onSelectIdea={handleSelectIdea}
-          onClose={() => setShowIdeas(false)}
-          disabled={isGenerating}
-        />
-      )}
 
       {isGenerating && (
         <MultiStepLoader
@@ -277,20 +295,51 @@ export const MenuBar = ({
       )}
 
       <Dialog open={showTopicDialog} onOpenChange={setShowTopicDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Specify a Topic</DialogTitle>
-          </DialogHeader>
-          <Input
-            placeholder="Enter a specific topic (optional)"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-          />
-          <DialogFooter>
-            <Button onClick={handleDialogSubmit}>Generate Ideas</Button>
-          </DialogFooter>
-        </DialogContent>
+        <form onSubmit={handleDialogSubmit}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Specify a Topic</DialogTitle>
+            </DialogHeader>
+            <Input
+              placeholder="Enter a specific topic (optional)"
+              value={topic}
+              maxLength={200}
+              onChange={e => setTopic(e.target.value)}
+            />
+            <DialogFooter>
+              <Button type="submit" onClick={handleDialogSubmit}>
+                Generate Ideas
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </form>
       </Dialog>
+
+      <AlertDialog open={showLimitDialog} onOpenChange={setShowLimitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Daily Limit Reached</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                You&apos;ve reached your daily limit for generating ideas. This
+                helps us maintain quality and prevent abuse of our AI system.
+              </p>
+              <p>
+                Your limit will reset in the next 24 hours, or you can upgrade
+                your plan for higher limits and additional features.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-2">
+            <AlertDialogAction onClick={() => setShowLimitDialog(false)}>
+              I&apos;ll wait
+            </AlertDialogAction>
+            <AlertDialogAction asChild>
+              <Link href="/settings/billing">Upgrade Plan</Link>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
         status: session.payment_status,
         amountReceived: (price.unit_amount as number) / 100,
         currency: price.currency as string,
-        appUser: {
+        user: {
           connect: { id: userId },
         },
       },
@@ -60,4 +60,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(req.nextUrl.origin + "/dashboard?error=true");
   }
 }
-
