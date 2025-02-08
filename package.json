@@ -7,6 +7,7 @@
     "test": "next dev -p 3000 NODE_ENV=test",
     "build": "next build",
     "start": "next start",
+    "init": "next build && next start",
     "lint": "next lint",
     "postinstall": "npx prisma generate && npx prisma generate --schema=prisma/articles/schema.prisma"
   },

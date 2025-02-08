@@ -159,28 +159,27 @@
     -ms-overflow-style: auto;
     scrollbar-width: auto;
   }
-/* md screen */
-@media (min-width: 768px) {
-  /* Size */
-  ::-webkit-scrollbar {
-    width: 4px;
-  }
+  /* md screen */
+  @media (min-width: 768px) {
+    /* Size */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
 
-  /* Track */
-  ::-webkit-scrollbar-track,
-  .scrollbar-visible::-webkit-scrollbar-track {
-    border-radius: 999999px;
-    background: hsla(215.4, 16.3%, 46.9%, 0.2);
-  }
+    /* Track */
+    ::-webkit-scrollbar-track,
+    .scrollbar-visible::-webkit-scrollbar-track {
+      border-radius: 999999px;
+      background: hsla(215.4, 16.3%, 46.9%, 0.2);
+    }
 
-  /* Handle */
-  ::-webkit-scrollbar-thumb,
-  .scrollbar-visible::-webkit-scrollbar-thumb {
-    background: hsla(215.4, 16.3%, 46.9%, 0.5);
-    border-radius: 9999px;
+    /* Handle */
+    ::-webkit-scrollbar-thumb,
+    .scrollbar-visible::-webkit-scrollbar-thumb {
+      background: hsla(215.4, 16.3%, 46.9%, 0.5);
+      border-radius: 9999px;
+    }
   }
-}
-
 }
 
 @layer base {
@@ -191,7 +190,7 @@
     @apply bg-background text-foreground;
   }
 }
-/* 
+
 /* TipTap */
 .tiptap p.is-editor-empty:first-child::before {
   color: #adb5bd;
@@ -292,4 +291,113 @@
 
 .tiptap ol ol ol ol > li::before {
   content: counter(level4) ".";
+}
+
+/* 
+    switch (node.attrs.level) {
+      case 1:
+        return [
+          "h1",
+          {
+            ...HTMLAttributes,
+            class:
+              "text-[2em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+          },
+          0,
+        ];
+      case 2:
+        return [
+          "h2",
+          {
+            ...HTMLAttributes,
+            class:
+              "text-[1.625em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+          },
+          0,
+        ];
+      case 3:
+        return [
+          "h3",
+          {
+            ...HTMLAttributes,
+            class:
+              "text-[1.375em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+          },
+          0,
+        ];
+      case 4:
+        return [
+          "h4",
+          {
+            ...HTMLAttributes,
+            class:
+              "text-[1.125em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+          },
+          0,
+        ];
+      case 5:
+        return [
+          "h5",
+          {
+            ...HTMLAttributes,
+            class:
+              "text-[0.83em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+          },
+          0,
+        ];
+      case 6:
+        return [
+          "h6",
+          {
+            ...HTMLAttributes,
+            class:
+              "text-[0.67em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+          },
+          0,
+        ];
+      default:
+        return ["h" + node.attrs.level, HTMLAttributes, 0];
+    } */
+
+.text-editor-h1 {
+  font-size: 2em;
+  line-height: 1.16em;
+  margin-top: 1em;
+  margin-bottom: 0.625em;
+  font-weight: bold;
+}
+.text-editor-h2 {
+  font-size: 1.625em;
+  line-height: 1.16em;
+  margin-top: 1em;
+  margin-bottom: 0.625em;
+  font-weight: bold;
+}
+.text-editor-h3 {
+  font-size: 1.375em;
+  line-height: 1.16em;
+  margin-top: 1em;
+  margin-bottom: 0.625em;
+  font-weight: bold;
+}
+.text-editor-h4 {
+  font-size: 1.125em;
+  line-height: 1.16em;
+  margin-top: 1em;
+  margin-bottom: 0.625em;
+  font-weight: bold;
+}
+.text-editor-h5 {
+  font-size: 0.83em;
+  line-height: 1.16em;
+  margin-top: 1em;
+  margin-bottom: 0.625em;
+  font-weight: bold;
+}
+.text-editor-h6 {
+  font-size: 0.67em;
+  line-height: 1.16em;
+  margin-top: 1em;
+  margin-bottom: 0.625em;
+  font-weight: bold;
 }

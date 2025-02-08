@@ -24,7 +24,6 @@ import { useIdea } from "@/lib/hooks/useIdea";
 import TurndownService from "turndown";
 import TextareaAutosize from "react-textarea-autosize";
 
-
 const formatText = (text: string) => {
   return marked(text);
 };
@@ -52,8 +51,7 @@ const CustomHeading = Heading.extend({
           "h1",
           {
             ...HTMLAttributes,
-            class:
-              "text-[2em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+            class: "text-text-editor-h1 mt-[1em] mb-[0.625em] font-bold",
           },
           0,
         ];
@@ -62,8 +60,7 @@ const CustomHeading = Heading.extend({
           "h2",
           {
             ...HTMLAttributes,
-            class:
-              "text-[1.625em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+            class: "text-text-editor-h2 mt-[1em] mb-[0.625em] font-bold",
           },
           0,
         ];
@@ -72,8 +69,7 @@ const CustomHeading = Heading.extend({
           "h3",
           {
             ...HTMLAttributes,
-            class:
-              "text-[1.375em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+            class: "text-text-editor-h3 mt-[1em] mb-[0.625em] font-bold",
           },
           0,
         ];
@@ -82,8 +78,7 @@ const CustomHeading = Heading.extend({
           "h4",
           {
             ...HTMLAttributes,
-            class:
-              "text-[1.125em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+            class: "text-text-editor-h4 mt-[1em] mb-[0.625em] font-bold",
           },
           0,
         ];
@@ -92,8 +87,7 @@ const CustomHeading = Heading.extend({
           "h5",
           {
             ...HTMLAttributes,
-            class:
-              "text-[0.83em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+            class: "text-text-editor-h5 mt-[1em] mb-[0.625em] font-bold",
           },
           0,
         ];
@@ -102,8 +96,7 @@ const CustomHeading = Heading.extend({
           "h6",
           {
             ...HTMLAttributes,
-            class:
-              "text-[0.67em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
+            class: "text-text-editor-h6 mt-[1em] mb-[0.625em] font-bold",
           },
           0,
         ];
@@ -245,7 +238,7 @@ const TextEditor = ({
               onChange={e => setSubtitle(e.target.value)}
               className="w-full text-xl text-muted-foreground outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
             />
-            <div className="pt-2">
+            <div className="pt-2 tiptap">
               <EditorContent editor={editor} />
             </div>
           </div>
