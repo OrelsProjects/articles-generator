@@ -151,6 +151,7 @@ export async function GET(req: NextRequest) {
     const ideasWithOutlines = ideas.map((idea, index) => ({
       ...idea,
       outline: outlines.find(outline => outline.id === index)?.outline,
+      status: "new",
       modelUsedForIdeas,
       modelUsedForOutline,
     }));
