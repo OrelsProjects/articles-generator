@@ -11,9 +11,11 @@ import {
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
-import { getUserArticles, getUserArticlesWithBody } from "@/lib/dal/articles";
+import { getUserArticlesWithBody } from "@/lib/dal/articles";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
-import { Article, ArticleWithBody } from "@/models/article";
+import { ArticleWithBody } from "@/models/article";
+
+export const maxDuration = 60; // This function can run for a maximum of 5 seconds
 
 function fixJson(json: string) {
   // Find first index of { and last index of }
