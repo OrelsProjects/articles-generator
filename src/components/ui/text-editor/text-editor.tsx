@@ -210,7 +210,7 @@ const TextEditor = ({
   };
 
   return (
-    <div className="w-full min-h-screen bg-background relative">
+    <div className="w-screen max-w-[1200px] min-h-screen bg-background relative">
       <div className="sticky top-0 bg-background z-10">
         <MenuBar
           editor={editor}

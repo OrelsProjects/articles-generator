@@ -1,4 +1,4 @@
-import { Sparkles, Star, CheckCircle, Archive, SearchX } from "lucide-react";
+import { Sparkles, Star, CheckCircle, Archive, SearchX, X } from "lucide-react";
 import { IdeaStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
@@ -15,11 +15,16 @@ import { TooltipButton } from "@/components/ui/tooltip-button";
 interface IdeasPanelProps {
   ideas: Idea[];
   onSelectIdea: (idea: Idea) => void;
+  onClose?: () => void;
 }
 
 type TabValue = "new" | "archived" | "all" | "used";
 
-export const IdeasPanel = ({ ideas, onSelectIdea }: IdeasPanelProps) => {
+export const IdeasPanel = ({
+  ideas,
+  onSelectIdea,
+  onClose,
+}: IdeasPanelProps) => {
   const { updateStatus } = useIdea();
   const [currentTab, setCurrentTab] = useState<TabValue>("new");
   const [showFavorites, setShowFavorites] = useState(false);
@@ -52,16 +57,19 @@ export const IdeasPanel = ({ ideas, onSelectIdea }: IdeasPanelProps) => {
   });
 
   return (
-    <div className="w-full border-l h-full">
-      <div className="w-full space-y-4">
-        <div className="flex items-center justify-between p-4 border-b">
+    <div className="h-full border-l">
+      <div className="h-full w-full space-y-4">
+        <div
+          id="ideas-panel-header"
+          className="flex items-center justify-between p-4 border-b"
+        >
           <div className="flex items-center gap-2 px-4">
             <Sparkles className="h-4 w-4" />
             <h2 className="text-2xl font-bold">Generated Ideas</h2>
           </div>
         </div>
 
-        <div className="w-full px-8 space-y-4">
+        <div id="ideas-panel-tabs" className="w-full px-8 space-y-4">
           <div className="w-full flex items-center justify-between">
             <Tabs
               defaultValue="new"
@@ -83,14 +91,14 @@ export const IdeasPanel = ({ ideas, onSelectIdea }: IdeasPanelProps) => {
                 onCheckedChange={setShowFavorites}
               />
               <Label htmlFor="favorites" className="flex items-center gap-1">
-                <Star className="h-4 w-4" /> Favorites only
+                Favorites
               </Label>
             </div>
           </div>
         </div>
 
-        <ScrollArea className="h-screen px-8 pb-24">
-          <div className="space-y-4">
+        <ScrollArea id="ideas-panel-ideas" className="h-full px-8">
+          <div className="space-y-4 pb-24">
             {filteredIdeas.length > 0 ? (
               <div className="space-y-4">
                 {filteredIdeas.map((idea, index) => (

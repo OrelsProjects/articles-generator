@@ -11,6 +11,8 @@ import {
   Sparkles,
   RefreshCcw,
   Save,
+  Loader,
+  Loader2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -49,6 +51,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Separator } from "@/components/ui/separator";
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
@@ -76,7 +79,7 @@ interface MenuBarProps {
   onOutlineUpdate: (idea: Idea) => void;
   publication: Publication | null;
   hasChanges: boolean;
-  onSave: () => void;
+  onSave: () => Promise<void>;
 }
 
 export const MenuBar = ({
@@ -84,12 +87,12 @@ export const MenuBar = ({
   onOutlineUpdate,
   publication,
   hasChanges,
-  onSave: handleSave,
+  onSave,
 }: MenuBarProps) => {
   const { generateIdeas } = usePublication();
-  const { ideas } = useAppSelector(selectPublications);
   const { user } = useAppSelector(selectAuth);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [showTopicDialog, setShowTopicDialog] = useState(false);
   const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [topic, setTopic] = useState("");
@@ -121,10 +124,6 @@ export const MenuBar = ({
     }
   };
 
-  const handleSelectIdea = async (idea: Idea) => {
-    onOutlineUpdate(idea);
-  };
-
   const handleGenerateButtonClick = () => {
     setShowTopicDialog(true);
   };
@@ -134,54 +133,51 @@ export const MenuBar = ({
     handleGenerateIdeas(topic);
   };
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await onSave();
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong.. Try again please.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (!editor) return null;
 
   return (
     <>
-      <div className="flex items-center justify-center gap-3 p-3 border-b">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-        >
-          <Button
-            variant={"outline"}
-            onClick={handleSave}
-            className="flex gap-2 transition-all duration-300"
-            disabled={!hasChanges}
-          >
-            <Save className="w-4 h-4" />
-            Save
-          </Button>
-        </motion.div>
-
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-start gap-2 p-2 border-b overflow-x-auto scrollbar-hide md:justify-center md:gap-3 md:p-3">
+        <div className="flex items-center gap-1 md:gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().undo()}
+            className="h-8 w-8 md:h-10 md:w-10"
           >
-            <Undo className="w-6 h-6" />
+            <Undo className="w-4 h-4 md:w-6 md:h-6" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().redo()}
+            className="h-8 w-8 md:h-10 md:w-10"
           >
-            <Redo className="w-6 h-6" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <RefreshCcw className="w-6 h-6" />
-          </Button>
+            <Redo className="w-4 h-4 md:w-6 md:h-6" />
+          </Button>{" "}
         </div>
+
+        <Separator orientation="vertical" className="h-6" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-1">
+            <Button variant="ghost" size="sm" className="gap-1 h-8 md:h-10">
               Style
-              <ChevronDown className="w-5 h-5" />
+              <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -207,81 +203,124 @@ export const MenuBar = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="flex items-center gap-2">
+        <Separator orientation="vertical" className="h-6" />
+
+        <div className="flex items-center gap-1 md:gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={cn(editor.isActive("bold") && "bg-muted")}
+            className={cn(
+              "h-8 w-8 md:h-10 md:w-10",
+              editor.isActive("bold") && "bg-muted",
+            )}
           >
-            <Bold className="w-6 h-6" />
+            <Bold className="w-4 h-4 md:w-6 md:h-6" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={cn(editor.isActive("italic") && "bg-muted")}
+            className={cn(
+              "h-8 w-8 md:h-10 md:w-10",
+              editor.isActive("italic") && "bg-muted",
+            )}
           >
-            <Italic className="w-6 h-6" />
+            <Italic className="w-4 h-4 md:w-6 md:h-6" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            className={cn(editor.isActive("strike") && "bg-muted")}
+            className={cn(
+              "h-8 w-8 md:h-10 md:w-10",
+              editor.isActive("strike") && "bg-muted",
+            )}
           >
-            <Strikethrough className="w-6 h-6" />
+            <Strikethrough className="w-4 h-4 md:w-6 md:h-6" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => editor.chain().focus().toggleCode().run()}
-            className={cn(editor.isActive("code") && "bg-muted")}
+            className={cn(
+              "h-8 w-8 md:h-10 md:w-10",
+              editor.isActive("code") && "bg-muted",
+            )}
           >
-            <Code className="w-6 h-6" />
+            <Code className="w-4 h-4 md:w-6 md:h-6" />
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <Separator orientation="vertical" className="h-6" />
+
+        <div className="flex items-center gap-1 md:gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={cn(editor.isActive("bulletList") && "bg-muted")}
+            className={cn(
+              "h-8 w-8 md:h-10 md:w-10",
+              editor.isActive("bulletList") && "bg-muted",
+            )}
           >
-            <List className="w-6 h-6" />
+            <List className="w-4 h-4 md:w-6 md:h-6" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={cn(editor.isActive("orderedList") && "bg-muted")}
+            className={cn(
+              "h-8 w-8 md:h-10 md:w-10",
+              editor.isActive("orderedList") && "bg-muted",
+            )}
           >
-            <ListOrdered className="w-6 h-6" />
+            <ListOrdered className="w-4 h-4 md:w-6 md:h-6" />
           </Button>
         </div>
-        {publication ? (
-          <Button
-            size="lg"
-            className="px-4 gap-2"
-            onClick={handleGenerateButtonClick}
-            disabled={isGenerating || !canGenerateIdeas || showLimitDialog}
-          >
-            {isGenerating ? (
-              <AILoadingAnimation />
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                {canGenerateIdeas
-                  ? showLimitDialog
-                    ? "Daily limit reached"
-                    : "Generate ideas"
-                  : "Upgrade to generate ideas"}
-              </>
-            )}
-          </Button>
-        ) : (
-          <CreatePublicationButton />
+
+        <Separator orientation="vertical" className="h-6" />
+
+        <Button
+          variant="outline"
+          onClick={handleSave}
+          className="flex gap-1 md:gap-2 h-8 md:h-10 px-2 md:px-4"
+          disabled={!hasChanges}
+        >
+          {isSaving ? (
+            <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
+          ) : (
+            <Save className="w-3 h-3 md:w-4 md:h-4" />
+          )}
+          Save
+        </Button>
+
+        {publication && (
+          <>
+            <Separator orientation="vertical" className="h-6" />
+            <Button
+              size="sm"
+              className="px-2 md:px-4 gap-1 md:gap-2 h-8 md:h-10"
+              onClick={handleGenerateButtonClick}
+              disabled={isGenerating || !canGenerateIdeas || showLimitDialog}
+            >
+              {isGenerating ? (
+                <AILoadingAnimation />
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
+                  <span className="hidden md:inline">
+                    {canGenerateIdeas
+                      ? showLimitDialog
+                        ? "Daily limit reached"
+                        : "Generate ideas"
+                      : "Upgrade to generate ideas"}
+                  </span>
+                  <span className="md:hidden">Generate</span>
+                </>
+              )}
+            </Button>
+          </>
         )}
       </div>
 
