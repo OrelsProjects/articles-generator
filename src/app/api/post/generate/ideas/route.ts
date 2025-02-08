@@ -10,7 +10,6 @@ import {
 } from "@/lib/prompts";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
 import { getUserArticlesWithBody } from "@/lib/dal/articles";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { ArticleWithBody } from "@/models/article";
@@ -133,9 +132,6 @@ export async function GET(req: NextRequest) {
     const ideasString = await runPrompt(messages, modelUsedForIdeas);
     let { ideas } = await parseJson<IdeasLLMResponse>(ideasString);
 
-    // save ideas to file
-    fs.writeFileSync("ideas.json", JSON.stringify(ideas, null, 2));
-
     const messagesForOutline = generateOutlinePrompt(
       publicationMetadata,
       ideas.map((idea, index) => ({
@@ -158,8 +154,6 @@ export async function GET(req: NextRequest) {
       modelUsedForIdeas,
       modelUsedForOutline,
     }));
-    // write ideas to file
-    fs.writeFileSync("ideas.json", JSON.stringify(ideasWithOutlines, null, 2));
 
     for (const idea of ideasWithOutlines) {
       const ideaCreated = await prisma.ideas.create({
