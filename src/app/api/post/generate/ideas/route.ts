@@ -176,7 +176,7 @@ export async function GET(req: NextRequest) {
     }
 
     console.timeEnd("Start generating ideas");
-    return NextResponse.json(ideas);
+    return NextResponse.json(ideasWithOutlines);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
