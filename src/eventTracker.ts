@@ -1,6 +1,7 @@
 "use client";
 
 import posthog from "posthog-js";
+import mixpanel from "mixpanel-browser";
 import { Logger } from "@/logger";
 import AppUser from "@/types/appUser";
 
@@ -13,28 +14,37 @@ enum TimeoutLength {
 interface Dict {
   [key: string]: any;
 }
-export const initEventTracker = () => {
-  try {
-    const env = process.env.NODE_ENV;
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_API_KEY ?? "", {
-      api_host: "https://app.posthog.com",
-      disable_session_recording: env !== "production",
-    });
-  } catch (error: any) {
-    Logger.error("Error initializing event tracker", {
-      error,
-    });
-  }
-};
 
 export const setUserEventTracker = (user?: AppUser | null) => {
   try {
     posthog.identify(user?.userId);
+    mixpanel.identify(user?.userId);
   } catch (error: any) {
     Logger.error("Error setting user for event tracker", {
       data: {
         user,
       },
+      error,
+    });
+  }
+};
+
+export const initEventTracker = () => {
+  try {
+    const env = process.env.NODE_ENV;
+    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_API_KEY || "", {
+      debug: env !== "production",
+      api_host: "https://app.posthog.com",
+      disable_session_recording: env !== "production",
+    });
+    mixpanel.init(process.env.NEXT_PUBLIC_EVENT_TRACKER_TOKEN || "", {
+      debug: env !== "production",
+      track_pageview: true,
+      persistence: "localStorage",
+      record_sessions_percent: 100,
+    });
+  } catch (error: any) {
+    Logger.error("Error initializing event tracker", {
       error,
     });
   }
@@ -62,10 +72,11 @@ export class EventTracker {
       if (timeout && timeoutEvent(eventName, timeout)) {
         return;
       }
-      if (process.env.NODE_ENV !== "production") {
-        console.log("Tracking event", eventName, props ?? "");
-        return;
-      }
+      // if (process.env.NODE_ENV !== "production") {
+      //   console.log("Tracking event", eventName, props ?? "");
+      //   return;
+      // }
+      mixpanel.track(eventName, props);
       posthog.capture(eventName, props);
     } catch (error: any) {
       Logger.error("Error tracking event", {

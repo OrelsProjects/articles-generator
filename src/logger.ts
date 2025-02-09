@@ -1,14 +1,19 @@
-import { StatusType, datadogLogs } from "@datadog/browser-logs";
 import AppUser from "@/types/appUser";
+import { StatusType, datadogLogs } from "@datadog/browser-logs";
 
 interface Dict {
   [key: string]: any;
 }
 
-export interface LogItem {
-  data?: Dict;
-  error?: Error;
-}
+export type LogItem = Dict;
+
+export const setUserLogger = (user?: AppUser | null) => {
+  datadogLogs.setUser({
+    ...user,
+    email: user?.email || "",
+    name: user?.displayName || undefined,
+  });
+};
 
 export const initLogger = () => {
   try {
@@ -26,14 +31,6 @@ export const initLogger = () => {
       error,
     });
   }
-};
-
-export const setUserLogger = (user?: AppUser | null) => {
-  datadogLogs.setUser({
-    id: user?.userId,
-    name: user?.displayName || "",
-    email: user?.email || "",
-  });
 };
 
 const log = (
@@ -81,19 +78,19 @@ const printLog = (
 };
 
 export class Logger {
-  static info(message: string, error: any, logItem?: LogItem) {
+  static info(message: string, logItem?: LogItem) {
     log(StatusType.info, message, logItem);
   }
 
-  static warn(message: string, error: any, logItem?: LogItem) {
+  static warn(message: string, logItem?: LogItem) {
     log(StatusType.warn, message, logItem);
   }
 
-  static error(message: string, error: any, logItem?: LogItem) {
+  static error(message: string, logItem?: LogItem) {
     log(StatusType.error, message, logItem);
   }
 
-  static debug(message: string, error: any, logItem?: LogItem) {
+  static debug(message: string, logItem?: LogItem) {
     log(StatusType.debug, message, logItem);
   }
 }
