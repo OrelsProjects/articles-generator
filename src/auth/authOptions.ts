@@ -34,9 +34,15 @@ export const authOptions: AuthOptions = {
   events: {
     createUser: async message => {
       try {
+        const isFreeUser = await prisma.freeUsers.findUnique({
+          where: {
+            email: message.user.email as string,
+          },
+        });
         await prisma.userMetadata.create({
           data: {
             userId: message.user.id,
+            plan: isFreeUser ? "superPro" : "free",
           },
         });
       } catch (error: any) {

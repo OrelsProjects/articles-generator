@@ -39,7 +39,7 @@ model User {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   userMetadata UserMetadata[]
-  ideas        ideas[]
+  ideas        Ideas[]
   Payment      Payment[]
 
   @@map("users")
@@ -141,12 +141,12 @@ model PublicationMetadata {
   updatedAt DateTime @updatedAt
 
   userMetadata UserMetadata?
-  ideas        ideas[]
+  ideas        Ideas[]
 
   @@map("publicationMetadata")
 }
 
-model ideas {
+model Ideas {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   publicationId String @db.ObjectId
@@ -158,6 +158,7 @@ model ideas {
   description String
   outline     String
   inspiration String
+  search      Boolean @default(false)
 
   status     IdeaStatus @default(new)
   isFavorite Boolean    @default(false)
@@ -172,6 +173,15 @@ model ideas {
   publication PublicationMetadata @relation(fields: [publicationId], references: [id], onDelete: Cascade)
 
   @@map("ideas")
+}
+
+model FreeUsers {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("freeUsers")
 }
 
 model Payment {

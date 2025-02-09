@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Logger } from "@/logger";
-import { Product } from "@/models/payment";
+import { Product } from "@/types/payment";
 import { loadStripe } from "@stripe/stripe-js";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { setProducts } from "@/lib/features/products/productsSlice";

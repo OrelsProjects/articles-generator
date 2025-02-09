@@ -1,7 +1,7 @@
 import { getStripeInstance } from "@/app/api/_payment/stripe";
 import { getCoupon } from "@/lib/stripe";
 import loggerServer from "@/loggerServer";
-import { PriceStructure, Pricing, Product } from "@/models/payment";
+import { PriceStructure, Pricing, Product } from "@/types/payment";
 import { NextRequest, NextResponse } from "next/server";
 
 // revalidate always

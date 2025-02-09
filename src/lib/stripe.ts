@@ -1,5 +1,5 @@
 import loggerServer from "@/loggerServer";
-import { Coupon } from "@/models/payment";
+import { Coupon } from "@/types/payment";
 import Stripe from "stripe";
 
 const LAUNCH_COUPON_NAME = "LAUNCH";

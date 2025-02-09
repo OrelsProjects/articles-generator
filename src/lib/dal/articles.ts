@@ -1,7 +1,12 @@
 import { prismaArticles } from "@/app/api/_db/db";
-import { Article, ArticleWithBody } from "@/models/article";
+import { Article, ArticleWithBody } from "@/types/article";
 import { Post } from "../../../prisma/generated/articles";
 import { getSubstackArticleData } from "@/lib/dal/milvus";
+
+export interface GetUserArticlesOptions {
+  limit: number;
+  freeOnly: boolean;
+}
 
 export const getUserArticles = async (
   data:
@@ -11,7 +16,10 @@ export const getUserArticles = async (
     | {
         url: string;
       },
-  limit: number = 10,
+  options: GetUserArticlesOptions = {
+    limit: 10,
+    freeOnly: true,
+  },
 ): Promise<Article[]> => {
   let posts: Post[] = [];
   if ("url" in data) {
@@ -22,17 +30,23 @@ export const getUserArticles = async (
     posts = await prismaArticles.post.findMany({
       where: {
         canonicalUrl: {
-          contains: startsWith,
+          startsWith: startsWith,
         },
+        ...(options.freeOnly && {
+          audience: "everyone",
+        }),
       },
-      take: limit,
+      take: options.limit,
     });
   } else {
     posts = await prismaArticles.post.findMany({
       where: {
         publicationId: data.publicationId.toString(),
+        ...(options.freeOnly && {
+          audience: "everyone",
+        }),
       },
-      take: limit,
+      take: options.limit,
     });
   }
 
@@ -47,9 +61,15 @@ export const getUserArticlesWithBody = async (
     | {
         url: string;
       },
-  limit: number = 10,
+  options: {
+    limit: number;
+    freeOnly: boolean;
+  } = {
+    limit: 10,
+    freeOnly: true,
+  },
 ): Promise<ArticleWithBody[]> => {
-  const posts = await getUserArticles(data, limit);
+  const posts = await getUserArticles(data, options);
   const urls = posts.map(post => post.canonicalUrl || "");
   const content = await getSubstackArticleData(urls);
 

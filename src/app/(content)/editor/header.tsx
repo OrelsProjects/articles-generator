@@ -1,61 +1,36 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, Search } from "lucide-react";
+import { useAppSelector } from "@/lib/hooks/redux";
+import { cn } from "@/lib/utils";
+import { useMemo } from "react";
+import Image from "next/image";
+import Link from "next/link";
+export function Header({ className }: { className?: string }) {
+  const { publications } = useAppSelector(state => state.publications);
 
-export function Header() {
+  const publication = useMemo(() => {
+    return publications[0];
+  }, [publications]);
+
+  if (!publication) return null;
+
   return (
-    <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b border-border bg-background px-4 shadow-sm">
-      <div className="flex flex-1 items-center gap-4">
-        <form className="flex-1 md:flex-initial">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-full bg-background pl-8 md:w-[300px] lg:w-[400px]"
-            />
-          </div>
-        </form>
-      </div>
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="text-muted-foreground">
-          <Bell className="h-5 w-5" />
-          <span className="sr-only">Notifications</span>
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/avatars/01.png" alt="@username" />
-                <AvatarFallback>AI</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">username</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  user@example.com
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Log out</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+    <header
+      className={cn(
+        "w-full flex items-center justify-center gap-4 bg-background px-4 border-b border-border py-2 md:py-4 z-10",
+        className,
+      )}
+    >
+      <Link href="/editor" className="flex items-center gap-4">
+        {publication.image && (
+          <Image
+            src={publication.image}
+            alt={publication.title || ""}
+            width={34}
+            height={34}
+            className="rounded-md"
+          />
+        )}
+        <h1 className="text-xl font-bold">{publication.title}</h1>
+      </Link>
     </header>
   );
 }

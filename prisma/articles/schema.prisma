@@ -10,8 +10,8 @@ datasource db {
 }
 
 model AudioItem {
-    id       Int @id @default(autoincrement())
-    postId   Int @map("post_id")
+    id       Int    @id @default(autoincrement())
+    postId   Int    @map("post_id")
     voiceId  String @map("voice_id")
     audioUrl String @map("audio_url")
     type     String @map("type")
@@ -33,7 +33,7 @@ model BylinePublicationUser {
 }
 
 model Byline {
-    id                Int    @id @default(autoincrement())
+    id                Int       @id @default(autoincrement())
     name              String    @map("name")
     handle            String    @map("handle")
     previousName      String?   @map("previous_name")
@@ -64,8 +64,8 @@ model KnexMigrationLock {
 }
 
 model PodcastField {
-    id                         Int  @id @default(autoincrement())
-    postId                     Int  @map("post_id")
+    id                         Int     @id @default(autoincrement())
+    postId                     Int     @map("post_id")
     podcastEpisodeNumber       Int     @map("podcast_episode_number")
     podcastSeasonNumber        Int     @map("podcast_season_number")
     podcastEpisodeType         String  @map("podcast_episode_type")
@@ -137,16 +137,16 @@ model PublicationLink {
 }
 
 model Publication {
-    id                    Int   @id
-    name                  String   @map("name")
-    subdomain             String   @map("subdomain")
+    id                    Int      @id
+    name                  String?   @map("name")
+    subdomain             String?   @map("subdomain")
     customDomain          String?  @map("custom_domain")
     customDomainOptional  Boolean? @map("custom_domain_optional")
     heroText              String?  @map("hero_text")
     logoUrl               String?  @map("logo_url")
-    authorId              Int   @map("author_id")
+    authorId              Int?     @map("author_id")
     themeVarBackgroundPop String?  @map("theme_var_background_pop")
-    createdAt             DateTime @map("created_at")
+    createdAt             DateTime? @map("created_at")
     rssWebsiteUrl         String?  @map("rss_website_url")
     emailFromName         String?  @map("email_from_name")
     copyright             String?  @map("copyright")

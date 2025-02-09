@@ -2,7 +2,7 @@ import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { runPrompt } from "@/lib/openRouter";
 import { generateOutlinePrompt } from "@/lib/prompts";
-import { Article } from "@/models/article";
+import { Article } from "@/types/article";
 import axios from "axios";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { Product, Coupon } from "@/models/payment";
+import { Product, Coupon } from "@/types/payment";
 
 export interface ProductsState {
   products: Product[];

@@ -15,13 +15,13 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { EmptyIdeas } from "@/components/ui/text-editor/empty-ideas";
 
 interface IdeasPanelProps {
-  onSelectIdea?: (idea: Idea) => void;
+  onSelectIdea: (idea: Idea) => void;
 }
 
 type TabValue = "new" | "archived" | "all" | "used";
 
 export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
-  const { updateStatus, setSelectedIdea } = useIdea();
+  const { updateStatus, setSelectedIdea, generateIdeas } = useIdea();
   const { selectedIdea, ideas } = useAppSelector(state => state.publications);
   const [currentTab, setCurrentTab] = useState<TabValue>("new");
   const [showFavorites, setShowFavorites] = useState(false);
@@ -32,7 +32,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
 
   const handleSelectIdea = (idea: Idea) => {
     setSelectedIdea(idea);
-    onSelectIdea?.(idea);
+    onSelectIdea(idea);
   };
 
   const filteredIdeas = ideas.filter(idea => {
@@ -51,8 +51,8 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
   });
 
   return (
-    <div className="w-full h-full border-l">
-      <div className="h-full w-full space-y-4">
+    <div className="h-full border-l">
+      <div className="h-full w-full">
         <div
           id="ideas-panel-header"
           className="flex items-center justify-center mt-2 md:mt-0 md:justify-start gap-4 p-4 border-b"
@@ -61,8 +61,11 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
           <h2 className="text-2xl font-bold">Generated Ideas</h2>
         </div>
         {ideas.length > 0 ? (
-          <div className="h-full w-full pt-2">
-            <div id="ideas-panel-tabs" className="w-full px-8 space-y-4">
+          <ScrollArea className="h-full w-full flex flex-col gap-4">
+            <div
+              id="ideas-panel-tabs"
+              className="w-full sticky top-0 bg-background px-8 py-4 space-y-4"
+            >
               <div className="w-full flex items-center justify-between">
                 <Tabs
                   defaultValue="new"
@@ -93,10 +96,10 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
               </div>
             </div>
 
-            <div id="ideas-panel-ideas" className="h-full pb-36 px-0.5">
-              <ScrollArea className="h-full space-y-4 pb-4 scroll-pl-8">
+            <div id="ideas-panel-ideas" className="h-full px-8 pb-20">
+              <div className="h-full space-y-4 pb-4">
                 {filteredIdeas.length > 0 ? (
-                  <div className="space-y-4 px-8">
+                  <div className="space-y-4">
                     {filteredIdeas.map((idea, index) => (
                       <Card
                         key={index}
@@ -107,17 +110,17 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
                         )}
                         onClick={() => handleSelectIdea(idea)}
                       >
-                        <CardHeader className="pt-2">
-                          <div className="flex flex-col items-start justify-between gap-2">
-                            <>
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div>
                               <CardTitle className="text-lg">
                                 {idea.title}
                               </CardTitle>
                               <p className="text-sm text-muted-foreground">
                                 {idea.subtitle}
                               </p>
-                            </>
-                            <div className="flex gap-1 transition-opacity ml-auto">
+                            </div>
+                            <div className="flex gap-1 transition-opacity">
                               <TooltipButton
                                 tooltipContent="Add to favorites"
                                 variant="ghost"
@@ -176,6 +179,11 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
                             </div>
                           </div>
                         </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <p className="text-sm">{idea.description}</p>
+                          </div>
+                        </CardContent>
                       </Card>
                     ))}
                   </div>
@@ -194,9 +202,9 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
                     </div>
                   </div>
                 )}
-              </ScrollArea>
+              </div>
             </div>
-          </div>
+          </ScrollArea>
         ) : (
           <EmptyIdeas />
         )}

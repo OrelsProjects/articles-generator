@@ -1,5 +1,5 @@
 import { DefaultSession } from "next-auth";
-import { Plan } from "@/models/appUser";
+import { Plan } from "@/types/appUser";
 // Extend the SessionUser interface
 declare module "next-auth" {
   interface SessionUser {

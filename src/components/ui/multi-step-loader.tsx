@@ -105,15 +105,18 @@ export const MultiStepLoader = ({
       setCurrentState(0);
       return;
     }
-    const timeout = setTimeout(() => {
-      setCurrentState(prevState =>
-        loop
-          ? prevState === loadingStates.length - 1
-            ? 0
-            : prevState + 1
-          : Math.min(prevState + 1, loadingStates.length - 1),
-      );
-    }, duration);
+    const timeout = setTimeout(
+      () => {
+        setCurrentState(prevState =>
+          loop
+            ? prevState === loadingStates.length - 1
+              ? 0
+              : prevState + 1
+            : Math.min(prevState + 1, loadingStates.length - 1),
+        );
+      },
+      Math.min(Math.max(Math.random() * duration, 0.5), 1.2) * duration,
+    );
 
     return () => clearTimeout(timeout);
   }, [currentState, loading, loop, loadingStates.length, duration]);

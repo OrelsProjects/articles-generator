@@ -1,4 +1,4 @@
-import { Idea } from "@/models/idea";
+import { Idea } from "@/types/idea";
 
 export interface Publication {
   id: string;

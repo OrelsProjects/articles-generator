@@ -12,7 +12,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserArticlesWithBody } from "@/lib/dal/articles";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
-import { ArticleWithBody } from "@/models/article";
+import { ArticleWithBody } from "@/types/article";
 
 export const maxDuration = 60; // This function can run for a maximum of 5 seconds
 
@@ -93,6 +93,7 @@ export async function GET(req: NextRequest) {
 
     const topic = req.nextUrl.searchParams.get("topic");
     const ideasCount = req.nextUrl.searchParams.get("ideasCount");
+    const shouldSearch = req.nextUrl.searchParams.get("shouldSearch");
 
     const publicationMetadata = userMetadata?.publication;
 
@@ -124,9 +125,20 @@ export async function GET(req: NextRequest) {
       includeBody: true,
     })) as ArticleWithBody[];
 
+    const ideasUsed = await prisma.ideas.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      select: {
+        description: true,
+      },
+    });
+
     const messages = generateIdeasPrompt(publicationMetadata, inspirations, {
       topic,
       ideasCount: parseInt(ideasCount || "3"),
+      ideasUsed: ideasUsed.map(idea => idea.description),
+      shouldSearch: shouldSearch === "true",
     });
 
     const ideasString = await runPrompt(messages, modelUsedForIdeas);
@@ -140,6 +152,7 @@ export async function GET(req: NextRequest) {
       })),
       publicationMetadata.generatedDescription,
       userArticles,
+      shouldSearch === "true",
     );
 
     const outlinesString = await runPrompt(
@@ -168,6 +181,7 @@ export async function GET(req: NextRequest) {
           inspiration: idea.inspiration,
           publicationId: publicationMetadata.id,
           status: "new",
+          search: shouldSearch === "true",
           modelUsedForIdeas,
           modelUsedForOutline,
         },

@@ -8,10 +8,7 @@ import {
   Undo,
   Redo,
   ChevronDown,
-  Sparkles,
-  RefreshCcw,
   Save,
-  Loader,
   Loader2,
 } from "lucide-react";
 import {
@@ -22,61 +19,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useMemo, useState } from "react";
-import { Idea } from "@/models/idea";
-import { usePublication } from "@/lib/hooks/usePublication";
-import { CreatePublicationButton } from "@/components/ui/text-editor/create-publication-button";
-import { MultiStepLoader } from "@/components/ui/multi-step-loader";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Publication } from "@/models/publication";
-import { useAppSelector } from "@/lib/hooks/redux";
-import { selectPublications } from "@/lib/features/publications/publicationSlice";
+import { useState, useEffect } from "react";
+import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
+import { Publication } from "@/types/publication";
 import { toast } from "react-toastify";
-import { selectAuth } from "@/lib/features/auth/authSlice";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import Link from "next/link";
-import { motion } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
-
-// Define loading states for generating ideas
-const ideaLoadingStates = [
-  { text: "Analyzing publication style..." },
-  { text: "Gathering inspiration from top articles..." },
-  { text: "Crafting unique article ideas..." },
-  { text: "Refining ideas for clarity and impact..." },
-  { text: "Finalizing the best ideas..." },
-];
-
-// A loading animation for the AI "thinking" indicator.
-const AILoadingAnimation = () => (
-  <div className="flex items-center gap-2 px-3 py-1.5">
-    <div className="flex space-x-1">
-      <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
-      <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
-      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
-    </div>
-    <span className="text-sm text-primary font-medium">AI is thinking...</span>
-  </div>
-);
+import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
 
 interface MenuBarProps {
   editor: any;
-  onOutlineUpdate: (idea: Idea) => void;
   publication: Publication | null;
   hasChanges: boolean;
   onSave: () => Promise<void>;
@@ -84,56 +35,15 @@ interface MenuBarProps {
 
 export const MenuBar = ({
   editor,
-  onOutlineUpdate,
   publication,
   hasChanges,
   onSave,
 }: MenuBarProps) => {
-  const { generateIdeas } = usePublication();
-  const { user } = useAppSelector(selectAuth);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [showTopicDialog, setShowTopicDialog] = useState(false);
-  const [showLimitDialog, setShowLimitDialog] = useState(false);
-  const [topic, setTopic] = useState("");
-
-  const canGenerateIdeas = useMemo(() => {
-    if (!user?.meta?.plan) return false;
-    return user.meta.plan !== "free";
-  }, [user?.meta?.plan]);
-
-  const handleGenerateIdeas = async (topic?: string) => {
-    if (isGenerating) return;
-    setIsGenerating(true);
-    try {
-      const ideas = await generateIdeas(topic);
-      if (ideas.length > 0) {
-        onOutlineUpdate(ideas[0]);
-      }
-    } catch (error: any) {
-      console.error(error);
-      if (error?.response?.status === 429) {
-        setShowLimitDialog(true);
-      } else {
-        toast.error(
-          "Something went wrong.. Try again please. Don't worry, we didn't take credits for it.",
-        );
-      }
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handleGenerateButtonClick = () => {
-    setShowTopicDialog(true);
-  };
-
-  const handleDialogSubmit = () => {
-    setShowTopicDialog(false);
-    handleGenerateIdeas(topic);
-  };
 
   const handleSave = async () => {
+    if (!hasChanges || isSaving) return;
+
     setIsSaving(true);
     try {
       await onSave();
@@ -144,6 +54,26 @@ export const MenuBar = ({
       setIsSaving(false);
     }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        handleSave();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        e.preventDefault();
+        editor.chain().focus().undo().run();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "y") {
+        e.preventDefault();
+        editor.chain().focus().redo().run();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [hasChanges, isSaving]);
 
   if (!editor) return null;
 
@@ -181,25 +111,19 @@ export const MenuBar = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem
-              onClick={() => editor.chain().focus().setParagraph().run()}
-            >
-              Normal Text
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                editor.chain().focus().toggleHeading({ level: 1 }).run()
-              }
-            >
-              Heading 1
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                editor.chain().focus().toggleHeading({ level: 2 }).run()
-              }
-            >
-              Heading 2
-            </DropdownMenuItem>
+            {Array.from({ length: 7 }, (_, i) => (
+              <DropdownMenuItem
+                key={i}
+                onClick={() => {
+                  i === 0
+                    ? editor.chain().focus().setParagraph().run()
+                    : editor.chain().focus().toggleHeading({ level: i }).run();
+                  editor.chain().focus().run();
+                }}
+              >
+                {i === 0 ? "Normal text" : `Heading ${i}`}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -295,90 +219,15 @@ export const MenuBar = ({
           Save
         </Button>
 
-        {publication && (
+        {publication ? (
           <>
             <Separator orientation="vertical" className="h-6" />
-            <Button
-              size="sm"
-              className="px-2 md:px-4 gap-1 md:gap-2 h-8 md:h-10"
-              onClick={handleGenerateButtonClick}
-              disabled={isGenerating || !canGenerateIdeas || showLimitDialog}
-            >
-              {isGenerating ? (
-                <AILoadingAnimation />
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
-                  <span className="hidden md:inline">
-                    {canGenerateIdeas
-                      ? showLimitDialog
-                        ? "Daily limit reached"
-                        : "Generate ideas"
-                      : "Upgrade to generate ideas"}
-                  </span>
-                  <span className="md:hidden">Generate</span>
-                </>
-              )}
-            </Button>
+            <GenerateIdeasButton />
           </>
+        ) : (
+          <AnalyzePublicationButton />
         )}
       </div>
-
-      {isGenerating && (
-        <MultiStepLoader
-          loadingStates={ideaLoadingStates}
-          loading={isGenerating}
-          duration={10000}
-          loop={false}
-        />
-      )}
-
-      <Dialog open={showTopicDialog} onOpenChange={setShowTopicDialog}>
-        <form onSubmit={handleDialogSubmit}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Specify a Topic</DialogTitle>
-            </DialogHeader>
-            <Input
-              placeholder="Enter a specific topic (optional)"
-              value={topic}
-              maxLength={200}
-              onChange={e => setTopic(e.target.value)}
-            />
-            <DialogFooter>
-              <Button type="submit" onClick={handleDialogSubmit}>
-                Generate Ideas
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </form>
-      </Dialog>
-
-      <AlertDialog open={showLimitDialog} onOpenChange={setShowLimitDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Daily Limit Reached</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
-              <p>
-                You&apos;ve reached your daily limit for generating ideas. This
-                helps us maintain quality and prevent abuse of our AI system.
-              </p>
-              <p>
-                Your limit will reset in the next 24 hours, or you can upgrade
-                your plan for higher limits and additional features.
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex gap-2">
-            <AlertDialogAction onClick={() => setShowLimitDialog(false)}>
-              I&apos;ll wait
-            </AlertDialogAction>
-            <AlertDialogAction asChild>
-              <Link href="/settings/billing">Upgrade Plan</Link>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 };

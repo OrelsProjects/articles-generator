@@ -1,4 +1,5 @@
 import { prismaArticles } from "@/app/api/_db/db";
+import { toValidUrl, validateUrl } from "@/lib/utils/url";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import TurndownService from "turndown";
@@ -30,8 +31,10 @@ async function getSubstackArticleData(
 
   for (const url of urls) {
     try {
-      const response = await fetch(url);
-      const html = await response.text();
+      const isValidUrl = validateUrl(url);
+      const validUrl = isValidUrl ? url : toValidUrl(url);
+      const response = await axios.get(validUrl);
+      const html = response.data;
       const $ = cheerio.load(html);
 
       // Remove unnecessary elements
@@ -117,7 +120,7 @@ export async function searchSimilarArticles({
   }
 
   const data = await response.json();
-  const topArticles = data.data.slice(0, limit);
+  const topArticles = data.data ? data.data.slice(0, limit) : [];
 
   // Fetch articles from database
   console.time("Search db");

@@ -7,6 +7,7 @@ import {
   Search,
   Settings,
   User,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -28,6 +29,14 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import useAuth from "@/lib/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME;
 
@@ -37,16 +46,16 @@ const items = [
     url: "/editor",
     icon: Pencil,
   },
-  // {
-  //   title: "Ideas management",
-  //   url: "/ideas",
-  //   icon: Lightbulb,
-  // },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { signOut } = useAuth();
   const { user, loading } = useAppSelector(selectAuth);
+
+  const handleLogout = () => {
+    signOut();
+  };
 
   return (
     <Sidebar>
@@ -88,22 +97,50 @@ export function AppSidebar() {
               </div>
             </div>
           ) : (
-            <Button variant="ghost" className="flex w-full items-center gap-3 rounded-md p-2 text-left text-sm hover:bg-sidebar-accent">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.image || ""} alt="User" />
-                <AvatarFallback>
-                  <User className="h-4 w-4" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 overflow-hidden">
-                <p className="truncate font-medium text-sidebar-foreground">
-                  {user?.displayName}
-                </p>
-                <p className="truncate text-xs text-sidebar-foreground/70">
-                  {user?.email}
-                </p>
-              </div>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex w-full items-center gap-3 rounded-md p-2 text-left text-sm hover:bg-sidebar-accent"
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.image || ""} alt="User" />
+                    <AvatarFallback>
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="truncate font-medium text-sidebar-foreground">
+                      {user?.displayName}
+                    </p>
+                    <p className="truncate text-xs text-sidebar-foreground/70">
+                      {user?.email}
+                    </p>
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-[200px]"
+                side="right"
+                sideOffset={8}
+              >
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive flex items-center gap-2"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </SidebarFooter>

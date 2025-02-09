@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
-import prisma from "@/app/api/_db/db";
-import { PublicationResponse } from "@/models/publication";
+import prisma, { prismaArticles } from "@/app/api/_db/db";
+import { PublicationResponse } from "@/types/publication";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -27,10 +27,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ publicationId: null }, { status: 200 });
     }
 
+    const publication = await prismaArticles.publication.findUnique({
+      where: {
+        id: userPublication?.publication?.idInArticlesDb || 0,
+      },
+    });
+
     const response: PublicationResponse = {
       publicationId: userPublication?.publication?.id,
       image: userPublication?.publication?.image,
-      title: userPublication?.publication?.title,
+      title:
+        userPublication?.publication?.title ||
+        publication?.name ||
+        publication?.copyright ||
+        "",
       description: userPublication?.publication?.description,
       ideas: userPublication?.publication?.ideas.map(idea => ({
         id: idea.id,

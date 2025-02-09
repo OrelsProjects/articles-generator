@@ -1,4 +1,4 @@
-import { Event } from "@/models/payment";
+import { Event } from "@/types/payment";
 
 export const welcomeTemplate = (paid: boolean, to: string) => `<!DOCTYPE html>
 <html>

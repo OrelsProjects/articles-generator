@@ -1,15 +1,16 @@
 import prisma from "@/app/api/_db/db";
 import { extractContent } from "@/app/api/user/analyze/_utils";
-import { Article } from "@/models/article";
+import { Article } from "@/types/article";
 import { authOptions } from "@/auth/authOptions";
 import { generateDescriptionPrompt } from "@/lib/prompts";
 import axios from "axios";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { runPrompt } from "@/lib/openRouter";
-import { Publication } from "@/models/publication";
+import { Publication } from "@/types/publication";
 import { getPublicationByUrl } from "@/lib/dal/publication";
 import { getUserArticlesWithBody } from "@/lib/dal/articles";
+import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -33,11 +34,24 @@ export async function POST(req: NextRequest) {
     const publications = await getPublicationByUrl(url);
     const userPublication = publications[0];
 
-    const userArticles = userPublication
-      ? await getUserArticlesWithBody({ publicationId: userPublication.id }, 10)
-      : await getUserArticlesWithBody({ url }, 10);
+    if (!userPublication) {
+      return NextResponse.json(
+        { error: "The publication was not found." },
+        { status: 404 },
+      );
+    }
 
-    const { image, title, description } = await extractContent(url);
+    const userArticles = await getUserArticlesWithBody(
+      { publicationId: userPublication.id },
+      {
+        limit: 10,
+        freeOnly: true,
+      },
+    );
+
+    const { image, title, description } = await extractContent(
+      userPublication.customDomain || url,
+    );
     const top10Articles = userArticles
       .sort((a, b) => (b.reactionCount || 0) - (a.reactionCount || 0))
       .slice(0, 10);
@@ -61,7 +75,7 @@ export async function POST(req: NextRequest) {
           generatedDescription: descriptionObject.about,
           writingStyle: descriptionObject.writingStyle,
           topics: descriptionObject.topics,
-          idInArticlesDb: userPublication?.id,
+          idInArticlesDb: Number(userPublication.id),
         },
       });
     } else {
@@ -74,18 +88,19 @@ export async function POST(req: NextRequest) {
           generatedDescription: descriptionObject.about,
           writingStyle: descriptionObject.writingStyle,
           topics: descriptionObject.topics,
-          idInArticlesDb: userPublication?.id,
-        },
-      });
-      await prisma.userMetadata.update({
-        where: {
-          userId: session.user.id,
-        },
-        data: {
-          publication: { connect: { id: publicationMetadata.id } },
+          idInArticlesDb: Number(userPublication.id),
         },
       });
     }
+
+    await prisma.userMetadata.update({
+      where: {
+        userId: session.user.id,
+      },
+      data: {
+        publication: { connect: { id: publicationMetadata.id } },
+      },
+    });
 
     const publication: Publication = {
       id: publicationMetadata.id,
@@ -99,8 +114,11 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error(error);
+    if (error instanceof PublicationNotFoundError) {
+      return NextResponse.json({ error: error.message }, { status: 404 });
+    }
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Something went wrong. Please try again later." },
       { status: 500 },
     );
   }

@@ -1,4 +1,4 @@
-import { Article, ArticleWithBody } from "@/models/article";
+import { Article, ArticleWithBody } from "@/types/article";
 import { PublicationMetadata } from "@prisma/client";
 
 export type OutlineLLMResponse = {
@@ -42,6 +42,7 @@ export const generateOutlinePrompt = (
   ideaDescriptions: { id: number; description: string }[],
   publicationDescription: string,
   topArticles: ArticleWithBody[],
+  shouldSearch: boolean,
 ) => [
   {
     role: "system",
@@ -67,7 +68,7 @@ export const generateOutlinePrompt = (
       - Write in a natural, human-like voice, avoiding any robotic or AI-generated tone.
       - Ensure the outline promotes clarity, coherence, and reader engagement.
       - Use h2 for the title of each section.
-
+      ${shouldSearch ? `- Search the web for data and use it to improve the outline of the article.` : ""}
       ** The response should be in Markdown (.md) format. **
 
       The final output should be structured in the following JSON format, without any additional text or formatting:
@@ -97,9 +98,13 @@ export const generateIdeasPrompt = (
   topArticles: ArticleWithBody[],
   options: {
     topic?: string | null;
+    ideasUsed?: string[];
     ideasCount: number;
+    shouldSearch: boolean;
   } = {
     ideasCount: 3,
+    ideasUsed: [],
+    shouldSearch: false,
   },
 ) => [
   {
@@ -112,6 +117,7 @@ export const generateIdeasPrompt = (
         ? `the topic provided. Focus exclusively on this topic. Every idea must revolve strictly around this topic with no deviations.`
         : "your publication description, topics you write about, and your writing style"
     }.
+
     Additionally, consider the top 5 articles in your genre to ensure relevance and appeal.
     The response must be structured in JSON format with the following details, without any additional text or formatting:
 
@@ -133,6 +139,8 @@ export const generateIdeasPrompt = (
     - Write in a human, natural voice that doesn't sound AI-generated.
     - Don't start all the words with a capital letter, unless absolutely necessary. It's okay to start the first word with a capital letter. Same goes for subtitles and headings.
     - If the provided titles have emojis, use them in the generated titles.
+    ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
+    ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}
         `,
   },
   {
@@ -146,6 +154,12 @@ export const generateIdeasPrompt = (
     - Topics: ${publication.topics}
     - Writing Style: ${publication.writingStyle}
     `
+        }
+
+        ${
+          options.ideasUsed && options.ideasUsed.length > 0
+            ? `Here are the ideas that you should not generate: ${options.ideasUsed.join(", ")}.`
+            : ""
         }
 
     Here are the top 5 articles in this genre:

@@ -8,11 +8,10 @@ import {
   setUser as setUserAction,
 } from "@/lib/features/auth/authSlice";
 import { usePathname } from "next/navigation";
-import Loading from "@/components/ui/loading";
 import { setUserEventTracker } from "@/eventTracker";
 import { setUserLogger } from "@/logger";
 import { useSession } from "next-auth/react";
-import AppUser, { Plan } from "@/models/appUser";
+import AppUser, { Plan } from "@/types/appUser";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import {
@@ -20,7 +19,8 @@ import {
   addPublication,
 } from "@/lib/features/publications/publicationSlice";
 import axios from "axios";
-import { Session, SessionUser } from "next-auth";
+import { Session } from "next-auth";
+import { Loader2 } from "lucide-react";
 
 export default function AuthProvider({
   children,
@@ -36,7 +36,9 @@ export default function AuthProvider({
 
   const setUser = async (session?: Session) => {
     try {
-      const userPlan: Plan = session?.user?.meta ? { ...session.user.meta } : { plan: "free" };
+      const userPlan: Plan = session?.user?.meta
+        ? { ...session.user.meta }
+        : { plan: "free" };
 
       const appUser: AppUser = {
         displayName: session?.user?.name || null,
@@ -47,11 +49,15 @@ export default function AuthProvider({
       };
       dispatch(setUserAction(appUser));
 
-      const publicationIdResponse = await axios.get("/api/user/publications");
-      const { publication } = publicationIdResponse.data;
-      if (publication) {
-        dispatch(addPublication(publication));
-        dispatch(addIdeas(publication.ideas));
+      try {
+        const publicationIdResponse = await axios.get("/api/user/publications");
+        const { publication } = publicationIdResponse.data;
+        if (publication) {
+          dispatch(addPublication(publication));
+          dispatch(addIdeas(publication.ideas));
+        }
+      } catch (error: any) {
+        console.error(error);
       }
     } catch (error: any) {
       console.error(error);
@@ -102,7 +108,7 @@ export default function AuthProvider({
   if (loading) {
     return (
       <div className="w-screen h-screen flex items-center justify-center">
-        <Loading className="w-20 h-20" />
+        <Loader2 className="w-20 h-20 animate-spin text-primary" />
       </div>
     );
   }

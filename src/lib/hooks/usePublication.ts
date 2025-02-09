@@ -4,9 +4,9 @@ import {
   addIdeas as addIdeasAction,
   addPublication as addPublicationAction,
 } from "@/lib/features/publications/publicationSlice";
-import { Idea } from "@/models/idea";
+import { Idea } from "@/types/idea";
 import axios from "axios";
-import { Publication } from "@/models/publication";
+import { Publication } from "@/types/publication";
 
 export const usePublication = () => {
   const dispatch = useAppDispatch();
@@ -27,34 +27,7 @@ export const usePublication = () => {
     }
   };
 
-  const generateIdeas = async (
-    topic?: string,
-    ideasCount = 3,
-  ): Promise<Idea[]> => {
-    try {
-      const res = await axios.get<Idea[]>(
-        `api/post/generate/ideas?topic=${topic}&ideasCount=${ideasCount}`,
-      );
-      addIdeas(res.data);
-      return res.data;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
-  const setIdeas = (ideas: Idea[]) => {
-    dispatch(setIdeasAction(ideas));
-  };
-
-  const addIdeas = (ideas: Idea[]) => {
-    dispatch(addIdeasAction(ideas));
-  };
-
   return {
-    setIdeas,
-    addIdeas,
-    generateIdeas,
     analyzePublication,
   };
 };

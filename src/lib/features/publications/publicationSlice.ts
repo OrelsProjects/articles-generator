@@ -1,17 +1,24 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Idea } from "@/models/idea";
-import { Publication } from "@/models/publication";
+import { Idea } from "@/types/idea";
+import { Publication } from "@/types/publication";
 import { RootState } from "@/lib/store";
 import { IdeaStatus } from "@prisma/client";
 
 export interface PublicationState {
   publications: Publication[];
   ideas: Idea[];
+  selectedIdea: Idea | null;
 }
+
+const getFirstIdea = (ideas: Idea[]) => {
+  const newIdeas = ideas.filter(idea => idea.status === "new");
+  return newIdeas.length > 0 ? newIdeas[0] : ideas[0];
+};
 
 export const initialState: PublicationState = {
   publications: [],
   ideas: [],
+  selectedIdea: null,
 };
 
 const publicationSlice = createSlice({
@@ -23,9 +30,15 @@ const publicationSlice = createSlice({
     },
     setIdeas: (state, action: PayloadAction<Idea[]>) => {
       state.ideas = action.payload;
+      if (!state.selectedIdea) {
+        state.selectedIdea = getFirstIdea(action.payload);
+      }
     },
     addIdeas: (state, action: PayloadAction<Idea[]>) => {
       state.ideas.push(...action.payload);
+      if (!state.selectedIdea) {
+        state.selectedIdea = getFirstIdea(action.payload);
+      }
     },
     updateStatus: (
       state,
@@ -59,11 +72,20 @@ const publicationSlice = createSlice({
         idea.subtitle = action.payload.subtitle;
       }
     },
+    setSelectedIdea: (state, action: PayloadAction<Idea | null>) => {
+      state.selectedIdea = action.payload;
+    },
   },
 });
 
-export const { setIdeas, addIdeas, addPublication, updateStatus, updateIdea } =
-  publicationSlice.actions;
+export const {
+  setIdeas,
+  addIdeas,
+  addPublication,
+  updateStatus,
+  updateIdea,
+  setSelectedIdea,
+} = publicationSlice.actions;
 
 export const selectPublications = (state: RootState) => state.publications;
 
