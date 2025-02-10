@@ -68,6 +68,7 @@ export const generateOutlinePrompt = (
       - Write in a natural, human-like voice, avoiding any robotic or AI-generated tone.
       - Ensure the outline promotes clarity, coherence, and reader engagement.
       - Use h2 for the title of each section.
+      - Don't start all the words in the headings with a capital letter, unless absolutely necessary.
       ${shouldSearch ? `- Search the web for data and use it to improve the outline of the article.` : ""}
       ** The response should be in Markdown (.md) format. **
 
@@ -137,7 +138,7 @@ export const generateIdeasPrompt = (
     - Focus on originality while drawing subtle inspiration from popular content.
     - Avoid generic topics; provide unique angles or fresh perspectives.
     - Write in a human, natural voice that doesn't sound AI-generated.
-    - Don't start all the words with a capital letter, unless absolutely necessary. It's okay to start the first word with a capital letter. Same goes for subtitles and headings.
+    - Don't start all the words in the title and subtitle with a capital letter, unless absolutely necessary.
     - If the provided titles have emojis, use them in the generated titles.
     ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
     ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}
