@@ -132,7 +132,7 @@ export default function GenerateIdeasButton({
               maxLength={200}
               onChange={e => setTopic(e.target.value)}
             />
-            <div className="flex flex-col items-start gap-0.5">
+            {/* <div className="flex flex-col items-start gap-0.5">
               <Button
                 variant={shouldSearch ? "default" : "outline"}
                 onClick={() => setShouldSearch(!shouldSearch)}
@@ -154,7 +154,7 @@ export default function GenerateIdeasButton({
               >
                 Generating ideas might take twice as long.
               </motion.p>
-            </div>
+            </div> */}
             <DialogFooter>
               <Button type="submit" onClick={handleDialogSubmit}>
                 {topic.length > 0
