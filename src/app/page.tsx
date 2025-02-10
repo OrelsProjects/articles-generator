@@ -118,7 +118,7 @@ const FAQ = () => {
                 How can this integration enhance my Substack newsletters?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                By leveraging AI-driven insights, you can overcome writer's
+                By leveraging AI-driven insights, you can overcome writer&apos;s
                 block and maintain a consistent publishing schedule. The
                 platform offers fresh perspectives and structured outlines,
                 ensuring your newsletters remain engaging and relevant to your
@@ -140,7 +140,7 @@ const FAQ = () => {
 
             <AccordionItem value="item-5" className="border-none">
               <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                Can I customize the AI's suggestions to fit my Substack's tone?
+                Can I customize the AI&apos;s suggestions to fit my Substack&apos;s tone?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 Yes, the AI learns from your existing Substack content to tailor
@@ -186,12 +186,13 @@ const FAQ = () => {
 
             <AccordionItem value="item-9" className="border-none">
               <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                How do I provide feedback on the AI's suggestions?
+                How do I provide feedback on the AI&apos;s suggestions?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 We value user feedback to improve our platform continually. You
-                can provide feedback directly through the platform's interface
-                or contact our support team with your insights and suggestions.
+                can provide feedback directly through the platform&apos;s
+                interface or contact our support team with your insights and
+                suggestions.
               </AccordionContent>
             </AccordionItem>
 
@@ -248,9 +249,9 @@ const Features = () => {
                   AI-powered idea generation
                 </h3>
                 <p className="text-muted-foreground">
-                  Overcome writer's block with our advanced AI that generates
-                  unique, engaging article ideas tailored to your niche and
-                  audience preferences.
+                  Overcome writer&apos;s block with our advanced AI that
+                  generates unique, engaging article ideas tailored to your niche
+                  and audience preferences.
                 </p>
                 <motion.div
                   className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"
@@ -398,7 +399,7 @@ export default function LandingPage() {
               className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight"
               variants={fadeIn}
             >
-              Overcome writer's block
+              Overcome writer&apos;s block
               <motion.span
                 className="text-primary block mt-2"
                 variants={heroSecondLine}

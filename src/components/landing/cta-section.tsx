@@ -17,7 +17,7 @@ export const CTASection = () => (
       viewport={{ once: true, margin: "-100px" }}
       variants={fadeIn}
     >
-      Ready to overcome writer's block for good?
+      Ready to overcome writer&apos;s block for good?
     </motion.h2>
     <motion.p
       className="text-xl mb-8 opacity-90"
