@@ -1,9 +1,7 @@
 import prisma from "@/app/api/_db/db";
 import { extractContent } from "@/app/api/user/analyze/_utils";
-import { Article } from "@/types/article";
 import { authOptions } from "@/auth/authOptions";
 import { generateDescriptionPrompt } from "@/lib/prompts";
-import axios from "axios";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { runPrompt } from "@/lib/openRouter";
@@ -11,6 +9,9 @@ import { Publication } from "@/types/publication";
 import { getPublicationByUrl } from "@/lib/dal/publication";
 import { getUserArticlesWithBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
+
+export const maxDuration = 60; // This function can run for a maximum of 5 seconds
+
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
