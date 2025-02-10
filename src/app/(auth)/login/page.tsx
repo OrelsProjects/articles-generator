@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FcGoogle } from "react-icons/fc";
 import { CheckCircle2 } from "lucide-react";
+import useAuth from "@/lib/hooks/useAuth";
 
 const Auth = () => {
+  const { signInWithGoogle } = useAuth();
   const { status } = useSession();
   const router = useCustomRouter();
 
@@ -19,8 +21,7 @@ const Auth = () => {
   }, [status, router]);
 
   const handleGoogleSignIn = () => {
-    // Implement Google sign-in logic here
-    console.log("Sign in with Google");
+    signInWithGoogle();
   };
 
   return (
