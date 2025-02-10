@@ -17,9 +17,17 @@ import {
   Target,
   Repeat,
   Check,
+  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { CTASection } from "@/components/landing/cta-section";
 
 const MotionCard = motion(Card);
 const MotionButton = motion(Button);
@@ -61,6 +69,148 @@ const heroSecondLine = {
 const gentlePulse = {
   scale: [1, 1.05, 1],
   transition: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+};
+
+const FAQ = () => {
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-3xl mx-auto space-y-8">
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center">
+            <HelpCircle className="h-12 w-12 text-primary" />
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight">
+            Frequently Asked Questions
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Everything you need to know about our Substack integration
+          </p>
+        </div>
+
+        <Card className="p-6">
+          <Accordion type="single" collapsible className="space-y-4">
+            <AccordionItem value="item-1" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                How does the platform integrate with Substack?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Our platform seamlessly connects with your Substack account,
+                allowing it to analyze your published newsletters. By examining
+                your existing content, the AI generates personalized article
+                ideas, titles, subtitles, and detailed outlines that align with
+                your unique writing style and audience preferences.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                Will integrating with Substack affect my existing content?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                No, the integration is read-only. Our platform analyzes your
+                content to provide tailored suggestions but does not modify or
+                interfere with your existing Substack posts.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                How can this integration enhance my Substack newsletters?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                By leveraging AI-driven insights, you can overcome writer's
+                block and maintain a consistent publishing schedule. The
+                platform offers fresh perspectives and structured outlines,
+                ensuring your newsletters remain engaging and relevant to your
+                subscribers.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                Is my Substack data secure during integration?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Absolutely. We prioritize your privacy and data security. The
+                platform accesses your Substack content solely to provide
+                personalized suggestions and does not share your data with third
+                parties.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                Can I customize the AI's suggestions to fit my Substack's tone?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes, the AI learns from your existing Substack content to tailor
+                its suggestions to your specific tone and style, ensuring
+                coherence with your established voice.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                Do I need technical expertise to set up the Substack
+                integration?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Not at all. The integration process is user-friendly, with clear
+                instructions to guide you through connecting your Substack
+                account to our platform effortlessly.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                How does this integration differ from other AI writing tools?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Unlike generic AI tools, our platform offers a personalized
+                experience by analyzing your specific Substack content. This
+                ensures that the generated ideas and outlines are uniquely
+                suited to your writing style and audience.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                Is there a cost associated with the Substack integration?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                The integration is included in our standard subscription plans.
+                Please refer to our pricing page for detailed information on
+                available plans and features.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-9" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                How do I provide feedback on the AI's suggestions?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                We value user feedback to improve our platform continually. You
+                can provide feedback directly through the platform's interface
+                or contact our support team with your insights and suggestions.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-10" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                Where can I find support if I encounter issues with the
+                integration?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Our dedicated support team is available to assist you with any
+                questions or challenges you may face. Visit our support page or
+                contact us directly for prompt assistance.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </Card>
+      </div>
+    </div>
+  );
 };
 
 const Features = () => {
@@ -316,17 +466,17 @@ export default function LandingPage() {
             {[
               {
                 icon: <Edit className="w-6 h-6" />,
-                title: "Blank Page Paralysis",
+                title: "Blank page paralysis",
                 desc: "Staring at an empty document, unsure where to begin?",
               },
               {
                 icon: <Target className="w-6 h-6" />,
-                title: "Lack of Focus",
+                title: "Lack of focus",
                 desc: "Ideas scattered, unable to form a coherent structure?",
               },
               {
                 icon: <Repeat className="w-6 h-6" />,
-                title: "Endless Procrastination",
+                title: "Endless procrastination",
                 desc: "Putting off writing due to overwhelm and anxiety?",
               },
             ].map((item, i) => (
@@ -478,7 +628,7 @@ export default function LandingPage() {
       {/* <Features /> */}
 
       {/* Testimonials */}
-      <section className="py-20 bg-background">
+      {/* <section className="py-20 bg-background">
         <div className="container mx-auto max-w-6xl px-4">
           <motion.h2
             className="text-3xl md:text-4xl font-bold text-center mb-12"
@@ -487,7 +637,7 @@ export default function LandingPage() {
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeIn}
           >
-            Writers Who Overcame Their Block
+            Writers who overcame their block
           </motion.h2>
           <motion.div
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
@@ -552,54 +702,13 @@ export default function LandingPage() {
             ))}
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
       <PricingSection />
+      <FAQ />
       {/* CTA */}
       <section className="py-20 bg-muted/50 text-foreground">
-        <div className="container mx-auto max-w-4xl px-4 text-center">
-          <motion.h2
-            className="text-3xl md:text-4xl font-bold mb-6"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeIn}
-          >
-            Ready to overcome writer's block for good?
-          </motion.h2>
-          <motion.p
-            className="text-xl mb-8 opacity-90"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeIn}
-          >
-            Join thousands of writers who now start and finish articles with
-            ease, thanks to AI-generated ideas and outlines.
-          </motion.p>
-          <MotionButton
-            size="lg"
-            variant="secondary"
-            className="gap-2"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeIn}
-            whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Start Your Free Trial <ArrowRight className="w-4 h-4" />
-          </MotionButton>
-          <motion.p
-            className="mt-4 text-sm opacity-80"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeIn}
-          >
-            No credit card required. 14-day free trial.
-          </motion.p>
-        </div>
+        <CTASection />
       </section>
 
       {/* Footer */}
