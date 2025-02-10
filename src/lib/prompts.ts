@@ -68,7 +68,7 @@ export const generateOutlinePrompt = (
       - Write in a natural, human-like voice, avoiding any robotic or AI-generated tone.
       - Ensure the outline promotes clarity, coherence, and reader engagement.
       - Use h2 for the title of each section.
-      - Don't start all the words in the headings with a capital letter, unless absolutely necessary.
+      - Don't start all the words in the headings with a capital letter, unless absolutely necessary. First word of the heading can be capitalized.
       ${shouldSearch ? `- Search the web for data and use it to improve the outline of the article.` : ""}
       ** The response should be in Markdown (.md) format. **
 
