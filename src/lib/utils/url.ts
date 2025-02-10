@@ -1,10 +1,16 @@
-export const stripUrl = (url: string) => {
-  let strippedUrl = url
-    .replace("https://", "")
-    .replace("http://", "")
-    .replace("www.", "");
+export const stripUrl = (
+  url: string,
+  options?: { removeWww?: boolean; removeDotCom?: boolean },
+) => {
+  let strippedUrl = url.replace("https://", "").replace("http://", "");
   if (strippedUrl.endsWith("/")) {
     strippedUrl = strippedUrl.slice(0, -1);
+  }
+  if (options?.removeWww) {
+    strippedUrl = strippedUrl.replace("www.", "");
+  }
+  if (options?.removeDotCom) {
+    strippedUrl = strippedUrl.replace(".com", "");
   }
   return strippedUrl;
 };
