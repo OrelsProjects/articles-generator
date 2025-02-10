@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Idea } from "@/types/idea";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { useAppSelector } from "@/lib/hooks/redux";
@@ -35,20 +35,28 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
     onSelectIdea?.(idea);
   };
 
-  const filteredIdeas = ideas.filter(idea => {
-    if (showFavorites && !idea.isFavorite) return false;
+  const filteredIdeas = useMemo(() => {
+    return ideas.filter(idea => {
+      if (showFavorites && !idea.isFavorite) return false;
 
-    switch (currentTab) {
-      case "new":
-        return idea.status === "new";
-      case "archived":
-        return idea.status === "archived";
-      case "used":
-        return idea.status === "used";
-      case "all":
-        return true;
-    }
-  });
+      switch (currentTab) {
+        case "new":
+          return idea.status === "new";
+        case "archived":
+          return idea.status === "archived";
+        case "used":
+          return idea.status === "used";
+        case "all":
+          return true;
+      }
+    });
+  }, [ideas, showFavorites, currentTab]);
+
+  const sortedIdeas = useMemo(() => {
+    return [...filteredIdeas].sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    );
+  }, [filteredIdeas]);
 
   return (
     <div className="w-full h-full border-l">
@@ -95,9 +103,9 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
 
             <div id="ideas-panel-ideas" className="h-full pb-36 px-0.5">
               <ScrollArea className="h-full space-y-4 pb-4 scroll-pl-8">
-                {filteredIdeas.length > 0 ? (
+                {sortedIdeas.length > 0 ? (
                   <div className="space-y-4 px-8">
-                    {filteredIdeas.map((idea, index) => (
+                    {sortedIdeas.map((idea, index) => (
                       <Card
                         key={index}
                         className={cn(

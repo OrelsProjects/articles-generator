@@ -14,4 +14,6 @@ export interface Idea {
 
   modelUsedForIdeas?: string;
   modelUsedForOutline?: string;
+
+  updatedAt: Date;
 }

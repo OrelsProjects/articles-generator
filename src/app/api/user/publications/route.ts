@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
         isFavorite: idea.isFavorite,
         modelUsedForIdeas: idea.modelUsedForIdeas,
         modelUsedForOutline: idea.modelUsedForOutline,
+        updatedAt: idea.updatedAt,
       })),
     };
 
