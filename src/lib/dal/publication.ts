@@ -16,14 +16,23 @@ export const getPublicationByUrl = async (
 
   let publications = await prismaArticles.publication.findMany({
     where: {
-      customDomain: {
-        contains: strippedUrl,
-      },
+      OR: [
+        {
+          customDomain: {
+            contains: strippedUrl,
+          },
+        },
+        {
+          subdomain: {
+            contains: strippedUrl,
+          },
+        },  
+      ],
     },
   });
 
   if (publications.length === 0) {
-    const { image, title } = await extractContent(url);
+    const { image, title, description } = await extractContent(url);
     publications = await prismaArticles.publication.findMany({
       where: {
         OR: [

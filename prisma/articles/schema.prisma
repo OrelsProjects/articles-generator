@@ -104,7 +104,7 @@ model Post {
     coverImageIsExplicit    Boolean?  @map("cover_image_is_explicit")
     description             String?   @map("description")
     bodyJson                Json?     @map("body_json")
-    bodyHtml                String?   @map("body_html")
+    bodyText                String?   @map("body_text")
     truncatedBodyText       String?   @map("truncated_body_text")
     wordcount               Int?      @map("wordcount")
     postTags                Json?     @map("postTags")

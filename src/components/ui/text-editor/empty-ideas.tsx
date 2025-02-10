@@ -10,16 +10,10 @@ export function EmptyIdeas() {
         Generate your first batch of ideas based on your publication&apos;s
         style and content.
       </p>
-      <GenerateIdeasButton 
+      <GenerateIdeasButton
         variant="default"
         size="lg"
         className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-        buttonContent={
-          <>
-            <Sparkles className="mr-2 h-5 w-5" />
-            <span>Generate Ideas</span>
-          </>
-        }
       />
     </div>
   );

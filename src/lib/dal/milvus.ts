@@ -33,7 +33,29 @@ async function getSubstackArticleData(
     try {
       const isValidUrl = validateUrl(url);
       const validUrl = isValidUrl ? url : toValidUrl(url);
-      const response = await axios.get(validUrl);
+      let response: any | null = null;
+      const maxRetries = 3;
+      const retryDelay = 1000;
+      let retryCount = 0;
+      while (retryCount < maxRetries) {
+        try {
+          response = await axios.get(validUrl);
+          console.log(`Fetched article from ${url}`);
+          break;
+        } catch (error) {
+          console.error(`Failed to fetch article from ${url}:`, error);
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
+      }
+
+      if (!response) {
+        console.error(
+          `Failed to fetch article from ${url} after ${maxRetries} attempts`,
+        );
+        data.push({ url, content: "" });
+        continue;
+      }
       const html = response.data;
       const $ = cheerio.load(html);
 

@@ -134,7 +134,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const messages = generateIdeasPrompt(publicationMetadata, inspirations, {
+    const messages = generateIdeasPrompt(publicationMetadata, userArticles, {
       topic,
       ideasCount: parseInt(ideasCount || "3"),
       ideasUsed: ideasUsed.map(idea => idea.description),

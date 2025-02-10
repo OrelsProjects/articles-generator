@@ -26,6 +26,7 @@ import Link from "next/link";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { selectPublications } from "@/lib/features/publications/publicationSlice";
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
@@ -59,8 +60,9 @@ export default function GenerateIdeasButton({
   className,
   ...props
 }: GenerateIdeasButtonProps) {
-  const { generateIdeas } = useIdea();
   const { user } = useAppSelector(selectAuth);
+  const { publications } = useAppSelector(selectPublications);
+  const { generateIdeas } = useIdea();
   const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showTopicDialog, setShowTopicDialog] = useState(false);
@@ -76,8 +78,11 @@ export default function GenerateIdeasButton({
     if (canGenerateIdeas) {
       return showLimitDialog ? "Daily limit reached" : "Generate ideas";
     }
+    if (publications.length === 0) {
+      return "Connect your Substack to generate ideas";
+    }
     return "Upgrade to generate ideas";
-  }, [canGenerateIdeas, showLimitDialog]);
+  }, [canGenerateIdeas, showLimitDialog, publications.length]);
 
   const handleDialogSubmit = async () => {
     setShowTopicDialog(false);
@@ -101,6 +106,7 @@ export default function GenerateIdeasButton({
         variant={variant}
         size={size}
         className={className}
+        disabled={!canGenerateIdeas}
         {...props}
       >
         <>

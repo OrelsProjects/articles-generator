@@ -87,7 +87,7 @@ export const generateOutlinePrompt = (
     role: "user",
     content: `
       Here are the top 5 articles for reference:
-      ${topArticles.map((article, index) => `Article ${index + 1}: ${article.body_text}`).join("\n\n")}
+      ${topArticles.map((article, index) => `Article ${index + 1}: ${article.bodyText}`).join("\n\n")}
 
       Analyze these articles carefully and generate comprehensive outlines for each provided idea description, including the corresponding ID for each.
     `,
@@ -171,7 +171,7 @@ ${topArticles
       `Article ${index + 1}:
 Title: ${article.title}
 Subtitle: ${article.subtitle}
-Full article: ${article.body_text}`,
+Full article: ${article.bodyText}`,
   )
   .join("\n\n---\n\n")}`,
   },
@@ -203,7 +203,7 @@ The response should always be structured in JSON format, with proper escape stri
     role: "user",
     content: `
       Description: ${description}
-      Top Articles: ${topArticles.map((article, i) => `Article ${i + 1}: Title: ${article.title} \n Subtitle: ${article.subtitle} \n Body: ${article.body_text}`).join("\n")}
+      Top Articles: ${topArticles.map((article, i) => `Article ${i + 1}: Title: ${article.title} \n Subtitle: ${article.subtitle} \n Body: ${article.bodyText}`).join("\n")}
     `,
   },
 ];

@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { extractContent } from "@/app/api/user/analyze/_utils";
 import { authOptions } from "@/auth/authOptions";
 import { generateDescriptionPrompt } from "@/lib/prompts";
@@ -9,9 +9,9 @@ import { Publication } from "@/types/publication";
 import { getPublicationByUrl } from "@/lib/dal/publication";
 import { getUserArticlesWithBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
+import { ArticleWithBody } from "@/types/article";
 
 export const maxDuration = 60; // This function can run for a maximum of 5 seconds
-
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -42,13 +42,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const userArticles = await getUserArticlesWithBody(
+    console.time("Getting user articles with body");
+    const userArticles: ArticleWithBody[] = await getUserArticlesWithBody(
       { publicationId: userPublication.id },
       {
-        limit: 10,
+        limit: 150,
         freeOnly: true,
       },
     );
+    console.timeEnd("Getting user articles with body");
+
+    try {
+      // Insert one by one, batches of 10
+      const batchSize = 10;
+      for (let i = 0; i < userArticles.length; i += batchSize) {
+        const batch = userArticles.slice(i, i + batchSize);
+        const promises = batch.map(article =>
+          prismaArticles.post.update({
+            where: { id: article.id },
+            data: { bodyText: article.bodyText },
+          }),
+        );
+        await Promise.all(promises);
+      }
+    } catch (error) {
+      console.error(error);
+    }
 
     const { image, title, description } = await extractContent(
       userPublication.customDomain || url,
@@ -106,7 +125,7 @@ export async function POST(req: NextRequest) {
     const publication: Publication = {
       id: publicationMetadata.id,
       image,
-      title,
+      title: userPublication?.name || userPublication?.copyright || "",
       description,
     };
 

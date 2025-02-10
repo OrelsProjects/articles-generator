@@ -75,7 +75,7 @@ export const getUserArticlesWithBody = async (
 
   return posts.map((post: Article) => ({
     ...post,
-    body_text:
+    bodyText:
       content.find(item => item.url === post.canonicalUrl)?.content || "",
   }));
 };
