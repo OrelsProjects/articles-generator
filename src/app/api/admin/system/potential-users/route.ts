@@ -30,7 +30,7 @@ async function getPostsWithStatus() {
       AND rp.title IN (
           SELECT title
           FROM posts
-          WHERE post_date > '2025-01-01' AND reaction_count < 11 AND reaction_count > 2
+          WHERE post_date > '2025-01-01' AND reaction_count < 2 AND reaction_count > 0
           GROUP BY title
           HAVING COUNT(*) > 1
       );`;

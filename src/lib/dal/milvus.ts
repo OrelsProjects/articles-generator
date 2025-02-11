@@ -21,6 +21,10 @@ interface Article {
 interface ArticleContent {
   url: string;
   content: string;
+  author?: {
+    name: string;
+    url: string | null;
+  } | null;
 }
 
 async function getSubstackArticleData(
@@ -28,6 +32,18 @@ async function getSubstackArticleData(
 ): Promise<ArticleContent[]> {
   const data: ArticleContent[] = [];
   const turndownService = new TurndownService();
+
+  // Author selectors in order of preference
+  const authorSelectors = [
+    // Profile hover card target (new style)
+    '.profile-hover-card-target a, .profileHoverCardTarget-PBxvGm a',
+    // Meta section with author link
+    '.meta-EgzBVA a',
+    // Generic author link patterns
+    'a[href*="/@"], a[href*="/p/"][href*="/by/"]',
+    // Fallback to any element with author metadata
+    '[data-author], [itemprop="author"]',
+  ];
 
   for (const url of urls) {
     try {
@@ -59,6 +75,59 @@ async function getSubstackArticleData(
       const html = response.data;
       const $ = cheerio.load(html);
 
+      // Extract author information using multiple selectors
+      let authorName = '';
+      let authorUrl = '';
+
+      // Try each selector until we find a match
+      for (const selector of authorSelectors) {
+        const authorElement = $(selector).first();
+        if (authorElement.length) {
+          authorName = authorElement.text().trim();
+          authorUrl = authorElement.attr('href') || '';
+          
+          // If we found a name, try to clean it up
+          if (authorName) {
+            // Remove any "By" prefix
+            authorName = authorName.replace(/^By\s+/i, '');
+            // Remove any extra whitespace
+            authorName = authorName.replace(/\s+/g, ' ').trim();
+            break;
+          }
+        }
+      }
+
+      // If we still don't have an author, try looking for structured data
+      if (!authorName) {
+        const structuredData = $('script[type="application/ld+json"]');
+        structuredData.each((_, element) => {
+          try {
+            const data = JSON.parse($(element).html() || '');
+            if (data.author?.name) {
+              authorName = data.author.name;
+              authorUrl = data.author.url || '';
+            }
+          } catch (e) {
+            console.warn('Failed to parse structured data:', e);
+          }
+        });
+      }
+
+      // Validate and format author URL
+      if (authorUrl) {
+        // Ensure URL is absolute
+        if (!authorUrl.startsWith('http')) {
+          const baseUrl = new URL(url).origin;
+          authorUrl = new URL(authorUrl, baseUrl).toString();
+        }
+        // Ensure it's a valid URL
+        try {
+          new URL(authorUrl);
+        } catch (e) {
+          authorUrl = '';
+        }
+      }
+
       // Remove unnecessary elements
       $(
         "script, style, noscript, iframe, form, button, .ads, .subscribe, .newsletter, .comments, .related-articles",
@@ -80,10 +149,21 @@ async function getSubstackArticleData(
       }
 
       const markdown = turndownService.turndown(article.html() || "");
-      data.push({ url, content: markdown });
+      data.push({ 
+        url, 
+        content: markdown,
+        author: authorName ? {
+          name: authorName,
+          url: authorUrl || null
+        } : null
+      });
     } catch (error) {
       console.error(`Failed to fetch article from ${url}:`, error);
-      data.push({ url, content: "" });
+      data.push({ 
+        url, 
+        content: "",
+        author: null
+      });
     }
   }
 

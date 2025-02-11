@@ -265,7 +265,10 @@ const promptTemplates = {
   },
 };
 
-export const generateFirstMessagePrompt = (article: string) => [
+export const generateFirstMessagePrompt = (
+  article: string,
+  writer?: string,
+) => [
   {
     role: "system",
     content: `
@@ -281,6 +284,9 @@ export const generateFirstMessagePrompt = (article: string) => [
     - The message should show genuine interest in the article
     - The message should be casual and friendly, like writing to an old friend
     - Have proper punctuation, grammar, spacing and new lines to make it readable
+    - Start the message with ${writer ? `"Hey, ${writer} :)"` : "Hey, :)"}.
+    - Make a new line before the question
+
 
     The response should be in JSON format, with the following details, without any additional text or formatting:
     {
@@ -292,6 +298,7 @@ export const generateFirstMessagePrompt = (article: string) => [
     role: "user",
     content: `
     Article: ${article}
+    ${writer ? `Writer: ${writer}` : ""}
     `,
   },
 ];

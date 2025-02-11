@@ -23,7 +23,10 @@ export async function GET(req: Request) {
 
   const trimmedContent = article[0].content.slice(0, 2000);
 
-  const prompt = generateFirstMessagePrompt(trimmedContent);
+  const prompt = generateFirstMessagePrompt(
+    trimmedContent,
+    article[0].author?.name,
+  );
 
   const response = await runPrompt(prompt, "anthropic/claude-3.5-sonnet");
 
@@ -31,8 +34,16 @@ export async function GET(req: Request) {
 
   await prisma.potentialClients.update({
     where: { canonicalUrl },
-    data: { firstMessage: message },
+    data: {
+      firstMessage: message,
+      authorName: article[0].author?.name,
+      authorUrl: article[0].author?.url,
+    },
   });
 
-  return NextResponse.json({ message });
+  return NextResponse.json({
+    message,
+    authorName: article[0].author?.name,
+    authorUrl: article[0].author?.url,
+  });
 }

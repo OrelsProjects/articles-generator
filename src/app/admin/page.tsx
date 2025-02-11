@@ -47,6 +47,8 @@ interface PotentialUser {
   reactionCount: number;
   status: PotentialClientStatus;
   firstMessage?: string | null;
+  authorName?: string | null;
+  authorUrl?: string | null;
 }
 
 // Icons for each status:
@@ -165,7 +167,12 @@ export default function AdminPage() {
       setUsers(prev =>
         prev.map(user =>
           user.canonicalUrl === canonicalUrl
-            ? { ...user, firstMessage: data.message }
+            ? {
+                ...user,
+                firstMessage: data.message,
+                authorName: data.authorName,
+                authorUrl: data.authorUrl,
+              }
             : user,
         ),
       );
@@ -493,6 +500,23 @@ export default function AdminPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>First Message</DialogTitle>
+            {messageDialogUser?.authorName && (
+              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                <span>For:</span>
+                {messageDialogUser.authorUrl ? (
+                  <a
+                    href={messageDialogUser.authorUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    {messageDialogUser.authorName}
+                  </a>
+                ) : (
+                  <span>{messageDialogUser.authorName}</span>
+                )}
+              </div>
+            )}
           </DialogHeader>
           <div className="mt-4 space-y-4">
             <div className="relative p-4 bg-muted rounded-lg">
@@ -516,7 +540,6 @@ export default function AdminPage() {
             </div>
           </div>
           <DialogFooter>
-            {/* Regenerate Message */}
             <Button
               variant="outline"
               onClick={() => {
