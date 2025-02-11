@@ -54,9 +54,13 @@ export const authOptions: AuthOptions = {
             (freeUser.codeExpiresAt && freeUser.codeExpiresAt > now) ||
             freeUser.status === "new";
 
+          console.log("canUseCode: ", canUseCode);
+
           if (!canUseCode) {
+            console.log("canUseCode is false", freeUser);
             plan = "free";
           } else {
+            console.log("canUseCode is true", freeUser);
             plan = freeUser.plan;
             await prisma.freeUsers.update({
               where: {
@@ -67,6 +71,7 @@ export const authOptions: AuthOptions = {
                 status: "used",
               },
             });
+            console.log("deleted code");
             cookies().delete("code");
           }
         }
@@ -77,6 +82,7 @@ export const authOptions: AuthOptions = {
             plan: plan as Plan,
           },
         });
+        console.log("created user metadata");
       } catch (error: any) {
         await prisma.user.delete({
           where: {
