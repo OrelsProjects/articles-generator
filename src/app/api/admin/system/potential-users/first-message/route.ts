@@ -25,7 +25,7 @@ export async function GET(req: Request) {
 
   const prompt = generateFirstMessagePrompt(
     trimmedContent,
-    article[0].author?.name,
+    article[0].author?.name?.split(" ")[0]?.trim(),
   );
 
   const response = await runPrompt(prompt, "anthropic/claude-3.5-sonnet");
