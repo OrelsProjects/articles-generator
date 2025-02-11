@@ -8,11 +8,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FcGoogle } from "react-icons/fc";
 import { CheckCircle2 } from "lucide-react";
 import useAuth from "@/lib/hooks/useAuth";
+import { useSearchParams } from "next/navigation";
 
 const Auth = () => {
   const { signInWithGoogle } = useAuth();
   const { status } = useSession();
   const router = useCustomRouter();
+  const searchParams = useSearchParams();
+  const code = searchParams.get("code");
+
+  useEffect(() => {
+    if (code) {
+      localStorage.setItem("code", code);
+    }
+  }, [code, router]);
 
   useEffect(() => {
     if (status === "authenticated") {
