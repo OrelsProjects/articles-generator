@@ -14,6 +14,8 @@ export async function middleware(req: NextRequest) {
 async function registerMiddleware(req: NextRequest) {
   const code = getCode(req);
 
+  console.log("Hit middleware with code: ", code);
+
   const response = NextResponse.next();
   if (code) {
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);

@@ -40,6 +40,7 @@ export const authOptions: AuthOptions = {
     createUser: async message => {
       try {
         const code = getCode();
+        console.log("createUser code: ", code);
         const freeUser = await prisma.freeUsers.findFirst({
           where: {
             OR: [{ email: message.user.email as string }, { code }],
