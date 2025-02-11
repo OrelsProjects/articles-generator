@@ -281,7 +281,7 @@ export const generateFirstMessagePrompt = (
     Guidelines:
     - Use third grade English and words
     - The message should be under 25 words
-    - The message should show genuine interest in the article
+    - The message should show genuine interest in the article, don't sound too excited
     - The message should be casual and friendly, like writing to an old friend
     - Have proper punctuation, grammar, spacing and new lines to make it readable
     - Start the message with ${writer ? `"Hey, ${writer} :)"` : "Hey, :)"}.
