@@ -9,10 +9,10 @@ export default function FreeSubscriptionProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const code = localStorage.getItem("code");
   const [loading, setLoading] = useState(false);
 
   const updateUserPlan = async () => {
+    const code = localStorage.getItem("code");
     if (code) {
       try {
         setLoading(true);
@@ -29,13 +29,15 @@ export default function FreeSubscriptionProvider({
 
   useEffect(() => {
     updateUserPlan();
-  }, [code]);
+  }, []);
 
-  return (
-    <div className="w-screen h-screen flex items-center justify-center">
-      <Loader2 className="w-20 h-20 animate-spin text-primary" />
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="w-screen h-screen flex items-center justify-center">
+        <Loader2 className="w-20 h-20 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return children;
 }
