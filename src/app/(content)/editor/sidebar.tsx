@@ -37,6 +37,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useMemo } from "react";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME;
 
@@ -56,6 +57,13 @@ export function AppSidebar() {
   const handleLogout = () => {
     signOut();
   };
+
+  const plan = useMemo(() => {
+    if (!user?.meta?.plan || user.meta.plan === "free") {
+      return "free";
+    }
+    return user.meta.plan === "pro" ? "pro" : "Super Pro";
+  }, [user?.meta?.plan]);
 
   return (
     <Sidebar>
@@ -116,6 +124,7 @@ export function AppSidebar() {
                     <p className="truncate text-xs text-sidebar-foreground/70">
                       {user?.email}
                     </p>
+                    <p className="truncate text-xs text-primary/80">{plan}</p>
                   </div>
                 </Button>
               </DropdownMenuTrigger>
