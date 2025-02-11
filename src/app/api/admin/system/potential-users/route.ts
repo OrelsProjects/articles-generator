@@ -88,7 +88,13 @@ async function getPostsWithStatus() {
 
 export async function GET(req: Request) {
   try {
-    const postsWithStatus = await prisma.potentialClients.findMany();
+    const postsWithStatus = await prisma.potentialClients.findMany({
+      where: {
+        status: {
+          not: PotentialClientStatus.deleted,
+        },
+      },
+    });
     return NextResponse.json(postsWithStatus);
   } catch (error) {
     console.error("Error in potential-users route:", error);

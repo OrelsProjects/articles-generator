@@ -26,6 +26,7 @@ import {
   Copy,
   Check,
   Search,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PotentialClientStatus } from "@prisma/client";
@@ -37,6 +38,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import Link from "next/link";
 
 interface PotentialUser {
   canonicalUrl: string;
@@ -116,6 +118,10 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const updateUserStatus = async (
     canonicalUrl: string,
@@ -298,15 +304,23 @@ export default function AdminPage() {
     <div className="container mx-auto py-10 flex flex-col space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Potential Users</h1>
-        <Button
-          onClick={fetchUsers}
-          variant="outline"
-          disabled={loading}
-          className="gap-2 text-base"
-        >
-          <RefreshCw className={cn("h-5 w-5", { "animate-spin": loading })} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link href="/admin/free-users">
+            <Button variant="outline" className="gap-2">
+              Free Users
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Button
+            onClick={fetchUsers}
+            variant="outline"
+            disabled={loading}
+            className="gap-2 text-base"
+          >
+            <RefreshCw className={cn("h-5 w-5", { "animate-spin": loading })} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Add search input */}

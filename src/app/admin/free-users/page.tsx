@@ -20,10 +20,12 @@ import {
   Ban,
   RotateCw,
   Plus,
+  ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FreeUserStatus } from "@prisma/client";
 import { TooltipButton } from "@/components/ui/tooltip-button";
+import Link from "next/link";
 
 interface FreeUser {
   id: string;
@@ -150,7 +152,15 @@ export default function FreeUsersPage() {
   return (
     <div className="container mx-auto py-10 flex flex-col space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Free Users</h1>
+        <div className="flex items-center gap-4">
+          <Link href="/admin">
+            <Button variant="outline" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Potential Users
+            </Button>
+          </Link>
+          <h1 className="text-3xl font-bold">Free Users</h1>
+        </div>
         <div className="flex items-center gap-2">
           <Button
             onClick={generateNewUser}
