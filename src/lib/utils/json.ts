@@ -29,6 +29,7 @@ export async function parseJson<T>(
     if (!jsonFixedSync) {
       const jsonFixed = await runPrompt(fixJsonPrompt(json), model);
       parsedJson = JSON.parse(jsonFixed).json;
+      console.log("jsonFixed", jsonFixed);
     } else {
       parsedJson = jsonFixedSync;
     }
