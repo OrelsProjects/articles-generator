@@ -12,9 +12,13 @@ export async function middleware(req: NextRequest) {
 }
 
 async function registerMiddleware(req: NextRequest) {
-  const code = getCode(req);
+  const codeFromUrl = getCode(req);
+  const codeFromCookie = req.cookies.get("code")?.value;
 
-  console.log("Hit middleware with code: ", code);
+  console.log("Hit middleware with code: ", codeFromUrl);
+  console.log("Hit middleware with code from cookie: ", codeFromCookie);
+
+  const code = codeFromUrl || codeFromCookie;
 
   const response = NextResponse.next();
   if (code) {
