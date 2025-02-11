@@ -288,7 +288,7 @@ export const generateFirstMessagePrompt = (
     - Make a new line before the question
 
 
-    The response should be in JSON format, with the following details, without any additional text or formatting:
+    The response should be in JSON format, with the following details, **without any additional text or formatting**, ONLY THE JSON:
     {
       "message": "<generated message>"
     }
