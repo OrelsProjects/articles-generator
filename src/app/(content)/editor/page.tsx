@@ -12,7 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, Sparkles } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Header } from "@/app/(content)/editor/header";
 

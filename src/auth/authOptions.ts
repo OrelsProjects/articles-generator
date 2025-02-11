@@ -1,8 +1,13 @@
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
-import loggerServer from "@/loggerServer";
+import { Plan, PrismaClient } from "@prisma/client";
+import { cookies } from "next/headers";
+
+const getCode = (): string => {
+  const code = cookies().get("code")?.value;
+  return code || "";
+};
 
 const prisma = new PrismaClient();
 
@@ -34,15 +39,41 @@ export const authOptions: AuthOptions = {
   events: {
     createUser: async message => {
       try {
-        const isFreeUser = await prisma.freeUsers.findUnique({
+        const code = getCode();
+        const freeUser = await prisma.freeUsers.findFirst({
           where: {
-            email: message.user.email as string,
+            OR: [{ email: message.user.email as string }, { code }],
           },
         });
+
+        let plan = "free";
+        if (freeUser) {
+          const now = new Date();
+          const canUseCode =
+            (freeUser.codeExpiresAt && freeUser.codeExpiresAt > now) ||
+            freeUser.status === "new";
+
+          if (!canUseCode) {
+            plan = "free";
+          } else {
+            plan = freeUser.plan;
+            await prisma.freeUsers.update({
+              where: {
+                id: freeUser.id,
+              },
+              data: {
+                email: message.user.email as string,
+                status: "used",
+              },
+            });
+            cookies().delete("code");
+          }
+        }
+
         await prisma.userMetadata.create({
           data: {
             userId: message.user.id,
-            plan: isFreeUser ? "superPro" : "free",
+            plan: plan as Plan,
           },
         });
       } catch (error: any) {

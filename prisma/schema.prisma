@@ -25,6 +25,20 @@ enum Plan {
   superPro
 }
 
+enum PotentialClientStatus {
+  new
+  contacted
+  interested
+  not_interested
+  deleted
+}
+
+enum FreeUserStatus {
+  new
+  used
+  revoked
+}
+
 model User {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
@@ -176,8 +190,15 @@ model Ideas {
 }
 
 model FreeUsers {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
+  id    String  @id @default(auto()) @map("_id") @db.ObjectId
+  email String? @unique
+
+  code          String?        @unique
+  plan          Plan           @default(free)
+  status        FreeUserStatus @default(new)
+  codeExpiresAt DateTime?
+  url           String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -203,4 +224,24 @@ model Payment {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("payments")
+}
+
+model PotentialClients {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  status PotentialClientStatus @default(new)
+
+  canonicalUrl    String  @unique
+  title           String
+  postDate        String?
+  publicationName String
+  publicationId   String
+  reactionCount   Int
+
+  firstMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("potentialClients")
 }

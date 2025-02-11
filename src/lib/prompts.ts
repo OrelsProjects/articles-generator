@@ -67,6 +67,7 @@ export const generateOutlinePrompt = (
       - Do NOT include the article title (H1) in the outline.
       - Write in a natural, human-like voice, avoiding any robotic or AI-generated tone.
       - Ensure the outline promotes clarity, coherence, and reader engagement.
+      - VERY IMPORTANT: The outline should rely MAINLY on the writing style and the top articles to generate the outline.
       - Use h2 for the title of each section.
       - Don't start all the words in the headings with a capital letter, unless absolutely necessary. First word of the heading can be capitalized.
       ${shouldSearch ? `- Search the web for data and use it to improve the outline of the article.` : ""}
@@ -263,3 +264,34 @@ const promptTemplates = {
     prompt: `You are a succinct communicator, refine the user's article to express the message as concisely as possible without losing essential meaning. Eliminate unnecessary words or redundancy. The final article should be clear, to the point, and read naturally, without signs of abrupt truncation or AI editing.`,
   },
 };
+
+export const generateFirstMessagePrompt = (article: string) => [
+  {
+    role: "system",
+    content: `
+    Write a casual, friendly message to an article's author that feels like a text from a friend. Keep it under 25 words. Show genuine interest by:
+
+    - Mentioning you read their piece
+    - One specific aspect you liked
+    - A natural question to start conversation about their writing process
+
+    Guidelines:
+    - Use third grade English and words
+    - The message should be under 25 words
+    - The message should show genuine interest in the article
+    - The message should be casual and friendly, like writing to an old friend
+    - Have proper punctuation, grammar, spacing and new lines to make it readable
+
+    The response should be in JSON format, with the following details, without any additional text or formatting:
+    {
+      "message": "<generated message>"
+    }
+    `,
+  },
+  {
+    role: "user",
+    content: `
+    Article: ${article}
+    `,
+  },
+];
