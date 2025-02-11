@@ -51,7 +51,8 @@ export const authOptions: AuthOptions = {
         if (freeUser) {
           const now = new Date();
           const canUseCode =
-            (freeUser.codeExpiresAt && freeUser.codeExpiresAt > now) ||
+            freeUser.codeExpiresAt &&
+            freeUser.codeExpiresAt > now &&
             freeUser.status === "new";
 
           console.log("canUseCode: ", canUseCode);
