@@ -1,13 +1,7 @@
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { Plan, PrismaClient } from "@prisma/client";
-import { cookies } from "next/headers";
-
-const getCode = (): string => {
-  const code = cookies().get("code")?.value;
-  return code || "";
-};
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -39,51 +33,17 @@ export const authOptions: AuthOptions = {
   events: {
     createUser: async message => {
       try {
-        const code = getCode();
-        console.log("createUser code: ", code);
-        const freeUser = await prisma.freeUsers.findFirst({
+        const isFreeUser = await prisma.freeUsers.findUnique({
           where: {
-            OR: [{ email: message.user.email as string }, { code }],
+            email: message.user.email as string,
           },
         });
-
-        let plan = "free";
-        if (freeUser) {
-          const now = new Date();
-          const canUseCode =
-            freeUser.codeExpiresAt &&
-            freeUser.codeExpiresAt > now &&
-            freeUser.status === "new";
-
-          console.log("canUseCode: ", canUseCode);
-
-          if (!canUseCode) {
-            console.log("canUseCode is false", freeUser);
-            plan = "free";
-          } else {
-            console.log("canUseCode is true", freeUser);
-            plan = freeUser.plan;
-            await prisma.freeUsers.update({
-              where: {
-                id: freeUser.id,
-              },
-              data: {
-                email: message.user.email as string,
-                status: "used",
-              },
-            });
-            console.log("deleted code");
-            cookies().delete("code");
-          }
-        }
-
         await prisma.userMetadata.create({
           data: {
             userId: message.user.id,
-            plan: plan as Plan,
+            plan: isFreeUser ? "superPro" : "free",
           },
         });
-        console.log("created user metadata");
       } catch (error: any) {
         await prisma.user.delete({
           where: {

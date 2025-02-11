@@ -2,6 +2,7 @@
 
 import { AppSidebar } from "@/app/(content)/editor/sidebar";
 import AuthProvider from "@/app/providers/AuthProvider";
+import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function ContentLayout({
@@ -11,6 +12,7 @@ export default function ContentLayout({
 }) {
   return (
     <SidebarProvider>
+      <FreeSubscriptionProvider />
       <AppSidebar />
       <AuthProvider>{children}</AuthProvider>
     </SidebarProvider>
