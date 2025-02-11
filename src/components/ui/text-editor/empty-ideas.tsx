@@ -1,8 +1,14 @@
 import { Button } from "@/components/ui/button";
 import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
+import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
+import { useAppSelector } from "@/lib/hooks/redux";
 import { Sparkles } from "lucide-react";
 
 export function EmptyIdeas() {
+  const { publications } = useAppSelector(state => state.publications);
+
+  const publication = publications[0];
+
   return (
     <div className="w-full h-full flex-1 flex flex-col items-center justify-start p-8 text-center space-y-4">
       <h3 className="text-xl font-semibold">No ideas generated yet</h3>
@@ -10,11 +16,13 @@ export function EmptyIdeas() {
         Generate your first batch of ideas based on your publication&apos;s
         style and content.
       </p>
-      <GenerateIdeasButton
-        variant="default"
-        size="lg"
-        className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-      />
+      {publication ? (
+        <>
+          <GenerateIdeasButton />
+        </>
+      ) : (
+        <AnalyzePublicationButton />
+      )}
     </div>
   );
 }

@@ -190,7 +190,7 @@ export function AnalyzePublicationButton() {
       <MultiStepLoader
         loadingStates={loadingStates}
         loading={loading}
-        duration={2400}
+        duration={3000}
         loop={false}
       />
     </div>
