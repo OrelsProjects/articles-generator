@@ -134,13 +134,13 @@ export function AppSidebar() {
                 side="right"
                 sideOffset={8}
               >
-                <DropdownMenuItem asChild>
+                {/* <DropdownMenuItem asChild>
                   <Link href="/settings" className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
                     <span>Settings</span>
                   </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                </DropdownMenuItem> */}
+                {/* <DropdownMenuSeparator /> */}
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive flex items-center gap-2"
                   onClick={handleLogout}
