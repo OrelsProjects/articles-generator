@@ -15,7 +15,7 @@ async function registerMiddleware(req: NextRequest) {
   const codeFromUrl = getCode(req);
   const codeFromCookie = req.cookies.get("code")?.value;
   const { pathname } = req.nextUrl;
-  
+
   console.log("Hit middleware with pathname: ", pathname);
   console.log("Hit middleware with code: ", codeFromUrl);
   console.log("Hit middleware with code from cookie: ", codeFromCookie);
@@ -36,7 +36,7 @@ async function registerMiddleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/api/auth/callback"],
+  matcher: ["/login", "/api/auth/callback/:path*"],
 };
 
 export { default } from "next-auth/middleware";
