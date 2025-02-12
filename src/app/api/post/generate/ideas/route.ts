@@ -150,6 +150,7 @@ export async function GET(req: NextRequest) {
           publicationId: publicationMetadata.id,
           status: "new",
           search: shouldSearch === "true",
+          image: idea.image,
           modelUsedForIdeas,
           modelUsedForOutline,
         },

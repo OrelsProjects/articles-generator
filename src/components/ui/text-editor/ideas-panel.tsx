@@ -54,7 +54,8 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
 
   const sortedIdeas = useMemo(() => {
     return [...filteredIdeas].sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
   }, [filteredIdeas]);
 
@@ -105,9 +106,9 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
               <ScrollArea className="h-full space-y-4 pb-4 scroll-pl-8">
                 {sortedIdeas.length > 0 ? (
                   <div className="space-y-4 px-8">
-                    {sortedIdeas.map((idea, index) => (
+                    {sortedIdeas.map(idea => (
                       <Card
-                        key={index}
+                        key={idea.id}
                         className={cn(
                           "transition-colors cursor-pointer hover:bg-muted/50 group",
                           selectedIdea?.id === idea.id &&

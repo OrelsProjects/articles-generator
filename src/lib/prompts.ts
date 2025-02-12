@@ -12,6 +12,7 @@ export type IdeasLLMResponse = {
     subtitle: string;
     description: string;
     inspiration: string;
+    image: string;
   }[];
 };
 
@@ -129,7 +130,8 @@ export const generateIdeasPrompt = (
           "title": "<Article Title>",
           "subtitle": "<Article Subtitle>",
           "description": "<Brief description of the article>",
-          "inspiration": "<Brief note on what inspired this idea, referencing relevant top articles or user topics>"
+          "inspiration": "<Brief note on what inspired this idea, referencing relevant top articles or user topics>",
+          "image": "<Image URL for the article>"
         }
       ]
     }
@@ -141,6 +143,7 @@ export const generateIdeasPrompt = (
     - Write in a human, natural voice that doesn't sound AI-generated.
     - Don't start all the words in the title and subtitle with a capital letter, unless absolutely necessary.
     - If the provided titles have emojis, use them in the generated titles.
+    - The image should be a URL of an image that is relevant to the article.
     ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
     ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}
         `,

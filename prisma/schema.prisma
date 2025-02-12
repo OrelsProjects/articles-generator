@@ -173,6 +173,7 @@ model Ideas {
   outline     String
   inspiration String
   search      Boolean @default(false)
+  image       String?
 
   status     IdeaStatus @default(new)
   isFavorite Boolean    @default(false)

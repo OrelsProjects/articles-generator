@@ -99,6 +99,11 @@ export default function AdminPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+
+  // Add ref for the first new item
+  const firstNewItemRef = useRef<HTMLTableRowElement>(null);
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -107,11 +112,14 @@ export default function AdminPage() {
       const data = await response.json();
       setUsers(data);
       setError(null);
-      // Reset infinite-scroll since new data was fetched
       setVisibleCount(50);
-      // Reset sorting
       setSortColumn(null);
       setSortDirection(null);
+
+      // Set initial load complete after first successful fetch
+      if (!initialLoadComplete) {
+        setInitialLoadComplete(true);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -122,6 +130,16 @@ export default function AdminPage() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  // Add effect to scroll to first new item
+  useEffect(() => {
+    if (initialLoadComplete && firstNewItemRef.current && !loading) {
+      firstNewItemRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [initialLoadComplete, loading]);
 
   const updateUserStatus = async (
     canonicalUrl: string,
@@ -412,6 +430,13 @@ export default function AdminPage() {
               {visibleUsers.map((user, i) => (
                 <TableRow
                   key={user.canonicalUrl}
+                  // Add ref to first new item
+                  ref={
+                    user.status === PotentialClientStatus.new &&
+                    !firstNewItemRef.current
+                      ? firstNewItemRef
+                      : null
+                  }
                   className={cn(
                     "hover:bg-muted/50 transition-colors text-base",
                     i % 2 === 0 ? "bg-background" : "bg-card",
