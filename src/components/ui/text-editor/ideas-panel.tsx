@@ -1,7 +1,13 @@
 import { Sparkles, Star, CheckCircle, Archive, SearchX, X } from "lucide-react";
 import { IdeaStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
@@ -53,7 +59,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
   }, [ideas, showFavorites, currentTab]);
 
   const sortedIdeas = useMemo(() => {
-    return [...filteredIdeas].sort(
+    return filteredIdeas.sort(
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
@@ -110,7 +116,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
                       <Card
                         key={idea.id}
                         className={cn(
-                          "transition-colors cursor-pointer hover:bg-muted/50 group",
+                          "w-full h-40 transition-colors cursor-pointer hover:bg-muted/50 group flex flex-col justify-between",
                           selectedIdea?.id === idea.id &&
                             "border border-primary transition-all duration-300",
                         )}
@@ -119,72 +125,71 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
                         <CardHeader className="pt-2">
                           <div className="flex flex-col items-start justify-between gap-2">
                             <>
-                              <CardTitle className="text-lg">
+                              <CardTitle className="text-lg line-clamp-2">
                                 {idea.title}
                               </CardTitle>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-muted-foreground line-clamp-1">
                                 {idea.subtitle}
                               </p>
                             </>
-                            <div className="flex gap-1 transition-opacity ml-auto">
-                              <TooltipButton
-                                tooltipContent="Add to favorites"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={e => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  onChangeStatus(idea.id, "favorite");
-                                }}
-                              >
-                                <Star
-                                  className={cn(
-                                    "h-4 w-4",
-                                    idea.isFavorite && "text-primary",
-                                  )}
-                                />
-                              </TooltipButton>
-                              <TooltipButton
-                                tooltipContent="Article idea was used"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={e => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  onChangeStatus(idea.id, "used");
-                                }}
-                              >
-                                <CheckCircle
-                                  className={cn(
-                                    "h-4 w-4",
-                                    idea.status === "used" && "text-primary",
-                                  )}
-                                />
-                              </TooltipButton>
-                              <TooltipButton
-                                tooltipContent="Archive idea"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={e => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  onChangeStatus(idea.id, "archived");
-                                }}
-                              >
-                                <Archive
-                                  className={cn(
-                                    "h-4 w-4",
-                                    idea.status === "archived" &&
-                                      "text-primary",
-                                  )}
-                                />
-                              </TooltipButton>
-                            </div>
                           </div>
                         </CardHeader>
+                        <CardFooter className="flex gap-1 self-end transition-opacity pb-2">
+                          <TooltipButton
+                            tooltipContent="Add to favorites"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={e => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onChangeStatus(idea.id, "favorite");
+                            }}
+                          >
+                            <Star
+                              className={cn(
+                                "h-4 w-4",
+                                idea.isFavorite && "text-primary",
+                              )}
+                            />
+                          </TooltipButton>
+                          <TooltipButton
+                            tooltipContent="Article idea was used"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={e => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onChangeStatus(idea.id, "used");
+                            }}
+                          >
+                            <CheckCircle
+                              className={cn(
+                                "h-4 w-4",
+                                idea.status === "used" && "text-primary",
+                              )}
+                            />
+                          </TooltipButton>
+                          <TooltipButton
+                            tooltipContent="Archive idea"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={e => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onChangeStatus(idea.id, "archived");
+                            }}
+                          >
+                            <Archive
+                              className={cn(
+                                "h-4 w-4",
+                                idea.status === "archived" && "text-primary",
+                              )}
+                            />
+                          </TooltipButton>
+                        </CardFooter>
                       </Card>
                     ))}
                   </div>
