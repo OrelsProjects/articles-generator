@@ -70,6 +70,10 @@ export const getUserArticlesWithBody = async (
   },
 ): Promise<ArticleWithBody[]> => {
   const posts = await getUserArticles(data, options);
+  return getUserArticlesBody(posts);
+};
+
+export const getUserArticlesBody = async (posts: Post[]) => {
   const urls = posts.map(post => post.canonicalUrl || "");
   const content = await getSubstackArticleData(urls);
 

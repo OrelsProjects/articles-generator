@@ -1,8 +1,10 @@
-"use client";
-import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
+
+// Utility function to combine class names
+const cn = (...classes: (string | undefined)[]) =>
+  classes.filter(Boolean).join(" ");
 
 const CheckIcon = ({ className }: { className?: string }) => {
   return (
@@ -12,7 +14,7 @@ const CheckIcon = ({ className }: { className?: string }) => {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className={cn("w-6 h-6 ", className)}
+      className={cn("w-4 h-4", className)}
     >
       <path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
     </svg>
@@ -25,7 +27,7 @@ const CheckFilled = ({ className }: { className?: string }) => {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="currentColor"
-      className={cn("w-6 h-6 ", className)}
+      className={cn("w-4 h-4", className)}
     >
       <path
         fillRule="evenodd"
@@ -48,34 +50,32 @@ const LoaderCore = ({
   value?: number;
 }) => {
   return (
-    <div className="flex relative justify-start max-w-xl mx-auto flex-col mt-40">
+    <div className="flex flex-col gap-2">
       {loadingStates.map((loadingState, index) => {
         const distance = Math.abs(index - value);
-        const opacity = Math.max(1 - distance * 0.2, 0); // Minimum opacity is 0, keep it 0.2 if you're sane.
+        const opacity = Math.max(1 - distance * 0.2, 0);
 
         return (
           <motion.div
             key={index}
-            className={cn("text-left flex gap-2 mb-4")}
-            initial={{ opacity: 0, y: -(value * 40) }}
-            animate={{ opacity: opacity, y: -(value * 40) }}
-            transition={{ duration: 0.5 }}
+            className={cn("text-left flex items-center gap-2")}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: opacity, x: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            <div>
-              {index > value && <CheckIcon className="text-foreground" />}
+            <div className="w-4 h-4">
+              {index > value && <CheckIcon className="text-muted-foreground" />}
               {index === value && (
-                <Loader2 className="text-primary animate-spin" />
+                <Loader2 className="text-primary animate-spin w-4 h-4" />
               )}
-              {index < value && (
-                <CheckFilled className={cn("text-foreground")} />
-              )}
+              {index < value && <CheckFilled className="text-primary" />}
             </div>
             <span
               className={cn(
                 "text-foreground",
-                value < index && "text-foreground",
-                value === index && "text-primary opacity-100",
-                value > index && "text-foreground",
+                value < index ? "text-foreground" : "",
+                value === index ? "text-primary opacity-80" : "",
+                value > index ? "text-foreground" : "",
               )}
             >
               {loadingState.text}
@@ -87,16 +87,18 @@ const LoaderCore = ({
   );
 };
 
-export const MultiStepLoader = ({
+export const ToastStepper = ({
   loadingStates,
   loading,
   duration = 2000,
   loop = true,
+  position = "bottom-right",
 }: {
   loadingStates: LoadingState[];
   loading?: boolean;
   duration?: number;
   loop?: boolean;
+  position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
 }) => {
   const [currentState, setCurrentState] = useState(0);
 
@@ -120,26 +122,28 @@ export const MultiStepLoader = ({
 
     return () => clearTimeout(timeout);
   }, [currentState, loading, loop, loadingStates.length, duration]);
+
+  const positionClasses = {
+    "top-right": "top-4 right-4",
+    "top-left": "top-4 left-4",
+    "bottom-right": "bottom-4 right-4",
+    "bottom-left": "bottom-4 left-4",
+  };
+
   return (
     <AnimatePresence mode="wait">
       {loading && (
         <motion.div
-          initial={{
-            opacity: 0,
-          }}
-          animate={{
-            opacity: 1,
-          }}
-          exit={{
-            opacity: 0,
-          }}
-          className="w-full h-full fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md bottom-0 bg-white/10 dark:bg-black/30 "
+          initial={{ opacity: 0, y: position.startsWith("top") ? -20 : 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: position.startsWith("top") ? -20 : 20 }}
+          className={cn(
+            "fixed z-50 bg-background rounded-lg shadow-lg p-4 min-w-[300px] max-w-md",
+            "border border-border",
+            positionClasses[position],
+          )}
         >
-          <div className="h-96 relative">
-            <LoaderCore value={currentState} loadingStates={loadingStates} />
-          </div>
-
-          <div className="bg-gradient-to-t inset-x-0 z-20 bottom-0 bg-background h-full absolute [mask-image:radial-gradient(900px_at_center,transparent_30%,white)]" />
+          <LoaderCore value={currentState} loadingStates={loadingStates} />
         </motion.div>
       )}
     </AnimatePresence>

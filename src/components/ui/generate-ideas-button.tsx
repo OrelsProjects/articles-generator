@@ -1,7 +1,6 @@
-import { Globe, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { useMemo, useState } from "react";
-import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import {
   Dialog,
   DialogContent,
@@ -25,8 +24,8 @@ import {
 import Link from "next/link";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
+import { ToastStepper } from "@/components/ui/toast-stepper";
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
@@ -119,11 +118,12 @@ export default function GenerateIdeasButton({
         </>
       </Button>
 
-      <MultiStepLoader
+      <ToastStepper
         loadingStates={ideaLoadingStates}
         loading={isGenerating}
         duration={10000}
         loop={false}
+        position="bottom-left"
       />
 
       <Dialog open={showTopicDialog} onOpenChange={setShowTopicDialog}>

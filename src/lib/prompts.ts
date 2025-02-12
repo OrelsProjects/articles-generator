@@ -286,6 +286,7 @@ export const generateFirstMessagePrompt = (
     - Have proper punctuation, grammar, spacing and new lines to make it readable
     - Start the message with ${writer ? `"Hey, ${writer} :)"` : "Hey, :)"}.
     - Make a new line before the question
+    - Escape the message to be a valid JSON string
 
 
     The response should be in JSON format, with the following details, **without any additional text or formatting**, ONLY THE JSON:

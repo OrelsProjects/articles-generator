@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Article not found" }, { status: 404 });
   }
 
-  const trimmedContent = article[0].content.slice(0, 2000);
+  const trimmedContent = article[0].content.slice(0, 4000);
 
   const prompt = generateFirstMessagePrompt(
     trimmedContent,

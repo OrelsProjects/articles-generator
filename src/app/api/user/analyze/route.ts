@@ -7,11 +7,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { runPrompt } from "@/lib/openRouter";
 import { Publication } from "@/types/publication";
 import { getPublicationByUrl } from "@/lib/dal/publication";
-import { getUserArticlesWithBody } from "@/lib/dal/articles";
+import {
+  getUserArticles,
+  getUserArticlesBody,
+  getUserArticlesWithBody,
+} from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 import { ArticleWithBody } from "@/types/article";
 
-export const maxDuration = 300; // This function can run for a maximum of 5 seconds
+export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -43,7 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     console.time("Getting user articles with body");
-    const userArticles: ArticleWithBody[] = await getUserArticlesWithBody(
+    const userArticles: ArticleWithBody[] = await getUserArticles(
       { publicationId: userPublication.id },
       {
         limit: 150,
@@ -52,21 +56,28 @@ export async function POST(req: NextRequest) {
     );
     console.timeEnd("Getting user articles with body");
 
-    try {
-      // Insert one by one, batches of 10
-      const batchSize = 10;
-      for (let i = 0; i < userArticles.length; i += batchSize) {
-        const batch = userArticles.slice(i, i + batchSize);
-        const promises = batch.map(article =>
-          prismaArticles.post.update({
-            where: { id: article.id },
-            data: { bodyText: article.bodyText },
-          }),
-        );
-        await Promise.all(promises);
+    // Check if the articles have a bodyText
+    // If less than 50%, get their body as well.
+    let articlesWithBody = userArticles.filter(article => article.bodyText);
+    if (articlesWithBody.length < userArticles.length * 0.5) {
+      articlesWithBody = await getUserArticlesBody(userArticles);
+
+      try {
+        // Insert one by one, batches of 10
+        const batchSize = 10;
+        for (let i = 0; i < userArticles.length; i += batchSize) {
+          const batch = userArticles.slice(i, i + batchSize);
+          const promises = batch.map(article =>
+            prismaArticles.post.update({
+              where: { id: article.id },
+              data: { bodyText: article.bodyText },
+            }),
+          );
+          await Promise.all(promises);
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
     }
 
     const { image, title, description } = await extractContent(
