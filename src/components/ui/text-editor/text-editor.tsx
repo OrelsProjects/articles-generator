@@ -236,14 +236,6 @@ const TextEditor = ({
         e.preventDefault();
         handleSave();
       }
-      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
-        e.preventDefault();
-        editor?.chain().focus().undo().run();
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === "y") {
-        e.preventDefault();
-        editor?.chain().focus().redo().run();
-      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
