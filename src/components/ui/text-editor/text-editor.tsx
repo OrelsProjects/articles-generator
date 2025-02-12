@@ -13,7 +13,7 @@ import ListItem from "@tiptap/extension-list-item";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
 import { Extension } from "@tiptap/core";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, FormEvent } from "react";
 import { marked } from "marked";
 import { MenuBar } from "@/components/ui/text-editor/menu-bar";
 import { Idea } from "@/types/idea";
@@ -24,6 +24,7 @@ import TurndownService from "turndown";
 import TextareaAutosize from "react-textarea-autosize";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/hooks/redux";
+import debounce from "lodash/debounce";
 
 const formatText = (text: string) => {
   return marked(text);
@@ -107,6 +108,28 @@ const CustomHeading = Heading.extend({
   },
 });
 
+const DraftIndicator = ({
+  saving,
+  error,
+}: {
+  saving: boolean;
+  error: boolean;
+}) => {
+  return (
+    <div className="sticky top-0 ml-4 flex items-center gap-2 text-sm text-muted-foreground">
+      <div
+        className={cn(
+          "w-2 h-2 rounded-full",
+          saving ? "border border-green-500" : "bg-green-500",
+          error ? "border border-red-500 bg-red-500" : "",
+        )}
+      />
+      {!error && <span>{saving ? "Draft saving..." : "Draft"}</span>}
+      {error && <span>Not saved</span>}
+    </div>
+  );
+};
+
 const TextEditor = ({
   publication,
   className,
@@ -114,7 +137,22 @@ const TextEditor = ({
   publication: Publication;
   className?: string;
 }) => {
+  const { selectedIdea } = useAppSelector(state => state.publications);
+  const { updateIdea } = useIdea();
+  const [originalTitle, setOriginalTitle] = useState("");
+  const [originalSubtitle, setOriginalSubtitle] = useState("");
+  const [originalOutline, setOriginalOutline] = useState("");
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+  const [hasChanges, setHasChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savingError, setSavingError] = useState(false);
+
   const editor = useEditor({
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      handleOutlineChange(html);
+    },
     extensions: [
       StarterKit.configure({
         paragraph: {
@@ -150,14 +188,81 @@ const TextEditor = ({
     },
   });
 
-  const { selectedIdea } = useAppSelector(state => state.publications);
-  const { updateIdea } = useIdea();
-  const [originalTitle, setOriginalTitle] = useState("");
-  const [originalSubtitle, setOriginalSubtitle] = useState("");
-  const [originalOutline, setOriginalOutline] = useState("");
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [hasChanges, setHasChanges] = useState(false);
+  const handleSave = async () => {
+    if (!selectedIdea) return;
+    if (saving) return;
+    setSaving(true);
+    setSavingError(false);
+    try {
+      const updatedIdea: Idea = {
+        ...selectedIdea,
+        title,
+        subtitle,
+        outline: unformatText(editor?.getHTML() || ""),
+      };
+
+      await updateIdea(
+        selectedIdea.id,
+        updatedIdea.outline,
+        updatedIdea.title,
+        updatedIdea.subtitle,
+      );
+
+      setOriginalTitle(title);
+      setOriginalSubtitle(subtitle);
+      setOriginalOutline(editor?.getHTML() || "");
+
+      setHasChanges(false);
+    } catch (error) {
+      console.error("Failed to save:", error);
+      setSavingError(true);
+    } finally {
+      // Add a small delay before hiding the saving indicator
+      setTimeout(() => {
+        setSaving(false);
+      }, 500);
+    }
+  };
+
+  // Create debounced save function
+  const debouncedSave = useMemo(
+    () => debounce(handleSave, 3000),
+    [selectedIdea, title, subtitle, editor, updateIdea],
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        handleSave();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        e.preventDefault();
+        editor?.chain().focus().undo().run();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "y") {
+        e.preventDefault();
+        editor?.chain().focus().redo().run();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [hasChanges, saving]);
+
+  // Call debouncedSave when content changes
+  useEffect(() => {
+    if (hasChanges) {
+      debouncedSave();
+    }
+  }, [hasChanges, debouncedSave]);
+
+  // Cancel debounced save on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSave.cancel();
+    };
+  }, [debouncedSave]);
 
   useEffect(() => {
     if (selectedIdea) {
@@ -170,39 +275,24 @@ const TextEditor = ({
     }
   }, [selectedIdea, editor]);
 
-  useEffect(() => {
-    if (editor) {
-      const currentContent = editor.getHTML();
-      const originalOutlineHTML = formatText(originalOutline || "");
-      const changeInTitle = title !== originalTitle;
-      const changeInSubtitle = subtitle !== originalSubtitle;
-      const changeInOutline = currentContent !== originalOutlineHTML;
-      setHasChanges(changeInTitle || changeInSubtitle || changeInOutline);
-    }
-  }, [title, subtitle, editor?.getHTML()]);
-
-  const handleSave = async () => {
-    if (!selectedIdea) return;
-    const updatedIdea: Idea = {
-      ...selectedIdea,
-      title,
-      subtitle,
-      outline: unformatText(editor?.getHTML() || ""),
-    };
-
-    setHasChanges(false);
-
-    await updateIdea(
-      selectedIdea.id,
-      updatedIdea.outline,
-      updatedIdea.title,
-      updatedIdea.subtitle,
-    );
-
-    // Here you would typically call a function to save the changes
-    // For example: onSaveIdea(updatedIdea);
-    console.log("Saving changes:", updatedIdea);
+  const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    const didChange = newTitle !== originalTitle;
+    setHasChanges(didChange);
   };
+
+  const handleSubtitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newSubtitle = e.target.value;
+    setSubtitle(newSubtitle);
+    const didChange = newSubtitle !== originalSubtitle;
+    setHasChanges(didChange);
+  };
+
+  function handleOutlineChange(value: string) {
+    const didChange = value !== originalOutline;
+    setHasChanges(didChange);
+  }
 
   return (
     <div
@@ -216,16 +306,17 @@ const TextEditor = ({
           editor={editor}
           publication={publication}
           hasChanges={hasChanges}
-          onSave={handleSave}
         />
       </div>
+
       <ScrollArea className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] w-full flex flex-col justify-start items-center mt-4">
+        <DraftIndicator saving={saving} error={savingError} />
         <div className="h-full flex flex-col justify-start items-center gap-2 w-full">
           <div className="h-full py-4 max-w-[728px] space-y-4 w-full px-4 text-foreground">
             <TextareaAutosize
               placeholder="Title"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               maxLength={200}
               className="w-full text-4xl font-bold outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
             />
@@ -233,7 +324,7 @@ const TextEditor = ({
               placeholder="Add a subtitle..."
               value={subtitle}
               maxLength={200}
-              onChange={e => setSubtitle(e.target.value)}
+              onChange={handleSubtitleChange}
               className="w-full text-xl text-muted-foreground outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
             />
             <div className="pt-2 tiptap pb-4">

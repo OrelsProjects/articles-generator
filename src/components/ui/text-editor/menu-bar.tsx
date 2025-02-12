@@ -30,51 +30,9 @@ interface MenuBarProps {
   editor: any;
   publication: Publication | null;
   hasChanges: boolean;
-  onSave: () => Promise<void>;
 }
 
-export const MenuBar = ({
-  editor,
-  publication,
-  hasChanges,
-  onSave,
-}: MenuBarProps) => {
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleSave = async () => {
-    if (!hasChanges || isSaving) return;
-
-    setIsSaving(true);
-    try {
-      await onSave();
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong.. Try again please.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-        e.preventDefault();
-        handleSave();
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
-        e.preventDefault();
-        editor.chain().focus().undo().run();
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === "y") {
-        e.preventDefault();
-        editor.chain().focus().redo().run();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [hasChanges, isSaving]);
-
+export const MenuBar = ({ editor, publication, hasChanges }: MenuBarProps) => {
   if (!editor) return null;
 
   return (
@@ -204,20 +162,6 @@ export const MenuBar = ({
         </div>
 
         <Separator orientation="vertical" className="h-6" />
-
-        <Button
-          variant="outline"
-          onClick={handleSave}
-          className="flex gap-1 md:gap-2 h-8 md:h-10 px-2 md:px-4"
-          disabled={!hasChanges}
-        >
-          {isSaving ? (
-            <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
-          ) : (
-            <Save className="w-3 h-3 md:w-4 md:h-4" />
-          )}
-          Save
-        </Button>
 
         {publication ? (
           <>
