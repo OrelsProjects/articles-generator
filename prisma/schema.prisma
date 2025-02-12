@@ -197,6 +197,7 @@ model FreeUsers {
   code          String?        @unique
   plan          Plan           @default(free)
   status        FreeUserStatus @default(new)
+  name          String         @default("")
   codeExpiresAt DateTime?
   url           String?
 

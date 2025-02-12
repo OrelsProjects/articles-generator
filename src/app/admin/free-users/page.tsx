@@ -26,6 +26,14 @@ import { cn } from "@/lib/utils";
 import { FreeUserStatus } from "@prisma/client";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 interface FreeUser {
   id: string;
@@ -36,6 +44,7 @@ interface FreeUser {
   createdAt: string;
   updatedAt: string;
   url: string | null;
+  name: string | null;
 }
 
 const statusColors: Record<FreeUserStatus, string> = {
@@ -51,6 +60,9 @@ export default function FreeUsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
+  const [newUserName, setNewUserName] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -68,21 +80,29 @@ export default function FreeUsersPage() {
   };
 
   const generateNewUser = async () => {
-    setLoading(true);
+    if (!newUserName.trim()) return;
+    
+    setIsGenerating(true);
     try {
       const response = await fetch("/api/admin/free-user", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newUserName.trim() }),
       });
       if (!response.ok) throw new Error("Failed to generate new user");
       const { freeUser } = await response.json();
       setUsers(prev => [freeUser, ...prev]);
       setError(null);
+      setNewUserDialogOpen(false);
+      setNewUserName("");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to generate new user",
       );
     } finally {
-      setLoading(false);
+      setIsGenerating(false);
     }
   };
 
@@ -163,7 +183,7 @@ export default function FreeUsersPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            onClick={generateNewUser}
+            onClick={() => setNewUserDialogOpen(true)}
             variant="default"
             disabled={loading}
             className="gap-2"
@@ -208,6 +228,7 @@ export default function FreeUsersPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="font-semibold text-base">Name</TableHead>
               <TableHead className="font-semibold text-base">Email</TableHead>
               <TableHead className="font-semibold text-base">Code</TableHead>
               <TableHead className="font-semibold text-base">Status</TableHead>
@@ -219,6 +240,9 @@ export default function FreeUsersPage() {
           <TableBody>
             {filteredUsers.map(user => (
               <TableRow key={user.id}>
+                <TableCell className="font-medium text-base">
+                  {user.name || "-"}
+                </TableCell>
                 <TableCell className="font-medium text-base">
                   {user.email}
                 </TableCell>
@@ -281,6 +305,47 @@ export default function FreeUsersPage() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={newUserDialogOpen} onOpenChange={setNewUserDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Generate New User</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Who is this for?</Label>
+              <Input
+                id="name"
+                value={newUserName}
+                onChange={(e) => setNewUserName(e.target.value)}
+                placeholder="Enter name..."
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setNewUserDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={generateNewUser}
+              disabled={!newUserName.trim() || isGenerating}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                'Generate'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

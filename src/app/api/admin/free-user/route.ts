@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const { name } = await req.json();
     const code = cuid();
     const hostname = req.headers.get("host");
     const url = `https://${hostname}/login?code=${code}`;
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
         plan: "superPro" as Plan,
         codeExpiresAt: getNewExpiresAt(),
         url,
+        name,
       },
     });
 
