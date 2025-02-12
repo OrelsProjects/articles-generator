@@ -14,7 +14,7 @@ import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { ArticleWithBody } from "@/types/article";
 import { parseJson } from "@/lib/utils/json";
 
-export const maxDuration = 60; // This function can run for a maximum of 5 seconds
+export const maxDuration = 300; // This function can run for a maximum of 5 seconds
 
 export async function GET(req: NextRequest) {
   console.time("Start generating ideas");

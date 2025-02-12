@@ -11,7 +11,7 @@ import { getUserArticlesWithBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 import { ArticleWithBody } from "@/types/article";
 
-export const maxDuration = 60; // This function can run for a maximum of 5 seconds
+export const maxDuration = 300; // This function can run for a maximum of 5 seconds
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
