@@ -9,6 +9,13 @@ export async function GET(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  if (
+    process.env.NODE_ENV === "development" &&
+    process.env.DATABASE_URL?.includes("production")
+  ) {
+    // Avoid messing with production database
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const userPublication = await prisma.userMetadata.findFirst({
       where: {
@@ -50,7 +57,10 @@ export async function GET(req: NextRequest) {
         outline: idea.outline,
         description: idea.description,
         inspiration: idea.inspiration,
+        body: idea.body,
         status: idea.status,
+        image: idea.image,
+        search: idea.search,
         isFavorite: idea.isFavorite,
         modelUsedForIdeas: idea.modelUsedForIdeas,
         modelUsedForOutline: idea.modelUsedForOutline,

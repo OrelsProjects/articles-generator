@@ -1,112 +1,32 @@
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Heading from "@tiptap/extension-heading";
-import Image from "@tiptap/extension-image";
-import Link from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
-import Subscript from "@tiptap/extension-subscript";
-import Superscript from "@tiptap/extension-superscript";
-import CodeBlock from "@tiptap/extension-code-block";
-import BulletList from "@tiptap/extension-bullet-list";
-import Document from "@tiptap/extension-document";
-import ListItem from "@tiptap/extension-list-item";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import { Extension } from "@tiptap/core";
-import { useEffect, useState, useMemo, FormEvent } from "react";
-import { marked } from "marked";
+import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
+import { useEffect, useState, useMemo } from "react";
 import { MenuBar } from "@/components/ui/text-editor/menu-bar";
 import { Idea } from "@/types/idea";
 import { Publication } from "@/types/publication";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIdea } from "@/lib/hooks/useIdea";
-import TurndownService from "turndown";
 import TextareaAutosize from "react-textarea-autosize";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/hooks/redux";
 import debounce from "lodash/debounce";
-
-const formatText = (text: string) => {
-  return marked(text);
-};
-
-const unformatText = (text: string) => {
-  const turndownService = new TurndownService();
-  return turndownService.turndown(text);
-};
-
-// A custom extension to map Enter key inside code blocks.
-const CustomKeymap = Extension.create({
-  name: "customKeymap",
-  addKeyboardShortcuts() {
-    return {
-      Enter: () => this.editor.commands.newlineInCode(),
-    };
-  },
-});
-
-const CustomHeading = Heading.extend({
-  renderHTML({ node, HTMLAttributes }) {
-    switch (node.attrs.level) {
-      case 1:
-        return [
-          "h1",
-          {
-            ...HTMLAttributes,
-            class: "text-text-editor-h1 mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 2:
-        return [
-          "h2",
-          {
-            ...HTMLAttributes,
-            class: "text-text-editor-h2 mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 3:
-        return [
-          "h3",
-          {
-            ...HTMLAttributes,
-            class: "text-text-editor-h3 mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 4:
-        return [
-          "h4",
-          {
-            ...HTMLAttributes,
-            class: "text-text-editor-h4 mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 5:
-        return [
-          "h5",
-          {
-            ...HTMLAttributes,
-            class: "text-text-editor-h5 mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 6:
-        return [
-          "h6",
-          {
-            ...HTMLAttributes,
-            class: "text-text-editor-h6 mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      default:
-        return ["h" + node.attrs.level, HTMLAttributes, 0];
-    }
-  },
-});
+import { FormatDropdown } from "@/components/ui/text-editor/format-dropdown";
+import { ImprovementType } from "@/lib/prompts";
+import { toast } from "react-toastify";
+import {
+  formatText,
+  getSelectedContentAsMarkdown,
+  unformatText,
+  textEditorOptions,
+} from "@/lib/utils/text-editor";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const DraftIndicator = ({
   saving,
@@ -138,55 +58,27 @@ const TextEditor = ({
   className?: string;
 }) => {
   const { selectedIdea } = useAppSelector(state => state.publications);
-  const { updateIdea } = useIdea();
+  const { updateIdea, improveText } = useIdea();
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalSubtitle, setOriginalSubtitle] = useState("");
-  const [originalOutline, setOriginalOutline] = useState("");
+  const [originalBody, setOriginalBody] = useState("");
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savingError, setSavingError] = useState(false);
+  const [loadingImprovement, setLoadingImprovement] =
+    useState<ImprovementType | null>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-  const editor = useEditor({
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      handleOutlineChange(html);
-    },
-    extensions: [
-      StarterKit.configure({
-        paragraph: {
-          HTMLAttributes: { class: "mb-5" },
-        },
-      }),
-      Document,
-      Paragraph.configure({
-        HTMLAttributes: { class: "mb-5" },
-      }),
-      Text,
-      BulletList,
-      ListItem,
-      CustomHeading,
-      CustomKeymap,
-      CustomHeading.configure({
-        levels: [1, 2, 3, 4, 5, 6],
-      }),
-      Image,
-      Link,
-      Subscript,
-      Superscript,
-      CodeBlock,
-      Placeholder.configure({
-        placeholder: "Start writing...",
-      }),
-    ],
-    content: "",
-    editorProps: {
-      attributes: {
-        class: "prose prose-lg mx-auto focus:outline-none h-full text-xl",
-      },
-    },
-  });
+  // store range for replacement
+  const [improvementRange, setImprovementRange] = useState<{
+    from: number;
+    to: number;
+  } | null>(null);
+
+  const previewEditor = useEditor(textEditorOptions());
+  const editor = useEditor(textEditorOptions(handleBodyChange));
 
   const handleSave = async () => {
     if (!selectedIdea) return;
@@ -198,19 +90,19 @@ const TextEditor = ({
         ...selectedIdea,
         title,
         subtitle,
-        outline: unformatText(editor?.getHTML() || ""),
+        body: unformatText(editor?.getHTML() || ""),
       };
 
       await updateIdea(
         selectedIdea.id,
-        updatedIdea.outline,
+        updatedIdea.body,
         updatedIdea.title,
         updatedIdea.subtitle,
       );
 
       setOriginalTitle(title);
       setOriginalSubtitle(subtitle);
-      setOriginalOutline(editor?.getHTML() || "");
+      setOriginalBody(editor?.getHTML() || "");
 
       setHasChanges(false);
     } catch (error) {
@@ -262,8 +154,8 @@ const TextEditor = ({
       setTitle(selectedIdea.title);
       setOriginalSubtitle(selectedIdea.subtitle);
       setSubtitle(selectedIdea.subtitle);
-      setOriginalOutline(selectedIdea.outline);
-      editor?.commands.setContent(formatText(selectedIdea.outline));
+      setOriginalBody(selectedIdea.body);
+      editor?.commands.setContent(formatText(selectedIdea.body));
     }
   }, [selectedIdea, editor]);
 
@@ -281,9 +173,79 @@ const TextEditor = ({
     setHasChanges(didChange);
   };
 
-  function handleOutlineChange(value: string) {
-    const didChange = value !== originalOutline;
+  function handleBodyChange(value: string) {
+    const didChange = value !== originalBody;
     setHasChanges(didChange);
+  }
+
+  async function handleImprovement(type: ImprovementType) {
+    if (!editor) return;
+    if (!selectedIdea) return;
+    const toastId = toast.loading(`Making it more ${type}`);
+
+    try {
+      const { state } = editor;
+      const { from, to } = state.selection;
+      if (from === to) throw new Error("No text selected.");
+
+      const selectedMarkdown = getSelectedContentAsMarkdown(editor);
+      if (!selectedMarkdown) throw new Error("Selected text is empty.");
+
+      const response = await improveText(
+        selectedMarkdown,
+        type,
+        from,
+        to,
+        selectedIdea.id,
+      );
+      if (!response || !response.text) {
+        throw new Error("Improvement service failed.");
+      }
+
+      // store the range so we know where to re-insert later
+      setImprovementRange({ from: response.textFrom, to: response.textTo });
+
+      // set the content in the preview editor
+      // we use 'formatText()' to convert the raw markdown or plain text into HTML for TipTap
+      previewEditor?.commands.setContent(formatText(response.text));
+
+      // show the modal
+      setShowPreviewModal(true);
+
+      toast.dismiss(toastId);
+    } catch (error: any) {
+      console.error("Failed to improve:", error);
+      toast.update(toastId, {
+        render: error.message || "Failed to improve",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    }
+  }
+
+  function handleAcceptImprovement() {
+    if (!editor || !previewEditor || !improvementRange) return;
+
+    // get the user-edited text from previewEditor
+    const newHTML = previewEditor.getHTML();
+
+    // delete the old range in main editor, and insert the new content
+    editor
+      .chain()
+      .focus()
+      .deleteRange({ from: improvementRange.from, to: improvementRange.to })
+      .insertContentAt(improvementRange.from, newHTML)
+      .run();
+
+    // close modal + clear the range
+    setShowPreviewModal(false);
+    setImprovementRange(null);
+  }
+
+  function handleCancelImprovement() {
+    setShowPreviewModal(false);
+    setImprovementRange(null);
   }
 
   return (
@@ -293,6 +255,21 @@ const TextEditor = ({
         className,
       )}
     >
+      {editor && (
+        <BubbleMenu
+          editor={editor}
+          tippyOptions={{ duration: 100 }}
+          className="flex items-center gap-1 p-1 rounded-lg border bg-background shadow-lg"
+        >
+          <FormatDropdown
+            editor={editor}
+            loading={loadingImprovement}
+            onImprove={handleImprovement}
+            maxCharacters={1200}
+          />
+        </BubbleMenu>
+      )}
+
       <div className="max-md:sticky max-md:top-14 bg-background z-10">
         <MenuBar
           editor={editor}
@@ -325,6 +302,30 @@ const TextEditor = ({
           </div>
         </div>
       </ScrollArea>
+      <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+        <DialogContent
+          closeOnOutsideClick={false}
+          className="sm:max-w-[90vw] md:max-w-[60vw] max-h-[80vh]"
+        >
+          <DialogHeader>
+            <DialogTitle>Preview</DialogTitle>
+            <DialogDescription>
+              You can make additional edits before accepting
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="border rounded-md p-4 max-h-[50vh] overflow-auto">
+            <EditorContent editor={previewEditor} />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelImprovement}>
+              Cancel
+            </Button>
+            <Button onClick={handleAcceptImprovement}>Accept</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

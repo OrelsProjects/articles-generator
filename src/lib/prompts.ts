@@ -1,5 +1,9 @@
-import { Article, ArticleWithBody } from "@/types/article";
+import { Model } from "@/lib/openRouter";
+import { ArticleWithBody } from "@/types/article";
+import { Idea } from "@/types/idea";
 import { PublicationMetadata } from "@prisma/client";
+
+export type ImprovementType = keyof typeof improvementPromptTemplates;
 
 export type OutlineLLMResponse = {
   outlines: { id: number; outline: string }[];
@@ -101,6 +105,7 @@ export const generateIdeasPrompt = (
   topArticles: ArticleWithBody[],
   options: {
     topic?: string | null;
+    inspirations?: ArticleWithBody[];
     ideasUsed?: string[];
     ideasCount: number;
     shouldSearch: boolean;
@@ -144,6 +149,7 @@ export const generateIdeasPrompt = (
     - Don't start all the words in the title and subtitle with a capital letter, unless absolutely necessary.
     - If the provided titles have emojis, use them in the generated titles.
     - The image should be a URL of an image that is relevant to the article.
+    ${options.inspirations && options.inspirations.length > 0 ? `- Use the following article ideas as inspiration: ${options.inspirations.map(inspiration => `- ${inspiration.title}`).join(", ")}.` : ""}
     ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
     ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}
         `,
@@ -212,7 +218,61 @@ The response should always be structured in JSON format, with proper escape stri
   },
 ];
 
-const promptTemplates = {
+export const generateImprovementPrompt =  (
+  type: ImprovementType,
+  text: string,
+  idea?: Idea | null,
+): {
+  messages: {
+    role: string;
+    content: string;
+  }[];
+  model: Model;
+} => {
+  const improvementPrompt = improvementPromptTemplates[type];
+  const { prompt, task } = improvementPrompt;
+  const model = improvementPrompt.model || "anthropic/claude-3.5-sonnet";
+
+  const messages = [
+    {
+      role: "system",
+      content: `${prompt}
+
+        Your task is to ${task}.
+
+        Response must follow these strict rules:
+        - **Preserve all existing formatting**, including Markdown elements like headings (#), lists (-, *), bold (**), italics (*), code blocks (\`\`\`), and inline code (\`...\`).
+        - **Enhance readability where needed**: You may improve formatting **only if it helps clarity** (e.g., adding line breaks, better structuring paragraphs, or reformatting lists).
+        - **Do not remove any structure unless necessary**: Keep the original layout but refine or expand it when beneficial.
+        - **Maintain proper paragraph spacing**: Ensure smooth transitions and logical flow.
+        - **Return only the improved text**, with no explanations or comments.
+        - **The writing must feel completely human**: Avoid robotic patterns or excessive formalism.
+        - If you keep the same title text, keep the capitalization like the original text.
+      `,
+    },
+    {
+      role: "user",
+      content: text,
+    },
+  ];
+
+  return {
+    messages,
+    model,
+  };
+};
+
+const improvementPromptTemplates: {
+  [key: string]: {
+    task: string;
+    prompt: string;
+    model?: Model;
+  };
+} = {
+  elaborate: {
+    task: "elaborate on the user's text",
+    prompt: `You are an expert writer, expand on the user's text to make it more detailed and informative.`,
+  },
   improve: {
     task: "make it better",
     prompt: `Act like a seasoned editor and improve the user's article.`,
@@ -222,7 +282,7 @@ const promptTemplates = {
     prompt: `You are a proficient editor, correct any grammatical, punctuation, or syntax errors in the user's article. Preserve the original tone and intent while ensuring the text flows naturally. The final version should read as if written effortlessly by a native speaker, without any signs of AI involvement.`,
   },
   translate: {
-    model: "gpt-4o-mini",
+    model: "openai/gpt-4o-mini",
     task: "translate user's article",
     prompt: `You are a skilled translator, convert the user's article into fluent English. Maintain the original meaning, tone, and nuance of the message. The translated article should read naturally to native English speakers, without any awkward phrasing or signs of machine translation.`,
   },

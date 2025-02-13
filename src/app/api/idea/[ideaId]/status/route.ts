@@ -27,7 +27,7 @@ export async function PATCH(
       ? { isFavorite }
       : { status: status as IdeaStatus };
 
-    await prisma.ideas.update({
+    await prisma.idea.update({
       where: {
         id: ideaId,
       },

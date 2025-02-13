@@ -60,16 +60,16 @@ const publicationSlice = createSlice({
       state,
       action: PayloadAction<{
         ideaId: string;
-        outline: string;
         title: string;
         subtitle: string;
+        body: string;
       }>,
     ) => {
       const idea = state.ideas.find(idea => idea.id === action.payload.ideaId);
       if (idea) {
-        idea.outline = action.payload.outline;
         idea.title = action.payload.title;
         idea.subtitle = action.payload.subtitle;
+        idea.body = action.payload.body;
       }
     },
     setSelectedIdea: (state, action: PayloadAction<Idea | null>) => {

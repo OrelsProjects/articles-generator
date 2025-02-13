@@ -401,3 +401,8 @@
   margin-bottom: 0.625em;
   font-weight: bold;
 }
+
+/* Add to your existing styles */
+[data-active="true"] {
+  @apply bg-primary/10 text-primary;
+}

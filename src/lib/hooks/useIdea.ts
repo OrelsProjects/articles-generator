@@ -9,6 +9,7 @@ import {
 import axios from "axios";
 import { IdeaStatus } from "@prisma/client";
 import { Idea } from "@/types/idea";
+import { ImprovementType } from "@/lib/prompts";
 
 export const useIdea = () => {
   const dispatch = useAppDispatch();
@@ -41,7 +42,7 @@ export const useIdea = () => {
 
   const updateIdea = async (
     ideaId: string,
-    outline: string,
+    body: string,
     title: string,
     subtitle: string,
   ) => {
@@ -50,10 +51,10 @@ export const useIdea = () => {
       throw new Error("Idea not found");
     }
     // optimistic update
-    dispatch(updateIdeaAction({ ideaId, outline, title, subtitle }));
+    dispatch(updateIdeaAction({ ideaId, body, title, subtitle }));
     try {
-      await axios.patch(`/api/idea/${idea.id}/outline`, {
-        outline,
+      await axios.patch(`/api/idea/${idea.id}`, {
+        body,
         title,
         subtitle,
       });
@@ -63,8 +64,8 @@ export const useIdea = () => {
       dispatch(
         updateIdeaAction({
           ideaId,
-          outline: idea.outline,
           title: idea.title,
+          body: idea.body,
           subtitle: idea.subtitle,
         }),
       );
@@ -101,6 +102,28 @@ export const useIdea = () => {
     dispatch(addIdeasAction(ideas));
   };
 
+  const improveText = async (
+    text: string,
+    type: ImprovementType,
+    textFrom: number,
+    textTo: number,
+    ideaId: string,
+  ): Promise<{ text: string; textFrom: number; textTo: number } | null> => {
+    const res = await axios.post("/api/post/improve", {
+      text,
+      type,
+      ideaId,
+    });
+
+    return res.data
+      ? {
+          text: res.data,
+          textFrom,
+          textTo,
+        }
+      : null;
+  };
+
   return {
     updateStatus,
     updateIdea,
@@ -108,5 +131,6 @@ export const useIdea = () => {
     generateIdeas,
     setIdeas,
     addIdeas,
+    improveText,
   };
 };

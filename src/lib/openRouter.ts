@@ -10,7 +10,7 @@ export type Model =
 export async function runPrompt(
   messages: { role: string; content: string }[],
   model: Model,
-) {
+): Promise<string> {
   console.log("About to run prompt on model", model);
   console.time("runPrompt");
   const response = await axios.post(

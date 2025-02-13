@@ -4,18 +4,17 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import TurndownService from "turndown";
 
+export type Filter = {
+  leftSideValue: string;
+  rightSideValue: string;
+  operator: "=" | "!=" | ">" | "<" | ">=" | "<=";
+};
+
 interface SearchOptions {
   query: string;
   limit?: number;
   includeBody?: boolean;
-}
-
-interface Article {
-  id: string;
-  canonical_url: string;
-  title: string;
-  subtitle?: string;
-  body_text?: string;
+  filters?: Filter[];
 }
 
 interface ArticleContent {
@@ -36,9 +35,9 @@ async function getSubstackArticleData(
   // Author selectors in order of preference
   const authorSelectors = [
     // Profile hover card target (new style)
-    '.profile-hover-card-target a, .profileHoverCardTarget-PBxvGm a',
+    ".profile-hover-card-target a, .profileHoverCardTarget-PBxvGm a",
     // Meta section with author link
-    '.meta-EgzBVA a',
+    ".meta-EgzBVA a",
     // Generic author link patterns
     'a[href*="/@"], a[href*="/p/"][href*="/by/"]',
     // Fallback to any element with author metadata
@@ -76,22 +75,22 @@ async function getSubstackArticleData(
       const $ = cheerio.load(html);
 
       // Extract author information using multiple selectors
-      let authorName = '';
-      let authorUrl = '';
+      let authorName = "";
+      let authorUrl = "";
 
       // Try each selector until we find a match
       for (const selector of authorSelectors) {
         const authorElement = $(selector).first();
         if (authorElement.length) {
           authorName = authorElement.text().trim();
-          authorUrl = authorElement.attr('href') || '';
-          
+          authorUrl = authorElement.attr("href") || "";
+
           // If we found a name, try to clean it up
           if (authorName) {
             // Remove any "By" prefix
-            authorName = authorName.replace(/^By\s+/i, '');
+            authorName = authorName.replace(/^By\s+/i, "");
             // Remove any extra whitespace
-            authorName = authorName.replace(/\s+/g, ' ').trim();
+            authorName = authorName.replace(/\s+/g, " ").trim();
             break;
           }
         }
@@ -102,13 +101,13 @@ async function getSubstackArticleData(
         const structuredData = $('script[type="application/ld+json"]');
         structuredData.each((_, element) => {
           try {
-            const data = JSON.parse($(element).html() || '');
+            const data = JSON.parse($(element).html() || "");
             if (data.author?.name) {
               authorName = data.author.name;
-              authorUrl = data.author.url || '';
+              authorUrl = data.author.url || "";
             }
           } catch (e) {
-            console.warn('Failed to parse structured data:', e);
+            console.warn("Failed to parse structured data:", e);
           }
         });
       }
@@ -116,7 +115,7 @@ async function getSubstackArticleData(
       // Validate and format author URL
       if (authorUrl) {
         // Ensure URL is absolute
-        if (!authorUrl.startsWith('http')) {
+        if (!authorUrl.startsWith("http")) {
           const baseUrl = new URL(url).origin;
           authorUrl = new URL(authorUrl, baseUrl).toString();
         }
@@ -124,7 +123,7 @@ async function getSubstackArticleData(
         try {
           new URL(authorUrl);
         } catch (e) {
-          authorUrl = '';
+          authorUrl = "";
         }
       }
 
@@ -149,20 +148,22 @@ async function getSubstackArticleData(
       }
 
       const markdown = turndownService.turndown(article.html() || "");
-      data.push({ 
-        url, 
+      data.push({
+        url,
         content: markdown,
-        author: authorName ? {
-          name: authorName,
-          url: authorUrl || null
-        } : null
+        author: authorName
+          ? {
+              name: authorName,
+              url: authorUrl || null,
+            }
+          : null,
       });
     } catch (error) {
       console.error(`Failed to fetch article from ${url}:`, error);
-      data.push({ 
-        url, 
+      data.push({
+        url,
         content: "",
-        author: null
+        author: null,
       });
     }
   }
@@ -174,6 +175,7 @@ export async function searchSimilarArticles({
   query,
   limit = 20,
   includeBody = false,
+  filters = [],
 }: SearchOptions) {
   const MILVUS_API_KEY = process.env.MILVUS_API_KEY;
   const MILVUS_ENDPOINT = process.env.MILVUS_ENDPOINT;
@@ -198,11 +200,19 @@ export async function searchSimilarArticles({
     "Content-Type": "application/json",
   };
 
+  const filtersString = filters
+    .map(
+      filter =>
+        `${filter.leftSideValue} ${filter.operator} ${filter.rightSideValue}`,
+    )
+    .join(" AND ");
+
   const searchBody = {
     collectionName: "articles_substack",
     data: [embedding],
     limit: limit,
     outputFields: ["*"],
+    filters: filtersString,
   };
 
   // Search vectors in Milvus

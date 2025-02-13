@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    const ideasGeneratedToday = await prisma.ideas.findMany({
+    const ideasGeneratedToday = await prisma.idea.findMany({
       where: {
         userId: session.user.id,
         createdAt: {
@@ -91,9 +91,16 @@ export async function GET(req: NextRequest) {
       query: topic || publicationMetadata.generatedDescription,
       limit: 10,
       includeBody: true,
+      filters: [
+        {
+          leftSideValue: "reaction_count",
+          rightSideValue: "50",
+          operator: ">",
+        },
+      ],
     })) as ArticleWithBody[];
 
-    const ideasUsed = await prisma.ideas.findMany({
+    const ideasUsed = await prisma.idea.findMany({
       where: {
         userId: session.user.id,
       },
@@ -104,8 +111,10 @@ export async function GET(req: NextRequest) {
 
     const messages = generateIdeasPrompt(publicationMetadata, userArticles, {
       topic,
+      inspirations,
       ideasCount: parseInt(ideasCount || "3"),
       ideasUsed: ideasUsed.map(idea => idea.description),
+
       shouldSearch: shouldSearch === "true",
     });
 
@@ -138,7 +147,7 @@ export async function GET(req: NextRequest) {
     }));
 
     for (const idea of ideasWithOutlines) {
-      const ideaCreated = await prisma.ideas.create({
+      const ideaCreated = await prisma.idea.create({
         data: {
           topic,
           userId: session.user.id,
@@ -146,6 +155,7 @@ export async function GET(req: NextRequest) {
           subtitle: idea.subtitle,
           description: idea.description,
           outline: idea.outline || "",
+          body: idea.outline || "",
           inspiration: idea.inspiration,
           publicationId: publicationMetadata.id,
           status: "new",

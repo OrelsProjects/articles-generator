@@ -19,16 +19,16 @@ export async function PATCH(
   }
   try {
     const { ideaId } = params.params;
-    const { outline, title, subtitle } = await request.json();
+    const { body, title, subtitle } = await request.json();
     const isValidRequest = await isIdeaBelongToUser(ideaId, session.user.id);
 
     if (!isValidRequest) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const idea = await prisma.ideas.update({
+    const idea = await prisma.idea.update({
       where: { id: ideaId },
-      data: { outline, title, subtitle },
+      data: { title, subtitle, body },
     });
 
     return NextResponse.json(idea);
