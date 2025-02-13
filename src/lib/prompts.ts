@@ -250,8 +250,12 @@ export const generateImprovementPrompt = (
         - If you keep the same title text, keep the capitalization like the original text.
         ${type === "elaborate" ? "- Include images in the outline, where relevant." : ""}
 
-        Here's the rest of the article for context:
-        ${idea?.body.slice(0, 3000)}
+       ${
+         idea
+           ? `Here's the rest of the article for context:
+        ${idea?.body.slice(0, 3000)}`
+           : ""
+       }
       `,
     },
     {
