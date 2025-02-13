@@ -20,7 +20,10 @@ export async function PATCH(
   try {
     const { ideaId } = params.params;
     const { body, title, subtitle } = await request.json();
-    const isValidRequest = await isIdeaBelongToUser(ideaId, session.user.id);
+    const isValidRequest = await isIdeaBelongToUser({
+      ideaId,
+      userId: session.user.id,
+    });
 
     if (!isValidRequest) {
       return new Response("Unauthorized", { status: 401 });

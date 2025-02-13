@@ -1,5 +1,7 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
+import { isIdeaBelongToUser } from "@/lib/dal/ideas";
+import loggerServer from "@/loggerServer";
 import { IdeaStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -23,6 +25,15 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
+    const isValidRequest = await isIdeaBelongToUser({
+      ideaId,
+      userId: session.user.id,
+    });
+
+    if (!isValidRequest) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const updateData = isFavorite
       ? { isFavorite }
       : { status: status as IdeaStatus };
@@ -38,6 +49,10 @@ export async function PATCH(
       { status: 200 },
     );
   } catch (error: any) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    loggerServer.error("Error updating idea status:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

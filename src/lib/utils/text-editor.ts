@@ -1,9 +1,12 @@
-import { DOMSerializer } from "@tiptap/pm/model";
-import { Editor, Extension, UseEditorOptions } from "@tiptap/react";
 import { marked } from "marked";
 import TurndownService from "turndown";
 
+import { DOMSerializer } from "@tiptap/pm/model";
+import { Editor, Extension, UseEditorOptions } from "@tiptap/react";
+import { Node } from "@tiptap/core";
+
 import StarterKit from "@tiptap/starter-kit";
+import BubbleMenu from "@tiptap/extension-bubble-menu";
 import Heading from "@tiptap/extension-heading";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
@@ -35,7 +38,7 @@ export function getSelectedContentAsHTML(editor: Editor) {
 
   const slice = state.doc.slice(from, to);
 
-  // Use ProseMirror’s DOMSerializer
+  // Use ProseMirror's DOMSerializer
   const div = document.createElement("div");
   const serializer = DOMSerializer.fromSchema(editor.schema);
   div.appendChild(serializer.serializeFragment(slice.content));
@@ -43,8 +46,19 @@ export function getSelectedContentAsHTML(editor: Editor) {
   return div.innerHTML;
 }
 
+// Convert HTML → Markdown properly
+export const unformatText = (html: string): string => {
+  return turndownService.turndown(html);
+};
+
 export const formatText = (text: string): string => {
-  return marked(text) as string;
+  marked.setOptions({
+    gfm: true,
+    breaks: true,
+  });
+
+  const markedText = marked(text) as string;
+  return markedText;
 };
 
 const turndownService = new TurndownService({
@@ -61,11 +75,6 @@ turndownService.addRule("headers", {
   },
 });
 
-// Convert HTML → Markdown properly
-export const unformatText = (html: string): string => {
-  return turndownService.turndown(html);
-};
-
 // A custom extension to map Enter key inside code blocks.
 const CustomKeymap = Extension.create({
   name: "customKeymap",
@@ -73,6 +82,40 @@ const CustomKeymap = Extension.create({
     return {
       Enter: () => this.editor.commands.newlineInCode(),
     };
+  },
+});
+
+const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      src: { default: null },
+      alt: { default: null },
+      class: { default: "rounded-md max-w-full h-auto" },
+      contenteditable: { default: "false" },
+      draggable: { default: "true" },
+    };
+  },
+  // make it centered horizontally
+  parseHTML() {
+    return [
+      {
+        tag: "img",
+        getAttrs: dom => ({
+          src: dom.getAttribute("src"),
+          alt: dom.getAttribute("alt") || "",
+          class: dom.getAttribute("class") || "rounded-md max-w-full h-auto",
+          contenteditable: dom.getAttribute("contenteditable") || "false",
+          draggable: dom.getAttribute("draggable") || "true",
+        }),
+      },
+    ];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "div",
+      { style: "display: flex; justify-content: center;" }, // Centering the image
+      ["img", HTMLAttributes],
+    ];
   },
 });
 
@@ -164,19 +207,52 @@ export const textEditorOptions = (
     CustomHeading.configure({
       levels: [1, 2, 3, 4, 5, 6],
     }),
-    Image,
+    CustomImage.configure({ inline: true }),
     Link,
     Subscript,
     Superscript,
     CodeBlock,
+    BubbleMenu.configure({
+      shouldShow: ({ editor, view, state, oldState, from, to }) => {
+        // only show the bubble menu if not image
+        return !editor.isActive("image");
+      },
+    }),
     Placeholder.configure({
       placeholder: "Start writing...",
     }),
+    SkeletonNode,
   ],
   content: "",
   editorProps: {
     attributes: {
       class: "prose prose-lg mx-auto focus:outline-none h-full text-xl",
     },
+    handleDrop: (view, event, slice, moved) => {
+      if (moved || !event.dataTransfer) return false;
+      // Let the default handler deal with it
+      return false;
+    },
+  },
+});
+
+export const SkeletonNode = Node.create({
+  name: "skeleton",
+  group: "block",
+  inline: false,
+  atom: true,
+
+  renderHTML() {
+    return [
+      "div",
+      {
+        class:
+          "w-full flex justify-center skeleton-placeholder my-4 flex items-center gap-4",
+      },
+      [
+        "div",
+        { class: "w-[420px] h-[300px] bg-gray-200 animate-pulse rounded-md" },
+      ],
+    ];
   },
 });

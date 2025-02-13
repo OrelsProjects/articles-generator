@@ -5,7 +5,7 @@ export type Model =
   | "openai/gpt-4o"
   | "openai/gpt-4o-mini"
   | "anthropic/claude-3.5-sonnet"
-  | "google/gemini-flash-1.5-8b";
+  | "google/gemini-2.0-flash-001";
 
 export async function runPrompt(
   messages: { role: string; content: string }[],

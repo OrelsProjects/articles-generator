@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
     });
     console.timeEnd("Getting user articles with order by reaction count");
 
-    const modelUsedForIdeas = "anthropic/claude-3.5-sonnet";
+    const modelUsedForIdeas = "google/gemini-2.0-flash-001";
     const modelUsedForOutline = "openai/gpt-4o";
 
     const inspirations: ArticleWithBody[] = (await searchSimilarArticles({
@@ -115,7 +115,6 @@ export async function GET(req: NextRequest) {
       inspirations,
       ideasCount: parseInt(ideasCount || "3"),
       ideasUsed: ideasUsed.map(idea => idea.description),
-
       shouldSearch: shouldSearch === "true",
     });
 

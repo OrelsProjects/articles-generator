@@ -99,6 +99,8 @@ export function FormatDropdown({
   const [openUp, setOpenUp] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  
+
   // Toggle the dropdown & measure available space
   function toggleDropdown(e: React.MouseEvent) {
     e.preventDefault();

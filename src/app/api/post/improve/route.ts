@@ -1,15 +1,13 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
-import { getUserArticlesBody } from "@/lib/dal/articles";
 import { getUserPlan } from "@/lib/dal/user";
 import { runPrompt } from "@/lib/openRouter";
 import { generateImprovementPrompt, ImprovementType } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
-import { ArticleWithBody } from "@/types/article";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
-const MAX_CHARACTERS = 1500;
+const MAX_CHARACTERS = 15000;
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);

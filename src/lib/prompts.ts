@@ -218,7 +218,7 @@ The response should always be structured in JSON format, with proper escape stri
   },
 ];
 
-export const generateImprovementPrompt =  (
+export const generateImprovementPrompt = (
   type: ImprovementType,
   text: string,
   idea?: Idea | null,
@@ -248,11 +248,17 @@ export const generateImprovementPrompt =  (
         - **Return only the improved text**, with no explanations or comments.
         - **The writing must feel completely human**: Avoid robotic patterns or excessive formalism.
         - If you keep the same title text, keep the capitalization like the original text.
+        ${type === "elaborate" ? "- Include images in the outline, where relevant." : ""}
+
+        Here's the rest of the article for context:
+        ${idea?.body.slice(0, 3000)}
       `,
     },
     {
       role: "user",
-      content: text,
+      content: `
+      Text: ${text}
+      `,
     },
   ];
 
@@ -272,6 +278,7 @@ const improvementPromptTemplates: {
   elaborate: {
     task: "elaborate on the user's text",
     prompt: `You are an expert writer, expand on the user's text to make it more detailed and informative.`,
+    model: "google/gemini-2.0-flash-001",
   },
   improve: {
     task: "make it better",
@@ -282,7 +289,6 @@ const improvementPromptTemplates: {
     prompt: `You are a proficient editor, correct any grammatical, punctuation, or syntax errors in the user's article. Preserve the original tone and intent while ensuring the text flows naturally. The final version should read as if written effortlessly by a native speaker, without any signs of AI involvement.`,
   },
   translate: {
-    model: "openai/gpt-4o-mini",
     task: "translate user's article",
     prompt: `You are a skilled translator, convert the user's article into fluent English. Maintain the original meaning, tone, and nuance of the message. The translated article should read naturally to native English speakers, without any awkward phrasing or signs of machine translation.`,
   },

@@ -188,8 +188,24 @@ model Idea {
 
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   publication PublicationMetadata @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  
+  Image       Image[]
 
   @@map("ideas")
+}
+
+model Image {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  url    String @unique
+  ideaId String @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  @@map("images")
 }
 
 model FreeUsers {

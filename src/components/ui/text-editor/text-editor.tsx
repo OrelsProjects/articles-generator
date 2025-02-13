@@ -1,5 +1,5 @@
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { MenuBar } from "@/components/ui/text-editor/menu-bar";
 import { Idea } from "@/types/idea";
 import { Publication } from "@/types/publication";
@@ -17,6 +17,7 @@ import {
   getSelectedContentAsMarkdown,
   unformatText,
   textEditorOptions,
+  SkeletonNode,
 } from "@/lib/utils/text-editor";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Logger } from "@/logger";
+import { Skeleton } from "@/components/ui/skeleton";
+import cuid from "cuid";
+
+type ImageName = string;
 
 const DraftIndicator = ({
   saving,
@@ -72,6 +77,12 @@ const TextEditor = ({
     useState<ImprovementType | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const previewEditorRef = useRef<HTMLDivElement>(null);
+  const [loadingImages, setLoadingImages] = useState<
+    {
+      name: ImageName;
+      position: number;
+    }[]
+  >([]);
 
   // store range for replacement
   const [improvementRange, setImprovementRange] = useState<{
@@ -157,7 +168,8 @@ const TextEditor = ({
       setOriginalSubtitle(selectedIdea.subtitle);
       setSubtitle(selectedIdea.subtitle);
       setOriginalBody(selectedIdea.body);
-      editor?.commands.setContent(formatText(selectedIdea.body));
+      const formattedBody = formatText(selectedIdea.body);
+      editor?.commands.setContent(formattedBody);
     }
   }, [selectedIdea, editor]);
 
@@ -183,6 +195,10 @@ const TextEditor = ({
   async function handleImprovement(type: ImprovementType) {
     if (!editor) return;
     if (!selectedIdea) return;
+    if (loadingImprovement) return;
+
+    setLoadingImprovement(type);
+
     const toastId = toast.loading(`Making it more ${type}`);
 
     try {
@@ -223,6 +239,8 @@ const TextEditor = ({
         isLoading: false,
         autoClose: 3000,
       });
+    } finally {
+      setLoadingImprovement(null);
     }
   }
 
@@ -257,6 +275,104 @@ const TextEditor = ({
     }
   }, [showPreviewModal]);
 
+  const handleFileDrop = useCallback(
+    async (event: DragEvent) => {
+      event.preventDefault();
+      if (!editor || !selectedIdea) return;
+
+      const { view } = editor;
+      const position = view.posAtCoords({
+        left: event.clientX,
+        top: event.clientY,
+      });
+
+      if (!position) return; // Bail if no valid position
+      debugger;
+      setLoadingImages(prev => [
+        ...prev,
+        {
+          name: event.dataTransfer?.files?.[0]?.name || "",
+          position: position.pos,
+        },
+      ]);
+
+      const files = Array.from(event.dataTransfer?.files || []);
+      const imageFiles = files.filter(file => file.type.startsWith("image/"));
+
+      // Add files to uploading state
+      const uploadingFilesWithIds = imageFiles.map(file => ({
+        id: cuid(),
+        file,
+      }));
+
+      if (uploadingFilesWithIds.length > 0) {
+        editor
+          .chain()
+          .focus()
+          .insertContentAt(position.pos, {
+            type: "skeleton",
+          })
+          .run();
+      }
+      // Upload each file
+      for (const { id, file } of uploadingFilesWithIds) {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const response = await fetch(
+            `/api/idea/${selectedIdea.id}/upload-file`,
+            {
+              method: "POST",
+              body: formData,
+            },
+          );
+
+          if (!response.ok) throw new Error("Upload failed");
+
+          const { url } = await response.json();
+
+          // Insert the image at the saved position
+          editor
+            .chain()
+            .focus()
+            .deleteRange({ from: position.pos, to: position.pos + 1 }) // Remove skeleton
+            .insertContentAt(position.pos, {
+              type: "image",
+              attrs: { src: url },
+            })
+            .run();
+        } catch (error: any) {
+          toast.error("Failed to upload image");
+          Logger.error("Failed to upload file:", error);
+        } finally {
+          // Remove file from uploading state
+          setLoadingImages(prev => prev.filter(f => f.name !== file.name));
+        }
+      }
+    },
+    [editor, selectedIdea],
+  );
+
+  // Add drop event listeners
+  useEffect(() => {
+    const editorElement = document.querySelector(".tiptap") as HTMLElement;
+    if (!editorElement) return;
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    editorElement.addEventListener("drop", handleFileDrop);
+    editorElement.addEventListener("dragover", handleDragOver);
+
+    return () => {
+      editorElement.removeEventListener("drop", handleFileDrop);
+      editorElement.removeEventListener("dragover", handleDragOver);
+    };
+  }, [handleFileDrop]);
+
   return (
     <div
       className={cn(
@@ -267,14 +383,14 @@ const TextEditor = ({
       {editor && (
         <BubbleMenu
           editor={editor}
-          tippyOptions={{ duration: 100 }}
+          tippyOptions={{ duration: 10 }}
           className="flex items-center gap-1 p-1 rounded-lg border bg-background shadow-lg"
         >
           <FormatDropdown
             editor={editor}
             loading={loadingImprovement}
             onImprove={handleImprovement}
-            maxCharacters={1200}
+            maxCharacters={15000}
           />
         </BubbleMenu>
       )}
