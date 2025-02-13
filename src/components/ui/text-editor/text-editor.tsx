@@ -1,5 +1,5 @@
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { MenuBar } from "@/components/ui/text-editor/menu-bar";
 import { Idea } from "@/types/idea";
 import { Publication } from "@/types/publication";
@@ -70,6 +70,7 @@ const TextEditor = ({
   const [loadingImprovement, setLoadingImprovement] =
     useState<ImprovementType | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const previewEditorRef = useRef<HTMLDivElement>(null);
 
   // store range for replacement
   const [improvementRange, setImprovementRange] = useState<{
@@ -248,6 +249,13 @@ const TextEditor = ({
     setImprovementRange(null);
   }
 
+  // Add this effect to handle scroll reset
+  useEffect(() => {
+    if (showPreviewModal && previewEditorRef.current) {
+      previewEditorRef.current.scrollTop = 0;
+    }
+  }, [showPreviewModal]);
+
   return (
     <div
       className={cn(
@@ -314,7 +322,10 @@ const TextEditor = ({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="border rounded-md p-4 max-h-[50vh] overflow-auto">
+          <div
+            ref={previewEditorRef}
+            className="border rounded-md p-4 pt-0 max-h-[50vh] overflow-auto"
+          >
             <EditorContent editor={previewEditor} />
           </div>
 
