@@ -37,7 +37,7 @@ export async function PATCH(
       { message: "Idea status updated" },
       { status: 200 },
     );
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }

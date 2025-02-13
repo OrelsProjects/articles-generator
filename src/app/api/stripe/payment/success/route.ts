@@ -52,11 +52,7 @@ export async function GET(req: NextRequest) {
       req.nextUrl.origin + `/dashboard?success=true`,
     );
   } catch (error: any) {
-    loggerServer.error(
-      "Failed to complete subscription",
-      "stripe callback",
-      error,
-    );
+    loggerServer.error("Failed to complete subscription", error);
     return NextResponse.redirect(req.nextUrl.origin + "/dashboard?error=true");
   }
 }

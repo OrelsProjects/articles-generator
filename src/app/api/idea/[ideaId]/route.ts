@@ -32,7 +32,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(idea);
-  } catch (error) {
+  } catch (error: any) {
     return new Response("Internal Server Error", { status: 500 });
   }
 }

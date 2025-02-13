@@ -14,6 +14,7 @@ import {
 } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 import { ArticleWithBody } from "@/types/article";
+import loggerServer from "@/loggerServer";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -75,8 +76,8 @@ export async function POST(req: NextRequest) {
           );
           await Promise.all(promises);
         }
-      } catch (error) {
-        console.error(error);
+      } catch (error: any) {
+        loggerServer.error("Error updating article body:", error);
       }
     }
 
@@ -143,8 +144,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       publication,
     });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    loggerServer.error("Error analyzing publication:", error);
     if (error instanceof PublicationNotFoundError) {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }

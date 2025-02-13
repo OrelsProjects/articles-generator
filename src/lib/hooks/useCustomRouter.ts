@@ -1,3 +1,4 @@
+import { Logger } from "@/logger";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -40,8 +41,8 @@ export function useCustomRouter() {
       }
 
       router.push(urlString, options);
-    } catch (error) {
-      console.error("Error parsing URL", error);
+    } catch (error: any) {
+      Logger.error("Error parsing URL", error);
       router.push(href, options);
     }
   };

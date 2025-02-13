@@ -24,7 +24,7 @@ export const validateUrl = (url: string) => {
   try {
     new URL(toValidUrl(url));
     return true;
-  } catch (error) {
+  } catch (error: any) {
     return false;
   }
 };

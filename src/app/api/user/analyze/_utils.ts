@@ -1,4 +1,5 @@
 import { toValidUrl } from "@/lib/utils/url";
+import loggerServer from "@/loggerServer";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 import axios from "axios";
 import * as cheerio from "cheerio";
@@ -21,8 +22,8 @@ export async function extractContent(url: string) {
       title,
       description,
     };
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    loggerServer.error("Error extracting content:", error);
     throw new PublicationNotFoundError(
       "The publication was not found. Please check your URL and try again.",
     );

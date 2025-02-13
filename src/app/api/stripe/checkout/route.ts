@@ -37,11 +37,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ sessionId: stripeSession.id }, { status: 200 });
   } catch (error: any) {
-    loggerServer.error(
-      "Error creating a checkout session",
-      session?.user?.id || "Unknown user",
-      error,
-    );
+    loggerServer.error("Error creating a checkout session", error);
     return NextResponse.json(
       { error: "Error creating a checkout session" },
       { status: 500 },

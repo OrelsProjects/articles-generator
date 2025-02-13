@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { PublicationResponse } from "@/types/publication";
+import loggerServer from "@/loggerServer";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -69,8 +70,8 @@ export async function GET(req: NextRequest) {
     };
 
     return NextResponse.json({ publication: response }, { status: 200 });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    loggerServer.error("Error in publications route:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

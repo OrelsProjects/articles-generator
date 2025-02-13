@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       },
     });
     return NextResponse.json({ plan: userMetadata?.plan }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

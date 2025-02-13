@@ -1,4 +1,5 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
+import loggerServer from "@/loggerServer";
 import { PotentialClientStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -96,8 +97,8 @@ export async function GET(req: Request) {
       },
     });
     return NextResponse.json(postsWithStatus);
-  } catch (error) {
-    console.error("Error in potential-users route:", error);
+  } catch (error: any) {
+    loggerServer.error("Error in potential-users route:", error);
     return NextResponse.json(
       { error: "Failed to fetch potential users" },
       { status: 500 },

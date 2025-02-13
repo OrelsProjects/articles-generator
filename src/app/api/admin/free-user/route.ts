@@ -2,6 +2,7 @@ import prisma from "@/app/api/_db/db";
 import { NextRequest, NextResponse } from "next/server";
 import cuid from "cuid";
 import { Plan } from "@prisma/client";
+import loggerServer from "@/loggerServer";
 
 const ONE_DAY = 1000 * 60 * 60 * 24; // 1 day
 const EXPIRATION_TIME = ONE_DAY * 5; // 5 days
@@ -14,8 +15,8 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(freeUsers);
-  } catch (error) {
-    console.error("Error fetching free users:", error);
+  } catch (error: any) {
+    loggerServer.error("Error fetching free users:", error);
     return NextResponse.json(
       { error: "Failed to fetch free users" },
       { status: 500 },
@@ -42,8 +43,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       freeUser,
     });
-  } catch (error) {
-    console.error("Error creating free user:", error);
+  } catch (error: any) {
+    loggerServer.error("Error creating free user:", error);
     return NextResponse.json(
       { error: "Failed to create free user" },
       { status: 500 },
@@ -78,8 +79,8 @@ export async function PATCH(req: NextRequest) {
     });
 
     return NextResponse.json(updatedUser);
-  } catch (error) {
-    console.error("Error updating free user:", error);
+  } catch (error: any) {
+    loggerServer.error("Error updating free user:", error);
     return NextResponse.json(
       { error: "Failed to update free user" },
       { status: 500 },

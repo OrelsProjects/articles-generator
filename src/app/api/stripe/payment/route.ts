@@ -13,10 +13,6 @@ export async function POST(req: NextRequest) {
     const stripe = getStripeInstance();
     const products = stripe.products.list();
   } catch (error: any) {
-    loggerServer.error(
-      "Error getting webhook details",
-      session?.user?.id || "Unknown user",
-      error,
-    );
+    loggerServer.error("Error getting webhook details", error);
   }
 }

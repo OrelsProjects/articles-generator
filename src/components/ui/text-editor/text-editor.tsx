@@ -27,6 +27,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Logger } from "@/logger";
 
 const DraftIndicator = ({
   saving,
@@ -106,8 +107,8 @@ const TextEditor = ({
       setOriginalBody(editor?.getHTML() || "");
 
       setHasChanges(false);
-    } catch (error) {
-      console.error("Failed to save:", error);
+    } catch (error: any) {
+      Logger.error("Failed to save:", error);
       setSavingError(true);
     } finally {
       // Add a small delay before hiding the saving indicator
@@ -215,7 +216,7 @@ const TextEditor = ({
 
       toast.dismiss(toastId);
     } catch (error: any) {
-      console.error("Failed to improve:", error);
+      Logger.error("Failed to improve:", error);
       toast.update(toastId, {
         render: error.message || "Failed to improve",
         type: "error",

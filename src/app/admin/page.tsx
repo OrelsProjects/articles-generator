@@ -120,8 +120,8 @@ export default function AdminPage() {
       if (!initialLoadComplete) {
         setInitialLoadComplete(true);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+    } catch (error: any) {
+      setError(error instanceof Error ? error.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -170,8 +170,10 @@ export default function AdminPage() {
       });
 
       if (!response.ok) throw new Error("Failed to update status");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update status");
+    } catch (error: any) {
+      setError(
+        error instanceof Error ? error.message : "Failed to update status",
+      );
       setUsers(oldUsers);
     } finally {
       setStatusUpdating(null);
@@ -200,9 +202,9 @@ export default function AdminPage() {
             : user,
         ),
       );
-    } catch (err) {
+    } catch (error: any) {
       setError(
-        err instanceof Error ? err.message : "Failed to generate message",
+        error instanceof Error ? error.message : "Failed to generate message",
       );
     } finally {
       setMessageGenerating(null);

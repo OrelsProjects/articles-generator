@@ -72,8 +72,8 @@ export default function FreeUsersPage() {
       const data = await response.json();
       setUsers(data);
       setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+    } catch (error: any) {
+      setError(error instanceof Error ? error.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,7 @@ export default function FreeUsersPage() {
 
   const generateNewUser = async () => {
     if (!newUserName.trim()) return;
-    
+
     setIsGenerating(true);
     try {
       const response = await fetch("/api/admin/free-user", {
@@ -97,9 +97,9 @@ export default function FreeUsersPage() {
       setError(null);
       setNewUserDialogOpen(false);
       setNewUserName("");
-    } catch (err) {
+    } catch (error: any) {
       setError(
-        err instanceof Error ? err.message : "Failed to generate new user",
+        error instanceof Error ? error.message : "Failed to generate new user",
       );
     } finally {
       setIsGenerating(false);
@@ -132,8 +132,10 @@ export default function FreeUsersPage() {
             : user,
         ),
       );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to revoke user");
+    } catch (error: any) {
+      setError(
+        error instanceof Error ? error.message : "Failed to revoke user",
+      );
     } finally {
       setActionLoading(null);
     }
@@ -154,8 +156,10 @@ export default function FreeUsersPage() {
           user.id === id ? { ...user, code: data.code } : user,
         ),
       );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to refresh code");
+    } catch (error: any) {
+      setError(
+        error instanceof Error ? error.message : "Failed to refresh code",
+      );
     } finally {
       setActionLoading(null);
     }
@@ -317,7 +321,7 @@ export default function FreeUsersPage() {
               <Input
                 id="name"
                 value={newUserName}
-                onChange={(e) => setNewUserName(e.target.value)}
+                onChange={e => setNewUserName(e.target.value)}
                 placeholder="Enter name..."
                 className="col-span-3"
               />
@@ -340,7 +344,7 @@ export default function FreeUsersPage() {
                   Generating...
                 </>
               ) : (
-                'Generate'
+                "Generate"
               )}
             </Button>
           </DialogFooter>

@@ -1,5 +1,6 @@
 import { prismaArticles } from "@/app/api/_db/db";
 import { toValidUrl, validateUrl } from "@/lib/utils/url";
+import loggerServer from "@/loggerServer";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import TurndownService from "turndown";
@@ -57,15 +58,15 @@ async function getSubstackArticleData(
           response = await axios.get(validUrl);
           console.log(`Fetched article from ${url}`);
           break;
-        } catch (error) {
-          console.error(`Failed to fetch article from ${url}:`, error);
+        } catch (error: any) {
+          loggerServer.error(`Failed to fetch article from ${url}:`, error);
           retryCount++;
           await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
       }
 
       if (!response) {
-        console.error(
+        loggerServer.error(
           `Failed to fetch article from ${url} after ${maxRetries} attempts`,
         );
         data.push({ url, content: "" });
@@ -106,8 +107,8 @@ async function getSubstackArticleData(
               authorName = data.author.name;
               authorUrl = data.author.url || "";
             }
-          } catch (e) {
-            console.warn("Failed to parse structured data:", e);
+          } catch (error: any) {
+            loggerServer.warn("Failed to parse structured data:", error);
           }
         });
       }
@@ -122,7 +123,7 @@ async function getSubstackArticleData(
         // Ensure it's a valid URL
         try {
           new URL(authorUrl);
-        } catch (e) {
+        } catch (error: any) {
           authorUrl = "";
         }
       }
@@ -158,8 +159,8 @@ async function getSubstackArticleData(
             }
           : null,
       });
-    } catch (error) {
-      console.error(`Failed to fetch article from ${url}:`, error);
+    } catch (error: any) {
+      loggerServer.error(`Failed to fetch article from ${url}:`, error);
       data.push({
         url,
         content: "",

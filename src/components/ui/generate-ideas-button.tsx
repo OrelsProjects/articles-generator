@@ -26,6 +26,7 @@ import { useIdea } from "@/lib/hooks/useIdea";
 import { cn } from "@/lib/utils";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
 import { ToastStepper } from "@/components/ui/toast-stepper";
+import { Logger } from "@/logger";
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
@@ -90,8 +91,8 @@ export default function GenerateIdeasButton({
       await generateIdeas({ topic, shouldSearch });
       setTopic("");
       setShouldSearch(false);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      Logger.error("Failed to generate ideas:", error);
       toast.error("Failed to generate ideas.. try again");
     } finally {
       setIsGenerating(false);

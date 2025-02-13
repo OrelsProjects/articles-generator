@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
   //   try {
   //     const sanitizedString = outlineString.replace(/\r?\n/g, "\\n");
   //     outline = JSON.parse(sanitizedString) as { outline: string };
-  //   } catch (error) {
+  //   } catch (error: any) {
   //     console.error(error);
   //   }
 
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
     title: "title",
     subtitle: "subtitle",
   });
-  // } catch (error) {
+  // } catch (error: any) {
   //   console.error(error);
   //   return NextResponse.json(
   //     { error: "Internal Server Error" },

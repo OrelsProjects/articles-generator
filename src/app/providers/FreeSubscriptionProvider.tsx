@@ -1,5 +1,6 @@
 "use client";
 
+import { Logger } from "@/logger";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -17,10 +18,10 @@ export default function FreeSubscriptionProvider({
       try {
         setLoading(true);
         const response = await axios.post("/api/user/free-sub", { code });
-        console.log(response.data);
+        Logger.info("User plan updated:", response.data);
         localStorage.removeItem("code");
-      } catch (error) {
-        console.error(error);
+      } catch (error: any) {
+        Logger.error("Error updating user plan:", error);
       } finally {
         setLoading(false);
       }

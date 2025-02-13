@@ -13,6 +13,7 @@ import { getUserArticlesWithBody } from "@/lib/dal/articles";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { ArticleWithBody } from "@/types/article";
 import { parseJson } from "@/lib/utils/json";
+import loggerServer from "@/loggerServer";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -138,13 +139,17 @@ export async function GET(req: NextRequest) {
     );
     const { outlines } = await parseJson<OutlineLLMResponse>(outlinesString);
 
-    const ideasWithOutlines = ideas.map((idea, index) => ({
-      ...idea,
-      outline: outlines.find(outline => outline.id === index)?.outline,
-      status: "new",
-      modelUsedForIdeas,
-      modelUsedForOutline,
-    }));
+    const ideasWithOutlines = ideas.map((idea, index) => {
+      const outline = outlines.find(outline => outline.id === index)?.outline;
+      return {
+        ...idea,
+        outline,
+        body: outline,
+        status: "new",
+        modelUsedForIdeas,
+        modelUsedForOutline,
+      };
+    });
 
     for (const idea of ideasWithOutlines) {
       const ideaCreated = await prisma.idea.create({
@@ -171,8 +176,8 @@ export async function GET(req: NextRequest) {
 
     console.timeEnd("Start generating ideas");
     return NextResponse.json(ideasWithOutlines);
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    loggerServer.error("Error generating ideas:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

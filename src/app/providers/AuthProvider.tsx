@@ -9,7 +9,7 @@ import {
 } from "@/lib/features/auth/authSlice";
 import { usePathname } from "next/navigation";
 import { setUserEventTracker } from "@/eventTracker";
-import { setUserLogger } from "@/logger";
+import { Logger, setUserLogger } from "@/logger";
 import { useSession } from "next-auth/react";
 import AppUser, { Plan } from "@/types/appUser";
 import { useAppDispatch } from "@/lib/hooks/redux";
@@ -57,10 +57,10 @@ export default function AuthProvider({
           dispatch(addIdeas(publication.ideas));
         }
       } catch (error: any) {
-        console.error(error);
+        Logger.error("Error adding publication:", error);
       }
     } catch (error: any) {
-      console.error(error);
+      Logger.error("Error setting user:", error);
       dispatch(setUserAction(null));
     }
   };

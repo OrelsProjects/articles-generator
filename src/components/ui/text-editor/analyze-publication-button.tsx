@@ -22,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Logger } from "@/logger";
 
 const loadingStates = [
   { text: "Validating publication in our databases..." },
@@ -85,16 +86,16 @@ export function AnalyzePublicationButton() {
     setOpen(false);
     try {
       await analyzePublication(url);
-    } catch (err: any) {
-      console.log(err);
-      if (err.response?.status === 404) {
+    } catch (error: any) {
+      Logger.error("Error analyzing publication:", error);
+      if (error.response?.status === 404) {
         setError({
           ...ERRORS.PUBLICATION_NOT_FOUND,
-          value: err.response?.data?.error,
+          value: error.response?.data?.error,
         });
       } else {
         const errorMessage =
-          err instanceof Error ? err.message : ERRORS.GENERAL_ERROR.value;
+          error instanceof Error ? error.message : ERRORS.GENERAL_ERROR.value;
         setError({
           ...ERRORS.GENERAL_ERROR,
           value: errorMessage,

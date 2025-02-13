@@ -7,6 +7,7 @@ import {
 import { Idea } from "@/types/idea";
 import axios from "axios";
 import { Publication } from "@/types/publication";
+import { Logger } from "@/logger";
 
 export const usePublication = () => {
   const dispatch = useAppDispatch();
@@ -21,8 +22,8 @@ export const usePublication = () => {
       );
       dispatch(addPublicationAction(res.data.publication));
       return res.data;
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      Logger.error(error);
       throw error;
     }
   };

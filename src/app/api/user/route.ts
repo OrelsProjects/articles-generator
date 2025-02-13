@@ -25,9 +25,7 @@ export async function POST(req: NextRequest): Promise<any> {
     user.email = sessionUser?.email || user.email;
     user.image = sessionUser?.image || user.image;
   } catch (error: any) {
-    Logger.error("Error initializing logger", user?.userId || "unknown", {
-      error,
-    });
+    Logger.error("Error initializing logger", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -46,7 +44,7 @@ export async function DELETE(req: NextRequest): Promise<any> {
     });
     return NextResponse.json({}, { status: 200 });
   } catch (error: any) {
-    Logger.error("Error deleting user", session.user.id, { error });
+    Logger.error("Error deleting user", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

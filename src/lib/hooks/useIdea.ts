@@ -10,6 +10,7 @@ import axios from "axios";
 import { IdeaStatus } from "@prisma/client";
 import { Idea } from "@/types/idea";
 import { ImprovementType } from "@/lib/prompts";
+import { Logger } from "@/logger";
 
 export const useIdea = () => {
   const dispatch = useAppDispatch();
@@ -32,8 +33,8 @@ export const useIdea = () => {
       const searchParamsStatus =
         status === "favorite" ? "isFavorite=true" : `status=${newStatus}`;
       await axios.patch(`/api/idea/${idea.id}/status?${searchParamsStatus}`);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      Logger.error("Error updating idea status:", error);
       // revert optimistic update
       dispatch(updateStatusAction({ ideaId, status: idea.status }));
       throw error;
@@ -58,8 +59,8 @@ export const useIdea = () => {
         title,
         subtitle,
       });
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      Logger.error("Error updating idea:", error);
       // revert optimistic update
       dispatch(
         updateIdeaAction({
@@ -88,8 +89,8 @@ export const useIdea = () => {
       );
       addIdeas(res.data);
       return res.data;
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      Logger.error("Error generating ideas:", error);
       throw error;
     }
   };

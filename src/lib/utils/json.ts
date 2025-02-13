@@ -2,6 +2,7 @@ import { runPrompt } from "@/lib/openRouter";
 
 import { Model } from "@/lib/openRouter";
 import { fixJsonPrompt } from "@/lib/prompts";
+import loggerServer from "@/loggerServer";
 
 function fixJson(json: string) {
   // Find first index of { and last index of }
@@ -10,8 +11,8 @@ function fixJson(json: string) {
   const jsonFixed = json.substring(start, end + 1);
   try {
     return JSON.parse(jsonFixed);
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    loggerServer.error("Error fixing JSON:", error);
     return null;
   }
 }
@@ -23,8 +24,8 @@ export async function parseJson<T>(
   let parsedJson: T;
   try {
     parsedJson = JSON.parse(json);
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    loggerServer.error("Error parsing JSON:", error);
     const jsonFixedSync = fixJson(json);
     if (!jsonFixedSync) {
       const jsonFixedString = await runPrompt(fixJsonPrompt(json), model);

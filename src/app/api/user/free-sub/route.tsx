@@ -1,5 +1,6 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
+import loggerServer from "@/loggerServer";
 import { Plan } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
@@ -54,8 +55,8 @@ export async function POST(request: Request) {
       console.log("updated user metadata");
     }
     return NextResponse.json({ message: "Hello, world!" });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    loggerServer.error("Error in free-sub route:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

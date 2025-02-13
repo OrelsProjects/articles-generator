@@ -49,7 +49,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
             const password = (e.currentTarget.elements.namedItem("password") as HTMLInputElement).value;
             try {
               await login(password);
-            } catch (err) {
+            } catch (error: any) {
               // Error is handled in state
             }
           }}

@@ -4,6 +4,7 @@ import { getUserArticlesBody } from "@/lib/dal/articles";
 import { getUserPlan } from "@/lib/dal/user";
 import { runPrompt } from "@/lib/openRouter";
 import { generateImprovementPrompt, ImprovementType } from "@/lib/prompts";
+import loggerServer from "@/loggerServer";
 import { ArticleWithBody } from "@/types/article";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -42,8 +43,8 @@ export async function POST(request: NextRequest) {
     const { messages, model } = generateImprovementPrompt(type, text, idea);
     const response = await runPrompt(messages, model);
     return NextResponse.json(response || "");
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    loggerServer.error("Error improving article:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
