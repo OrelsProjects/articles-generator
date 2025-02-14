@@ -79,6 +79,7 @@
     "stripe": "^17.4.0",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
+    "tiktoken": "^1.0.20",
     "turndown": "^7.2.0",
     "uuid": "^9.0.1",
     "winston": "^3.13.0"

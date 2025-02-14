@@ -8,6 +8,7 @@ export interface PublicationState {
   publications: Publication[];
   ideas: Idea[];
   selectedIdea: Idea | null;
+  loadingNewIdeas: boolean;
 }
 
 const getFirstIdea = (ideas: Idea[]) => {
@@ -19,6 +20,7 @@ export const initialState: PublicationState = {
   publications: [],
   ideas: [],
   selectedIdea: null,
+  loadingNewIdeas: false,
 };
 
 const publicationSlice = createSlice({
@@ -75,6 +77,9 @@ const publicationSlice = createSlice({
     setSelectedIdea: (state, action: PayloadAction<Idea | null>) => {
       state.selectedIdea = action.payload;
     },
+    setLoadingNewIdeas: (state, action: PayloadAction<boolean>) => {
+      state.loadingNewIdeas = action.payload;
+    },
   },
 });
 
@@ -85,6 +90,7 @@ export const {
   updateStatus,
   updateIdea,
   setSelectedIdea,
+  setLoadingNewIdeas,
 } = publicationSlice.actions;
 
 export const selectPublications = (state: RootState) => state.publications;

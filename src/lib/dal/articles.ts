@@ -3,9 +3,15 @@ import { Article, ArticleWithBody } from "@/types/article";
 import { Post } from "../../../prisma/generated/articles";
 import { getSubstackArticleData } from "@/lib/dal/milvus";
 
+export interface GetArticlesOptionsOrder {
+  by: "reactionCount" | "publishedAt";
+  direction: "asc" | "desc";
+}
+
 export interface GetUserArticlesOptions {
   limit: number;
   freeOnly: boolean;
+  order?: GetArticlesOptionsOrder;
 }
 
 export const getUserArticles = async (
@@ -37,6 +43,11 @@ export const getUserArticles = async (
         }),
       },
       take: options.limit,
+      orderBy: options.order
+        ? {
+            [options.order.by]: options.order.direction,
+          }
+        : undefined,
     });
   } else {
     posts = await prismaArticles.post.findMany({
@@ -67,13 +78,27 @@ export const getUserArticlesWithBody = async (
   options: {
     limit: number;
     freeOnly: boolean;
+    order?: GetArticlesOptionsOrder;
   } = {
     limit: 10,
     freeOnly: true,
   },
 ): Promise<ArticleWithBody[]> => {
   const posts = await getUserArticles(data, options);
-  return getUserArticlesBody(posts);
+  const postsWithoutBody = posts.filter(post => !post.bodyText);
+  if (postsWithoutBody.length > 0) {
+    const postsWithBody = await getUserArticlesBody(postsWithoutBody);
+    return posts.map(post => ({
+      ...post,
+      bodyText:
+        postsWithBody.find(p => p.canonicalUrl === post.canonicalUrl)
+          ?.bodyText || "",
+    }));
+  }
+  return posts.map(post => ({
+    ...post,
+    bodyText: post.bodyText || "",
+  }));
 };
 
 export const getUserArticlesBody = async <T extends { canonicalUrl: string }>(

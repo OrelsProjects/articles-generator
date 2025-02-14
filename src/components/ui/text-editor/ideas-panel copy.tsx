@@ -21,8 +21,8 @@ interface IdeasPanelProps {
 type TabValue = "new" | "archived" | "all" | "used";
 
 export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
-  const { updateStatus, setSelectedIdea, generateIdeas } = useIdea();
-  const { selectedIdea, ideas } = useAppSelector(state => state.publications);
+  const { updateStatus, setSelectedIdea } = useIdea();
+  const { selectedIdea, ideas, loadingNewIdeas } = useAppSelector(state => state.publications);
   const [currentTab, setCurrentTab] = useState<TabValue>("new");
   const [showFavorites, setShowFavorites] = useState(false);
 
@@ -60,7 +60,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
           <Sparkles className="h-4 w-4" />
           <h2 className="text-2xl font-bold">Generated Ideas</h2>
         </div>
-        {ideas.length > 0 ? (
+        {ideas.length > 0 || loadingNewIdeas ? (
           <ScrollArea className="h-full w-full flex flex-col gap-4">
             <div
               id="ideas-panel-tabs"

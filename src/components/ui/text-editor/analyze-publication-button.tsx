@@ -144,6 +144,12 @@ export function AnalyzePublicationButton() {
                 value={url}
                 onChange={e => setUrl(e.target.value)}
                 disabled={loading}
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSubmit();
+                  }
+                }}
               />
             </div>
 

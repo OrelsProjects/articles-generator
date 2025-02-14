@@ -104,10 +104,7 @@ export async function POST(req: NextRequest) {
     // TODO limit by wordcount, so you dont have too many articles and the api request doesnt fail
     const messages = generateDescriptionPrompt(description, top10Articles);
 
-    const generatedDescription = await runPrompt(
-      messages,
-      "anthropic/claude-3.5-sonnet",
-    );
+    const generatedDescription = await runPrompt(messages, "openai/gpt-4o");
 
     const descriptionObject: {
       about: string;

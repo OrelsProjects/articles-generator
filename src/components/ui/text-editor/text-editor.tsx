@@ -29,7 +29,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Logger } from "@/logger";
-import { Skeleton } from "@/components/ui/skeleton";
 import cuid from "cuid";
 
 type ImageName = string;

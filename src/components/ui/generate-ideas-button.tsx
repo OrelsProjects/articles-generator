@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { useMemo, useState } from "react";
 import {
@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/lib/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { toast } from "react-toastify";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import {
@@ -24,7 +24,10 @@ import {
 import Link from "next/link";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { cn } from "@/lib/utils";
-import { selectPublications } from "@/lib/features/publications/publicationSlice";
+import {
+  selectPublications,
+  setLoadingNewIdeas,
+} from "@/lib/features/publications/publicationSlice";
 import { ToastStepper } from "@/components/ui/toast-stepper";
 import { Logger } from "@/logger";
 
@@ -60,8 +63,9 @@ export default function GenerateIdeasButton({
   className,
   ...props
 }: GenerateIdeasButtonProps) {
+  const dispatch = useAppDispatch();
+  const { publications, loadingNewIdeas } = useAppSelector(selectPublications);
   const { user } = useAppSelector(selectAuth);
-  const { publications } = useAppSelector(selectPublications);
   const { generateIdeas } = useIdea();
   const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -88,6 +92,7 @@ export default function GenerateIdeasButton({
     setShowTopicDialog(false);
     try {
       setIsGenerating(true);
+      dispatch(setLoadingNewIdeas(true));
       await generateIdeas({ topic, shouldSearch });
       setTopic("");
       setShouldSearch(false);
@@ -96,6 +101,7 @@ export default function GenerateIdeasButton({
       toast.error("Failed to generate ideas.. try again");
     } finally {
       setIsGenerating(false);
+      dispatch(setLoadingNewIdeas(false));
     }
   };
 
@@ -106,15 +112,19 @@ export default function GenerateIdeasButton({
         variant={variant}
         size={size}
         className={className}
-        disabled={!canGenerateIdeas}
+        disabled={!canGenerateIdeas || loadingNewIdeas}
         {...props}
       >
         <>
-          <Sparkles
-            className={cn("mr-2 h-4 w-4", {
-              hidden: !canGenerateIdeas,
-            })}
-          />
+          {loadingNewIdeas ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles
+              className={cn("mr-2 h-4 w-4", {
+                hidden: !canGenerateIdeas,
+              })}
+            />
+          )}
           {text}
         </>
       </Button>
@@ -128,16 +138,28 @@ export default function GenerateIdeasButton({
       />
 
       <Dialog open={showTopicDialog} onOpenChange={setShowTopicDialog}>
-        <form onSubmit={handleDialogSubmit}>
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            handleDialogSubmit();
+          }}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Specify a Topic</DialogTitle>
             </DialogHeader>
             <Input
+              type="text"
               placeholder="Enter a specific topic (optional)"
               value={topic}
               maxLength={200}
               onChange={e => setTopic(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleDialogSubmit();
+                }
+              }}
             />
             {/* <div className="flex flex-col items-start gap-0.5">
               <Button
@@ -163,7 +185,7 @@ export default function GenerateIdeasButton({
               </motion.p>
             </div> */}
             <DialogFooter>
-              <Button type="submit" onClick={handleDialogSubmit}>
+              <Button type="submit">
                 {topic.length > 0
                   ? "Generate Ideas based on your topic"
                   : "Generate Ideas based on your publication"}

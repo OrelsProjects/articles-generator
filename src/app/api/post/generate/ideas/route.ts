@@ -4,6 +4,7 @@ import { Model, runPrompt } from "@/lib/openRouter";
 import {
   generateIdeasPrompt,
   generateOutlinePrompt,
+  IdeaLLM,
   IdeasLLMResponse,
   OutlineLLMResponse,
 } from "@/lib/prompts";
@@ -15,8 +16,114 @@ import { ArticleWithBody } from "@/types/article";
 import { parseJson } from "@/lib/utils/json";
 import loggerServer from "@/loggerServer";
 import { cleanArticleBody } from "@/lib/utils/article";
+import { PublicationMetadata } from "@prisma/client";
+import { runWithRetry } from "@/lib/utils/requests";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
+
+const modelUsedForIdeas: Model = "openai/gpt-4o";
+const modelUsedForOutline: Model = "openai/gpt-4o";
+
+async function generateIdeas(
+  userId: string,
+  topic: string,
+  publicationMetadata: PublicationMetadata,
+  ideasCount: string,
+  shouldSearch: string,
+  cleanedUserArticles: ArticleWithBody[],
+) {
+  let ideas: IdeaLLM[] = [];
+
+  const ideasWithoutOutlines = await prisma.idea.findMany({
+    where: {
+      userId,
+      outline: "",
+      topic,
+    },
+  });
+
+  if (ideasWithoutOutlines.length === 0) {
+    const inspirations: ArticleWithBody[] = (await searchSimilarArticles({
+      query: topic || publicationMetadata.generatedDescription || "",
+      limit: 5,
+      includeBody: true,
+      filters: [
+        {
+          leftSideValue: "reaction_count",
+          rightSideValue: "50",
+          operator: ">",
+        },
+      ],
+    })) as ArticleWithBody[];
+
+    const ideasUsed = await prisma.idea.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        description: true,
+        title: true,
+        subtitle: true,
+      },
+    });
+
+    const messages = generateIdeasPrompt(
+      publicationMetadata,
+      cleanedUserArticles,
+      {
+        topic,
+        inspirations,
+        ideasCount: parseInt(ideasCount || "3"),
+        ideasUsed: ideasUsed.map(idea => ({
+          title: idea.title,
+          subtitle: idea.subtitle,
+          description: idea.description,
+        })),
+        shouldSearch: shouldSearch === "true",
+      },
+    );
+
+    await runWithRetry(
+      async () => {
+        const ideasString = await runPrompt(messages, modelUsedForIdeas);
+        const ideasResponse = await parseJson<IdeasLLMResponse>(ideasString);
+        ideas = ideasResponse.ideas;
+      },
+      {
+        retries: 2,
+        delayTime: 0,
+      },
+    );
+
+    // save ideas to avoid calling the LLM again
+    await prisma.idea.createMany({
+      data: ideas.map(idea => ({
+        ...idea,
+        userId,
+        publicationId: publicationMetadata.id,
+        outline: "",
+        body: "",
+        inspiration: idea.inspiration,
+        image: idea.image,
+        topic,
+        status: "new",
+        search: shouldSearch === "true",
+        modelUsedForIdeas,
+        modelUsedForOutline,
+      })),
+    });
+  } else {
+    ideas = ideasWithoutOutlines.map(idea => ({
+      id: idea.id,
+      title: idea.title,
+      subtitle: idea.subtitle,
+      description: idea.description,
+      inspiration: idea.inspiration,
+      image: idea.image || "",
+    }));
+  }
+  return ideas;
+}
 
 export async function GET(req: NextRequest) {
   console.time("Start generating ideas");
@@ -61,9 +168,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const topic = req.nextUrl.searchParams.get("topic");
-    const ideasCount = req.nextUrl.searchParams.get("ideasCount");
-    const shouldSearch = req.nextUrl.searchParams.get("shouldSearch");
+    const topic = req.nextUrl.searchParams.get("topic") || "";
+    const ideasCount = req.nextUrl.searchParams.get("ideasCount") || "3";
+    const shouldSearch =
+      req.nextUrl.searchParams.get("shouldSearch") || "false";
 
     const publicationMetadata = userMetadata?.publication;
 
@@ -85,60 +193,27 @@ export async function GET(req: NextRequest) {
       {
         publicationId: BigInt(publicationMetadata.idInArticlesDb),
       },
-      { limit: 30, freeOnly: true },
+      {
+        limit: 8,
+        freeOnly: true,
+        order: { by: "reactionCount", direction: "desc" },
+      },
     );
+
     const cleanedUserArticles = userArticles.map(article => ({
       ...article,
       bodyText: cleanArticleBody(article.bodyText),
     }));
     console.timeEnd("Getting user articles with order by reaction count");
 
-    const modelUsedForIdeas: Model = "anthropic/claude-3.5-sonnet";
-    const modelUsedForOutline: Model = "openai/gpt-4o";
-
-    const inspirations: ArticleWithBody[] = (await searchSimilarArticles({
-      query: topic || publicationMetadata.generatedDescription,
-      limit: 15,
-      includeBody: true,
-      filters: [
-        {
-          leftSideValue: "reaction_count",
-          rightSideValue: "50",
-          operator: ">",
-        },
-      ],
-    })) as ArticleWithBody[];
-
-    const ideasUsed = await prisma.idea.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      select: {
-        description: true,
-        title: true,
-        subtitle: true,
-      },
-    });
-
-    const messages = generateIdeasPrompt(
+    let ideas: IdeaLLM[] = await generateIdeas(
+      session.user.id,
+      topic,
       publicationMetadata,
+      ideasCount,
+      shouldSearch,
       cleanedUserArticles,
-      {
-        topic,
-        inspirations,
-        ideasCount: parseInt(ideasCount || "3"),
-        ideasUsed: ideasUsed.map(idea => ({
-          title: idea.title,
-          subtitle: idea.subtitle,
-          description: idea.description,
-        })),
-        shouldSearch: shouldSearch === "true",
-      },
     );
-
-    const ideasString = await runPrompt(messages, modelUsedForIdeas);
-    let { ideas } = await parseJson<IdeasLLMResponse>(ideasString);
-
     const messagesForOutline = generateOutlinePrompt(
       publicationMetadata,
       ideas.map((idea, index) => ({
@@ -150,12 +225,24 @@ export async function GET(req: NextRequest) {
       shouldSearch === "true",
     );
 
-    const outlinesString = await runPrompt(
-      messagesForOutline,
-      modelUsedForOutline,
+    let outlines: { id: number; outline: string }[] = [];
+
+    await runWithRetry(
+      async () => {
+        const outlinesString = await runPrompt(
+          messagesForOutline,
+          modelUsedForOutline,
+        );
+
+        const outlineResponse =
+          await parseJson<OutlineLLMResponse>(outlinesString);
+        outlines = outlineResponse.outlines;
+      },
+      {
+        retries: 2,
+        delayTime: 0,
+      },
     );
-    
-    const { outlines } = await parseJson<OutlineLLMResponse>(outlinesString);
 
     const ideasWithOutlines = ideas.map((idea, index) => {
       const outline = outlines.find(outline => outline.id === index)?.outline;
@@ -204,5 +291,5 @@ export async function GET(req: NextRequest) {
 }
 
 `
-"\n    You are Orel, a dynamic solopreneur and software developer who left a lucrative job to pursue the entrepreneurial dream. Passionate about building products, you enjoy the freedom to innovate and share your journey and insights through a weekly newsletter. You love reading, especially books that challenge and inspire you, and you frequently focus on harnessing this habit to drive personal growth and business acumen. You’re working on several projects, constantly testing product ideas, iterating on feedback, and maintaining a keen interest in entrepreneurship, productivity, and creating valuable educational content.\n\n    Your writing style is personable and motivational, often infused with personal anecdotes and lessons learned from failures and successes. You employ a direct, conversational tone, focusing on practical advice and actionable insights. You prefer being candid about your experiences, using humor and honesty to engage readers. You employ a structured approach to storytelling, often using bullet points and clear sections, with a penchant for summarizing key points to reinforce learning and engagement. Your articles are rich with technical details when needed, showcasing your depth of knowledge in software development.\n    \n    You are an expert content strategist and writer.\n    Your task is to generate 5 original article ideas for the user based on their publication description, topics they write about, and their writing style.\n    Additionally, consider the top 5 articles in the user's genre to ensure relevance and appeal.\n    The response must be structured in JSON format with the following details:\n\n    {\n      \"ideas\": [\n        {\n          \"title\": \"<Article Title>\",\n          \"subtitle\": \"<Article Subtitle>\",\n          \"description\": \"<Brief description of the article>\",\n          \"inspiration\": \"<Brief note on what inspired this idea, referencing relevant top articles or user topics>\"\n        }\n      ]\n    }\n\n    Guidelines for generating content:\n    - Ensure titles are compelling and relevant to the user's audience.\n    - Focus on originality while drawing subtle inspiration from popular content.\n    - Avoid generic topics; provide unique angles or fresh perspectives.\n    - Write in a human, natural voice that doesn't sound AI-generated.\n    - **Use the articles' titles and subtitles as templates for the ideas' titles and subtitles.\n        "
+"\n    You are Orel, a dynamic solopreneur and software developer who left a lucrative job to pursue the entrepreneurial dream. Passionate about building products, you enjoy the freedom to innovate and share your journey and insights through a weekly newsletter. You love reading, especially books that challenge and inspire you, and you frequently focus on harnessing this habit to drive personal growth and business acumen. You're working on several projects, constantly testing product ideas, iterating on feedback, and maintaining a keen interest in entrepreneurship, productivity, and creating valuable educational content.\n\n    Your writing style is personable and motivational, often infused with personal anecdotes and lessons learned from failures and successes. You employ a direct, conversational tone, focusing on practical advice and actionable insights. You prefer being candid about your experiences, using humor and honesty to engage readers. You employ a structured approach to storytelling, often using bullet points and clear sections, with a penchant for summarizing key points to reinforce learning and engagement. Your articles are rich with technical details when needed, showcasing your depth of knowledge in software development.\n    \n    You are an expert content strategist and writer.\n    Your task is to generate 5 original article ideas for the user based on their publication description, topics they write about, and their writing style.\n    Additionally, consider the top 5 articles in the user's genre to ensure relevance and appeal.\n    The response must be structured in JSON format with the following details:\n\n    {\n      \"ideas\": [\n        {\n          \"title\": \"<Article Title>\",\n          \"subtitle\": \"<Article Subtitle>\",\n          \"description\": \"<Brief description of the article>\",\n          \"inspiration\": \"<Brief note on what inspired this idea, referencing relevant top articles or user topics>\"\n        }\n      ]\n    }\n\n    Guidelines for generating content:\n    - Ensure titles are compelling and relevant to the user's audience.\n    - Focus on originality while drawing subtle inspiration from popular content.\n    - Avoid generic topics; provide unique angles or fresh perspectives.\n    - Write in a human, natural voice that doesn't sound AI-generated.\n    - **Use the articles' titles and subtitles as templates for the ideas' titles and subtitles.\n        "
 `;

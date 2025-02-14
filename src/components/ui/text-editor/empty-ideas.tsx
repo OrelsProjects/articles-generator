@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button";
 import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
 import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { Sparkles } from "lucide-react";
 
 export function EmptyIdeas() {
   const { publications } = useAppSelector(state => state.publications);

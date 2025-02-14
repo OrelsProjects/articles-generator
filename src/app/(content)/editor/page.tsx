@@ -19,7 +19,7 @@ import { Header } from "@/app/(content)/editor/header";
 const MobilesIdeasPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSelectIdea = (idea: Idea) => {
+  const handleSelectIdea = (_: Idea) => {
     setIsOpen(false);
   };
 
@@ -40,14 +40,14 @@ const MobilesIdeasPanel = () => {
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:w-[400px] p-0">
         <SheetTitle className="sr-only">Ideas</SheetTitle>
-        <IdeasPanel onSelectIdea={handleSelectIdea} />
+        <IdeasPanel onSelectIdea={handleSelectIdea}/>
       </SheetContent>
     </Sheet>
   );
 };
 
-export default function Ideas() {
-  console.log("Ideas");
+export default function IdeasPage() {
+  
   const { publications } = useAppSelector(state => state.publications);
 
   return (
@@ -61,9 +61,9 @@ export default function Ideas() {
 
         {/* Desktop Ideas Panel - 3/7 width */}
         <div className="h-[calc(100vh-5rem)] hidden md:block md:col-span-2 2xl:col-span-2">
-          <IdeasPanel />
+          <IdeasPanel  />
         </div>
-        <MobilesIdeasPanel />
+        <MobilesIdeasPanel  />
       </div>
     </div>
   );

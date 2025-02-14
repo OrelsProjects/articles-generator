@@ -9,15 +9,16 @@ export type OutlineLLMResponse = {
   outlines: { id: number; outline: string }[];
 };
 
+export type IdeaLLM = {
+  id?: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  inspiration: string;
+  image: string;
+};
 export type IdeasLLMResponse = {
-  ideas: {
-    id?: string;
-    title: string;
-    subtitle: string;
-    description: string;
-    inspiration: string;
-    image: string;
-  }[];
+  ideas: IdeaLLM[];
 };
 
 export const fixJsonPrompt = (json: string) => [
@@ -155,13 +156,16 @@ export const generateIdeasPrompt = (
 
     Guidelines for generating content:
     - Ensure titles are compelling and relevant to your audience. Use the articles' titles and subtitles as templates for the ideas' titles and subtitles.
+    - Subtitle has to be connected to the title and complement it.
     - Focus on originality while drawing subtle inspiration from popular content.
     - Avoid generic topics; provide unique angles or fresh perspectives.
     - Write in a human, natural voice that doesn't sound AI-generated.
     - **Make sure the titles and subtitles have the same format and style as the top articles.**  
+    - Don't start all the words in the title and subtitle with a capital letter, unless absolutely necessary.
+    - If the provided titles have emojis, use them in the generated titles.
     - The image should be a URL of an image that is relevant to the article.
-    ${options.inspirations && options.inspirations.length > 0 ? `- Use the following article ideas as inspiration: ${options.inspirations.map(inspiration => `- ${inspiration.title}, ${inspiration.subtitle}`).join(", ")}.` : ""}
-    ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.map(idea => `- ${idea.title}, ${idea.subtitle}`).join(", ")}.` : ""}
+    ${options.inspirations && options.inspirations.length > 0 ? `- Use the following article ideas as inspiration: ${options.inspirations.map(inspiration => `- ${inspiration.title}`).join(", ")}.` : ""}
+    ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
     ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}
         `,
   },
@@ -184,16 +188,17 @@ export const generateIdeasPrompt = (
             : ""
         }
 
-    Here are titles and subtitles you need to use as guidelines:
+    Here are the articles you need to use as guidelines:
 
-    ${topArticles
-      .map(
-        (article, index) =>
-          `Article ${index + 1}:
-            Title: ${article.title}
-            Subtitle: ${article.subtitle}`,
-      )
-      .join("\n\n---\n\n")}`,
+${topArticles
+  .map(
+    (article, index) =>
+      `Article ${index + 1}:
+      Title: ${article.title}
+      Subtitle: ${article.subtitle}
+      Body: ${article.bodyText}`,
+  )
+  .join("\n---\n")}`,
   },
 ];
 

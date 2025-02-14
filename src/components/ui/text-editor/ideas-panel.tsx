@@ -19,6 +19,7 @@ import { useIdea } from "@/lib/hooks/useIdea";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { EmptyIdeas } from "@/components/ui/text-editor/empty-ideas";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface IdeasPanelProps {
   onSelectIdea?: (idea: Idea) => void;
@@ -26,9 +27,9 @@ interface IdeasPanelProps {
 
 type TabValue = "new" | "archived" | "all" | "used";
 
-export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
+export const IdeasPanel = ({ onSelectIdea}: IdeasPanelProps) => {
   const { updateStatus, setSelectedIdea } = useIdea();
-  const { selectedIdea, ideas } = useAppSelector(state => state.publications);
+  const { selectedIdea, ideas, loadingNewIdeas } = useAppSelector(state => state.publications);
   const [currentTab, setCurrentTab] = useState<TabValue>("new");
   const [showFavorites, setShowFavorites] = useState(false);
 
@@ -61,7 +62,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
   const sortedIdeas = useMemo(() => {
     return filteredIdeas.sort(
       (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+        new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
     );
   }, [filteredIdeas]);
 
@@ -75,7 +76,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
           <Sparkles className="h-4 w-4" />
           <h2 className="text-2xl font-bold">Generated Ideas</h2>
         </div>
-        {ideas.length > 0 ? (
+        {ideas.length > 0 || loadingNewIdeas ? (
           <div className="h-full w-full pt-2">
             <div id="ideas-panel-tabs" className="w-full px-8 space-y-4">
               <div className="w-full flex items-center justify-between">
@@ -110,7 +111,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
 
             <div id="ideas-panel-ideas" className="h-full pb-36 px-0.5">
               <ScrollArea className="h-full space-y-4 pb-4 scroll-pl-8">
-                {sortedIdeas.length > 0 ? (
+                {sortedIdeas.length > 0 || loadingNewIdeas ? (
                   <div className="space-y-4 px-8">
                     {sortedIdeas.map(idea => (
                       <Card
@@ -192,6 +193,13 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
                         </CardFooter>
                       </Card>
                     ))}
+                    {loadingNewIdeas &&
+                      Array.from({ length: 3 }).map((_, index) => (
+                        <Skeleton
+                          key={index}
+                          className="w-full h-40 rounded-lg"
+                        />
+                      ))}
                   </div>
                 ) : (
                   <div className="h-[300px] flex flex-col items-center justify-center text-center space-y-4 text-muted-foreground">
