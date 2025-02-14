@@ -396,11 +396,7 @@ const TextEditor = ({
       )}
 
       <div className="max-md:sticky max-md:top-14 bg-background z-10">
-        <MenuBar
-          editor={editor}
-          publication={publication}
-          hasChanges={hasChanges}
-        />
+        <MenuBar editor={editor} publication={publication} />
       </div>
 
       <ScrollArea className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] w-full flex flex-col justify-start items-center mt-4">

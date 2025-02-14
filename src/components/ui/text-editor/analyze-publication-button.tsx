@@ -41,6 +41,11 @@ const ERRORS = {
     explanation:
       "Make sure your URL follows the format: your-blog.substack.com",
   },
+  INVALID_SUBSTACK_URL: {
+    value: "Substack does not exist 🤔",
+    type: "warn" as const,
+    explanation: "Seems like the URL doesn't have a Substack. 🤔",
+  },
   PUBLICATION_NOT_FOUND: {
     value: "Publication not found 🤔",
     type: "warn" as const,
@@ -62,7 +67,7 @@ interface ErrorState {
 }
 
 export function AnalyzePublicationButton() {
-  const { analyzePublication } = usePublication();
+  const { analyzePublication, validatePublication } = usePublication();
   const { publications } = useAppSelector(state => state.publications);
 
   const [open, setOpen] = useState(false);
@@ -85,6 +90,12 @@ export function AnalyzePublicationButton() {
     setLoading(true);
     setOpen(false);
     try {
+      const isValid = await validatePublication(url);
+      if (!isValid) {
+        setError(ERRORS.INVALID_SUBSTACK_URL);
+        setOpen(true);
+        return;
+      }
       await analyzePublication(url);
     } catch (error: any) {
       Logger.error("Error analyzing publication:", error);
@@ -140,10 +151,6 @@ export function AnalyzePublicationButton() {
               {error?.value && (
                 <MotionAlert
                   key={error.value}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ duration: 0.3 }}
                   variant={error.type === "error" ? "destructive" : "warning"}
                   className="flex flex-row items-center pb-1.5 pr-2"
                 >

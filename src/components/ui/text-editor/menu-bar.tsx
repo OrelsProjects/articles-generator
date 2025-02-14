@@ -19,20 +19,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
 import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
 import { Publication } from "@/types/publication";
-import { toast } from "react-toastify";
 import { Separator } from "@/components/ui/separator";
 import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
 
 interface MenuBarProps {
   editor: any;
   publication: Publication | null;
-  hasChanges: boolean;
 }
 
-export const MenuBar = ({ editor, publication, hasChanges }: MenuBarProps) => {
+export const MenuBar = ({ editor, publication }: MenuBarProps) => {
   if (!editor) return null;
 
   return (

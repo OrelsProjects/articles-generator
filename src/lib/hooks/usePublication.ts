@@ -12,6 +12,16 @@ import { Logger } from "@/logger";
 export const usePublication = () => {
   const dispatch = useAppDispatch();
 
+  const validatePublication = async (url: string) => {
+    try {
+      const res = await axios.get(`/api/user/analyze/validate?q=${url}`);
+      return true;
+    } catch (error: any) {
+      Logger.error(error);
+      return false;
+    }
+  };
+
   const analyzePublication = async (url: string) => {
     try {
       const res = await axios.post<{ publication: Publication }>(
@@ -30,5 +40,6 @@ export const usePublication = () => {
 
   return {
     analyzePublication,
+    validatePublication
   };
 };

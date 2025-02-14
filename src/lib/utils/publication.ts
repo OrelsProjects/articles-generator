@@ -3,9 +3,6 @@
 import * as cheerio from "cheerio";
 import { prismaArticles } from "@/app/api/_db/db";
 import {
-  AudioItem,
-  Byline,
-  PodcastField,
   Post,
   Publication,
   PublicationLink,
@@ -14,6 +11,10 @@ import { delay, fetchWithHeaders } from "./requests";
 import loggerServer from "@/loggerServer";
 import { getUserArticlesBody } from "@/lib/dal/articles";
 import { toValidUrl } from "@/lib/utils/url";
+
+export const getArticleEndpoint = (url: string, offset: number, limit: number) => {
+  return `${url}/api/v1/archive?sort=new&search=&offset=${offset}&limit=${limit}`;
+};
 
 interface SubstackPublication {
   id: number;
@@ -165,7 +166,6 @@ function convertPostsToDbRows(posts: SubstackPost): {
       isGuest: posts.is_guest || false,
       bestsellerTier: posts.bestseller_tier || null,
       podcastEpisodeImageInfo: posts.podcast_episode_image_info || null,
-      publication_id_bigint: BigInt(posts.publication_id),
     },
     bylines: posts.publishedBylines ?? [],
     audioItems: posts.audio_items ?? [],
@@ -253,7 +253,7 @@ export async function populatePublications(
       await delay(60000);
     }
 
-    const subUrl = `${url}/api/v1/archive?sort=new&search=&offset=${i}&limit=${STEP}`;
+    const subUrl = getArticleEndpoint(url, i, STEP);
     const data = await fetchWithHeaders(subUrl);
     if (!data || data.length === 0) {
       loggerServer.error(`No data for ${subUrl}`);
