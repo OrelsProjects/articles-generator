@@ -22,11 +22,11 @@ export async function runPrompt(
   let tiktokenModel: TiktokenModel = "gpt-4o";
   if (model.includes("openai")) {
     tiktokenModel = model.replace("openai/", "") as TiktokenModel;
-    tokenCount = getTokenCount(
-      messages.map(m => m.content).join("\n"),
-      tiktokenModel,
-    );
   }
+  tokenCount = getTokenCount(
+    messages.map(m => m.content).join("\n"),
+    tiktokenModel,
+  );
   console.log(
     "About to run prompt on model",
     model,

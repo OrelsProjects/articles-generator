@@ -96,20 +96,26 @@ export async function POST(req: NextRequest) {
     const { image, title, description } = await extractContent(
       userPublication.customDomain || url,
     );
-    const top10Articles = userArticles.slice(0, 40).map(article => ({
+    const top200Articles = userArticles.slice(0, 200).map(article => ({
       ...article,
       canonicalUrl: article.canonicalUrl || "",
       bodyText: article.bodyText || "",
     }));
     // TODO limit by wordcount, so you dont have too many articles and the api request doesnt fail
-    const messages = generateDescriptionPrompt(description, top10Articles);
+    const messages = generateDescriptionPrompt(description, top200Articles);
 
-    const generatedDescription = await runPrompt(messages, "openai/gpt-4o");
+    const generatedDescription = await runPrompt(
+      messages,
+      "google/gemini-2.0-flash-001",
+    );
 
     const descriptionObject: {
       about: string;
       writingStyle: string;
       topics: string;
+      personality: string;
+      specialEvents: string;
+      privateLife: string;
     } = await parseJson(generatedDescription);
 
     if (publicationMetadata) {
@@ -121,6 +127,9 @@ export async function POST(req: NextRequest) {
           generatedDescription: descriptionObject.about,
           writingStyle: descriptionObject.writingStyle,
           topics: descriptionObject.topics,
+          personality: descriptionObject.personality,
+          specialEvents: descriptionObject.specialEvents,
+          privateLife: descriptionObject.privateLife,
           idInArticlesDb: Number(userPublication.id),
         },
       });
@@ -134,6 +143,9 @@ export async function POST(req: NextRequest) {
           generatedDescription: descriptionObject.about,
           writingStyle: descriptionObject.writingStyle,
           topics: descriptionObject.topics,
+          personality: descriptionObject.personality,
+          specialEvents: descriptionObject.specialEvents,
+          privateLife: descriptionObject.privateLife,
           idInArticlesDb: Number(userPublication.id),
         },
       });

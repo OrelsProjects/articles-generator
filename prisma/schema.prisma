@@ -150,7 +150,9 @@ model PublicationMetadata {
   generatedDescription String?
   writingStyle         String?
   topics               String?
-
+  personality          String?
+  specialEvents        String?
+  privateLife          String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

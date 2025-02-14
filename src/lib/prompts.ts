@@ -132,6 +132,11 @@ export const generateIdeasPrompt = (
     role: "system",
     content: `
     ${publication.generatedDescription}
+    ${publication.personality}
+    ${publication.specialEvents}
+    ${publication.privateLife}
+    ${publication.topics}
+    ${publication.writingStyle}
     
     Your task is to generate ${options.ideasCount} original article ideas for the user based on ${
       options?.topic
@@ -215,12 +220,18 @@ export const generateDescriptionPrompt = (
 - About them: who they are, what they do, what they like, projects they're working on (if any). Write like you're asking someone to mimic that person
 - Topics: topics they write about 
 - Writing style: Describe their writing style and tone. It's important to stress the writing characteristics like short and concise, or detailed, use of metaphors, technical depth, etc. Be as detailed as possible
-
+- Personality: Describe their personality, what they're like, what they're known for, what they're famous for.
+- Sepcial events: Describe any special events they've been part of, awards they've won, or any other notable achievements.
+- Private life: Describe their private life, their family, their friends, their pets, their hobbies, their interests.
+- Be direct and certain. Don't be afraid to say that they're the best or that they're the most talented.
 The response should always be structured in JSON format, with proper escape string for clarity and consistency. Here is an example of the JSON response expected:
 {
   "about": "<generated about them>",
   "topics": "<generated topics>",
-  "writingStyle": "<generated writing style>"
+  "writingStyle": "<generated writing style>",
+  "personality": "<generated personality>",
+  "specialEvents": "<generated special events>",
+  "privateLife": "<generated private life>"
 }
     `,
   },
