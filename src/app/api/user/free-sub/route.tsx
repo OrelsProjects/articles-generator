@@ -33,7 +33,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Code is invalid" }, { status: 400 });
       }
 
-      console.log("canUseCode is true", freeUser);
       plan = freeUser.plan;
       await prisma.freeUsers.update({
         where: {
@@ -54,7 +53,7 @@ export async function POST(request: Request) {
       });
       console.log("updated user metadata");
     }
-    return NextResponse.json({ message: "Hello, world!" });
+    return NextResponse.json({ plan });
   } catch (error: any) {
     loggerServer.error("Error in free-sub route:", error);
     return NextResponse.json(

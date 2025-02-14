@@ -1,6 +1,9 @@
 "use client";
 
+import { selectAuth, setUser } from "@/lib/features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { Logger } from "@/logger";
+import { Plan } from "@prisma/client";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -10,6 +13,8 @@ export default function FreeSubscriptionProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector(selectAuth);
   const [loading, setLoading] = useState(false);
 
   const updateUserPlan = async () => {
@@ -17,9 +22,20 @@ export default function FreeSubscriptionProvider({
     if (code) {
       try {
         setLoading(true);
-        const response = await axios.post("/api/user/free-sub", { code });
+        const response = await axios.post<{ plan: Plan }>(
+          "/api/user/free-sub",
+          { code },
+        );
         Logger.info("User plan updated:", response.data);
         localStorage.removeItem("code");
+        if (user) {
+          dispatch(
+            setUser({
+              ...user,
+              meta: { ...user?.meta, plan: response.data.plan },
+            }),
+          );
+        }
       } catch (error: any) {
         Logger.error("Error updating user plan:", error);
       } finally {
