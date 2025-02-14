@@ -1,0 +1,1 @@
+// Validate the user's url first, make sure it's not 404.

@@ -13,11 +13,14 @@ import {
   getUserArticlesWithBody,
 } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
-import { ArticleWithBody } from "@/types/article";
+import { Article, ArticleWithBody } from "@/types/article";
 import loggerServer from "@/loggerServer";
 import { populatePublications, setPublications } from "@/lib/utils/publication";
+import { parseJson } from "@/lib/utils/json";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
+
+const MAX_ARTICLES_TO_GET_BODY = 60;
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -43,7 +46,9 @@ export async function POST(req: NextRequest) {
 
     if (!userPublication) {
       // Need to analyze it.
-      await setPublications({ body: { url } }, true);
+      console.time("Setting publications");
+      await setPublications({ body: { url } }, true, MAX_ARTICLES_TO_GET_BODY);
+      console.timeEnd("Setting publications");
       publications = await getPublicationByUrl(url);
       userPublication = publications[0];
       if (!userPublication) {
@@ -55,7 +60,7 @@ export async function POST(req: NextRequest) {
     }
 
     console.time("Getting user articles with body");
-    const userArticles: ArticleWithBody[] = await getUserArticles(
+    const userArticles: Article[] = await getUserArticles(
       { publicationId: userPublication.id },
       {
         limit: 150,
@@ -91,19 +96,24 @@ export async function POST(req: NextRequest) {
     const { image, title, description } = await extractContent(
       userPublication.customDomain || url,
     );
-    const top10Articles = userArticles
-      .sort((a, b) => (b.reactionCount || 0) - (a.reactionCount || 0))
-      .slice(0, 10);
+    const top10Articles = userArticles.slice(0, 40).map(article => ({
+      ...article,
+      canonicalUrl: article.canonicalUrl || "",
+      bodyText: article.bodyText || "",
+    }));
     // TODO limit by wordcount, so you dont have too many articles and the api request doesnt fail
     const messages = generateDescriptionPrompt(description, top10Articles);
 
-    const generatedDescription = await runPrompt(messages, "openai/gpt-4o");
+    const generatedDescription = await runPrompt(
+      messages,
+      "anthropic/claude-3.5-sonnet",
+    );
 
     const descriptionObject: {
       about: string;
       writingStyle: string;
       topics: string;
-    } = JSON.parse(generatedDescription);
+    } = await parseJson(generatedDescription);
 
     if (publicationMetadata) {
       await prisma.publicationMetadata.update({

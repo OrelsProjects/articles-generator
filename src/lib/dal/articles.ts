@@ -11,7 +11,7 @@ export interface GetUserArticlesOptions {
 export const getUserArticles = async (
   data:
     | {
-        publicationId: number;
+        publicationId: bigint;
       }
     | {
         url: string;
@@ -50,13 +50,16 @@ export const getUserArticles = async (
     });
   }
 
-  return posts;
+  return posts.map(post => ({
+    ...post,
+    canonicalUrl: post.canonicalUrl || "",
+  }));
 };
 
 export const getUserArticlesWithBody = async (
   data:
     | {
-        publicationId: number;
+        publicationId: bigint;
       }
     | {
         url: string;

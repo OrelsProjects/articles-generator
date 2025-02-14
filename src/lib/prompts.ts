@@ -25,7 +25,15 @@ export const fixJsonPrompt = (json: string) => [
     role: "system",
     content: `
     You are an expert JSON formatter.
-    Your task is to format the following JSON string into a valid JSON object, so I can JSON.parse it.
+    Your task is to format the following JSON string into a valid JSON object, ensuring:
+    1. All property names use double quotes
+    2. All string values use double quotes
+    3. Special characters are properly escaped
+    4. No trailing commas
+    5. Valid JSON syntax
+
+    The text might be missing {} or other JSON formatting.
+    If that's the case, figure out the correct JSON format and return it.
     
     The response should be in JSON format, without any additional text or formatting.
     {
@@ -106,7 +114,11 @@ export const generateIdeasPrompt = (
   options: {
     topic?: string | null;
     inspirations?: ArticleWithBody[];
-    ideasUsed?: string[];
+    ideasUsed?: {
+      title: string;
+      subtitle: string;
+      description: string;
+    }[];
     ideasCount: number;
     shouldSearch: boolean;
   } = {
@@ -146,11 +158,10 @@ export const generateIdeasPrompt = (
     - Focus on originality while drawing subtle inspiration from popular content.
     - Avoid generic topics; provide unique angles or fresh perspectives.
     - Write in a human, natural voice that doesn't sound AI-generated.
-    - Don't start all the words in the title and subtitle with a capital letter, unless absolutely necessary.
-    - If the provided titles have emojis, use them in the generated titles.
+    - **Make sure the titles and subtitles have the same format and style as the top articles.**  
     - The image should be a URL of an image that is relevant to the article.
-    ${options.inspirations && options.inspirations.length > 0 ? `- Use the following article ideas as inspiration: ${options.inspirations.map(inspiration => `- ${inspiration.title}`).join(", ")}.` : ""}
-    ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
+    ${options.inspirations && options.inspirations.length > 0 ? `- Use the following article ideas as inspiration: ${options.inspirations.map(inspiration => `- ${inspiration.title}, ${inspiration.subtitle}`).join(", ")}.` : ""}
+    ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.map(idea => `- ${idea.title}, ${idea.subtitle}`).join(", ")}.` : ""}
     ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}
         `,
   },
@@ -169,21 +180,20 @@ export const generateIdeasPrompt = (
 
         ${
           options.ideasUsed && options.ideasUsed.length > 0
-            ? `Here are the ideas that you should not generate: ${options.ideasUsed.join(", ")}.`
+            ? `Here are the ideas that you should not generate: ${options.ideasUsed.map(idea => `Title: ${idea.title}, Subtitle: ${idea.subtitle}, Description: ${idea.description}`).join("\n")}.`
             : ""
         }
 
-    Here are the top 5 articles in this genre:
+    Here are titles and subtitles you need to use as guidelines:
 
-${topArticles
-  .map(
-    (article, index) =>
-      `Article ${index + 1}:
-Title: ${article.title}
-Subtitle: ${article.subtitle}
-Full article: ${article.bodyText}`,
-  )
-  .join("\n\n---\n\n")}`,
+    ${topArticles
+      .map(
+        (article, index) =>
+          `Article ${index + 1}:
+            Title: ${article.title}
+            Subtitle: ${article.subtitle}`,
+      )
+      .join("\n\n---\n\n")}`,
   },
 ];
 

@@ -26,15 +26,15 @@ const steps = [
 
 export const HowItWorks = () => {
   return (
-    <section className="py-24 bg-white" id="how-it-works">
+    <section className="py-24 bg-background" id="how-it-works">
       <div className="container mx-auto px-4">
-        <motion.h2 
+        <motion.h2
           className="text-3xl md:text-4xl font-bold text-center mb-16"
           {...fadeInUp}
         >
           How It Works
         </motion.h2>
-        <motion.div 
+        <motion.div
           className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"
           {...staggerChildren}
           transition={{ staggerChildren: 0.2 }}
@@ -44,17 +44,17 @@ export const HowItWorks = () => {
             return (
               <motion.div
                 key={step.number}
-                className="relative p-6 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300"
+                className="relative p-6 rounded-2xl bg-background border border-border/40 shadow-sm hover:shadow-md transition-shadow duration-300"
                 variants={staggerItems}
               >
-                <div className="absolute -top-4 -left-4 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+                <div className="absolute -top-4 -left-4 w-8 h-8 rounded-full bg-primary text-background flex items-center justify-center font-bold">
                   {step.number}
                 </div>
                 <div className="mb-4 text-primary">
                   <Icon className="h-8 w-8" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                <p className="text-gray-600">{step.description}</p>
+                <p className="text-muted-foreground">{step.description}</p>
               </motion.div>
             );
           })}

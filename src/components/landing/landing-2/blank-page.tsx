@@ -37,10 +37,13 @@ export const BlankPage = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center relative bg-white"
+      className="min-h-screen flex flex-col items-center justify-center bg-background relative"
       style={{ opacity }}
     >
-      <div className="h-[80vh] w-full max-w-4xl mx-auto px-12 py-16 bg-white rounded-lg shadow-sm border border-gray-100">
+      <span className="text-muted-foreground text-5xl font-bold absolute top-4 inset-x-0 text-center">
+        Your next big idea
+      </span>
+      <div className="h-[80vh] w-full max-w-4xl mx-auto px-12 py-16 bg-background rounded-lg shadow-sm border border-border/40">
         {/* Title bar */}
         <div className="flex items-center space-x-2 mb-4">
           <div className="w-4 h-4 rounded-full bg-red-400"></div>

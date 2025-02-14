@@ -14,6 +14,7 @@ import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { ArticleWithBody } from "@/types/article";
 import { parseJson } from "@/lib/utils/json";
 import loggerServer from "@/loggerServer";
+import { cleanArticleBody } from "@/lib/utils/article";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -80,17 +81,24 @@ export async function GET(req: NextRequest) {
     console.timeEnd("Pre-query");
 
     console.time("Getting user articles with order by reaction count");
-    const userArticles = await getUserArticlesWithBody({
-      publicationId: publicationMetadata.idInArticlesDb,
-    });
+    const userArticles = await getUserArticlesWithBody(
+      {
+        publicationId: BigInt(publicationMetadata.idInArticlesDb),
+      },
+      { limit: 30, freeOnly: true },
+    );
+    const cleanedUserArticles = userArticles.map(article => ({
+      ...article,
+      bodyText: cleanArticleBody(article.bodyText),
+    }));
     console.timeEnd("Getting user articles with order by reaction count");
 
-    const modelUsedForIdeas = "google/gemini-2.0-flash-001";
-    const modelUsedForOutline = "openai/gpt-4o";
+    const modelUsedForIdeas: Model = "anthropic/claude-3.5-sonnet";
+    const modelUsedForOutline: Model = "openai/gpt-4o";
 
     const inspirations: ArticleWithBody[] = (await searchSimilarArticles({
       query: topic || publicationMetadata.generatedDescription,
-      limit: 10,
+      limit: 15,
       includeBody: true,
       filters: [
         {
@@ -107,16 +115,26 @@ export async function GET(req: NextRequest) {
       },
       select: {
         description: true,
+        title: true,
+        subtitle: true,
       },
     });
 
-    const messages = generateIdeasPrompt(publicationMetadata, userArticles, {
-      topic,
-      inspirations,
-      ideasCount: parseInt(ideasCount || "3"),
-      ideasUsed: ideasUsed.map(idea => idea.description),
-      shouldSearch: shouldSearch === "true",
-    });
+    const messages = generateIdeasPrompt(
+      publicationMetadata,
+      cleanedUserArticles,
+      {
+        topic,
+        inspirations,
+        ideasCount: parseInt(ideasCount || "3"),
+        ideasUsed: ideasUsed.map(idea => ({
+          title: idea.title,
+          subtitle: idea.subtitle,
+          description: idea.description,
+        })),
+        shouldSearch: shouldSearch === "true",
+      },
+    );
 
     const ideasString = await runPrompt(messages, modelUsedForIdeas);
     let { ideas } = await parseJson<IdeasLLMResponse>(ideasString);
@@ -136,6 +154,7 @@ export async function GET(req: NextRequest) {
       messagesForOutline,
       modelUsedForOutline,
     );
+    
     const { outlines } = await parseJson<OutlineLLMResponse>(outlinesString);
 
     const ideasWithOutlines = ideas.map((idea, index) => {

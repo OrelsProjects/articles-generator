@@ -22,15 +22,12 @@ const antiFeatures = [
 
 export const AntiAudience = () => {
   return (
-    <section className="py-24 bg-gray-50">
+    <section className="py-24 bg-background">
       <div className="container mx-auto px-4">
         <motion.div {...fadeInUp}>
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Who This Is Not For
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+            You&apos;re going to hate this product if:
           </h2>
-          <p className="text-xl text-gray-600 text-center mb-16">
-            You&apos;re Going to Hate This Product If:
-          </p>
         </motion.div>
         <motion.div 
           className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"
@@ -41,13 +38,13 @@ export const AntiAudience = () => {
             <motion.div
               key={feature.title}
               variants={staggerItems}
-              className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm"
+              className="p-6 rounded-2xl bg-background border border-border/40 shadow-sm"
             >
               <div className="flex items-center space-x-3 mb-4">
                 <AlertCircle className="h-6 w-6 text-red-500" />
                 <h3 className="text-lg font-semibold">{feature.title}</h3>
               </div>
-              <p className="text-gray-600">{feature.description}</p>
+              <p className="text-muted-foreground">{feature.description}</p>
             </motion.div>
           ))}
         </motion.div>

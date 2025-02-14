@@ -45,6 +45,7 @@ async function getSubstackArticleData(
     '[data-author], [itemprop="author"]',
   ];
 
+  const delayBetweenUrls = 300;
   for (const url of urls) {
     try {
       const isValidUrl = validateUrl(url);
@@ -166,6 +167,8 @@ async function getSubstackArticleData(
         content: "",
         author: null,
       });
+    } finally {
+      await new Promise(resolve => setTimeout(resolve, delayBetweenUrls));
     }
   }
 

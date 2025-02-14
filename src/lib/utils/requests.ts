@@ -34,7 +34,7 @@ export async function fetchWithHeaders(
   url: string,
   retries = 3,
   minDelay = 300,
-): Promise<string | null> {
+) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       console.log(`[Attempt ${attempt}] Fetching: ${url}`);
