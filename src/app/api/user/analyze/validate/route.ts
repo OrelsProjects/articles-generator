@@ -1,6 +1,7 @@
 // Validate the user's url first, make sure it's not 404.
 
 import { getArticleEndpoint } from "@/lib/utils/publication";
+import { toValidUrl } from "@/lib/utils/url";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -10,7 +11,10 @@ export async function GET(request: NextRequest) {
     if (!url) {
       throw new Error("URL is required");
     }
-    const endpointToValidate = getArticleEndpoint(url, 0, 1);
+
+    const validUrl = toValidUrl(url);
+
+    const endpointToValidate = getArticleEndpoint(validUrl, 0, 1);
     const response = await fetch(endpointToValidate);
     const status = response.ok;
     if (!status) {
