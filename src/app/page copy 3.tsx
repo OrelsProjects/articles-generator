@@ -11,17 +11,15 @@ import { BlankPage } from "@/components/landing/landing-2/blank-page";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <main>
-        <BlankPage />
-        <HeroSection />
-        <HowItWorks />
-        <SmartEditor />
-        <TargetAudience />
-        <AntiAudience />
-        <SocialProof />
-      </main>
-    </div>
+    <main className="min-h-screen">
+      <BlankPage />
+      <HeroSection />
+      <HowItWorks />
+      <SmartEditor />
+      <AntiAudience />
+      <TargetAudience />
+      <SocialProof />
+    </main>
   );
 };
 
