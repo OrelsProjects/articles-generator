@@ -185,7 +185,7 @@ export default function GenerateIdeasButton({
               </motion.p>
             </div> */}
             <DialogFooter>
-              <Button type="submit">
+              <Button type="submit" onClick={handleDialogSubmit}>
                 {topic.length > 0
                   ? "Generate Ideas based on your topic"
                   : "Generate Ideas based on your publication"}
