@@ -153,6 +153,8 @@ model PublicationMetadata {
   personality          String?
   specialEvents        String?
   privateLife          String?
+  highlights           String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -190,8 +192,8 @@ model Idea {
 
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   publication PublicationMetadata @relation(fields: [publicationId], references: [id], onDelete: Cascade)
-  
-  Image       Image[]
+
+  Image Image[]
 
   @@map("ideas")
 }
