@@ -29,7 +29,7 @@ export const AntiAudience = () => {
             Who This Is Not For
           </h2>
           <p className="text-xl text-gray-600 text-center mb-16">
-            You're Going to Hate This Product If:
+            You&apos;re Going to Hate This Product If:
           </p>
         </motion.div>
         <motion.div 
