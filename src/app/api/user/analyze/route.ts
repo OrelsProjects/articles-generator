@@ -116,6 +116,7 @@ export async function POST(req: NextRequest) {
       personality: string;
       specialEvents: string;
       privateLife: string;
+      highlights: string;
     } = await parseJson(generatedDescription);
 
     if (publicationMetadata) {
@@ -130,6 +131,7 @@ export async function POST(req: NextRequest) {
           personality: descriptionObject.personality,
           specialEvents: descriptionObject.specialEvents,
           privateLife: descriptionObject.privateLife,
+          highlights: descriptionObject.highlights,
           idInArticlesDb: Number(userPublication.id),
         },
       });

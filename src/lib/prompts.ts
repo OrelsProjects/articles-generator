@@ -168,7 +168,7 @@ export const generateIdeasPrompt = (
     - **Make sure the titles and subtitles have the same format and style as the top articles.**  
     - Don't start all the words in the title and subtitle with a capital letter, unless absolutely necessary.
     - If the provided titles have emojis, use them in the generated titles.
-    - The image should be a URL of an image that is relevant to the article.
+    - The image should be a URL of an image that is relevant to the article, must be a stock image with a valid URL.
     ${options.inspirations && options.inspirations.length > 0 ? `- Use the following article ideas as inspiration: ${options.inspirations.map(inspiration => `- ${inspiration.title}`).join(", ")}.` : ""}
     ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
     ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}
@@ -223,7 +223,10 @@ export const generateDescriptionPrompt = (
 - Personality: Describe their personality, what they're like, what they're known for, what they're famous for.
 - Sepcial events: Describe any special events they've been part of, awards they've won, or any other notable achievements.
 - Private life: Describe their private life, their family, their friends, their pets, their hobbies, their interests.
+- Highlights: Describe any highlights of their life, their career, their projects, their achievements, their failures, their successes.
 - Be direct and certain. Don't be afraid to say that they're the best or that they're the most talented.
+- Capture only the most important information.
+
 The response should always be structured in JSON format, with proper escape string for clarity and consistency. Here is an example of the JSON response expected:
 {
   "about": "<generated about them>",
@@ -231,7 +234,8 @@ The response should always be structured in JSON format, with proper escape stri
   "writingStyle": "<generated writing style>",
   "personality": "<generated personality>",
   "specialEvents": "<generated special events>",
-  "privateLife": "<generated private life>"
+  "privateLife": "<generated private life>",
+  "highlights": "<generated highlights>"
 }
     `,
   },

@@ -131,7 +131,7 @@ export default function GenerateIdeasButton({
 
       <ToastStepper
         loadingStates={ideaLoadingStates}
-        loading={isGenerating}
+        loading={loadingNewIdeas}
         duration={10000}
         loop={false}
         position="bottom-left"
