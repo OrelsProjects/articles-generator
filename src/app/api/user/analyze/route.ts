@@ -15,6 +15,7 @@ import {
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 import { ArticleWithBody } from "@/types/article";
 import loggerServer from "@/loggerServer";
+import { populatePublications, setPublications } from "@/lib/utils/publication";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -37,14 +38,20 @@ export async function POST(req: NextRequest) {
 
     const { url } = await req.json();
 
-    const publications = await getPublicationByUrl(url);
-    const userPublication = publications[0];
+    let publications = await getPublicationByUrl(url);
+    let userPublication = publications[0];
 
     if (!userPublication) {
-      return NextResponse.json(
-        { error: "The publication was not found." },
-        { status: 404 },
-      );
+      // Need to analyze it.
+      await setPublications({ body: { url } }, true);
+      publications = await getPublicationByUrl(url);
+      userPublication = publications[0];
+      if (!userPublication) {
+        return NextResponse.json(
+          { error: "The publication was not found." },
+          { status: 404 },
+        );
+      }
     }
 
     console.time("Getting user articles with body");

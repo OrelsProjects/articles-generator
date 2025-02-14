@@ -8,7 +8,6 @@ import Loading from "@/components/ui/loading";
 import { initLogger } from "@/logger";
 import { Suspense } from "react";
 import { ThemeProvider } from "@/app/providers/ThemeProvider";
-import { Gabarito } from "@/lib/utils/fonts";
 import { Metadata, Viewport } from "next";
 import AnimationProvider from "@/app/providers/AnimationProvider";
 import { cn } from "@/lib/utils";

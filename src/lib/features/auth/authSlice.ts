@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
 import _ from "lodash";
 import AppUser from "@/types/appUser";
+import { Plan } from "@prisma/client";
 
 export type AuthStateType =
   | "anonymous"
@@ -47,6 +48,11 @@ const authSlice = createSlice({
       }
       state.state = action.payload.state ?? "authenticated";
     },
+    updateUserPlan: (state, action: PayloadAction<Plan>) => {
+      if (state.user) {
+        state.user.meta = { ...state.user.meta, plan: action.payload };
+      }
+    },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
       state.loading = false;
@@ -62,7 +68,8 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, setError, clearUser, setLoading } = authSlice.actions;
+export const { setUser, setError, clearUser, setLoading, updateUserPlan } =
+  authSlice.actions;
 
 export const selectAuth = (state: RootState): AuthState => state.auth;
 

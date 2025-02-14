@@ -1,11 +1,9 @@
-import { UserMetadata } from "@prisma/client";
-
-export type Plan = Pick<UserMetadata, "plan">;
+import { Plan } from "@prisma/client";
 
 export default interface AppUser {
   email: string;
   userId: string;
   image?: string | null;
-  meta?: Plan;
+  meta?: { plan: Plan };
   displayName?: string | null;
 }

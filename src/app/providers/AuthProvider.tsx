@@ -11,7 +11,8 @@ import { usePathname } from "next/navigation";
 import { setUserEventTracker } from "@/eventTracker";
 import { Logger, setUserLogger } from "@/logger";
 import { useSession } from "next-auth/react";
-import AppUser, { Plan } from "@/types/appUser";
+import AppUser from "@/types/appUser";
+import { Plan } from "@prisma/client";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import {
@@ -45,7 +46,7 @@ export default function AuthProvider({
         email: session?.user?.email || "",
         image: session?.user?.image || null,
         userId: session?.user?.id || "",
-        meta: userPlan,
+        meta: { plan: userPlan },
       };
       dispatch(setUserAction(appUser));
 

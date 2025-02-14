@@ -1,6 +1,9 @@
 "use client";
 
-import { selectAuth, setUser } from "@/lib/features/auth/authSlice";
+import {
+  selectAuth,
+  updateUserPlan as updateUserPlanAction,
+} from "@/lib/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { Logger } from "@/logger";
 import { Plan } from "@prisma/client";
@@ -29,12 +32,7 @@ export default function FreeSubscriptionProvider({
         Logger.info("User plan updated:", response.data);
         localStorage.removeItem("code");
         if (user) {
-          dispatch(
-            setUser({
-              ...user,
-              meta: { ...user?.meta, plan: response.data.plan },
-            }),
-          );
+          dispatch(updateUserPlanAction(response.data.plan));
         }
       } catch (error: any) {
         Logger.error("Error updating user plan:", error);

@@ -12,10 +12,10 @@ export default function ContentLayout({
 }) {
   return (
     <SidebarProvider>
-      <FreeSubscriptionProvider>
-        <AppSidebar />
-        <AuthProvider>{children}</AuthProvider>
-      </FreeSubscriptionProvider>
+      <AppSidebar />
+      <AuthProvider>
+        <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>
+      </AuthProvider>
     </SidebarProvider>
   );
 }

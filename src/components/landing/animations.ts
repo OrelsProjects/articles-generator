@@ -8,11 +8,9 @@ export const fadeIn = {
 };
 
 export const staggerChildren = {
-  visible: {
-    transition: {
-      staggerChildren: 0.2,
-    },
-  },
+  initial: { opacity: 0 },
+  whileInView: { opacity: 1 },
+  viewport: { once: true },
 };
 
 export const heroSecondLine = {
@@ -31,4 +29,15 @@ export const heroSecondLine = {
 export const gentlePulse = {
   scale: [1, 1.05, 1],
   transition: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-}; 
+};
+
+export const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+};
+
+export const staggerItems = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+};

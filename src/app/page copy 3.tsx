@@ -6,9 +6,8 @@ import { SmartEditor } from "@/components/landing/landing-2/smart-editor";
 import { TargetAudience } from "@/components/landing/landing-2/target-audience";
 import { AntiAudience } from "@/components/landing/landing-2/anti-audience";
 import { SocialProof } from "@/components/landing/landing-2/social-proof";
+import { Footer } from "@/components/landing/landing-2/footer";
 import { BlankPage } from "@/components/landing/landing-2/blank-page";
-import Pricing from "@/components/landing/landing-2/pricing";
-import { FinalCTA } from "@/components/landing/landing-2/final-cta";
 
 const Index = () => {
   return (
@@ -21,8 +20,6 @@ const Index = () => {
         <TargetAudience />
         <AntiAudience />
         <SocialProof />
-        <Pricing />
-        {/* <FinalCTA /> */}
       </main>
     </div>
   );

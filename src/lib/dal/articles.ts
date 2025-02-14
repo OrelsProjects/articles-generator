@@ -73,11 +73,13 @@ export const getUserArticlesWithBody = async (
   return getUserArticlesBody(posts);
 };
 
-export const getUserArticlesBody = async (posts: Post[]) => {
-  const urls = posts.map(post => post.canonicalUrl || "");
+export const getUserArticlesBody = async <T extends { canonicalUrl: string }>(
+  posts: T[],
+): Promise<(T & { bodyText: string })[]> => {
+  const urls = posts.map(post => post.canonicalUrl);
   const content = await getSubstackArticleData(urls);
 
-  return posts.map((post: Article) => ({
+  return posts.map(post => ({
     ...post,
     bodyText:
       content.find(item => item.url === post.canonicalUrl)?.content || "",
