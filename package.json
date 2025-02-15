@@ -56,6 +56,7 @@
     "formidable": "^3.5.2",
     "formik": "^2.4.6",
     "framer-motion": "^11.2.10",
+    "js-tiktoken": "^1.0.19",
     "knex": "^3.1.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.365.0",
@@ -79,7 +80,6 @@
     "stripe": "^17.4.0",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
-    "tiktoken": "^1.0.20",
     "turndown": "^7.2.0",
     "uuid": "^9.0.1",
     "winston": "^3.13.0"

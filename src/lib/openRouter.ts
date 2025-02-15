@@ -1,5 +1,6 @@
 import axios from "axios";
-import { get_encoding, encoding_for_model, TiktokenModel } from "tiktoken";
+import { Tiktoken } from "js-tiktoken/lite";
+import o200k_base from "js-tiktoken/ranks/o200k_base";
 
 // const models = ["anthropic/claude-3.5-sonnet", "openai/gpt-4o-mini"];
 export type Model =
@@ -8,8 +9,8 @@ export type Model =
   | "anthropic/claude-3.5-sonnet"
   | "google/gemini-2.0-flash-001";
 
-function getTokenCount(text: string, model: TiktokenModel) {
-  const encoding = encoding_for_model(model);
+function getTokenCount(text: string) {
+  const encoding = new Tiktoken(o200k_base);
   const tokens = encoding.encode(text);
   return tokens.length;
 }
@@ -19,14 +20,7 @@ export async function runPrompt(
   model: Model,
 ): Promise<string> {
   let tokenCount = 0;
-  let tiktokenModel: TiktokenModel = "gpt-4o";
-  if (model.includes("openai")) {
-    tiktokenModel = model.replace("openai/", "") as TiktokenModel;
-  }
-  tokenCount = getTokenCount(
-    messages.map(m => m.content).join("\n"),
-    tiktokenModel,
-  );
+  tokenCount = getTokenCount(messages.map(m => m.content).join("\n"));
   console.log(
     "About to run prompt on model",
     model,
