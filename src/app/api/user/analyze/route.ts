@@ -7,15 +7,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { runPrompt } from "@/lib/openRouter";
 import { Publication } from "@/types/publication";
 import { getPublicationByUrl } from "@/lib/dal/publication";
-import {
-  getUserArticles,
-  getUserArticlesBody,
-  getUserArticlesWithBody,
-} from "@/lib/dal/articles";
+import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
-import { Article, ArticleWithBody } from "@/types/article";
+import { Article } from "@/types/article";
 import loggerServer from "@/loggerServer";
-import { populatePublications, setPublications } from "@/lib/utils/publication";
+import { setPublications } from "@/lib/utils/publication";
 import { parseJson } from "@/lib/utils/json";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
@@ -73,7 +69,15 @@ export async function POST(req: NextRequest) {
     // If less than 50%, get their body as well.
     let articlesWithBody = userArticles.filter(article => article.bodyText);
     if (articlesWithBody.length < userArticles.length * 0.5) {
-      articlesWithBody = await getUserArticlesBody(userArticles);
+      const freeArticles = userArticles.filter(
+        article => article.audience === "everyone",
+      );
+      const paidArticles = userArticles.filter(
+        article => article.audience !== "everyone",
+      );
+
+      const articlesToGetBody = [...freeArticles, ...paidArticles];
+      articlesWithBody = await getUserArticlesBody(articlesToGetBody);
 
       try {
         // Insert one by one, batches of 10
