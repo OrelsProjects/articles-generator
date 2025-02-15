@@ -193,7 +193,7 @@ export function FormatDropdown({
             // Keep Tiptap from losing focus if user clicks inside
             onMouseDown={e => e.preventDefault()}
             // Constrain height & scroll
-            style={{ maxHeight: "30vh", overflowY: "auto" }}
+            style={{ maxHeight: "28vh", overflowY: "auto" }}
           >
             <motion.div
               initial={{ opacity: 0 }}
