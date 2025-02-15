@@ -29,8 +29,6 @@ import {
 } from "@/components/ui/dialog";
 import { Logger } from "@/logger";
 import cuid from "cuid";
-import { Check, Copy, Sparkle, Sparkles } from "lucide-react";
-import { copyToClipboard } from "@/lib/utils/copy";
 
 type ImageName = string;
 
