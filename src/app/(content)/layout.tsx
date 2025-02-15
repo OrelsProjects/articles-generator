@@ -3,7 +3,7 @@
 import { AppSidebar } from "@/app/(content)/editor/sidebar";
 import AuthProvider from "@/app/providers/AuthProvider";
 import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function ContentLayout({
   children,
@@ -11,11 +11,10 @@ export default function ContentLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
+    <AppSidebar>
       <AuthProvider>
         <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>
       </AuthProvider>
-    </SidebarProvider>
+    </AppSidebar>
   );
 }

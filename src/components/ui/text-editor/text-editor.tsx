@@ -29,6 +29,11 @@ import {
 } from "@/components/ui/dialog";
 import { Logger } from "@/logger";
 import cuid from "cuid";
+import { useUi } from "@/lib/hooks/useUi";
+import { selectUi } from "@/lib/features/ui/uiSlice";
+import { Maximize2, Minimize2 } from "lucide-react";
+import { TooltipButton } from "@/components/ui/tooltip-button";
+import { motion } from "framer-motion";
 
 type ImageName = string;
 
@@ -63,6 +68,26 @@ const DraftIndicator = ({
   );
 };
 
+const ExpandButton = () => {
+  const { setState } = useUi();
+  const { state } = useAppSelector(selectUi);
+
+  return (
+    <TooltipButton
+      variant="outline"
+      onClick={() => setState(state === "full" ? "writing-mode" : "full")}
+      tooltipContent={state === "full" ? "Collapse" : "Expand"}
+      className="absolute top-4 right-4 z-50 hidden md:block"
+    >
+      {state === "full" ? (
+        <Maximize2 className="w-4 h-4" />
+      ) : (
+        <Minimize2 className="w-4 h-4" />
+      )}
+    </TooltipButton>
+  );
+};
+
 const TextEditor = ({
   publication,
   className,
@@ -70,6 +95,7 @@ const TextEditor = ({
   publication: Publication;
   className?: string;
 }) => {
+  const { state } = useAppSelector(selectUi);
   const { selectedIdea } = useAppSelector(state => state.publications);
   const { updateIdea, improveText } = useIdea();
   const [originalTitle, setOriginalTitle] = useState("");
@@ -84,10 +110,6 @@ const TextEditor = ({
     useState<ImprovementType | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const previewEditorRef = useRef<HTMLDivElement>(null);
-
-  const [copiedInput, setCopiedInput] = useState<
-    "title" | "subtitle" | "body" | null
-  >(null);
 
   const [loadingImages, setLoadingImages] = useState<
     {
@@ -386,9 +408,12 @@ const TextEditor = ({
   }, [handleFileDrop]);
 
   return (
-    <div
+    <motion.div
+      initial={{ width: state === "full" ? "1200px" : "100%" }}
+      animate={{ width: state === "full" ? "1200px" : "100%" }}
+      transition={{ duration: 0.2 }}
       className={cn(
-        "w-full max-w-[1200px] min-h-screen bg-background relative",
+        "w-full min-h-screen bg-background relative border-r border-border",
         className,
       )}
     >
@@ -416,6 +441,7 @@ const TextEditor = ({
         />
       </div>
       <ScrollArea className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] w-full flex flex-col justify-start items-center relative mt-4 md:mt-0">
+        <ExpandButton />
         <DraftIndicator
           saving={saving}
           error={savingError}
@@ -474,7 +500,7 @@ const TextEditor = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 };
 

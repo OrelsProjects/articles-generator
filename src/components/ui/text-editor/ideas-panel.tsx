@@ -1,13 +1,6 @@
 import { Sparkles, Star, CheckCircle, Archive, SearchX, X } from "lucide-react";
 import { IdeaStatus } from "@prisma/client";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
@@ -20,6 +13,8 @@ import { TooltipButton } from "@/components/ui/tooltip-button";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { EmptyIdeas } from "@/components/ui/text-editor/empty-ideas";
 import { Skeleton } from "@/components/ui/skeleton";
+import { selectUi } from "@/lib/features/ui/uiSlice";
+import { motion } from "framer-motion";
 
 interface IdeasPanelProps {
   onSelectIdea?: (idea: Idea) => void;
@@ -27,9 +22,11 @@ interface IdeasPanelProps {
 
 type TabValue = "new" | "archived" | "all" | "used";
 
-export const IdeasPanel = ({ onSelectIdea}: IdeasPanelProps) => {
+export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
   const { updateStatus, setSelectedIdea } = useIdea();
-  const { selectedIdea, ideas, loadingNewIdeas } = useAppSelector(state => state.publications);
+  const { selectedIdea, ideas, loadingNewIdeas } = useAppSelector(
+    state => state.publications,
+  );
   const [currentTab, setCurrentTab] = useState<TabValue>("new");
   const [showFavorites, setShowFavorites] = useState(false);
 
@@ -67,7 +64,7 @@ export const IdeasPanel = ({ onSelectIdea}: IdeasPanelProps) => {
   }, [filteredIdeas]);
 
   return (
-    <div className="w-full h-full border-l">
+    <motion.div className="w-full h-full border-l">
       <div className="h-full w-full space-y-4">
         <div
           id="ideas-panel-header"
@@ -223,6 +220,6 @@ export const IdeasPanel = ({ onSelectIdea}: IdeasPanelProps) => {
           <EmptyIdeas />
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
