@@ -62,7 +62,9 @@ async function getSubstackArticleData(
         } catch (error: any) {
           loggerServer.error(`Failed to fetch article from ${url}:`, error);
           retryCount++;
-          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          await new Promise(resolve =>
+            setTimeout(resolve, retryDelay * retryCount * retryCount),
+          );
         }
       }
 

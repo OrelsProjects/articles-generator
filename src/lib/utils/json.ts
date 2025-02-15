@@ -4,7 +4,7 @@ import { Model } from "@/lib/openRouter";
 import { fixJsonPrompt } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 
-function fixJson(json: string) {
+function fixJson<T>(json: string): T | null {
   // Find first index of { and last index of }
   const start = json.indexOf("{");
   const end = json.lastIndexOf("}");
@@ -26,13 +26,21 @@ export async function parseJson<T>(
     parsedJson = JSON.parse(json);
   } catch (error: any) {
     loggerServer.error("Error parsing JSON:", error);
-    const jsonFixedSync = fixJson(json);
+    const jsonFixedSync = fixJson<T>(json);
     if (!jsonFixedSync) {
       const jsonFixedString = await runPrompt(fixJsonPrompt(json), model);
       let jsonFixed = jsonFixedString.replace("```json", "").replace("```", "");
-      jsonFixed = fixJson(jsonFixed);
-      parsedJson = JSON.parse(jsonFixed).json;
-      console.log("jsonFixed", jsonFixed);
+      const jsonFixedObject = fixJson<{ json: T }>(jsonFixed);
+      if (!jsonFixedObject) {
+        throw new Error("Failed to fix JSON");
+      }
+      const attemptParseJson = jsonFixedObject.json;
+      // If attemptParsejson is an object, put it in parsedJson, otherwise parse it and then put it in parsedJson
+      if (typeof attemptParseJson === "object") {
+        parsedJson = attemptParseJson;
+      } else {
+        parsedJson = JSON.parse(`${attemptParseJson}`);
+      }
     } else {
       parsedJson = jsonFixedSync;
     }

@@ -226,6 +226,7 @@ export const textEditorOptions = (
   content: "",
   editorProps: {
     attributes: {
+      id: "text-editor-tiptap",
       class: "prose prose-lg mx-auto focus:outline-none h-full text-xl",
     },
     handleDrop: (view, event, slice, moved) => {

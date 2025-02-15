@@ -5,6 +5,7 @@ export interface Publication {
   image: string | null;
   title: string | null;
   description: string | null;
+  url: string;
 }
 
 export interface PublicationResponse {
@@ -13,4 +14,5 @@ export interface PublicationResponse {
   title: string | null;
   description: string | null;
   ideas: Idea[];
+  url: string;
 }

@@ -17,7 +17,6 @@ import {
   getSelectedContentAsMarkdown,
   unformatText,
   textEditorOptions,
-  SkeletonNode,
 } from "@/lib/utils/text-editor";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,26 +29,37 @@ import {
 } from "@/components/ui/dialog";
 import { Logger } from "@/logger";
 import cuid from "cuid";
+import { Check, Copy, Sparkle, Sparkles } from "lucide-react";
+import { copyToClipboard } from "@/lib/utils/copy";
 
 type ImageName = string;
 
 const DraftIndicator = ({
   saving,
   error,
+  hasIdea,
 }: {
   saving: boolean;
   error: boolean;
+  hasIdea: boolean;
 }) => {
   return (
-    <div className="sticky top-0 ml-4 flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="sticky top-4 ml-4 flex items-center gap-2 text-sm text-muted-foreground">
       <div
         className={cn(
           "w-2 h-2 rounded-full",
           saving ? "border border-green-500" : "bg-green-500",
           error ? "border border-red-500 bg-red-500" : "",
+          !hasIdea ? "border border-yellow-500 bg-yellow-500" : "",
         )}
       />
-      {!error && <span>{saving ? "Draft saving..." : "Draft"}</span>}
+      {!hasIdea ? (
+        <span className="text-muted-foreground/80">
+          Generate an idea before editing
+        </span>
+      ) : (
+        !error && <span>{saving ? "Draft saving..." : "Draft"}</span>
+      )}
       {error && <span>Not saved</span>}
     </div>
   );
@@ -76,6 +86,11 @@ const TextEditor = ({
     useState<ImprovementType | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const previewEditorRef = useRef<HTMLDivElement>(null);
+
+  const [copiedInput, setCopiedInput] = useState<
+    "title" | "subtitle" | "body" | null
+  >(null);
+
   const [loadingImages, setLoadingImages] = useState<
     {
       name: ImageName;
@@ -286,7 +301,7 @@ const TextEditor = ({
       });
 
       if (!position) return; // Bail if no valid position
-      debugger;
+
       setLoadingImages(prev => [
         ...prev,
         {
@@ -394,28 +409,40 @@ const TextEditor = ({
         </BubbleMenu>
       )}
 
-      <div className="max-md:sticky max-md:top-14 bg-background z-10">
-        <MenuBar editor={editor} publication={publication} />
+      <div className="max-md:sticky max-md:top-14 bg-background z-50">
+        <MenuBar
+          editor={editor}
+          publication={publication}
+          title={title}
+          subtitle={subtitle}
+        />
       </div>
-
-      <ScrollArea className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] w-full flex flex-col justify-start items-center mt-4">
-        <DraftIndicator saving={saving} error={savingError} />
+      <ScrollArea className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] w-full flex flex-col justify-start items-center relative mt-4 md:mt-0">
+        <DraftIndicator
+          saving={saving}
+          error={savingError}
+          hasIdea={!!selectedIdea}
+        />
         <div className="h-full flex flex-col justify-start items-center gap-2 w-full">
           <div className="h-full py-4 max-w-[728px] space-y-4 w-full px-4 text-foreground">
-            <TextareaAutosize
-              placeholder="Title"
-              value={title}
-              onChange={handleTitleChange}
-              maxLength={200}
-              className="w-full text-4xl font-bold outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
-            />
-            <TextareaAutosize
-              placeholder="Add a subtitle..."
-              value={subtitle}
-              maxLength={200}
-              onChange={handleSubtitleChange}
-              className="w-full text-xl text-muted-foreground outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
-            />
+            <div className="flex items-center gap-2">
+              <TextareaAutosize
+                placeholder="Title"
+                value={title}
+                onChange={handleTitleChange}
+                maxLength={200}
+                className="w-full text-4xl font-bold outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <TextareaAutosize
+                placeholder="Add a subtitle..."
+                value={subtitle}
+                maxLength={200}
+                onChange={handleSubtitleChange}
+                className="w-full text-xl text-muted-foreground outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
+              />
+            </div>
             <div className="pt-2 tiptap pb-4">
               <EditorContent editor={editor} />
             </div>
@@ -436,7 +463,7 @@ const TextEditor = ({
 
           <div
             ref={previewEditorRef}
-            className="border rounded-md p-4 pt-0 max-h-[50vh] overflow-auto"
+            className="border rounded-md p-4 pt-0 max-h-[50vh] overflow-auto relative"
           >
             <EditorContent editor={previewEditor} />
           </div>

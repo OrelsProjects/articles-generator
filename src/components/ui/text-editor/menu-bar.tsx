@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Bold,
   Italic,
@@ -19,18 +21,48 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
 import { Publication } from "@/types/publication";
 import { Separator } from "@/components/ui/separator";
-import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
+import { copyTextEditorContent } from "@/lib/utils/copy";
+import MainActionButton from "@/components/ui/main-action-button";
+import SendToDraftButton from "@/components/ui/send-to-draft-button";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { formatText, unformatText } from "@/lib/utils/text-editor";
+import { Editor } from "@tiptap/react";
+import { Level } from "@tiptap/extension-heading";
 
 interface MenuBarProps {
-  editor: any;
+  editor: Editor | null;
   publication: Publication | null;
+  title: string;
+  subtitle: string;
 }
 
-export const MenuBar = ({ editor, publication }: MenuBarProps) => {
+export const MenuBar = ({
+  editor,
+  publication,
+  title,
+  subtitle,
+}: MenuBarProps) => {
   if (!editor) return null;
+
+  const handleCopy = (inputType: "title" | "subtitle" | "body") => {
+    let text = "";
+    switch (inputType) {
+      case "title":
+        text = title;
+        break;
+      case "subtitle":
+        text = subtitle;
+        break;
+      case "body":
+        text = unformatText(editor?.getHTML() || "");
+        break;
+    }
+    copyTextEditorContent();
+    toast.success("Copied " + inputType);
+  };
 
   return (
     <>
@@ -72,7 +104,11 @@ export const MenuBar = ({ editor, publication }: MenuBarProps) => {
                 onClick={() => {
                   i === 0
                     ? editor.chain().focus().setParagraph().run()
-                    : editor.chain().focus().toggleHeading({ level: i }).run();
+                    : editor
+                        .chain()
+                        .focus()
+                        .toggleHeading({ level: i as Level })
+                        .run();
                   editor.chain().focus().run();
                 }}
               >
@@ -159,16 +195,33 @@ export const MenuBar = ({ editor, publication }: MenuBarProps) => {
         </div>
 
         <Separator orientation="vertical" className="h-6" />
-
-        {publication ? (
-          <>
-            <Separator orientation="vertical" className="h-6" />
-            <GenerateIdeasButton />
-          </>
-        ) : (
-          <AnalyzePublicationButton />
-        )}
+        <div className="flex items-center gap-1 md:gap-2">
+          <MainActionButton publication={publication} />
+          <SendToDraftButton publicationUrl={publication?.url || null} />
+        </div>
       </div>
     </>
   );
 };
+
+/**
+ *    <Separator orientation="vertical" className="h-6" />
+        {/* Copy dropdown, items: title, subtitle, body */
+// <DropdownMenu>
+//   <DropdownMenuTrigger asChild>
+//     <Button variant="outline" size="sm" className="gap-1 h-8 md:h-10">
+//       Copy
+//     </Button>
+//   </DropdownMenuTrigger>
+//   <DropdownMenuContent>
+//     <DropdownMenuItem onClick={() => handleCopy("title")}>
+//       Title
+//     </DropdownMenuItem>
+//     <DropdownMenuItem onClick={() => handleCopy("subtitle")}>
+//       Subtitle
+//     </DropdownMenuItem>
+//     <DropdownMenuItem onClick={() => handleCopy("body")}>
+//       Body
+//     </DropdownMenuItem>
+//   </DropdownMenuContent>
+// </DropdownMenu>

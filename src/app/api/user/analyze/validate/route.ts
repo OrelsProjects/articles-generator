@@ -1,5 +1,6 @@
 // Validate the user's url first, make sure it's not 404.
 
+import { getPublicationByUrl } from "@/lib/dal/publication";
 import { getArticleEndpoint } from "@/lib/utils/publication";
 import { toValidUrl } from "@/lib/utils/url";
 import { NextRequest, NextResponse } from "next/server";
@@ -20,7 +21,13 @@ export async function GET(request: NextRequest) {
     if (!status) {
       throw new Error("URL is not valid");
     }
-    return NextResponse.json({ success: true });
+
+    const publicationInDB = await getPublicationByUrl(validUrl);
+
+    return NextResponse.json({
+      valid: true,
+      hasPublication: publicationInDB.length > 0,
+    });
   } catch (error) {
     return NextResponse.json({ error: "URL is not valid" }, { status: 400 });
   }

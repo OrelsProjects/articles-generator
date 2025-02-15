@@ -1,3 +1,22 @@
+export const buildSubstackUrl = (
+  subdomain?: string | null,
+  customDomain?: string | null,
+) => {
+  if (subdomain) {
+    return `https://${subdomain}.substack.com`;
+  }
+  if (customDomain) {
+    return `https://${customDomain}`;
+  }
+
+  return null;
+};
+
+export const buildNewDraftUrl = (publicationUrl: string) => {
+  const draftUrlString = `${publicationUrl}/publish/post?type=newsletter&back=/publish/home`;
+  return draftUrlString;
+};
+
 export const stripUrl = (
   url: string,
   options?: { removeWww?: boolean; removeDotCom?: boolean },

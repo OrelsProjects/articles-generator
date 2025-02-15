@@ -9,15 +9,15 @@ export interface GetArticlesOptionsOrder {
 }
 
 export interface GetUserArticlesOptions {
-  limit: number;
-  freeOnly: boolean;
+  limit?: number;
+  freeOnly?: boolean;
   order?: GetArticlesOptionsOrder;
 }
 
 export const getUserArticles = async (
   data:
     | {
-        publicationId: bigint;
+        publicationId: number;
       }
     | {
         url: string;
@@ -42,7 +42,7 @@ export const getUserArticles = async (
           audience: "everyone",
         }),
       },
-      take: options.limit,
+      take: options.limit || 9999,
       orderBy: options.order
         ? {
             [options.order.by]: options.order.direction,
@@ -57,7 +57,7 @@ export const getUserArticles = async (
           audience: "everyone",
         }),
       },
-      take: options.limit,
+      take: options.limit || 9999,
     });
   }
 
@@ -70,7 +70,7 @@ export const getUserArticles = async (
 export const getUserArticlesWithBody = async (
   data:
     | {
-        publicationId: bigint;
+        publicationId: number;
       }
     | {
         url: string;

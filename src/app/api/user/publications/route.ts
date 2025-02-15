@@ -4,6 +4,7 @@ import { authOptions } from "@/auth/authOptions";
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { PublicationResponse } from "@/types/publication";
 import loggerServer from "@/loggerServer";
+import { buildSubstackUrl } from "@/lib/utils/url";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -41,9 +42,15 @@ export async function GET(req: NextRequest) {
       },
     });
 
+
+
     const response: PublicationResponse = {
       publicationId: userPublication?.publication?.id,
       image: userPublication?.publication?.image,
+      url: buildSubstackUrl(
+        publication?.subdomain,
+        publication?.customDomain,
+      ) || "",
       title:
         userPublication?.publication?.title ||
         publication?.name ||

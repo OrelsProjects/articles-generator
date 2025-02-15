@@ -1,4 +1,5 @@
 import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
+import MainActionButton from "@/components/ui/main-action-button";
 import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
 import { useAppSelector } from "@/lib/hooks/redux";
 
@@ -14,13 +15,7 @@ export function EmptyIdeas() {
         Generate your first batch of ideas based on your publication&apos;s
         style and content.
       </p>
-      {publication ? (
-        <>
-          <GenerateIdeasButton />
-        </>
-      ) : (
-        <AnalyzePublicationButton />
-      )}
+      <MainActionButton publication={publication} />
     </div>
   );
 }

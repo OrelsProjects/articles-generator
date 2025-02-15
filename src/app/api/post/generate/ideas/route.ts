@@ -10,7 +10,7 @@ import {
 } from "@/lib/prompts";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { getUserArticlesWithBody } from "@/lib/dal/articles";
+import { getUserArticles, getUserArticlesWithBody } from "@/lib/dal/articles";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { ArticleWithBody } from "@/types/article";
 import { parseJson } from "@/lib/utils/json";
@@ -22,7 +22,7 @@ import { runWithRetry } from "@/lib/utils/requests";
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
 const modelUsedForIdeas: Model = "openai/gpt-4o";
-const modelUsedForOutline: Model = "openai/gpt-4o";
+const modelUsedForOutline: Model = "anthropic/claude-3.5-sonnet";
 
 async function generateIdeas(
   userId: string,
@@ -67,6 +67,30 @@ async function generateIdeas(
       },
     });
 
+    const posts = await getUserArticles(
+      {
+        publicationId: Number(publicationMetadata.idInArticlesDb),
+      },
+      {
+        limit: undefined,
+        freeOnly: false,
+      },
+    );
+
+    const allPostsUsed = posts
+      .map(post => ({
+        title: post.title || "",
+        subtitle: post.subtitle || "",
+        description: post.description || "",
+      }))
+      .concat(
+        ideasUsed.map(idea => ({
+          title: idea.title || "",
+          subtitle: idea.subtitle || "",
+          description: idea.description || "",
+        })),
+      );
+
     const messages = generateIdeasPrompt(
       publicationMetadata,
       cleanedUserArticles,
@@ -74,11 +98,7 @@ async function generateIdeas(
         topic,
         inspirations,
         ideasCount: parseInt(ideasCount || "3"),
-        ideasUsed: ideasUsed.map(idea => ({
-          title: idea.title,
-          subtitle: idea.subtitle,
-          description: idea.description,
-        })),
+        ideasUsed: allPostsUsed,
         shouldSearch: shouldSearch === "true",
       },
     );
@@ -211,7 +231,7 @@ export async function GET(req: NextRequest) {
     console.time("Getting user articles with order by reaction count");
     const userArticles = await getUserArticlesWithBody(
       {
-        publicationId: BigInt(publicationMetadata.idInArticlesDb),
+        publicationId: publicationMetadata.idInArticlesDb,
       },
       {
         limit: 8,

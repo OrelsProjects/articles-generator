@@ -38,6 +38,7 @@ const CheckFilled = ({ className }: { className?: string }) => {
 
 type LoadingState = {
   text: string;
+  delay?: number;
 };
 
 const LoaderCore = ({
@@ -105,18 +106,22 @@ export const MultiStepLoader = ({
       setCurrentState(0);
       return;
     }
-    const timeout = setTimeout(
-      () => {
-        setCurrentState(prevState =>
-          loop
-            ? prevState === loadingStates.length - 1
-              ? 0
-              : prevState + 1
-            : Math.min(prevState + 1, loadingStates.length - 1),
-        );
-      },
-      Math.min(Math.max(Math.random() * duration, 0.5), 1.2) * duration,
-    );
+
+    const durationValue =
+      currentState <= loadingStates.length - 1
+        ? loadingStates[currentState].delay || duration
+        : duration;
+    const delay = durationValue * (Math.random() * 0.5 + 1);
+
+    const timeout = setTimeout(() => {
+      setCurrentState(prevState =>
+        loop
+          ? prevState === loadingStates.length - 1
+            ? 0
+            : prevState + 1
+          : Math.min(prevState + 1, loadingStates.length - 1),
+      );
+    }, delay);
 
     return () => clearTimeout(timeout);
   }, [currentState, loading, loop, loadingStates.length, duration]);
@@ -138,7 +143,6 @@ export const MultiStepLoader = ({
           <div className="h-96 relative">
             <LoaderCore value={currentState} loadingStates={loadingStates} />
           </div>
-
           <div className="bg-gradient-to-t inset-x-0 z-20 bottom-0 bg-background h-full absolute [mask-image:radial-gradient(900px_at_center,transparent_30%,white)]" />
         </motion.div>
       )}

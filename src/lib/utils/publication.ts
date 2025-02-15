@@ -292,6 +292,7 @@ export async function populatePublications(
           bodyJson: postData.bodyJson as any,
           postTags: postData.postTags as any,
           reaction: postData.reaction as any,
+          hidden: `${postData.hidden}`,
           podcastEpisodeImageInfo: postData.podcastEpisodeImageInfo as any,
         },
         create: {
@@ -301,6 +302,7 @@ export async function populatePublications(
           bodyJson: postData.bodyJson as any,
           postTags: postData.postTags as any,
           reaction: postData.reaction as any,
+          hidden: `${postData.hidden}`,
           podcastEpisodeImageInfo: postData.podcastEpisodeImageInfo as any,
         },
       });
@@ -580,7 +582,7 @@ export async function setPublications(
   if (req && req.body && req.body.url) {
     let { url } = req.body;
     url = toValidUrl(url);
-    const publicationsStatus = await populatePublications(
+    await populatePublications(
       url,
       includeBody,
       maxArticlesToGetBody,

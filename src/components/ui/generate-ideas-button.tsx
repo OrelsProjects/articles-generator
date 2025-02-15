@@ -33,24 +33,12 @@ import { Logger } from "@/logger";
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
-  { text: "Analyzing publication style..." },
+  { text: "Finding relevant articles..." },
   { text: "Gathering inspiration from top articles..." },
   { text: "Crafting unique article ideas..." },
-  { text: "Refining ideas for clarity and impact..." },
+  { text: "Building outlines for the ideas..." },
   { text: "Finalizing the best ideas..." },
 ];
-
-// A loading animation for the AI "thinking" indicator.
-const AILoadingAnimation = () => (
-  <div className="flex items-center gap-2 px-3 py-1.5">
-    <div className="flex space-x-1">
-      <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
-      <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
-      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
-    </div>
-    <span className="text-sm text-primary font-medium">AI is thinking...</span>
-  </div>
-);
 
 interface GenerateIdeasButtonProps extends Partial<ButtonProps> {
   buttonContent?: React.ReactNode;
@@ -68,7 +56,6 @@ export default function GenerateIdeasButton({
   const { user } = useAppSelector(selectAuth);
   const { generateIdeas } = useIdea();
   const [showLimitDialog, setShowLimitDialog] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [showTopicDialog, setShowTopicDialog] = useState(false);
   const [topic, setTopic] = useState("");
   const [shouldSearch, setShouldSearch] = useState(false);
@@ -91,7 +78,6 @@ export default function GenerateIdeasButton({
   const handleDialogSubmit = async () => {
     setShowTopicDialog(false);
     try {
-      setIsGenerating(true);
       dispatch(setLoadingNewIdeas(true));
       await generateIdeas({ topic, shouldSearch });
       setTopic("");
@@ -100,7 +86,6 @@ export default function GenerateIdeasButton({
       Logger.error("Failed to generate ideas:", error);
       toast.error("Failed to generate ideas.. try again");
     } finally {
-      setIsGenerating(false);
       dispatch(setLoadingNewIdeas(false));
     }
   };

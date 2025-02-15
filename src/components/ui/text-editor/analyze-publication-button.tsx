@@ -24,12 +24,12 @@ import {
 } from "@/components/ui/tooltip";
 import { Logger } from "@/logger";
 
-const loadingStates = [
+const loadingStatesConst = [
   { text: "Validating publication in our databases..." },
   { text: "Checking Substack availability..." },
-  { text: "Analyzing writing style..." },
-  { text: "Extracting publication topics..." },
-  { text: "Generating content insights..." },
+  { text: "Extracting publications...", delay: 7000 },
+  { text: "Analyzing writing style...", delay: 6000 },
+  { text: "Generating content insights...", delay: 4000 },
   { text: "Setting up your preferences..." },
   { text: "Almost done..." },
 ];
@@ -74,6 +74,7 @@ export function AnalyzePublicationButton() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
+  const [loadingStates, setLoadingStates] = useState(loadingStatesConst);
 
   useEffect(() => {
     if (publications.length > 0) {
@@ -90,11 +91,19 @@ export function AnalyzePublicationButton() {
     setLoading(true);
     setOpen(false);
     try {
-      const isValid = await validatePublication(url);
-      if (!isValid) {
+      const { valid, hasPublication } = await validatePublication(url);
+      if (!valid) {
         setError(ERRORS.INVALID_SUBSTACK_URL);
         setOpen(true);
         return;
+      }
+      if (hasPublication) {
+        // Make time to fetch publication shorter
+        const newLoadingStates = loadingStates.map(state => ({
+          ...state,
+          delay: state.delay ? state.delay / 2 : 1500,
+        }));
+        setLoadingStates(newLoadingStates);
       }
       await analyzePublication(url);
     } catch (error: any) {

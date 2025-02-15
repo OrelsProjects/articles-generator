@@ -13,6 +13,7 @@ import { Article } from "@/types/article";
 import loggerServer from "@/loggerServer";
 import { setPublications } from "@/lib/utils/publication";
 import { parseJson } from "@/lib/utils/json";
+import { buildSubstackUrl } from "@/lib/utils/url";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
 
     console.time("Getting user articles with body");
     const userArticles: Article[] = await getUserArticles(
-      { publicationId: userPublication.id },
+      { publicationId: Number(userPublication.id) },
       {
         limit: 150,
         freeOnly: true,
@@ -166,11 +167,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const publicationFromDb = (await getPublicationByUrl(url))?.[0];
+
     const publication: Publication = {
       id: publicationMetadata.id,
       image,
       title: userPublication?.name || userPublication?.copyright || "",
       description,
+      url: buildSubstackUrl(
+        publicationFromDb?.subdomain,
+        publicationFromDb?.customDomain,
+      ) || "",
     };
 
     return NextResponse.json({
