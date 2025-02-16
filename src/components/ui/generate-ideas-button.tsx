@@ -1,4 +1,4 @@
-import { Loader2, Sparkles } from "lucide-react";
+import { Globe, Loader2, Sparkles } from "lucide-react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { useMemo, useState } from "react";
 import {
@@ -30,6 +30,7 @@ import {
 } from "@/lib/features/publications/publicationSlice";
 import { ToastStepper } from "@/components/ui/toast-stepper";
 import { Logger } from "@/logger";
+import { motion } from "framer-motion";
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
@@ -147,7 +148,7 @@ export default function GenerateIdeasButton({
                 }
               }}
             />
-            {/* <div className="flex flex-col items-start gap-0.5">
+            <div className="flex flex-col items-start gap-0.5">
               <Button
                 variant={shouldSearch ? "default" : "outline"}
                 onClick={() => setShouldSearch(!shouldSearch)}
@@ -169,7 +170,7 @@ export default function GenerateIdeasButton({
               >
                 Generating ideas might take twice as long.
               </motion.p>
-            </div> */}
+            </div>
             <DialogFooter>
               <Button type="submit" onClick={handleDialogSubmit}>
                 {topic.length > 0
