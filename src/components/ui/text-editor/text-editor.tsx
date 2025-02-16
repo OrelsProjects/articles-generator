@@ -34,6 +34,7 @@ import { selectUi } from "@/lib/features/ui/uiSlice";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { motion } from "framer-motion";
+import { selectPublications } from "@/lib/features/publications/publicationSlice";
 
 type ImageName = string;
 
@@ -96,7 +97,7 @@ const TextEditor = ({
   className?: string;
 }) => {
   const { state } = useAppSelector(selectUi);
-  const { selectedIdea } = useAppSelector(state => state.publications);
+  const { selectedIdea } = useAppSelector(selectPublications);
   const { updateIdea, improveText } = useIdea();
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalSubtitle, setOriginalSubtitle] = useState("");
@@ -478,7 +479,7 @@ const TextEditor = ({
       <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
         <DialogContent
           closeOnOutsideClick={false}
-          className="sm:max-w-[90vw] md:max-w-[60vw] max-h-[80vh]"
+          className="sm:max-w-[90vw] md:max-w-[60vw] max-h-[80vh] z-[9999]"
         >
           <DialogHeader>
             <DialogTitle>Preview</DialogTitle>
