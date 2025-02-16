@@ -76,7 +76,7 @@ const ExpandButton = () => {
     <TooltipButton
       variant="outline"
       onClick={() => setState(state === "full" ? "writing-mode" : "full")}
-      tooltipContent={state === "full" ? "Collapse" : "Expand"}
+      tooltipContent={state === "full" ? "Expand" : "Collapse"}
       className="absolute top-4 right-4 z-50 hidden md:block"
     >
       {state === "full" ? (
