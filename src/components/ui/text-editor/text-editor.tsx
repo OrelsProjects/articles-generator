@@ -127,7 +127,7 @@ const TextEditor = ({
   const previewEditor = useEditor(textEditorOptions());
   const editor = useEditor(textEditorOptions(handleBodyChange));
 
-  const handleSave = async () => {
+  const handleSave = async (ideaId: string) => {
     if (!selectedIdea) return;
     if (saving) return;
     setSaving(true);
@@ -141,15 +141,17 @@ const TextEditor = ({
       };
 
       await updateIdea(
-        selectedIdea.id,
+        ideaId,
         updatedIdea.body,
         updatedIdea.title,
         updatedIdea.subtitle,
       );
 
-      setOriginalTitle(title);
-      setOriginalSubtitle(subtitle);
-      setOriginalBody(editor?.getHTML() || "");
+      if (selectedIdea.id === ideaId) {
+        setOriginalTitle(title);
+        setOriginalSubtitle(subtitle);
+        setOriginalBody(editor?.getHTML() || "");
+      }
 
       setHasChanges(false);
     } catch (error: any) {
@@ -173,7 +175,7 @@ const TextEditor = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        handleSave();
+        handleSave(selectedIdea?.id || "");
       }
     };
 
@@ -184,7 +186,7 @@ const TextEditor = ({
   // Call debouncedSave when content changes
   useEffect(() => {
     if (hasChanges) {
-      debouncedSave();
+      debouncedSave(selectedIdea?.id || "");
     }
   }, [hasChanges, debouncedSave]);
 

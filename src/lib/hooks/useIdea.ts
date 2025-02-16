@@ -15,6 +15,7 @@ import { Logger } from "@/logger";
 export const useIdea = () => {
   const dispatch = useAppDispatch();
   const { ideas } = useAppSelector(state => state.publications);
+  
   const updateStatus = async (
     ideaId: string,
     status: IdeaStatus | "favorite",

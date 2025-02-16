@@ -39,6 +39,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Link from "next/link";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface PotentialUser {
   canonicalUrl: string;
@@ -103,6 +105,15 @@ export default function AdminPage() {
 
   // Add ref for the first new item
   const firstNewItemRef = useRef<HTMLTableRowElement>(null);
+
+  // Add state for custom message dialog
+  const [customMessageDialogOpen, setCustomMessageDialogOpen] = useState(false);
+  const [customMessageContent, setCustomMessageContent] = useState("");
+  const [customMessageAuthor, setCustomMessageAuthor] = useState("");
+  const [customMessageResponse, setCustomMessageResponse] = useState<
+    string | null
+  >(null);
+  const [isGeneratingCustom, setIsGeneratingCustom] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -180,28 +191,45 @@ export default function AdminPage() {
     }
   };
 
-  const generateFirstMessage = async (canonicalUrl: string) => {
-    setMessageGenerating(canonicalUrl);
+  const generateFirstMessage = async (data: {
+    canonicalUrl?: string;
+    custom?: {
+      content: string;
+      authorName: string;
+    };
+  }) => {
+    let query = "";
+    if (data.canonicalUrl) {
+      query = `canonicalUrl=${encodeURIComponent(data.canonicalUrl)}`;
+      setMessageGenerating(data.canonicalUrl);
+    } else if (data.custom) {
+      query = `content=${encodeURIComponent(data.custom.content)}&authorName=${encodeURIComponent(data.custom.authorName)}`;
+      setMessageGenerating("custom");
+    }
     try {
       const response = await fetch(
-        `/api/admin/system/potential-users/first-message?canonicalUrl=${encodeURIComponent(canonicalUrl)}`,
+        `/api/admin/system/potential-users/first-message?${query}`,
       );
       if (!response.ok) throw new Error("Failed to generate message");
       const data = await response.json();
 
-      // Update the users array with the new message
-      setUsers(prev =>
-        prev.map(user =>
-          user.canonicalUrl === canonicalUrl
-            ? {
-                ...user,
-                firstMessage: data.message,
-                authorName: data.authorName,
-                authorUrl: data.authorUrl,
-              }
-            : user,
-        ),
-      );
+      if (data.canonicalUrl) {
+        // Update the users array with the new message
+        setUsers(prev =>
+          prev.map(user =>
+            user.canonicalUrl === data.canonicalUrl
+              ? {
+                  ...user,
+                  firstMessage: data.message,
+                  authorName: data.authorName,
+                  authorUrl: data.authorUrl,
+                }
+              : user,
+          ),
+        );
+      } else {
+        setCustomMessageResponse(data.message);
+      }
     } catch (error: any) {
       setError(
         error instanceof Error ? error.message : "Failed to generate message",
@@ -340,6 +368,40 @@ export default function AdminPage() {
             <RefreshCw className={cn("h-5 w-5", { "animate-spin": loading })} />
             Refresh
           </Button>
+          <Button
+            onClick={() => setCustomMessageDialogOpen(true)}
+            variant="outline"
+            className="gap-2 text-base"
+          >
+            {isGeneratingCustom ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>Generate message</>
+            )}
+          </Button>
+          {customMessageResponse && (
+            <TooltipButton
+              tooltipContent="View Generated Message"
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => setMessageDialogUser({
+                firstMessage: customMessageResponse,
+                canonicalUrl: 'custom',
+                title: '',
+                postDate: '',
+                publicationName: '',
+                publicationId: 0,
+                reactionCount: 0,
+                status: PotentialClientStatus.new,
+              })}
+            >
+              <MessageCircle className="h-5 w-5 text-primary" />
+            </TooltipButton>
+          )}
         </div>
       </div>
 
@@ -518,7 +580,9 @@ export default function AdminPage() {
                           size="icon"
                           className="h-9 w-9"
                           onClick={() =>
-                            generateFirstMessage(user.canonicalUrl)
+                            generateFirstMessage({
+                              canonicalUrl: user.canonicalUrl,
+                            })
                           }
                         >
                           <MessageCircle className="h-5 w-5 text-muted-foreground" />
@@ -584,11 +648,85 @@ export default function AdminPage() {
             <Button
               variant="outline"
               onClick={() => {
-                generateFirstMessage(messageDialogUser?.canonicalUrl || "");
+                generateFirstMessage({
+                  canonicalUrl: messageDialogUser?.canonicalUrl,
+                });
                 setMessageDialogUser(null);
               }}
             >
               Regenerate Message
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add the custom message dialog */}
+      <Dialog
+        open={customMessageDialogOpen}
+        onOpenChange={setCustomMessageDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Generate Custom Message</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="author">Author Name (optional)</Label>
+              <Input
+                id="author"
+                value={customMessageAuthor}
+                onChange={e => setCustomMessageAuthor(e.target.value)}
+                placeholder="Enter author name..."
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="content">Article Content</Label>
+              <Textarea
+                id="content"
+                value={customMessageContent}
+                onChange={e => setCustomMessageContent(e.target.value)}
+                placeholder="Enter article content..."
+                className="min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCustomMessageDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!customMessageContent) return;
+                setIsGeneratingCustom(true);
+                try {
+                  const response = await generateFirstMessage({
+                    custom: {
+                      content: customMessageContent,
+                      authorName: customMessageAuthor,
+                    },
+                  });
+                  setCustomMessageDialogOpen(false);
+                  setCustomMessageContent("");
+                  setCustomMessageAuthor("");
+                } catch (error) {
+                  console.error(error);
+                } finally {
+                  setIsGeneratingCustom(false);
+                }
+              }}
+              disabled={!customMessageContent || isGeneratingCustom}
+            >
+              {isGeneratingCustom ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Generate"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

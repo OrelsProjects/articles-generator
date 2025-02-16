@@ -18,7 +18,7 @@ interface SearchOptions {
   filters?: Filter[];
 }
 
-interface ArticleContent {
+export interface ArticleContent {
   url: string;
   content: string;
   author?: {
