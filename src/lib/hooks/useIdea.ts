@@ -90,7 +90,6 @@ export const useIdea = () => {
       addIdeas(res.data);
       return res.data;
     } catch (error: any) {
-      Logger.error("Error generating ideas:", error);
       throw error;
     }
   };

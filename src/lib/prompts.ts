@@ -172,6 +172,7 @@ export const generateIdeasPrompt = (
     ${options.inspirations && options.inspirations.length > 0 ? `- Use the following article ideas as inspiration: ${options.inspirations.map(inspiration => `- ${inspiration.title}`).join(", ")}.` : ""}
     ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
     ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}
+    - Side note: If all the titles in the articles have the same format, use the same format for the generated titles.
         `,
   },
   {

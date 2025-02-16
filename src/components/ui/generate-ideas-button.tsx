@@ -83,8 +83,9 @@ export default function GenerateIdeasButton({
       setTopic("");
       setShouldSearch(false);
     } catch (error: any) {
-      Logger.error("Failed to generate ideas:", error);
-      toast.error("Failed to generate ideas.. try again");
+      toast.error(
+        error.response?.data?.error || "Failed to generate ideas.. try again",
+      );
     } finally {
       dispatch(setLoadingNewIdeas(false));
     }

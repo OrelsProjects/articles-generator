@@ -271,3 +271,18 @@ model PotentialClients {
 
   @@map("potentialClients")
 }
+
+// This is used to prevent the users from abusing the system by:
+// 1. Generating too many ideas at once
+// 2. Generating more than one description at once
+model RailGuards {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  isGeneratingIdeas Boolean @default(false)
+  isGeneratingDescription Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("railGuards")
+}
