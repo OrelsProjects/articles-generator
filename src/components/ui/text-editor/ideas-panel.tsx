@@ -35,6 +35,8 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
     if (!selectedIdea) return;
     if (isFirstInit) {
       setIsFirstInit(false);
+      const selectedStatus = selectedIdea.status;
+      setCurrentTab(selectedStatus);
       // scroll to the selected idea
       const ideaElement = document.getElementById(selectedIdea.id);
       if (ideaElement) {
