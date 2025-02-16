@@ -409,11 +409,11 @@ const TextEditor = ({
 
   return (
     <motion.div
-      initial={{ width: state === "full" ? "1200px" : "100%" }}
-      animate={{ width: state === "full" ? "1200px" : "100%" }}
+      initial={{ width: state === "full" ? "100%" : "100%" }}
+      animate={{ width: state === "full" ? "100%" : "100%" }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "w-full min-h-screen bg-background relative border-r border-border",
+        "w-full min-h-screen bg-background relative",
         className,
       )}
     >
