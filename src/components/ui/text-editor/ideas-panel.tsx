@@ -7,13 +7,12 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Idea } from "@/types/idea";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { EmptyIdeas } from "@/components/ui/text-editor/empty-ideas";
 import { Skeleton } from "@/components/ui/skeleton";
-import { selectUi } from "@/lib/features/ui/uiSlice";
 import { motion } from "framer-motion";
 
 interface IdeasPanelProps {
@@ -29,6 +28,26 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
   );
   const [currentTab, setCurrentTab] = useState<TabValue>("new");
   const [showFavorites, setShowFavorites] = useState(false);
+  const [isFirstInit, setIsFirstInit] = useState(true);
+  const ideasContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!selectedIdea) return;
+    if (isFirstInit) {
+      setIsFirstInit(false);
+      // scroll to the selected idea
+      const ideaElement = document.getElementById(selectedIdea.id);
+      if (ideaElement) {
+        // scroll with margin top 8px
+        ideaElement.scrollIntoView({
+          behavior: "instant",
+          block: "start",
+          inline: "nearest",
+        });
+        ideasContainerRef.current?.scrollBy(0, -48);
+      }
+    }
+  }, [isFirstInit, setSelectedIdea]);
 
   const onChangeStatus = (ideaId: string, status: IdeaStatus | "favorite") => {
     updateStatus(ideaId, status);
@@ -107,12 +126,16 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
             </div>
 
             <div id="ideas-panel-ideas" className="h-full pb-36 px-0.5">
-              <ScrollArea className="h-full space-y-4 pb-4 scroll-pl-8">
+              <ScrollArea
+                className="h-full space-y-4 pb-4 scroll-pl-8"
+                ref={ideasContainerRef}
+              >
                 {sortedIdeas.length > 0 || loadingNewIdeas ? (
                   <div className="space-y-4 px-8">
                     {sortedIdeas.map(idea => (
                       <Card
                         key={idea.id}
+                        id={idea.id}
                         className={cn(
                           "w-full h-40 transition-colors cursor-pointer hover:bg-muted/50 group flex flex-col justify-between",
                           selectedIdea?.id === idea.id &&

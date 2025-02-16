@@ -15,13 +15,11 @@ import AppUser from "@/types/appUser";
 import { Plan } from "@prisma/client";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
-import {
-  addIdeas,
-  addPublication,
-} from "@/lib/features/publications/publicationSlice";
+import { addPublication } from "@/lib/features/publications/publicationSlice";
 import axios from "axios";
 import { Session } from "next-auth";
 import { Loader2 } from "lucide-react";
+import { useIdea } from "@/lib/hooks/useIdea";
 
 export default function AuthProvider({
   children,
@@ -31,6 +29,7 @@ export default function AuthProvider({
   const router = useCustomRouter();
   const pathname = usePathname();
   const dispatch = useAppDispatch();
+  const { setIdeas } = useIdea();
   const [loading, setLoading] = useState(true);
   const { user: currentUser } = useSelector(selectAuth);
   const { data: session, status } = useSession();
@@ -55,7 +54,7 @@ export default function AuthProvider({
         const { publication } = publicationIdResponse.data;
         if (publication) {
           dispatch(addPublication(publication));
-          dispatch(addIdeas(publication.ideas));
+          setIdeas(publication.ideas);
         }
       } catch (error: any) {
         Logger.error("Error adding publication:", error);

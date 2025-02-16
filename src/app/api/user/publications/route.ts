@@ -6,7 +6,7 @@ import { PublicationResponse } from "@/types/publication";
 import loggerServer from "@/loggerServer";
 import { buildSubstackUrl } from "@/lib/utils/url";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -42,15 +42,12 @@ export async function GET(req: NextRequest) {
       },
     });
 
-
-
     const response: PublicationResponse = {
       publicationId: userPublication?.publication?.id,
       image: userPublication?.publication?.image,
-      url: buildSubstackUrl(
-        publication?.subdomain,
-        publication?.customDomain,
-      ) || "",
+      url:
+        buildSubstackUrl(publication?.subdomain, publication?.customDomain) ||
+        "",
       title:
         userPublication?.publication?.title ||
         publication?.name ||

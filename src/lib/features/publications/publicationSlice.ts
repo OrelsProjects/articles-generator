@@ -30,17 +30,29 @@ const publicationSlice = createSlice({
     addPublication: (state, action: PayloadAction<Publication>) => {
       state.publications.push(action.payload);
     },
-    setIdeas: (state, action: PayloadAction<Idea[]>) => {
-      state.ideas = action.payload;
-      if (!state.selectedIdea) {
-        state.selectedIdea = getFirstIdea(action.payload);
-      }
+    setIdeas: (
+      state,
+      action: PayloadAction<{
+        ideas: Idea[];
+        selectedIdeaId?: string;
+      }>,
+    ) => {
+      state.ideas = action.payload.ideas;
+      state.selectedIdea =
+        state.ideas.find(idea => idea.id === action.payload.selectedIdeaId) ||
+        getFirstIdea(action.payload.ideas);
     },
-    addIdeas: (state, action: PayloadAction<Idea[]>) => {
-      state.ideas.push(...action.payload);
-      if (!state.selectedIdea) {
-        state.selectedIdea = getFirstIdea(action.payload);
-      }
+    addIdeas: (
+      state,
+      action: PayloadAction<{
+        ideas: Idea[];
+        selectedIdeaId?: string;
+      }>,
+    ) => {
+      state.ideas.push(...action.payload.ideas);
+      state.selectedIdea =
+        state.ideas.find(idea => idea.id === action.payload.selectedIdeaId) ||
+        getFirstIdea(action.payload.ideas);
     },
     updateStatus: (
       state,

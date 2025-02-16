@@ -11,11 +11,16 @@ import { IdeaStatus } from "@prisma/client";
 import { Idea } from "@/types/idea";
 import { ImprovementType } from "@/lib/prompts";
 import { Logger } from "@/logger";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 
 export const useIdea = () => {
+  const [lastUsedIdea, setLastUsedIdea] = useLocalStorage<string | null>(
+    "lastUsedIdea",
+    null,
+  );
   const dispatch = useAppDispatch();
   const { ideas } = useAppSelector(state => state.publications);
-  
+
   const updateStatus = async (
     ideaId: string,
     status: IdeaStatus | "favorite",
@@ -77,6 +82,7 @@ export const useIdea = () => {
 
   const setSelectedIdea = (idea: Idea) => {
     dispatch(setSelectedIdeaAction(idea));
+    setLastUsedIdea(idea.id);
   };
 
   const generateIdeas = async (
@@ -96,11 +102,11 @@ export const useIdea = () => {
   };
 
   const setIdeas = (ideas: Idea[]) => {
-    dispatch(setIdeasAction(ideas));
+    dispatch(setIdeasAction({ ideas, selectedIdeaId: lastUsedIdea || undefined }));
   };
 
   const addIdeas = (ideas: Idea[]) => {
-    dispatch(addIdeasAction(ideas));
+    dispatch(addIdeasAction({ ideas, selectedIdeaId: lastUsedIdea || undefined }));
   };
 
   const improveText = async (
