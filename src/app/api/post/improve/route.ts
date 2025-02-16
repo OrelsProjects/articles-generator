@@ -1,13 +1,14 @@
-import prisma, { prismaArticles } from "@/app/api/_db/db";
+import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { getUserPlan } from "@/lib/dal/user";
 import { runPrompt } from "@/lib/openRouter";
-import { generateImprovementPrompt, ImprovementType } from "@/lib/prompts";
+import { generateImprovementPrompt } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 const MAX_CHARACTERS = 15000;
+export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
