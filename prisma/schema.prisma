@@ -179,7 +179,8 @@ model Idea {
   search      Boolean @default(false)
   image       String?
 
-  body String
+  body        String
+  bodyHistory String[]
 
   status     IdeaStatus @default(new)
   isFavorite Boolean    @default(false)
@@ -278,7 +279,7 @@ model PotentialClients {
 model RailGuards {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  isGeneratingIdeas Boolean @default(false)
+  isGeneratingIdeas       Boolean @default(false)
   isGeneratingDescription Boolean @default(false)
 
   createdAt DateTime @default(now())

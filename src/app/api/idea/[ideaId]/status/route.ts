@@ -25,12 +25,12 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const isValidRequest = await isIdeaBelongToUser({
+    const { isValid } = await isIdeaBelongToUser({
       ideaId,
       userId: session.user.id,
     });
 
-    if (!isValidRequest) {
+    if (!isValid) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

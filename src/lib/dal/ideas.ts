@@ -11,5 +11,8 @@ export const isIdeaBelongToUser = async (data: {
     },
   });
 
-  return !!idea;
+  return {
+    isValid: !!idea,
+    idea,
+  };
 };
