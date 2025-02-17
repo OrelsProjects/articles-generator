@@ -70,6 +70,7 @@ export async function GET() {
         modelUsedForIdeas: idea.modelUsedForIdeas,
         modelUsedForOutline: idea.modelUsedForOutline,
         updatedAt: idea.updatedAt,
+        bodyHistory: idea.bodyHistory,
       })),
     };
 
