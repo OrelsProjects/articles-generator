@@ -35,34 +35,10 @@ import { Level } from "@tiptap/extension-heading";
 interface MenuBarProps {
   editor: Editor | null;
   publication: Publication | null;
-  title: string;
-  subtitle: string;
 }
 
-export const MenuBar = ({
-  editor,
-  publication,
-  title,
-  subtitle,
-}: MenuBarProps) => {
+export const MenuBar = ({ editor, publication }: MenuBarProps) => {
   if (!editor) return null;
-
-  const handleCopy = (inputType: "title" | "subtitle" | "body") => {
-    let text = "";
-    switch (inputType) {
-      case "title":
-        text = title;
-        break;
-      case "subtitle":
-        text = subtitle;
-        break;
-      case "body":
-        text = unformatText(editor?.getHTML() || "");
-        break;
-    }
-    copyTextEditorContent();
-    toast.success("Copied " + inputType);
-  };
 
   return (
     <>

@@ -9,7 +9,7 @@ import TextareaAutosize from "react-textarea-autosize";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/hooks/redux";
 import debounce from "lodash/debounce";
-import { FormatDropdown } from "@/components/ui/text-editor/format-dropdown";
+import { FormatDropdown } from "@/components/ui/text-editor/dropdowns/format-dropdown";
 import { ImprovementType } from "@/lib/prompts";
 import { toast } from "react-toastify";
 import {
@@ -33,8 +33,20 @@ import { useUi } from "@/lib/hooks/useUi";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Wand2 } from "lucide-react";
+import { BubbleMenuComponent } from "@/components/ui/text-editor/dropdowns/bubble-menu";
+import {
+  TitleImprovementType,
+  TitleMenu,
+} from "@/components/ui/text-editor/dropdowns/title-menu";
 
 type ImageName = string;
 
@@ -98,7 +110,7 @@ const TextEditor = ({
 }) => {
   const { state } = useAppSelector(selectUi);
   const { selectedIdea } = useAppSelector(selectPublications);
-  const { updateIdea, improveText } = useIdea();
+  const { updateIdea, improveText, improveTitle } = useIdea();
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalSubtitle, setOriginalSubtitle] = useState("");
   const [originalBody, setOriginalBody] = useState("");
@@ -127,6 +139,12 @@ const TextEditor = ({
 
   const previewEditor = useEditor(textEditorOptions());
   const editor = useEditor(textEditorOptions(handleBodyChange));
+
+  // Add state for floating menu
+  const [showTitleMenu, setShowTitleMenu] = useState(false);
+  const [showSubtitleMenu, setShowSubtitleMenu] = useState(false);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const subtitleRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSave = async (ideaId: string) => {
     if (!selectedIdea) return;
@@ -305,6 +323,34 @@ const TextEditor = ({
     setImprovementRange(null);
   }
 
+  async function handleImproveTitle(
+    menuType: "title" | "subtitle",
+    improveType: TitleImprovementType,
+  ) {
+    if (!editor || !selectedIdea) return;
+    if (loadingImprovement) return;
+
+    setLoadingImprovement(improveType);
+    try {
+      const response = await improveTitle(
+        menuType,
+        improveType,
+        selectedIdea.id,
+      );
+
+      if (menuType === "title") {
+        setTitle(response.title);
+      } else {
+        setSubtitle(response.subtitle);
+      }
+      setHasChanges(true);
+    } catch (error: any) {
+      toast.error("Failed to improve title");
+    } finally {
+      setLoadingImprovement(null);
+    }
+  }
+
   // Add this effect to handle scroll reset
   useEffect(() => {
     if (showPreviewModal && previewEditorRef.current) {
@@ -410,38 +456,26 @@ const TextEditor = ({
     };
   }, [handleFileDrop]);
 
+  useEffect(() => {
+    console.log("showTitleMenu", showTitleMenu);
+  }, [showTitleMenu]);
+
   return (
     <motion.div
       initial={{ width: state === "full" ? "100%" : "100%" }}
       animate={{ width: state === "full" ? "100%" : "100%" }}
       transition={{ duration: 0.2 }}
-      className={cn(
-        "w-full min-h-screen bg-background relative",
-        className,
-      )}
+      className={cn("w-full min-h-screen bg-background relative", className)}
     >
-      {editor && (
-        <BubbleMenu
-          editor={editor}
-          tippyOptions={{ duration: 10 }}
-          className="flex items-center gap-1 p-1 rounded-lg border bg-background shadow-lg"
-        >
-          <FormatDropdown
-            editor={editor}
-            loading={loadingImprovement}
-            onImprove={handleImprovement}
-            maxCharacters={15000}
-          />
-        </BubbleMenu>
-      )}
+      <BubbleMenuComponent
+        editor={editor}
+        loading={`${loadingImprovement}`}
+        handleImprovement={handleImprovement}
+        className="flex items-center gap-1 p-1 rounded-lg border bg-background shadow-lg"
+      />
 
       <div className="max-md:sticky max-md:top-14 bg-background z-50">
-        <MenuBar
-          editor={editor}
-          publication={publication}
-          title={title}
-          subtitle={subtitle}
-        />
+        <MenuBar editor={editor} publication={publication} />
       </div>
       <ScrollArea className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] w-full flex flex-col justify-start items-center relative mt-4 md:mt-0">
         <ExpandButton />
@@ -452,22 +486,50 @@ const TextEditor = ({
         />
         <div className="h-full flex flex-col justify-start items-center gap-2 w-full">
           <div className="h-full py-4 max-w-[728px] space-y-4 w-full px-4 text-foreground">
-            <div className="flex items-center gap-2">
+            <div
+              className="w-full flex items-center gap-2 relative"
+              onFocus={() => {
+                setShowTitleMenu(true);
+              }}
+              onBlur={() => {
+                setShowTitleMenu(false);
+              }}
+            >
               <TextareaAutosize
+                ref={titleRef}
                 placeholder="Title"
                 value={title}
                 onChange={handleTitleChange}
                 maxLength={200}
                 className="w-full text-4xl font-bold outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
               />
+              <TitleMenu
+                open={showTitleMenu}
+                menuType="title"
+                onImprove={handleImproveTitle}
+              />
             </div>
-            <div className="flex items-center gap-2">
+            <div
+              className="flex items-center gap-2 relative"
+              onFocus={() => {
+                setShowSubtitleMenu(true);
+              }}
+              onBlur={() => {
+                setShowSubtitleMenu(false);
+              }}
+            >
               <TextareaAutosize
+                ref={subtitleRef}
                 placeholder="Add a subtitle..."
                 value={subtitle}
                 maxLength={200}
                 onChange={handleSubtitleChange}
                 className="w-full text-xl text-muted-foreground outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
+              />
+              <TitleMenu
+                open={showSubtitleMenu}
+                menuType="subtitle"
+                onImprove={handleImproveTitle}
               />
             </div>
             <div className="pt-2 tiptap pb-4">

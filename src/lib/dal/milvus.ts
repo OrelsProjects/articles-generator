@@ -255,17 +255,58 @@ export async function searchSimilarArticles({
     return articles;
   }
 
+  const articlesWithoutBody = articles.filter(article => !article.bodyText);
+
+  if (articlesWithoutBody.length === 0) {
+    return articles;
+  }
+
   // If body content is requested, fetch it
-  const urls = articles.map(article => article.canonicalUrl || "");
+  const urls = articlesWithoutBody.map(article => article.canonicalUrl || "");
   if (!urls) {
     return [];
   }
   const content = await getSubstackArticleData(urls);
 
-  return articles.map(article => ({
+  const updateDb = async () => {
+    try {
+      console.time("updateDb");
+      const batch = 10;
+      for (let i = 0; i < content.length; i += batch) {
+        const batchContent = content.slice(i, i + batch);
+        const promises = batchContent.map(async (item: any) => {
+          const id = articles.find(
+            article => article.canonicalUrl === item.url,
+          )?.id;
+          if (!id) {
+            return;
+          }
+          return prismaArticles.post.update({
+            where: {
+              id: id,
+            },
+            data: {
+              bodyText: item.content,
+            },
+          });
+        });
+        await Promise.all(promises);
+      }
+    } catch (error: any) {
+      loggerServer.error("Error updating db:", error);
+    } finally {
+      console.timeEnd("updateDb");
+    }
+  };
+
+  updateDb();
+
+  const articlesWithBody = articles.map(article => ({
     ...article,
     body_text: content.find(item => item.url === article.canonicalUrl)?.content,
   }));
+
+  return articlesWithBody;
 }
 
 export { getSubstackArticleData };

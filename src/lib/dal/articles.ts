@@ -1,4 +1,4 @@
-import { prismaArticles } from "@/app/api/_db/db";
+import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { Article, ArticleWithBody } from "@/types/article";
 import { Post } from "../../../prisma/generated/articles";
 import { getSubstackArticleData } from "@/lib/dal/milvus";
@@ -12,6 +12,7 @@ export interface GetUserArticlesOptions {
   limit?: number;
   freeOnly?: boolean;
   order?: GetArticlesOptionsOrder;
+  select?: (keyof Post)[];
 }
 
 export const getUserArticles = async (
@@ -21,6 +22,9 @@ export const getUserArticles = async (
       }
     | {
         url: string;
+      }
+    | {
+        userId: string;
       },
   options: GetUserArticlesOptions = {
     limit: 10,
@@ -28,6 +32,25 @@ export const getUserArticles = async (
   },
 ): Promise<Article[]> => {
   let posts: Post[] = [];
+
+  const postsWhere = {
+    ...(options.freeOnly && {
+      audience: "everyone",
+    }),
+  };
+
+  const queryOptions = {
+    take: options.limit || 9999,
+    orderBy: options.order
+      ? {
+          [options.order.by]: options.order.direction,
+        }
+      : undefined,
+    select: options.select
+      ? Object.fromEntries(options.select.map(column => [column, true]))
+      : undefined,
+  };
+
   if ("url" in data) {
     const startsWith = data.url.includes("http")
       ? data.url
@@ -38,26 +61,40 @@ export const getUserArticles = async (
         canonicalUrl: {
           startsWith: startsWith,
         },
-        ...(options.freeOnly && {
-          audience: "everyone",
-        }),
+        ...postsWhere,
       },
-      take: options.limit || 9999,
-      orderBy: options.order
-        ? {
-            [options.order.by]: options.order.direction,
-          }
-        : undefined,
+      ...queryOptions,
     });
-  } else {
+  } else if ("publicationId" in data) {
     posts = await prismaArticles.post.findMany({
       where: {
         publicationId: data.publicationId.toString(),
-        ...(options.freeOnly && {
-          audience: "everyone",
-        }),
+        ...postsWhere,
       },
-      take: options.limit || 9999,
+      ...queryOptions,
+    });
+  } else if ("userId" in data) {
+    const publication = await prisma.userMetadata.findMany({
+      where: {
+        userId: data.userId,
+      },
+      select: {
+        publication: {
+          select: {
+            idInArticlesDb: true,
+          },
+        },
+      },
+    });
+    if (publication.length === 0) {
+      return [];
+    }
+    posts = await prismaArticles.post.findMany({
+      where: {
+        publicationId:
+          publication[0].publication?.idInArticlesDb?.toString() || "",
+      },
+      ...queryOptions,
     });
   }
 
@@ -75,11 +112,7 @@ export const getUserArticlesWithBody = async (
     | {
         url: string;
       },
-  options: {
-    limit: number;
-    freeOnly: boolean;
-    order?: GetArticlesOptionsOrder;
-  } = {
+  options: GetUserArticlesOptions = {
     limit: 10,
     freeOnly: true,
   },

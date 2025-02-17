@@ -1,0 +1,169 @@
+import React, { useState, useRef, useEffect } from "react";
+import { Editor } from "@tiptap/react";
+import { Loader2, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ImprovementType } from "@/lib/prompts";
+import { MotionButton } from "@/components/ui/motion-components";
+
+// React node with onClick
+type Trigger = React.ReactElement & { onClick?: () => void };
+
+export type FormatOption = {
+  label: string;
+  icon: React.ElementType;
+  divider?: boolean;
+  subLabel?: string;
+  type: string | ImprovementType;
+};
+
+interface FormatDropdownProps {
+  options: FormatOption[];
+  loading?: string | null;
+  onSelect: (type: string) => void;
+  trigger?: Trigger;
+  disableOnLoading?: boolean;
+  disabled?: boolean;
+  className?: string;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  error?: { text: string; disabled: boolean };
+}
+
+export function FormatDropdown({
+  options,
+  onSelect,
+  loading,
+  trigger,
+  disabled,
+  className,
+  error,
+  onMouseEnter,
+  onMouseLeave,
+  disableOnLoading = true,
+}: FormatDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Toggle the dropdown & measure available space
+  function toggleDropdown(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(prev => !prev);
+  }
+
+  // Decide whether to open upwards or downwards
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const estimatedHeight = 240;
+
+    setOpenUp(spaceBelow < estimatedHeight && spaceAbove > estimatedHeight);
+  }, [isOpen]);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  return (
+    <div
+      ref={containerRef}
+      className={cn("relative inline-block", className)}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      {trigger ? (
+        React.cloneElement(trigger as React.ReactElement, {
+          onClick: toggleDropdown,
+        })
+      ) : (
+        <Button
+          onMouseDown={e => e.preventDefault()}
+          onClick={toggleDropdown}
+          variant="ghost"
+          disabled={disabled || (disableOnLoading && !!loading)}
+        >
+          <Sparkles className="h-5 w-5" />
+          <span className="ml-2">Ask AI</span>
+        </Button>
+      )}
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            key="format-dropdown"
+            initial={{ opacity: 0, y: openUp ? 10 : -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: openUp ? 10 : -10 }}
+            transition={{ duration: 0.15 }}
+            className={cn(
+              "absolute z-50 w-40 shadow-md",
+              "bg-popover text-popover-foreground backdrop-blur-sm",
+              openUp ? "bottom-full mb-2" : "top-full mt-2",
+            )}
+            onMouseDown={e => e.preventDefault()}
+            style={{ maxHeight: "28vh", overflowY: "auto" }}
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.05 }}
+              className="p-1.5 space-y-0.5"
+            >
+              {error?.text && (
+                <p className="p-1.5 text-xs text-red-500">{error.text}</p>
+              )}
+              {options.map(option => (
+                <div key={option.label}>
+                  {option.subLabel && (
+                    <p className="px-2 py-1.5 text-xs text-muted-foreground">
+                      {option.subLabel}
+                    </p>
+                  )}
+
+                  <MotionButton
+                    variant={"ghost"}
+                    onClick={() => onSelect(`${option.type}`)}
+                    disabled={
+                      disabled ||
+                      (disableOnLoading && !!loading) ||
+                      error?.disabled
+                    }
+                    className={cn(
+                      "w-full flex items-center justify-start gap-2 px-2 py-1.5 rounded-sm text-sm",
+                      "transition-colors hover:bg-accent hover:text-accent-foreground",
+                    )}
+                  >
+                    {loading === option.type ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <option.icon className="h-4 w-4" />
+                    )}
+                    <span>{option.label}</span>
+                  </MotionButton>
+
+                  {option.divider && <div className="h-px bg-border my-1" />}
+                </div>
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

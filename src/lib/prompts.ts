@@ -1,3 +1,4 @@
+import { TitleImprovementType } from "@/components/ui/text-editor/dropdowns/title-menu";
 import { Model } from "@/lib/openRouter";
 import { ArticleWithBody } from "@/types/article";
 import { Idea } from "@/types/idea";
@@ -303,6 +304,127 @@ export const generateImprovementPrompt = (
   };
 };
 
+export const generateTitleSubtitleImprovementPrompt = (
+  menuType: "title" | "subtitle",
+  improveType: TitleImprovementType,
+  relatedTitles: { title: string; subtitle: string }[],
+  idea: Idea,
+  userTopArticlesTitles: { title: string; subtitle: string }[],
+): { messages: { role: string; content: string }[]; model: Model } => {
+  const model = "anthropic/claude-3.5-sonnet";
+  const isTitle = menuType === "title";
+  const currentReference = isTitle
+    ? idea.title
+      ? `Current Title: ${idea.title}`
+      : ""
+    : idea.subtitle
+      ? `Current Subtitle: ${idea.subtitle}`
+      : "";
+
+  // Get the corresponding improvement prompt template based on the menu type and improveType
+  const improvementPromptTemplate = isTitle
+    ? titleImprovementPromptTemplates[improveType]
+    : subtitleImprovementPromptTemplates[improveType];
+
+  const systemMessage = `
+  You are an expert at crafting engaging ${isTitle ? "titles" : "subtitles"} for articles. ${
+    improvementPromptTemplate.prompt
+  }
+
+Below is a list of related titles and subtitles to draw inspiration from:
+${relatedTitles
+  .map(
+    (item, index) =>
+      `(${index + 1}) Title: "${item.title}", Subtitle: "${item.subtitle}"`,
+  )
+  .join("\n")}
+
+Additionally, note that the user’s other ${isTitle ? "titles" : "subtitles"} **must be treated as the strict style and format you have to replicate**. Observe carefully how they are structured, including:
+- Punctuation (periods, commas, question marks, colons, parentheses, exclamation points),
+- Capitalization,
+- Emoji usage (if any),
+- Word choice (e.g. first-person statements like “I did something...”, direct instructions like “Read this before...”, or numeric references like “11 mistakes...”),
+- And any other noticeable stylistic elements.
+
+Here are the user's reference ${isTitle ? "titles" : "subtitles"}:
+${userTopArticlesTitles
+  .map(
+    (item, index) =>
+      `(${index + 1}) Title: "${item.title}", Subtitle: "${item.subtitle}"`,
+  )
+  .join("\n")}
+
+**You must produce a final ${menuType} that strictly follows the same style and format** as the user’s reference examples. If a current ${menuType} is provided, use it as a reference, but feel free to improve or rework it as needed.
+
+Your task is to ${improvementPromptTemplate.task} for the article provided. The new ${menuType} must:
+1. Be highly relevant to the article's content and context.
+2. Exactly match the style and formatting of the user's other ${menuType === "title" ? "titles" : "subtitles"}.
+3. Remain compelling, concise, and reflective of the article’s main theme.
+4. Use the same approach to punctuation, capitalization, potential emojis, or numeric references that you see in the user’s reference ${menuType === "title" ? "titles" : "subtitles"}.
+5. Do not add extra text or deviate from the user’s established style.
+
+Return only the result in the following JSON format, without additional commentary:
+${
+  isTitle
+    ? `{"title": "<generated title>"}`
+    : `{"subtitle": "<generated subtitle>"}`
+}
+`.trim();
+
+  const userMessage = `
+Article content:
+${idea.body}
+
+${currentReference}
+`.trim();
+
+  const messages = [
+    { role: "system", content: systemMessage },
+    { role: "user", content: userMessage },
+  ];
+
+  return { messages, model };
+};
+
+export const generateFirstMessagePrompt = (
+  article: string,
+  writer?: string,
+) => [
+  {
+    role: "system",
+    content: `
+    Write a casual, friendly message to an article's author that feels like a text from a friend. Keep it under 25 words. Show genuine interest by:
+
+    - Mentioning you read their piece
+    - One specific aspect you liked
+    - A natural question to start conversation about their writing process
+
+    Guidelines:
+    - Use third grade English and words
+    - The message should be under 25 words
+    - The message should show genuine interest in the article, don't sound too excited
+    - The message should be casual and friendly, like writing to an old friend
+    - Have proper punctuation, grammar, spacing and new lines to make it readable
+    - Start the message with ${writer ? `"Hey, ${writer} :)"` : "Hey, :)"}.
+    - Make a new line before the question
+    - Escape the message to be a valid JSON string
+
+
+    The response should be in JSON format, with the following details, **without any additional text or formatting**, ONLY THE JSON:
+    {
+      "message": "<generated message>"
+    }
+    `,
+  },
+  {
+    role: "user",
+    content: `
+    Article: ${article}
+    ${writer ? `Writer: ${writer}` : ""}
+    `,
+  },
+];
+
 const improvementPromptTemplates: {
   [key: string]: {
     task: string;
@@ -369,41 +491,44 @@ const improvementPromptTemplates: {
   },
 };
 
-export const generateFirstMessagePrompt = (
-  article: string,
-  writer?: string,
-) => [
-  {
-    role: "system",
-    content: `
-    Write a casual, friendly message to an article's author that feels like a text from a friend. Keep it under 25 words. Show genuine interest by:
-
-    - Mentioning you read their piece
-    - One specific aspect you liked
-    - A natural question to start conversation about their writing process
-
-    Guidelines:
-    - Use third grade English and words
-    - The message should be under 25 words
-    - The message should show genuine interest in the article, don't sound too excited
-    - The message should be casual and friendly, like writing to an old friend
-    - Have proper punctuation, grammar, spacing and new lines to make it readable
-    - Start the message with ${writer ? `"Hey, ${writer} :)"` : "Hey, :)"}.
-    - Make a new line before the question
-    - Escape the message to be a valid JSON string
-
-
-    The response should be in JSON format, with the following details, **without any additional text or formatting**, ONLY THE JSON:
-    {
-      "message": "<generated message>"
-    }
-    `,
+const titleImprovementPromptTemplates: {
+  [key: string]: {
+    task: string;
+    prompt: string;
+    model?: Model;
+  };
+} = {
+  catchy: {
+    task: "make the title catchier",
+    prompt: `You are an expert title writer. Enhance the user's title to be more catchy and memorable, ensuring it grabs attention and reflects the article's essence. Use creative language and compelling phrasing.`,
   },
-  {
-    role: "user",
-    content: `
-    Article: ${article}
-    ${writer ? `Writer: ${writer}` : ""}
-    `,
+  "better hook": {
+    task: "improve the title with a better hook",
+    prompt: `You are a creative copywriter. Revise the user's title to incorporate a more compelling hook that immediately engages the reader, while keeping it concise and relevant to the article's content.`,
   },
-];
+  clearer: {
+    task: "make the title clearer",
+    prompt: `You are a clear communicator. Refine the user's title to ensure it clearly conveys the main message of the article, eliminating any ambiguity or confusion. Focus on precision and clarity.`,
+  },
+};
+
+const subtitleImprovementPromptTemplates: {
+  [key: string]: {
+    task: string;
+    prompt: string;
+    model?: Model;
+  };
+} = {
+  expand: {
+    task: "expand on the title",
+    prompt: `You are an expert writer. Enhance the user's subtitle by expanding on the title, providing additional details and depth that add context and intrigue to the article.`,
+  },
+  engaging: {
+    task: "make the subtitle more engaging",
+    prompt: `You are an engaging storyteller. Revise the user's subtitle to make it more captivating and appealing, drawing readers in and complementing the title with lively language.`,
+  },
+  context: {
+    task: "add context to the subtitle",
+    prompt: `You are an insightful writer. Improve the user's subtitle by adding relevant context that clarifies the article's theme and supports the title effectively. Ensure the subtitle provides a clear, informative backdrop to the article.`,
+  },
+};

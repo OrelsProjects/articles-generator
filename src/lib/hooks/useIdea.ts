@@ -131,6 +131,22 @@ export const useIdea = () => {
       : null;
   };
 
+  const improveTitle = async (
+    menuType: "title" | "subtitle",
+    improveType: string,
+    ideaId: string,
+  ): Promise<{ title: string; subtitle: string }> => {
+    const res = await axios.post("/api/post/improve/title", {
+      menuType,
+      improveType,
+      ideaId,
+    });
+    if (!res.data || (!res.data.title && !res.data.subtitle)) {
+      throw new Error("Improvement service failed.");
+    }
+    return res.data;
+  };
+
   return {
     updateStatus,
     updateIdea,
@@ -139,5 +155,6 @@ export const useIdea = () => {
     setIdeas,
     addIdeas,
     improveText,
+    improveTitle,
   };
 };

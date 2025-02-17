@@ -34,6 +34,7 @@ export async function generateIdeas(
     },
   });
 
+  // Sometimes ideas outline generation fails, so instead of running the LLM again, we'll use the ideas already generated
   if (ideasWithoutOutlines.length === 0) {
     const inspirations: ArticleWithBody[] = (await searchSimilarArticles({
       query: topic || publicationMetadata.generatedDescription || "",
