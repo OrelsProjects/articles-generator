@@ -144,7 +144,7 @@ function App() {
     setFetchingProducts(true);
     fetch("/api/stripe/products")
       .then(res => res.json())
-      .then(data => setProducts(data.products))
+      .then(data => setProducts(data.products || []))
       .finally(() => setFetchingProducts(false));
   }, [fetchingProducts, products]);
 
@@ -362,18 +362,22 @@ function App() {
                   </li>
                   <li className="flex items-center">
                     <Check className="text-green-500 mr-2" size={16} />
-                    <span>{maxIdeasPerPlan.free} AI-powered idea generations/day</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="text-green-500 mr-2" size={16} />
                     <span>
-                      {maxTitleAndSubtitleRefinementsPerPlan.free} title & subtitle
-                      refinements/day
+                      {maxIdeasPerPlan.free} AI-powered idea generations/day
                     </span>
                   </li>
                   <li className="flex items-center">
                     <Check className="text-green-500 mr-2" size={16} />
-                    <span>{maxTextEnhancmentsPerPlan.free} text enhancements/day</span>
+                    <span>
+                      {maxTitleAndSubtitleRefinementsPerPlan.free} title &
+                      subtitle refinements/day
+                    </span>
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="text-green-500 mr-2" size={16} />
+                    <span>
+                      {maxTextEnhancmentsPerPlan.free} text enhancements/day
+                    </span>
                   </li>
                 </ul>
                 <Button className="w-full mt-6" variant="outline" asChild>
