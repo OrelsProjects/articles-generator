@@ -1,8 +1,14 @@
 import prisma from "@/app/api/_db/db";
+import { UserNotFoundError } from "@/types/errors/UserNotFoundError";
 
 export async function getUserPlan(userId: string) {
   const user = await prisma.userMetadata.findUnique({
-    where: { id: userId },
+    where: { userId },
   });
-  return user?.plan;
+
+  if (!user) {
+    throw new UserNotFoundError("User not found");
+  }
+
+  return user.plan;
 }
