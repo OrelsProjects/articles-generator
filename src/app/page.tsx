@@ -145,6 +145,10 @@ function App() {
     fetch("/api/stripe/products")
       .then(res => res.json())
       .then(data => setProducts(data.products || []))
+      .catch(err => {
+        console.log(err);
+        setProducts([]);
+      })
       .finally(() => setFetchingProducts(false));
   }, [fetchingProducts, products]);
 
