@@ -138,8 +138,10 @@ const fadeInUpTransition = { transition: { duration: 0.8, ease: "easeOut" } };
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [fetchingProducts, setFetchingProducts] = useState(false);
+  const [didFetchProducts, setDidFetchProducts] = useState(false);
 
   useEffect(() => {
+    if (didFetchProducts) return;
     if (products.length > 0 || fetchingProducts) return;
     setFetchingProducts(true);
     fetch("/api/stripe/products")
@@ -149,8 +151,11 @@ function App() {
         console.log(err);
         setProducts([]);
       })
-      .finally(() => setFetchingProducts(false));
-  }, [fetchingProducts, products]);
+      .finally(() => {
+        setFetchingProducts(false);
+        setDidFetchProducts(true);
+      });
+  }, [fetchingProducts, products, didFetchProducts]);
 
   return (
     <div className="min-h-screen bg-background">
