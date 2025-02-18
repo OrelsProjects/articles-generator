@@ -117,6 +117,7 @@ export const TitleMenu = ({
         isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         className,
       )}
+      type="title-subtitle"
     />
   );
 };

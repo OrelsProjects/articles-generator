@@ -184,11 +184,13 @@ const CustomHeading = Heading.extend({
 
 export const textEditorOptions = (
   onUpdate?: (html: string) => void,
+  disabled?: boolean,
 ): UseEditorOptions => ({
   onUpdate: ({ editor }) => {
     const html = editor.getHTML();
     onUpdate?.(html);
   },
+  editable: !disabled,
   extensions: [
     StarterKit.configure({
       paragraph: {

@@ -5,6 +5,7 @@ import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { getUserPlan } from "@/lib/dal/user";
 import { runPrompt } from "@/lib/openRouter";
 import { generateTitleSubtitleImprovementPrompt as generateTitleImprovementPrompt } from "@/lib/prompts";
+import { handleUsageError, useAIItem } from "@/lib/utils/ideas";
 import { parseJson } from "@/lib/utils/json";
 import loggerServer from "@/loggerServer";
 import { ArticleWithBody } from "@/types/article";
@@ -34,15 +35,10 @@ export async function POST(request: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  try {
-    const userPlan = await getUserPlan(session.user.id);
-    if (userPlan === "free") {
-      return NextResponse.json(
-        { error: "Free plan not allowed" },
-        { status: 403 },
-      );
-    }
 
+  let usageId: string = "";
+
+  try {
     const { menuType, improveType, ideaId } = await request.json();
 
     const idea = await prisma.idea.findUnique({
@@ -54,6 +50,8 @@ export async function POST(request: NextRequest) {
     if (!idea) {
       return NextResponse.json({ error: "Idea not found" }, { status: 404 });
     }
+
+    usageId = await useAIItem(session.user.id, "titleOrSubtitleRefinement");
 
     const relatedArticles = await getRelatedArticles(
       `title: ${idea?.title}\nsubtitle: ${idea?.subtitle}`,
@@ -96,9 +94,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ title, subtitle });
   } catch (error: any) {
     loggerServer.error("Error improving article:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+
+    const { message, status } = await handleUsageError(error, usageId);
+    return NextResponse.json({ error: message }, { status });
   }
 }

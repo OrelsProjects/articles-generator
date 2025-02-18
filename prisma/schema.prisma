@@ -39,6 +39,12 @@ enum FreeUserStatus {
   revoked
 }
 
+enum AIUsageType {
+  ideaGeneration
+  textEnhancement
+  titleOrSubtitleRefinement
+}
+
 model User {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
@@ -286,4 +292,18 @@ model RailGuards {
   updatedAt DateTime @updatedAt
 
   @@map("railGuards")
+}
+
+model aiUsage {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId    String      @db.ObjectId
+  plan      Plan
+  type      AIUsageType
+  usageName String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("aiUsage")
 }

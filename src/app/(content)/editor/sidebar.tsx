@@ -113,7 +113,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="flex w-full items-center gap-3 rounded-md p-2 text-left text-sm hover:bg-sidebar-accent"
+                    className="flex w-full items-center gap-3 rounded-md text-left text-sm py-8 hover:bg-sidebar-accent"
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user?.image || ""} alt="User" />
@@ -121,7 +121,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                         <User className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 overflow-hidden">
+                    <div className="flex-1">
                       <p className="truncate font-medium text-sidebar-foreground">
                         {user?.displayName}
                       </p>
@@ -138,13 +138,19 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                   side="right"
                   sideOffset={8}
                 >
-                  {/* <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem> */}
-                  {/* <DropdownMenuSeparator /> */}
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      <span>Usage</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive flex items-center gap-2"
                     onClick={handleLogout}

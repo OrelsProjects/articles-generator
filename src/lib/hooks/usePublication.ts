@@ -1,10 +1,7 @@
-import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
+import { useAppDispatch } from "@/lib/hooks/redux";
 import {
-  setIdeas as setIdeasAction,
-  addIdeas as addIdeasAction,
   addPublication as addPublicationAction,
 } from "@/lib/features/publications/publicationSlice";
-import { Idea } from "@/types/idea";
 import axios from "axios";
 import { Publication } from "@/types/publication";
 import { Logger } from "@/logger";

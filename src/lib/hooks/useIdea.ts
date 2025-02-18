@@ -7,11 +7,12 @@ import {
   addIdeas as addIdeasAction,
 } from "@/lib/features/publications/publicationSlice";
 import axios from "axios";
-import { IdeaStatus } from "@prisma/client";
+import { AIUsageType, IdeaStatus } from "@prisma/client";
 import { Idea } from "@/types/idea";
 import { ImprovementType } from "@/lib/prompts";
 import { Logger } from "@/logger";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { incrementUsage } from "@/lib/features/settings/settingsSlice";
 
 export const useIdea = () => {
   const [lastUsedIdea, setLastUsedIdea] = useLocalStorage<string | null>(
@@ -95,6 +96,7 @@ export const useIdea = () => {
         `api/post/generate/ideas?topic=${options.topic}&ideasCount=${options.ideasCount || 3}&shouldSearch=${options.shouldSearch}`,
       );
       addIdeas(res.data);
+      dispatch(incrementUsage(AIUsageType.ideaGeneration));
       return res.data;
     } catch (error: any) {
       throw error;
@@ -122,6 +124,8 @@ export const useIdea = () => {
       ideaId,
     });
 
+    dispatch(incrementUsage(AIUsageType.textEnhancement));
+
     return res.data
       ? {
           text: res.data,
@@ -144,6 +148,7 @@ export const useIdea = () => {
     if (!res.data || (!res.data.title && !res.data.subtitle)) {
       throw new Error("Improvement service failed.");
     }
+    dispatch(incrementUsage(AIUsageType.titleOrSubtitleRefinement));
     return res.data;
   };
 

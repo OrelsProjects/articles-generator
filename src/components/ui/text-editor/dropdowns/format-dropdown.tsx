@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Editor } from "@tiptap/react";
 import { Loader2, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,6 +6,9 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ImprovementType } from "@/lib/prompts";
 import { MotionButton } from "@/components/ui/motion-components";
+import { useAppSelector } from "@/lib/hooks/redux";
+import { selectSettings } from "@/lib/features/settings/settingsSlice";
+import { INFINITY } from "@/lib/plans-consts";
 
 // React node with onClick
 type Trigger = React.ReactElement & { onClick?: () => void };
@@ -23,12 +26,12 @@ interface FormatDropdownProps {
   loading?: string | null;
   onSelect: (type: string) => void;
   trigger?: Trigger;
-  disableOnLoading?: boolean;
   disabled?: boolean;
   className?: string;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   error?: { text: string; disabled: boolean };
+  type: "title-subtitle" | "text";
 }
 
 export function FormatDropdown({
@@ -41,8 +44,9 @@ export function FormatDropdown({
   error,
   onMouseEnter,
   onMouseLeave,
-  disableOnLoading = true,
+  type,
 }: FormatDropdownProps) {
+  const { usage } = useAppSelector(selectSettings);
   const [isOpen, setIsOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,6 +84,38 @@ export function FormatDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+  const didExceedLimit = useMemo(() => {
+    if (type === "title-subtitle") {
+      return usage.titleOrSubtitleRefinement.didExceed;
+    }
+    return usage.textEnhancement.didExceed;
+  }, [usage, type]);
+
+  const usedCount = useMemo(() => {
+    if (type === "title-subtitle") {
+      return usage.titleOrSubtitleRefinement.count;
+    }
+    return usage.textEnhancement.count;
+  }, [usage, type]);
+
+  const maxCount = useMemo(() => {
+    if (type === "title-subtitle") {
+      return usage.titleOrSubtitleRefinement.max;
+    }
+    return usage.textEnhancement.max;
+  }, [usage, type]);
+
+  const usageLabel = useMemo(() => {
+    if (maxCount === INFINITY) {
+      return <p className="p-1.5 text-xs text-primary">Unlimited usage</p>;
+    }
+    return (
+      <p className="p-1.5 text-xs text-muted-foreground">
+        {usedCount}/{maxCount}
+      </p>
+    );
+  }, [usedCount, maxCount]);
+
   return (
     <div
       ref={containerRef}
@@ -96,7 +132,7 @@ export function FormatDropdown({
           onMouseDown={e => e.preventDefault()}
           onClick={toggleDropdown}
           variant="ghost"
-          disabled={disabled || (disableOnLoading && !!loading)}
+          disabled={disabled}
         >
           <Sparkles className="h-5 w-5" />
           <span className="ml-2">Ask AI</span>
@@ -128,6 +164,12 @@ export function FormatDropdown({
               {error?.text && (
                 <p className="p-1.5 text-xs text-red-500">{error.text}</p>
               )}
+              {
+                // Show limit (used/max)
+                <p className="p-1.5 text-xs text-muted-foreground">
+                  {usageLabel}
+                </p>
+              }
               {options.map(option => (
                 <div key={option.label}>
                   {option.subLabel && (
@@ -139,11 +181,7 @@ export function FormatDropdown({
                   <MotionButton
                     variant={"ghost"}
                     onClick={() => onSelect(`${option.type}`)}
-                    disabled={
-                      disabled ||
-                      (disableOnLoading && !!loading) ||
-                      error?.disabled
-                    }
+                    disabled={disabled || error?.disabled || didExceedLimit}
                     className={cn(
                       "w-full flex items-center justify-start gap-2 px-2 py-1.5 rounded-sm text-sm",
                       "transition-colors hover:bg-accent hover:text-accent-foreground",

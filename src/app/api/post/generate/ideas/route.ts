@@ -13,19 +13,14 @@ import { parseJson } from "@/lib/utils/json";
 import loggerServer from "@/loggerServer";
 import { cleanArticleBody } from "@/lib/utils/article";
 import { runWithRetry } from "@/lib/utils/requests";
-import {
-  canUserGenerateIdeas,
-  generateIdeas,
-  setUserGeneratingIdeas,
-} from "@/lib/utils/ideas";
-import { IdeasBeingGeneratedError } from "@/types/errors/IdeasBeingGeneratedError";
-import { MaxIdeasPerDayError } from "@/types/errors/MaxIdeasPerDayError";
-import { GenerateIdeasNoPlanError } from "@/types/errors/GenerateIdeasNoPlanError";
+import { useAIItem, generateIdeas, handleUsageError } from "@/lib/utils/ideas";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
 const modelUsedForIdeas: Model = "openai/gpt-4o";
 const modelUsedForOutline: Model = "anthropic/claude-3.5-sonnet";
+
+const MAX_IDEAS_COUNT = 5;
 
 export async function GET(req: NextRequest) {
   console.time("Start generating ideas");
@@ -33,9 +28,12 @@ export async function GET(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  let usageId: string = ""; 
+
   try {
     console.time("Pre-query");
-    await canUserGenerateIdeas(session.user.id);
+    usageId = await useAIItem(session.user.id, "ideaGeneration");
 
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
@@ -47,7 +45,6 @@ export async function GET(req: NextRequest) {
     });
 
     const topic = req.nextUrl.searchParams.get("topic") || "";
-    const ideasCount = req.nextUrl.searchParams.get("ideasCount") || "3";
     const shouldSearch =
       req.nextUrl.searchParams.get("shouldSearch") || "false";
 
@@ -88,7 +85,7 @@ export async function GET(req: NextRequest) {
       session.user.id,
       topic,
       publicationMetadata,
-      ideasCount,
+      MAX_IDEAS_COUNT,
       shouldSearch,
       cleanedUserArticles,
       {
@@ -169,22 +166,8 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     loggerServer.error("Error generating ideas:", error);
 
-    if (error instanceof GenerateIdeasNoPlanError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-
-    if (error instanceof IdeasBeingGeneratedError) {
-      return NextResponse.json({ error: error.message }, { status: 429 });
-    }
-
-    if (error instanceof MaxIdeasPerDayError) {
-      return NextResponse.json({ error: error.message }, { status: 429 });
-    }
-
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    const { message, status } = await handleUsageError(error, usageId);
+    return NextResponse.json({ error: message }, { status });
   } finally {
     console.timeEnd("Start generating ideas");
     await prisma.railGuards.update({

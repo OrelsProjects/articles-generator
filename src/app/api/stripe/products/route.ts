@@ -1,7 +1,7 @@
 import { getStripeInstance } from "@/app/api/_payment/stripe";
 import { getCoupon } from "@/lib/stripe";
 import loggerServer from "@/loggerServer";
-import { PriceStructure, Pricing, Product } from "@/types/payment";
+import { formatPrice, PriceStructure, Pricing, Product } from "@/types/payment";
 import { NextRequest, NextResponse } from "next/server";
 
 // revalidate always
@@ -61,6 +61,9 @@ export async function GET(req: NextRequest) {
           dollars: priceMonthlyDollars,
           cents: priceMonthlyCents,
           tokens: parseInt(stripeProduct.metadata.tokens),
+          priceFormatted: formatPrice({
+            priceWithCents: priceMonthlyValue,
+          }),
         },
         yearly: {
           id: priceYearly.id,
@@ -69,6 +72,9 @@ export async function GET(req: NextRequest) {
           dollars: priceYearlyDollars,
           cents: priceYearlyCents,
           tokens: parseInt(stripeProduct.metadata.tokens),
+          priceFormatted: formatPrice({
+            priceWithCents: priceYearlyValue,
+          }),
         },
       };
 

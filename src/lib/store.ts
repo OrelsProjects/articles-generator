@@ -3,6 +3,7 @@ import authReducer from "@/lib/features/auth/authSlice";
 import publicationReducer from "@/lib/features/publications/publicationSlice";
 import uiReducer from "@/lib/features/ui/uiSlice";
 import productsReducer from "@/lib/features/products/productsSlice";
+import settingsReducer from "@/lib/features/settings/settingsSlice";
 
 export const makeStore = () => {
   return configureStore({
@@ -11,6 +12,7 @@ export const makeStore = () => {
       auth: authReducer,
       products: productsReducer,
       publications: publicationReducer,
+      settings: settingsReducer,
     },
   });
 };

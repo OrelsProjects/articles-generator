@@ -114,6 +114,7 @@ export const BubbleMenuComponent = ({
         loading={loading}
         onSelect={handleImprovement}
         error={error}
+        type="text"
       />
     </BubbleMenu>
   );

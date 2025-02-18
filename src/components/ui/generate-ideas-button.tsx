@@ -31,6 +31,7 @@ import {
 import { ToastStepper } from "@/components/ui/toast-stepper";
 import { Logger } from "@/logger";
 import { motion } from "framer-motion";
+import { selectSettings } from "@/lib/features/settings/settingsSlice";
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
@@ -56,6 +57,7 @@ export default function GenerateIdeasButton({
   const { publications, loadingNewIdeas } = useAppSelector(selectPublications);
   const { user } = useAppSelector(selectAuth);
   const { generateIdeas } = useIdea();
+  const { usage } = useAppSelector(selectSettings);
   const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [showTopicDialog, setShowTopicDialog] = useState(false);
   const [topic, setTopic] = useState("");
@@ -84,6 +86,7 @@ export default function GenerateIdeasButton({
       setTopic("");
       setShouldSearch(false);
     } catch (error: any) {
+      debugger;
       toast.error(
         error.response?.data?.error || "Failed to generate ideas.. try again",
       );
@@ -91,6 +94,14 @@ export default function GenerateIdeasButton({
       dispatch(setLoadingNewIdeas(false));
     }
   };
+
+  const didExceedLimit = useMemo(() => {
+    return usage.ideaGeneration.didExceed;
+  }, [usage]);
+
+  const usageLabel = useMemo(() => {
+    return `${usage.ideaGeneration.count}/${usage.ideaGeneration.max}`;
+  }, [usage]);
 
   return (
     <>
@@ -133,8 +144,15 @@ export default function GenerateIdeasButton({
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Specify a Topic</DialogTitle>
+              <DialogTitle>Specify a topic</DialogTitle>
             </DialogHeader>
+            <p
+              className={cn("text-sm text-muted-foreground", {
+                "text-red-400": didExceedLimit,
+              })}
+            >
+              Usage: {usageLabel}
+            </p>
             <Input
               type="text"
               placeholder="Enter a specific topic (optional)"
@@ -152,6 +170,7 @@ export default function GenerateIdeasButton({
               <Button
                 variant={shouldSearch ? "default" : "outline"}
                 onClick={() => setShouldSearch(!shouldSearch)}
+                disabled={didExceedLimit}
                 className={cn("w-fit rounded-full shadow-none", {
                   "bg-primary/20 border border-primary/40 text-primary hover:bg-primary/10":
                     shouldSearch,
@@ -165,7 +184,7 @@ export default function GenerateIdeasButton({
                 animate={{ opacity: shouldSearch ? 1 : 0 }}
                 transition={{ duration: 0.15 }}
                 className={cn("text-sm text-muted-foreground", {
-                  "text-transparent select-none": !shouldSearch,
+                  "text-transparent select-none hidden": !shouldSearch,
                 })}
               >
                 Generating ideas might take twice as long.

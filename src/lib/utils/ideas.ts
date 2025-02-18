@@ -9,13 +9,22 @@ import { ArticleWithBody } from "@/types/article";
 import { GenerateIdeasNoPlanError } from "@/types/errors/GenerateIdeasNoPlanError";
 import { IdeasBeingGeneratedError } from "@/types/errors/IdeasBeingGeneratedError";
 import { MaxIdeasPerDayError } from "@/types/errors/MaxIdeasPerDayError";
-import { PublicationMetadata } from "@prisma/client";
+import { AIUsageType, Idea, Plan, PublicationMetadata } from "@prisma/client";
+import {
+  maxIdeasPerPlan as maxIdeasByPlan,
+  maxTextEnhancmentsPerPlan,
+  maxTitleAndSubtitleRefinementsPerPlan,
+} from "@/lib/plans-consts";
+import { MaxRefinementsPerDayError } from "@/types/errors/MaxRefinementsPerDayError";
+import { MaxEnhancementsPerDayError } from "@/types/errors/MaxEnhancementsPerDayError";
+import loggerServer from "@/loggerServer";
+import { UserNotFoundError } from "@/types/errors/UserNotFoundError";
 
 export async function generateIdeas(
   userId: string,
   topic: string,
   publicationMetadata: PublicationMetadata,
-  ideasCount: string,
+  ideasCount: number,
   shouldSearch: string,
   cleanedUserArticles: ArticleWithBody[],
   models: {
@@ -90,7 +99,7 @@ export async function generateIdeas(
       {
         topic,
         inspirations,
-        ideasCount: parseInt(ideasCount || "3"),
+        ideasCount,
         ideasUsed: allPostsUsed,
         shouldSearch: shouldSearch === "true",
       },
@@ -197,45 +206,145 @@ export async function setUserGeneratingIdeas(
   });
 }
 
-/**
- * This function checks if the user can generate ideas and sets the user as generating ideas
- * @param userId
- * @throws {GenerateIdeasNoPlanError} if the user is not authorized to generate ideas
- * @throws {IdeasBeingGeneratedError} if the user is already generating ideas
- * @throws {MaxIdeasPerDayError} if the user has reached the maximum number of ideas per day
- */
-export async function canUserGenerateIdeas(userId: string) {
-  const userMetadata = await prisma.userMetadata.findUnique({
-    where: {
-      userId,
-    },
-    select: {
-      plan: true,
-    },
-  });
+export async function useAIItem(
+  userId: string,
+  type: AIUsageType,
+  userPlan?: Plan,
+) {
+  let plan = userPlan;
+  if (!plan) {
+    const userMetadata = await prisma.userMetadata.findUnique({
+      where: {
+        userId,
+      },
+      select: {
+        plan: true,
+      },
+    });
 
-  if (!userMetadata?.plan || userMetadata.plan === "free") {
-    throw new GenerateIdeasNoPlanError();
+    if (!userMetadata?.plan) {
+      throw new GenerateIdeasNoPlanError();
+    }
+    plan = userMetadata.plan;
   }
-
-  await setUserGeneratingIdeas(userId, true);
 
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 
-  const ideasGeneratedToday = await prisma.idea.findMany({
+  const usages = await prisma.aiUsage.findMany({
     where: {
       userId,
       createdAt: {
         gte: startOfDay,
       },
+      type,
     },
   });
 
-  const maxIdeas = userMetadata.plan === "superPro" ? 40 : 20;
-  if (ideasGeneratedToday.length >= maxIdeas) {
-    throw new MaxIdeasPerDayError(
-      `You have reached the maximum number of ideas per day (${maxIdeas})`,
-    );
+  switch (type) {
+    case AIUsageType.textEnhancement:
+      const maxEnhancements = maxTextEnhancmentsPerPlan[plan];
+      if (usages.length >= maxEnhancements) {
+        throw new MaxEnhancementsPerDayError(
+          `You have reached the maximum number of text enhancements per day (${maxEnhancements})`,
+        );
+      }
+      break;
+    case AIUsageType.titleOrSubtitleRefinement:
+      const maxRefinements = maxTitleAndSubtitleRefinementsPerPlan[plan];
+      if (usages.length >= maxRefinements) {
+        throw new MaxRefinementsPerDayError(
+          `You have reached the maximum number of title or subtitle refinements per day (${maxRefinements})`,
+        );
+      }
+      break;
+    case AIUsageType.ideaGeneration:
+      const maxIdeas = maxIdeasByPlan[plan];
+      if (usages.length >= maxIdeas) {
+        throw new MaxIdeasPerDayError(
+          `You have reached the maximum number of ideas per day (${maxIdeas})`,
+        );
+      }
+      await setUserGeneratingIdeas(userId, true);
+      break;
   }
+
+  const usage = await prisma.aiUsage.create({
+    data: {
+      userId,
+      type,
+      usageName: type,
+      plan,
+    },
+  });
+
+  return usage.id;
+}
+
+export async function handleUsageError(
+  error: any,
+  usageId: string,
+): Promise<{
+  message: string;
+  status: number;
+}> {
+  loggerServer.error(`Handling usage error`, { error, usageId });
+
+  if (error instanceof GenerateIdeasNoPlanError) {
+    return {
+      message: error.message,
+      status: 403,
+    };
+  }
+
+  if (error instanceof IdeasBeingGeneratedError) {
+    return {
+      message: error.message,
+      status: 429,
+    };
+  }
+
+  if (error instanceof MaxIdeasPerDayError) {
+    return {
+      message: error.message,
+      status: 429,
+    };
+  }
+
+  if (error instanceof MaxEnhancementsPerDayError) {
+    return {
+      message: error.message,
+      status: 429,
+    };
+  }
+
+  if (error instanceof MaxRefinementsPerDayError) {
+    return {
+      message: error.message,
+      status: 429,
+    };
+  }
+
+  if (error instanceof UserNotFoundError) {
+    return {
+      message: error.message,
+      status: 404,
+    };
+  }
+
+  if (!usageId) {
+    loggerServer.error("BAD ERROR: Usage ID is undefined", { error });
+  } else {
+    // Remove usage, something went wrong on our side
+    loggerServer.error("Removing usage due to an error", { usageId });
+    await prisma.aiUsage.delete({
+      where: {
+        id: usageId,
+      },
+    });
+  }
+  return {
+    message: "Internal server error",
+    status: 500,
+  };
 }

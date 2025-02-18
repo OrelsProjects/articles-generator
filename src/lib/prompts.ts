@@ -254,6 +254,7 @@ export const generateImprovementPrompt = (
   type: ImprovementType,
   text: string,
   idea?: Idea | null,
+  extras?: string,
 ): {
   messages: {
     role: string;
@@ -265,6 +266,8 @@ export const generateImprovementPrompt = (
   const { prompt, task } = improvementPrompt;
   const model = improvementPrompt.model || "anthropic/claude-3.5-sonnet";
 
+  const maxLength = text.length;
+
   const messages = [
     {
       role: "system",
@@ -273,27 +276,28 @@ export const generateImprovementPrompt = (
         Your task is to ${task}.
 
         Response must follow these strict rules:
-        - **Preserve all existing formatting**, including Markdown elements like headings (#), lists (-, *), bold (**), italics (*), code blocks (\`\`\`), and inline code (\`...\`).
-        - **Enhance readability where needed**: You may improve formatting **only if it helps clarity** (e.g., adding line breaks, better structuring paragraphs, or reformatting lists).
-        - **Do not remove any structure unless necessary**: Keep the original layout but refine or expand it when beneficial.
-        - **Maintain proper paragraph spacing**: Ensure smooth transitions and logical flow.
-        - **Return only the improved text**, with no explanations or comments.
-        - **The writing must feel completely human**: Avoid robotic patterns or excessive formalism.
+        - Preserve all existing formatting, including Markdown elements like headings (#), lists (-, *), bold (**), italics (*), code blocks (\`\`\`), and inline code (\`...\`). This is extremely important. 
+        - Ensure the response is no longer than ${maxLength} characters. Strictly adhere to this constraint.
+        - Enhance readability where needed: You may improve formatting only if it helps clarity (e.g., adding line breaks, better structuring paragraphs, or reformatting lists).
+        - Do not remove any structure unless necessary: Keep the original layout but refine or expand it when beneficial.
+        - Maintain proper paragraph spacing: Ensure smooth transitions and logical flow.
+        - Return only the improved text, with no explanations or comments.
+        - The writing must feel completely human: Avoid robotic patterns or excessive formalism.
         - If you keep the same title text, keep the capitalization like the original text.
-        ${type === "elaborate" ? "- Include images in the outline, where relevant." : ""}
-
-       ${
-         idea
-           ? `Here's the rest of the article for context:
-        ${idea?.body.slice(0, 3000)}`
-           : ""
-       }
+        ${idea ? `- Make sure the response is relevant and related to the rest of the article provided.` : ""}
+        ${extras ? extras : ""}
       `,
     },
     {
       role: "user",
       content: `
       Text: ${text}
+       ${
+         idea
+           ? `Article:
+      ${idea?.body.slice(0, 3000)}`
+           : ""
+       }
       `,
     },
   ];
@@ -434,8 +438,10 @@ const improvementPromptTemplates: {
 } = {
   elaborate: {
     task: "elaborate on the user's text",
-    prompt: `You are an expert writer, expand on the user's text to make it more detailed and informative.`,
-    model: "google/gemini-2.0-flash-001",
+    prompt: `You are an expert writer, expand on the user's text to make it more detailed and informative while not repeating the same message.
+    Add more details, bullet points and other information to make the text more informative.
+    `,
+    // model: "google/gemini-2.0-flash-001",
   },
   improve: {
     task: "make it better",

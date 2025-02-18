@@ -3,6 +3,7 @@ import { authOptions } from "@/auth/authOptions";
 import { getUserPlan } from "@/lib/dal/user";
 import { runPrompt } from "@/lib/openRouter";
 import { generateImprovementPrompt } from "@/lib/prompts";
+import { handleUsageError, useAIItem } from "@/lib/utils/ideas";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -15,15 +16,12 @@ export async function POST(request: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  let usageId: string = "";
+
   try {
     const userPlan = await getUserPlan(session.user.id);
-    if (userPlan === "free") {
-      return NextResponse.json(
-        { error: "Free plan not allowed" },
-        { status: 403 },
-      );
-    }
-
+    
     const { text, type, ideaId } = await request.json();
 
     if (text.length > MAX_CHARACTERS) {
@@ -32,6 +30,8 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+
+    usageId = await useAIItem(session.user.id, "textEnhancement", userPlan);
 
     const idea = await prisma.idea.findUnique({
       where: {
@@ -44,9 +44,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response || "");
   } catch (error: any) {
     loggerServer.error("Error improving article:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+
+    const { message, status } = await handleUsageError(error, usageId);
+    return NextResponse.json({ error: message }, { status });
   }
 }

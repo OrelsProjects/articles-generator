@@ -289,7 +289,7 @@ const TextEditor = ({
     } catch (error: any) {
       Logger.error("Failed to improve:", error);
       toast.update(toastId, {
-        render: error.message || "Failed to improve",
+        render: error.response?.data?.error || "Failed to improve",
         type: "error",
         isLoading: false,
         autoClose: 3000,

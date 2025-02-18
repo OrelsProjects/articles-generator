@@ -56,6 +56,7 @@ export type Pricing = Record<IntervalType, PriceStructure>;
 export interface PriceStructure {
   id: string;
   price: number;
+  priceFormatted: string;
   dollars: number;
   cents: number;
   tokens: number;
@@ -121,10 +122,10 @@ export const formatPrice = (
     cents = data.cents;
   } else {
     dollars = Math.floor(data.priceWithCents / 100);
-    cents = data.priceWithCents % 100;
+    cents = data.priceWithCents % 10;
   }
   if (cents > 0) {
     return `${dollars}.${cents}`;
   }
-  return dollars;
+  return `${dollars}`;
 };

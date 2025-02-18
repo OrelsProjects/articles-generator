@@ -20,6 +20,7 @@ import axios from "axios";
 import { Session } from "next-auth";
 import { Loader2 } from "lucide-react";
 import { useIdea } from "@/lib/hooks/useIdea";
+import { useSettings } from "@/lib/hooks/useSettings";
 
 export default function AuthProvider({
   children,
@@ -30,6 +31,7 @@ export default function AuthProvider({
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const { setIdeas } = useIdea();
+  const { init } = useSettings();
   const [loading, setLoading] = useState(true);
   const { user: currentUser } = useSelector(selectAuth);
   const { data: session, status } = useSession();
@@ -56,6 +58,7 @@ export default function AuthProvider({
           dispatch(addPublication(publication));
           setIdeas(publication.ideas);
         }
+        init();
       } catch (error: any) {
         Logger.error("Error adding publication:", error);
       }
