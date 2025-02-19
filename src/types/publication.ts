@@ -13,6 +13,6 @@ export interface PublicationResponse {
   image: string | null;
   title: string | null;
   description: string | null;
-  ideas: Idea[];
+  ideas: Omit<Idea, "didUserSee">[];
   url: string;
 }
