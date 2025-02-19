@@ -20,7 +20,7 @@ export const maxDuration = 300; // This function can run for a maximum of 5 minu
 const modelUsedForIdeas: Model = "openai/gpt-4o";
 const modelUsedForOutline: Model = "anthropic/claude-3.5-sonnet";
 
-const MAX_IDEAS_COUNT = 5;
+const MAX_IDEAS_COUNT = 3;
 
 export async function GET(req: NextRequest) {
   console.time("Start generating ideas");
@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
     });
 
     const topic = req.nextUrl.searchParams.get("topic") || "";
+    const count = req.nextUrl.searchParams.get("count") || "1";
     const shouldSearch =
       req.nextUrl.searchParams.get("shouldSearch") || "false";
 

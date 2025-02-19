@@ -16,6 +16,7 @@ import { Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Header } from "@/app/(content)/editor/header";
 import { selectUi } from "@/lib/features/ui/uiSlice";
+import { IdeasSideSheet } from "@/components/ui/text-editor/ideas-panel-side-sheet";
 
 const MobilesIdeasPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,7 +50,7 @@ const MobilesIdeasPanel = () => {
 
 export default function IdeasPage() {
   const { state } = useAppSelector(selectUi);
-  const { publications } = useAppSelector(state => state.publications);
+  const { publications, selectedIdea } = useAppSelector(state => state.publications);
   const isWritingMode = state === "writing-mode";
 
   return (
@@ -71,13 +72,13 @@ export default function IdeasPage() {
         {/* Desktop Ideas Panel - collapses when in writing mode */}
         <div
           className={cn(
-            "w-full h-[calc(100vh-5rem)] hidden md:block transition-all duration-300 ease-in-out",
-            isWritingMode
-              ? "w-0 opacity-0"
-              : "md:col-span-2 2xl:col-span-2 opacity-100",
+            "w-full h-screen hidden md:block transition-all duration-300 ease-in-out",
           )}
         >
-          <IdeasPanel />
+          <IdeasSideSheet
+            publication={publications[0] || null}
+            selectedIdea={selectedIdea || null}
+          />
         </div>
 
         {/* Mobile Ideas Panel */}

@@ -1,4 +1,4 @@
-import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
+import { useEditor, EditorContent } from "@tiptap/react";
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { MenuBar } from "@/components/ui/text-editor/menu-bar";
 import { Idea } from "@/types/idea";
@@ -9,7 +9,6 @@ import TextareaAutosize from "react-textarea-autosize";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/hooks/redux";
 import debounce from "lodash/debounce";
-import { FormatDropdown } from "@/components/ui/text-editor/dropdowns/format-dropdown";
 import { ImprovementType } from "@/lib/prompts";
 import { toast } from "react-toastify";
 import {
@@ -29,24 +28,15 @@ import {
 } from "@/components/ui/dialog";
 import { Logger } from "@/logger";
 import cuid from "cuid";
-import { useUi } from "@/lib/hooks/useUi";
 import { selectUi } from "@/lib/features/ui/uiSlice";
-import { Maximize2, Minimize2 } from "lucide-react";
-import { TooltipButton } from "@/components/ui/tooltip-button";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Wand2 } from "lucide-react";
 import { BubbleMenuComponent } from "@/components/ui/text-editor/dropdowns/bubble-menu";
 import {
   TitleImprovementType,
   TitleMenu,
 } from "@/components/ui/text-editor/dropdowns/title-menu";
+import BlankPage from "@/components/ui/text-editor/blank-page";
 
 type ImageName = string;
 
@@ -81,31 +71,31 @@ const DraftIndicator = ({
   );
 };
 
-const ExpandButton = () => {
-  const { setState } = useUi();
-  const { state } = useAppSelector(selectUi);
+// const ExpandButton = () => {
+//   const { setState } = useUi();
+//   const { state } = useAppSelector(selectUi);
 
-  return (
-    <TooltipButton
-      variant="outline"
-      onClick={() => setState(state === "full" ? "writing-mode" : "full")}
-      tooltipContent={state === "full" ? "Expand" : "Collapse"}
-      className="absolute top-4 right-4 z-50 hidden md:block"
-    >
-      {state === "full" ? (
-        <Maximize2 className="w-4 h-4" />
-      ) : (
-        <Minimize2 className="w-4 h-4" />
-      )}
-    </TooltipButton>
-  );
-};
+//   return (
+//     <TooltipButton
+//       variant="outline"
+//       onClick={() => setState(state === "full" ? "writing-mode" : "full")}
+//       tooltipContent={state === "full" ? "Expand" : "Collapse"}
+//       className="absolute top-4 right-4 z-50 hidden md:block"
+//     >
+//       {state === "full" ? (
+//         <Maximize2 className="w-4 h-4" />
+//       ) : (
+//         <Minimize2 className="w-4 h-4" />
+//       )}
+//     </TooltipButton>
+//   );
+// };
 
 const TextEditor = ({
   publication,
   className,
 }: {
-  publication: Publication;
+  publication?: Publication;
   className?: string;
 }) => {
   const { state } = useAppSelector(selectUi);
@@ -465,7 +455,7 @@ const TextEditor = ({
       initial={{ width: state === "full" ? "100%" : "100%" }}
       animate={{ width: state === "full" ? "100%" : "100%" }}
       transition={{ duration: 0.2 }}
-      className={cn("w-full min-h-screen bg-background relative", className)}
+      className={cn("w-full h-full bg-background relative", className)}
     >
       <BubbleMenuComponent
         editor={editor}
@@ -475,69 +465,86 @@ const TextEditor = ({
       />
 
       <div className="max-md:sticky max-md:top-14 bg-background z-50">
-        <MenuBar editor={editor} publication={publication} />
-      </div>
-      <ScrollArea className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] w-full flex flex-col justify-start items-center relative mt-4 md:mt-0">
-        <ExpandButton />
-        <DraftIndicator
-          saving={saving}
-          error={savingError}
-          hasIdea={!!selectedIdea}
+        <MenuBar
+          editor={editor}
+          publication={publication || null}
+          selectedIdea={selectedIdea || null}
         />
-        <div className="h-full flex flex-col justify-start items-center gap-2 w-full">
-          <div className="h-full py-4 max-w-[728px] space-y-4 w-full px-4 text-foreground">
+      </div>
+      {publication && !!selectedIdea ? (
+        <ScrollArea className="h-[calc(100vh-6rem)] w-full flex flex-col justify-start items-center relative mt-4 md:mt-0 pb-16">
+          {/* <ExpandButton /> */}
+          {publication && (
+            <DraftIndicator
+              saving={saving}
+              error={savingError}
+              hasIdea={!!selectedIdea}
+            />
+          )}
+          <div className="h-full flex flex-col justify-start items-center gap-2 w-full">
             <div
-              className="w-full flex items-center gap-2 relative"
-              onFocus={() => {
-                setShowTitleMenu(true);
-              }}
-              onBlur={() => {
-                setShowTitleMenu(false);
-              }}
+              className={cn(
+                "h-full py-4 max-w-[728px] space-y-4 w-full px-4 text-foreground",
+                {
+                  "pt-4": state !== "full",
+                },
+              )}
             >
-              <TextareaAutosize
-                ref={titleRef}
-                placeholder="Title"
-                value={title}
-                onChange={handleTitleChange}
-                maxLength={200}
-                className="w-full text-4xl font-bold outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
-              />
-              <TitleMenu
-                open={showTitleMenu}
-                menuType="title"
-                onImprove={handleImproveTitle}
-              />
-            </div>
-            <div
-              className="flex items-center gap-2 relative"
-              onFocus={() => {
-                setShowSubtitleMenu(true);
-              }}
-              onBlur={() => {
-                setShowSubtitleMenu(false);
-              }}
-            >
-              <TextareaAutosize
-                ref={subtitleRef}
-                placeholder="Add a subtitle..."
-                value={subtitle}
-                maxLength={200}
-                onChange={handleSubtitleChange}
-                className="w-full text-xl text-muted-foreground outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
-              />
-              <TitleMenu
-                open={showSubtitleMenu}
-                menuType="subtitle"
-                onImprove={handleImproveTitle}
-              />
-            </div>
-            <div className="pt-2 tiptap pb-4">
-              <EditorContent editor={editor} />
+              <div
+                className="w-full flex items-center gap-2 relative"
+                onFocus={() => {
+                  setShowTitleMenu(true);
+                }}
+                onBlur={() => {
+                  setShowTitleMenu(false);
+                }}
+              >
+                <TextareaAutosize
+                  ref={titleRef}
+                  placeholder="Title"
+                  value={title}
+                  onChange={handleTitleChange}
+                  maxLength={200}
+                  className="w-full text-4xl font-bold outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
+                />
+                <TitleMenu
+                  open={showTitleMenu}
+                  menuType="title"
+                  onImprove={handleImproveTitle}
+                />
+              </div>
+              <div
+                className="flex items-center gap-2 relative"
+                onFocus={() => {
+                  setShowSubtitleMenu(true);
+                }}
+                onBlur={() => {
+                  setShowSubtitleMenu(false);
+                }}
+              >
+                <TextareaAutosize
+                  ref={subtitleRef}
+                  placeholder="Add a subtitle..."
+                  value={subtitle}
+                  maxLength={200}
+                  onChange={handleSubtitleChange}
+                  className="w-full text-xl text-muted-foreground outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
+                />
+                <TitleMenu
+                  open={showSubtitleMenu}
+                  menuType="subtitle"
+                  onImprove={handleImproveTitle}
+                />
+              </div>
+              <div className="pt-2 tiptap pb-4">
+                <EditorContent editor={editor} />
+              </div>
             </div>
           </div>
-        </div>
-      </ScrollArea>
+        </ScrollArea>
+      ) : (
+        <BlankPage hasPublication={!!publication} />
+      )}
       <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
         <DialogContent
           closeOnOutsideClick={false}

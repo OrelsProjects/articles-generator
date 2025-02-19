@@ -185,6 +185,8 @@ model Idea {
   search      Boolean @default(false)
   image       String?
 
+  didUserSee Boolean @default(true)
+
   body        String
   bodyHistory String[]
 

@@ -6,7 +6,7 @@ export interface UiState {
 }
 
 export const initialState: UiState = {
-  state: "full",
+  state: "writing-mode",
 };
 
 const uiSlice = createSlice({

@@ -70,35 +70,8 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider open={state === "full"}>
-      <Sidebar>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>{appName}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {items.map(item => (
-                  <SidebarMenuItem
-                    key={item.title}
-                    className={cn({
-                      "bg-primary/10 text-primary rounded-md hover:bg-primary/20":
-                        pathname === item.url,
-                    })}
-                  >
-                    <SidebarMenuButton asChild>
-                      <Link href={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-
+      <Sidebar className="w-16">
         <SidebarFooter>
-          <SidebarSeparator />
           <div className="p-2">
             {loading ? (
               <div className="flex w-full items-center gap-3 p-2">
@@ -121,7 +94,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                         <User className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
+                    {/* <div className="flex-1">
                       <p className="truncate font-medium text-sidebar-foreground">
                         {user?.displayName}
                       </p>
@@ -129,7 +102,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                         {user?.email}
                       </p>
                       <p className="truncate text-xs text-primary/80">{plan}</p>
-                    </div>
+                    </div> */}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent

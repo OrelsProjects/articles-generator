@@ -14,6 +14,7 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { EmptyIdeas } from "@/components/ui/text-editor/empty-ideas";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
+import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
 
 interface IdeasPanelProps {
   onSelectIdea?: (idea: Idea) => void;
@@ -127,7 +128,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
               </div>
             </div>
 
-            <div id="ideas-panel-ideas" className="h-full pb-36 px-0.5">
+            <div id="ideas-panel-ideas" className="h-full pb-[12rem] px-0.5">
               <ScrollArea
                 className="h-full space-y-4 pb-4 scroll-pl-8"
                 ref={ideasContainerRef}
@@ -239,6 +240,9 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
                   </div>
                 )}
               </ScrollArea>
+              <div className="w-full flex justify-center py-4 sticky bottom-0">
+                <GenerateIdeasButton size="lg" className="font-semibold" />
+              </div>
             </div>
           </div>
         ) : (

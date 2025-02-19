@@ -11,17 +11,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { toast } from "react-toastify";
-import { selectAuth } from "@/lib/features/auth/authSlice";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import Link from "next/link";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { cn } from "@/lib/utils";
 import {
@@ -29,9 +18,10 @@ import {
   setLoadingNewIdeas,
 } from "@/lib/features/publications/publicationSlice";
 import { ToastStepper } from "@/components/ui/toast-stepper";
-import { Logger } from "@/logger";
 import { motion } from "framer-motion";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
+import { useSettings } from "@/lib/hooks/useSettings";
+import { TooltipButton } from "@/components/ui/tooltip-button";
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
@@ -55,28 +45,19 @@ export default function GenerateIdeasButton({
 }: GenerateIdeasButtonProps) {
   const dispatch = useAppDispatch();
   const { publications, loadingNewIdeas } = useAppSelector(selectPublications);
-  const { user } = useAppSelector(selectAuth);
+  const { didExceedLimit, canUseSearch } = useSettings();
   const { generateIdeas } = useIdea();
   const { usage } = useAppSelector(selectSettings);
-  const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [showTopicDialog, setShowTopicDialog] = useState(false);
   const [topic, setTopic] = useState("");
   const [shouldSearch, setShouldSearch] = useState(false);
 
-  const canGenerateIdeas = useMemo(() => {
-    if (!user?.meta?.plan) return false;
-    return user.meta.plan !== "free";
-  }, [user?.meta?.plan]);
-
   const text = useMemo(() => {
-    if (canGenerateIdeas) {
-      return showLimitDialog ? "Daily limit reached" : "Generate ideas";
-    }
     if (publications.length === 0) {
       return "Connect your Substack to generate ideas";
     }
-    return "Upgrade to generate ideas";
-  }, [canGenerateIdeas, showLimitDialog, publications.length]);
+    return didExceedLimit ? "Daily limit reached" : "Generate ideas";
+  }, [didExceedLimit, publications.length]);
 
   const handleDialogSubmit = async () => {
     setShowTopicDialog(false);
@@ -95,10 +76,6 @@ export default function GenerateIdeasButton({
     }
   };
 
-  const didExceedLimit = useMemo(() => {
-    return usage.ideaGeneration.didExceed;
-  }, [usage]);
-
   const usageLabel = useMemo(() => {
     return `${usage.ideaGeneration.count}/${usage.ideaGeneration.max}`;
   }, [usage]);
@@ -110,18 +87,14 @@ export default function GenerateIdeasButton({
         variant={variant}
         size={size}
         className={className}
-        disabled={!canGenerateIdeas || loadingNewIdeas}
+        disabled={loadingNewIdeas}
         {...props}
       >
         <>
           {loadingNewIdeas ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
-            <Sparkles
-              className={cn("mr-2 h-4 w-4", {
-                hidden: !canGenerateIdeas,
-              })}
-            />
+            <Sparkles className={cn("mr-2 h-4 w-4")} />
           )}
           {text}
         </>
@@ -144,15 +117,8 @@ export default function GenerateIdeasButton({
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Specify a topic</DialogTitle>
+              <DialogTitle>Specify a topic (optional)</DialogTitle>
             </DialogHeader>
-            <p
-              className={cn("text-sm text-muted-foreground", {
-                "text-red-400": didExceedLimit,
-              })}
-            >
-              Usage: {usageLabel}
-            </p>
             <Input
               type="text"
               placeholder="Enter a specific topic (optional)"
@@ -166,19 +132,35 @@ export default function GenerateIdeasButton({
                 }
               }}
             />
+
             <div className="flex flex-col items-start gap-0.5">
-              <Button
+              <TooltipButton
+                tooltipContent={
+                  canUseSearch
+                    ? "Search for ideas based on your topic"
+                    : "Upgrade to use smart search"
+                }
                 variant={shouldSearch ? "default" : "outline"}
-                onClick={() => setShouldSearch(!shouldSearch)}
-                disabled={didExceedLimit}
-                className={cn("w-fit rounded-full shadow-none", {
-                  "bg-primary/20 border border-primary/40 text-primary hover:bg-primary/10":
-                    shouldSearch,
-                })}
+                onClick={() => {
+                  if (!canUseSearch) return;
+                  setShouldSearch(!shouldSearch);
+                }}
+                // disabled={!canUseSearch}
+                className={cn(
+                  "w-fit rounded-full shadow-none",
+                  {
+                    "bg-primary/20 border border-primary/40 text-primary hover:bg-primary/10":
+                      shouldSearch,
+                  },
+                  {
+                    "opacity-40 cursor-default hover:cursor-default hover:bg-transparent":
+                      !canUseSearch,
+                  },
+                )}
               >
                 <Globe className="w-4 h-4 mr-2" />
-                Search
-              </Button>
+                {canUseSearch ? "Smart Search" : "Upgrade to use Smart Search"}
+              </TooltipButton>
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: shouldSearch ? 1 : 0 }}
@@ -190,42 +172,27 @@ export default function GenerateIdeasButton({
                 Generating ideas might take twice as long.
               </motion.p>
             </div>
-            <DialogFooter>
+            <DialogFooter className="w-fit ml-auto flex !flex-col items-end gap-0.5">
               <Button type="submit" onClick={handleDialogSubmit}>
-                {topic.length > 0
-                  ? "Generate Ideas based on your topic"
-                  : "Generate Ideas based on your publication"}
+                {didExceedLimit ? (
+                  <p>Upgrade to generate ideas</p>
+                ) : topic.length > 0 ? (
+                  "Generate Ideas based on your topic"
+                ) : (
+                  "Generate Ideas based on your publication"
+                )}
               </Button>
+              <p
+                className={cn("text-sm text-muted-foreground", {
+                  "text-red-400": didExceedLimit,
+                })}
+              >
+                Usage: {usageLabel}
+              </p>
             </DialogFooter>
           </DialogContent>
         </form>
       </Dialog>
-
-      <AlertDialog open={showLimitDialog} onOpenChange={setShowLimitDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Daily Limit Reached</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
-              <p>
-                You&apos;ve reached your daily limit for generating ideas. This
-                helps us maintain quality and prevent abuse of our AI system.
-              </p>
-              <p>
-                Your limit will reset in the next 24 hours, or you can upgrade
-                your plan for higher limits and additional features.
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex gap-2">
-            <AlertDialogAction onClick={() => setShowLimitDialog(false)}>
-              I&apos;ll wait
-            </AlertDialogAction>
-            <AlertDialogAction asChild>
-              <Link href="/settings/billing">Upgrade Plan</Link>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

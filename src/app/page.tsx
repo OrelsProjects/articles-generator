@@ -32,25 +32,13 @@ import {
   maxIdeasPerPlan,
   maxTextEnhancmentsPerPlan,
   maxTitleAndSubtitleRefinementsPerPlan,
-  textEditorType,
+  textEditorTypePerPlan,
 } from "@/lib/plans-consts";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
-
-const appName = process.env.NEXT_PUBLIC_APP_NAME;
-
-const initialTextForEnhancement = `Hey writer 🙂
-
-My name is Orel, and I'm the author of The Indiepreneur on Substack.
-
-I know the struggle—staring at a blank page, drowning in half-baked ideas, and rewriting the same sentence 20 times. That's why I built ${appName}—**an AI-powered text editor made for writers, not robots**.`;
+import { initialTextForEnhancement, textByType } from "@/lib/landing-consts";
+import { appName } from "@/lib/consts";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
-const validTypes = {
-  Funny: "humorous",
-  Creative: "creative",
-  Engaging: "engaging",
-  Sarcastic: "sarcastic",
-};
 
 const EnhancmentDemo = () => {
   const [loadingTone, setLoadingTone] = useState<ImprovementType | null>(null);
@@ -67,23 +55,11 @@ const EnhancmentDemo = () => {
 
   const handleImprovement = async (type: ImprovementTone) => {
     setLoadingTone(type);
-
-    const response = await fetch("/api/post/improve/free", {
-      method: "POST",
-      body: JSON.stringify({
-        text: initialTextForEnhancement,
-        type: validTypes[type],
-      }),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      setText(data);
-      setSelectedTone(type);
-    } else {
-      toast.error("Whoops, something failed.. try again");
-    }
+    setText(textByType[type]);
+    setSelectedTone(type);
     setLoadingTone(null);
   };
+
   return (
     <div className="flex flex-col gap-4">
       <EditorContent editor={editor} value={text} disabled />
@@ -118,16 +94,6 @@ const gentleFadeInTransition = {
   transition: { duration: 1.2, ease: "easeOut" },
 };
 
-const staggerChildren = {
-  animate: {
-    transition: {
-      staggerChildren: 0.3,
-      delayChildren: 0.2,
-      ease: "easeOut",
-    },
-  },
-};
-
 const fadeInUp: Variants = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -160,8 +126,8 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="section-padding min-h-[90vh] flex flex-col justify-center items-center text-center relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+      <section className="section-padding min-h-screen flex flex-col justify-center items-center text-center relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/0 to-transparent" />
         <div className="container relative space-y-8">
           <motion.div
             initial={{ opacity: 0 }}
@@ -171,15 +137,14 @@ function App() {
           >
             <Sparkles className="w-4 h-4" />
             <span className="text-sm font-medium">
-              AI-Powered writing assistant
+              AI-Powered article editor
             </span>
           </motion.div>
           <h1 className="h1 max-w-3xl mx-auto text-6xl">
             <motion.span
-              {...fadeInUp}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              {...fadeInUpTransition}
+              transition={{ duration: 0.75, delay: 0, ease: "easeOut" }}
               className="relative"
             >
               Write better.
@@ -194,20 +159,21 @@ function App() {
               }}
               className="relative"
             >
+              {/* Underline */}
               <motion.span
                 initial={{ width: 0 }}
                 animate={{ width: "100%" }}
                 transition={{
-                  ...fadeInUpTransition,
-                  duration: 1,
-                  delay: 1.5,
+                  duration: 0.75,
+                  delay: 1.4,
                   ease: "easeOut",
                 }}
                 className="absolute inset-x-0 bottom-2 h-3 bg-primary/10 -rotate-2"
               />
               <motion.span
-                {...fadeInUp}
-                {...fadeInUpTransition}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.75, delay: 1, ease: "easeOut" }}
                 className="relative"
               >
                 Stay human.
@@ -215,7 +181,7 @@ function App() {
             </motion.span>
             <motion.span
               {...fadeInUp}
-              transition={{ duration: 1, delay: 2.5, ease: "easeOut" }}
+              transition={{ duration: 0.75, delay: 2.25, ease: "easeOut" }}
               className="text-primary"
             >
               Let AI assist.
@@ -224,7 +190,7 @@ function App() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 2.5 }}
+            transition={{ duration: 0.5, delay: 4 }}
             className="flex flex-col gap-4"
           >
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -295,7 +261,12 @@ function App() {
                     Step {index + 1}
                   </div>
                   <h3 className="text-2xl font-bold mb-4">{step.title}</h3>
-                  <p className="text-muted-foreground">{step.description}</p>
+                  <p
+                    className="text-muted-foreground"
+                    dangerouslySetInnerHTML={{
+                      __html: step.description,
+                    }}
+                  />
                 </div>
                 <div className="flex-1">
                   <Card className="p-6">{step.visual}</Card>
@@ -367,7 +338,7 @@ function App() {
                 <ul className="space-y-4">
                   <li className="flex items-center">
                     <Check className="text-green-500 mr-2" size={16} />
-                    <span>{textEditorType.free} text editor access</span>
+                    <span>{textEditorTypePerPlan.free} text editor access</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="text-green-500 mr-2" size={16} />
@@ -545,9 +516,9 @@ function App() {
 const painPoints = [
   {
     icon: <Lightbulb className="h-8 w-8 text-primary" />,
-    problem: "I never know what to write next.",
+    problem: "I never know what to write next, I run out of ideas.",
     solution:
-      "AI-powered title & outline generator keeps your creativity flowing.",
+      "AI-powered ideas generator keeps your creativity flowing at all times.",
   },
   {
     icon: <BrainCircuit className="h-8 w-8 text-primary" />,
@@ -577,8 +548,9 @@ const steps = [
   },
   {
     title: "Smart text editing & enhancements",
-    description:
-      "Expand ideas, refine tone, and improve clarity—all in one clean editor.",
+    description: `Expand ideas, refine tone, and improve clarity—all in one clean editor.<br/>
+      And the best part? The AI will not add any text. Only refine what's already there.
+      `,
     visual: <EnhancmentDemo />,
   },
   {

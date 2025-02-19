@@ -18,8 +18,14 @@ export const maxTextEnhancmentsPerPlan = {
   superPro: INFINITY,
 };
 
-export const textEditorType = {
+export const textEditorTypePerPlan = {
   free: "AI-Powered",
   pro: "AI-Powered",
   superPro: "AI-Powered",
+};
+
+export const canUseSearchPerPlan = {
+  free: false,
+  pro: true,
+  superPro: true,
 };

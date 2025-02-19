@@ -25,9 +25,19 @@ const settingsSlice = createSlice({
   reducers: {
     incrementUsage: (state, action: PayloadAction<AIUsageType>) => {
       state.usage[action.payload].count++;
+      if (state.usage[action.payload].count > state.usage[action.payload].max) {
+        state.usage[action.payload].didExceed = true;
+      }
     },
     decrementUsage: (state, action: PayloadAction<AIUsageType>) => {
-      state.usage[action.payload].count--;
+      if (state.usage[action.payload].count > 0) {
+        state.usage[action.payload].count--;
+        if (
+          state.usage[action.payload].count < state.usage[action.payload].max
+        ) {
+          state.usage[action.payload].didExceed = false;
+        }
+      }
     },
     setUsages: (state, action: PayloadAction<AllUsages>) => {
       state.usage = action.payload;

@@ -43,7 +43,9 @@ export const TooltipButton = React.forwardRef<
               onClick={e => {
                 e.preventDefault();
                 e.stopPropagation();
-                debugger;
+                if (props.disabled) {
+                  return;
+                }
                 props.onClick?.(e);
               }}
               {...props}

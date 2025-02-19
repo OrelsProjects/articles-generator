@@ -11,7 +11,7 @@ export default function MainActionButton({
   return (
     <>
       <AnimatePresence>
-        {publication && <GenerateIdeasButton key={"generate-ideas-button"} />}
+        {/* {publication && <GenerateIdeasButton key={"generate-ideas-button"} />} */}
       </AnimatePresence>
       <AnimatePresence>
         {!publication && (
