@@ -50,7 +50,7 @@ const DraftIndicator = ({
   hasIdea: boolean;
 }) => {
   return (
-    <div className="sticky top-4 ml-4 flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="absolute top-4 left-8 flex items-center gap-2 text-sm text-muted-foreground">
       <div
         className={cn(
           "w-2 h-2 rounded-full",

@@ -94,12 +94,14 @@ export const ToastStepper = ({
   duration = 2000,
   loop = true,
   position = "bottom-right",
+  className,
 }: {
   loadingStates: LoadingState[];
   loading?: boolean;
   duration?: number;
   loop?: boolean;
   position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
+  className?: string;
 }) => {
   const [currentState, setCurrentState] = useState(0);
 
@@ -146,6 +148,7 @@ export const ToastStepper = ({
             "fixed z-50 bg-background rounded-lg shadow-lg p-4 min-w-[300px] max-w-md",
             "border border-border",
             positionClasses[position],
+            className,
           )}
         >
           <LoaderCore value={currentState} loadingStates={loadingStates} />

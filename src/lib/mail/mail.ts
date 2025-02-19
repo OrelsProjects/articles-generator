@@ -8,7 +8,7 @@ export const sendMail = async (
   cc: string[] = [],
 ) => {
   const formData = new FormData();
-  formData.append("from", from + " " + "<alert@mail.stripe-guard.com>");
+  formData.append("from", from + " " + "<support@mail.write-room.co>");
   formData.append("to", to);
   for (const c of cc) {
     formData.append("to", c);

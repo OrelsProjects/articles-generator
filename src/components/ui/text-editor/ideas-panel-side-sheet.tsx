@@ -70,10 +70,10 @@ export const IdeasSideSheet = ({
             <Button
               variant="default"
               size="icon"
-              className="h-12 w-12 rounded-full shadow-lg"
+              className="h-16 w-16 rounded-full shadow-lg"
               onClick={() => handleOpenIdeas(true)}
             >
-              <Sparkles className="h-6 w-6" />
+              <Sparkles className="h-8 w-8" />
             </Button>
           </motion.div>
         )}

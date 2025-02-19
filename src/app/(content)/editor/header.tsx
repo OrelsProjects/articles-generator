@@ -17,6 +17,8 @@ import { User, LogOut } from "lucide-react";
 import useAuth from "@/lib/hooks/useAuth";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
+import { sendMail } from "@/lib/mail/mail";
+import { welcomeTemplate } from "@/lib/mail/templates";
 
 export function Header({ className }: { className?: string }) {
   const { state } = useAppSelector(selectUi);
@@ -45,6 +47,10 @@ export function Header({ className }: { className?: string }) {
     }
     return "free";
   }, [user]);
+
+  const test = async () => {
+    await fetch("/api/test");
+  };
 
   // if (!publication) return null;
 
@@ -77,7 +83,11 @@ export function Header({ className }: { className?: string }) {
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Avatar>
-                <Button className="p-1 w-fit h-fit rounded-full !ring-0" variant="ghost" size="icon">
+                <Button
+                  className="p-1 w-fit h-fit rounded-full !ring-0"
+                  variant="ghost"
+                  size="icon"
+                >
                   <AvatarImage
                     src={user?.image || ""}
                     alt="User"
