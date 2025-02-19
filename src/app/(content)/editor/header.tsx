@@ -48,10 +48,6 @@ export function Header({ className }: { className?: string }) {
     return "free";
   }, [user]);
 
-  const test = async () => {
-    await fetch("/api/test");
-  };
-
   // if (!publication) return null;
 
   return (
