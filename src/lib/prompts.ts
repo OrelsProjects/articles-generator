@@ -277,7 +277,7 @@ export const generateImprovementPrompt = (
 
         Response must follow these strict rules:
         - Preserve all existing formatting, including Markdown elements like headings (#), lists (-, *), bold (**), italics (*), code blocks (\`\`\`), and inline code (\`...\`). This is extremely important. 
-        - Ensure the response is no longer than ${maxLength} characters. Strictly adhere to this constraint.
+        ${type !== "elaborate" ? `- Ensure the response is no longer than ${maxLength} characters. Strictly adhere to this constraint.` : ""}
         - Enhance readability where needed: You may improve formatting only if it helps clarity (e.g., adding line breaks, better structuring paragraphs, or reformatting lists).
         - Do not remove any structure unless necessary: Keep the original layout but refine or expand it when beneficial.
         - Maintain proper paragraph spacing: Ensure smooth transitions and logical flow.
