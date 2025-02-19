@@ -1,6 +1,6 @@
 import prisma from "@/app/api/_db/db";
 import { ArticleContent, getSubstackArticleData } from "@/lib/dal/milvus";
-import { runPrompt } from "@/lib/openRouter";
+import { runPrompt } from "@/lib/open-router";
 import { generateFirstMessagePrompt } from "@/lib/prompts";
 import { parseJson } from "@/lib/utils/json";
 import { NextResponse } from "next/server";

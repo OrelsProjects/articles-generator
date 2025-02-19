@@ -5,22 +5,25 @@ import {
   setSelectedIdea as setSelectedIdeaAction,
   setIdeas as setIdeasAction,
   addIdeas as addIdeasAction,
+  removeTempIdea,
+  replaceTempIdea,
 } from "@/lib/features/publications/publicationSlice";
 import axios from "axios";
 import { AIUsageType, IdeaStatus } from "@prisma/client";
-import { Idea } from "@/types/idea";
+import { EmptyIdea, Idea } from "@/types/idea";
 import { ImprovementType } from "@/lib/prompts";
 import { Logger } from "@/logger";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { incrementUsage } from "@/lib/features/settings/settingsSlice";
 
 export const useIdea = () => {
+  const { publications, ideas } = useAppSelector(state => state.publications);
+  const { user } = useAppSelector(state => state.auth);
   const [lastUsedIdea, setLastUsedIdea] = useLocalStorage<string | null>(
     "lastUsedIdea",
     null,
   );
   const dispatch = useAppDispatch();
-  const { ideas } = useAppSelector(state => state.publications);
 
   const updateStatus = async (
     ideaId: string,
@@ -69,14 +72,14 @@ export const useIdea = () => {
     } catch (error: any) {
       Logger.error("Error updating idea:", error);
       // revert optimistic update
-      dispatch(
-        updateIdeaAction({
-          ideaId,
-          title: idea.title,
-          body: idea.body,
-          subtitle: idea.subtitle,
-        }),
-      );
+      // dispatch(
+      //   updateIdeaAction({
+      //     ideaId,
+      //     title: idea.title,
+      //     body: idea.body,
+      //     subtitle: idea.subtitle,
+      //   }),
+      // );
       throw error;
     }
   };
@@ -104,11 +107,15 @@ export const useIdea = () => {
   };
 
   const setIdeas = (ideas: Idea[]) => {
-    dispatch(setIdeasAction({ ideas, selectedIdeaId: lastUsedIdea || undefined }));
+    dispatch(
+      setIdeasAction({ ideas, selectedIdeaId: lastUsedIdea || undefined }),
+    );
   };
 
   const addIdeas = (ideas: Idea[]) => {
-    dispatch(addIdeasAction({ ideas, selectedIdeaId: lastUsedIdea || undefined }));
+    dispatch(
+      addIdeasAction({ ideas, selectedIdeaId: lastUsedIdea || undefined }),
+    );
   };
 
   const improveText = async (
@@ -152,6 +159,18 @@ export const useIdea = () => {
     return res.data;
   };
 
+  const createNewIdea = async () => {
+    try {
+      const res = await axios.post("/api/idea");
+      addIdeas([res.data]);
+      setSelectedIdea(res.data);
+      setLastUsedIdea(res.data.id);
+      return res.data;
+    } catch (error: any) {
+      throw error;
+    }
+  };
+
   return {
     updateStatus,
     updateIdea,
@@ -161,5 +180,6 @@ export const useIdea = () => {
     addIdeas,
     improveText,
     improveTitle,
+    createNewIdea,
   };
 };

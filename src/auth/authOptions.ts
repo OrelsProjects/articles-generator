@@ -23,6 +23,7 @@ export const authOptions: AuthOptions = {
         },
       });
       session.user.meta = { plan: userMetadata?.plan || "free" };
+      session.user.publicationId = userMetadata?.publicationId || "";
       return session;
     },
   },

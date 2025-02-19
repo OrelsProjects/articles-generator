@@ -86,6 +86,21 @@ const publicationSlice = createSlice({
         idea.body = action.payload.body;
       }
     },
+    replaceTempIdea: (state, action: PayloadAction<Idea>) => {
+      let wasTempIdeaSelected = false;
+      if (state.selectedIdea?.id === "temp-id") {
+        wasTempIdeaSelected = true;
+      }
+      state.ideas = state.ideas.map(idea =>
+        idea.id === "temp-id" ? { ...idea, id: action.payload.id } : idea,
+      );
+      if (wasTempIdeaSelected) {
+        state.selectedIdea = action.payload;
+      }
+    },
+    removeTempIdea: (state) => {
+      state.ideas = state.ideas.filter(idea => idea.id !== "temp-id");
+    },
     setSelectedIdea: (state, action: PayloadAction<Idea | null>) => {
       state.selectedIdea = action.payload;
     },
@@ -103,6 +118,8 @@ export const {
   updateIdea,
   setSelectedIdea,
   setLoadingNewIdeas,
+  replaceTempIdea,
+  removeTempIdea,
 } = publicationSlice.actions;
 
 export const selectPublications = (state: RootState) => state.publications;

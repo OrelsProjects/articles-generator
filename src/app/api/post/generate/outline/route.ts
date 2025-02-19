@@ -1,6 +1,6 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
-import { runPrompt } from "@/lib/openRouter";
+import { runPrompt } from "@/lib/open-router";
 import { generateOutlinePrompt } from "@/lib/prompts";
 import { Article } from "@/types/article";
 import axios from "axios";

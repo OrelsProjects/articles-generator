@@ -10,6 +10,8 @@ import {
   Undo,
   Redo,
   ChevronDown,
+  Plus,
+  Loader2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -28,6 +30,9 @@ import { Level } from "@tiptap/extension-heading";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { Idea } from "@/types/idea";
+import { useIdea } from "@/lib/hooks/useIdea";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -41,6 +46,21 @@ export const MenuBar = ({
   selectedIdea,
 }: MenuBarProps) => {
   const { state } = useAppSelector(selectUi);
+  const { createNewIdea } = useIdea();
+
+  const [loadingNewIdea, setLoadingNewIdea] = useState(false);
+
+  const handleCreateNewIdea = () => {
+    setLoadingNewIdea(true);
+    createNewIdea()
+      .catch(() => {
+        toast.error("Failed to create new idea");
+      })
+      .finally(() => {
+        setLoadingNewIdea(false);
+      });
+  };
+
   if (!editor) return null;
 
   return (
@@ -166,6 +186,21 @@ export const MenuBar = ({
           </Button>
         </div>
 
+        <Separator orientation="vertical" className="h-6" />
+        <Button
+          variant="outline"
+          size="lg"
+          className="h-8 w-fit px-2 py-4 space-x-2"
+          onClick={handleCreateNewIdea}
+          disabled={loadingNewIdea}
+        >
+          {loadingNewIdea ? (
+            <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4 md:w-5 md:h-5" />
+          )}
+          <p className="text-sm">New idea</p>
+        </Button>
         <Separator orientation="vertical" className="h-6" />
         <div className="flex items-center gap-1 md:gap-2">
           <MainActionButton publication={publication} />

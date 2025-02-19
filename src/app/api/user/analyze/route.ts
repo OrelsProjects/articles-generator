@@ -4,7 +4,7 @@ import { authOptions } from "@/auth/authOptions";
 import { generateDescriptionPrompt } from "@/lib/prompts";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { runPrompt } from "@/lib/openRouter";
+import { runPrompt } from "@/lib/open-router";
 import { Publication } from "@/types/publication";
 import { getPublicationByUrl } from "@/lib/dal/publication";
 import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";

@@ -1,11 +1,10 @@
-import { useEditor, EditorContent } from "@tiptap/react";
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEditor } from "@tiptap/react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { MenuBar } from "@/components/ui/text-editor/menu-bar";
 import { Idea } from "@/types/idea";
 import { Publication } from "@/types/publication";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIdea } from "@/lib/hooks/useIdea";
-import TextareaAutosize from "react-textarea-autosize";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/hooks/redux";
 import debounce from "lodash/debounce";
@@ -17,79 +16,23 @@ import {
   unformatText,
   textEditorOptions,
 } from "@/lib/utils/text-editor";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Logger } from "@/logger";
 import cuid from "cuid";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { motion } from "framer-motion";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
 import { BubbleMenuComponent } from "@/components/ui/text-editor/dropdowns/bubble-menu";
-import {
-  TitleImprovementType,
-  TitleMenu,
-} from "@/components/ui/text-editor/dropdowns/title-menu";
+import { TitleImprovementType } from "@/components/ui/text-editor/dropdowns/title-menu";
 import BlankPage from "@/components/ui/text-editor/blank-page";
 
+// Import our new subcomponents
+import DraftIndicator from "./draft-indicator";
+import TitleSection from "./title-section";
+import SubtitleSection from "./subtitle-section";
+import EditorArea from "./editor-area";
+import PreviewModal from "./preview-modal";
+
 type ImageName = string;
-
-const DraftIndicator = ({
-  saving,
-  error,
-  hasIdea,
-}: {
-  saving: boolean;
-  error: boolean;
-  hasIdea: boolean;
-}) => {
-  return (
-    <div className="absolute top-4 left-8 flex items-center gap-2 text-sm text-muted-foreground">
-      <div
-        className={cn(
-          "w-2 h-2 rounded-full",
-          saving ? "border border-green-500" : "bg-green-500",
-          error ? "border border-red-500 bg-red-500" : "",
-          !hasIdea ? "border border-yellow-500 bg-yellow-500" : "",
-        )}
-      />
-      {!hasIdea ? (
-        <span className="text-muted-foreground/80">
-          Generate an idea before editing
-        </span>
-      ) : (
-        !error && <span>{saving ? "Draft saving..." : "Draft"}</span>
-      )}
-      {error && <span>Not saved</span>}
-    </div>
-  );
-};
-
-// const ExpandButton = () => {
-//   const { setState } = useUi();
-//   const { state } = useAppSelector(selectUi);
-
-//   return (
-//     <TooltipButton
-//       variant="outline"
-//       onClick={() => setState(state === "full" ? "writing-mode" : "full")}
-//       tooltipContent={state === "full" ? "Expand" : "Collapse"}
-//       className="absolute top-4 right-4 z-50 hidden md:block"
-//     >
-//       {state === "full" ? (
-//         <Maximize2 className="w-4 h-4" />
-//       ) : (
-//         <Minimize2 className="w-4 h-4" />
-//       )}
-//     </TooltipButton>
-//   );
-// };
 
 const TextEditor = ({
   publication,
@@ -136,49 +79,50 @@ const TextEditor = ({
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const subtitleRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSave = async (ideaId: string) => {
-    if (!selectedIdea) return;
-    if (saving) return;
-    setSaving(true);
-    setSavingError(false);
-    try {
-      const updatedIdea: Idea = {
-        ...selectedIdea,
-        title,
-        subtitle,
-        body: unformatText(editor?.getHTML() || ""),
-      };
+  const handleSave = useCallback(
+    async (ideaId: string) => {
+      if (!selectedIdea) return;
+      if (saving) return;
+      setSaving(true);
+      setSavingError(false);
+      try {
+        const updatedIdea: Idea = {
+          ...selectedIdea,
+          title,
+          subtitle,
+          body: unformatText(editor?.getHTML() || ""),
+        };
+        console.log("Updated idea", updatedIdea);
 
-      await updateIdea(
-        ideaId,
-        updatedIdea.body,
-        updatedIdea.title,
-        updatedIdea.subtitle,
-      );
+        await updateIdea(
+          ideaId,
+          updatedIdea.body,
+          updatedIdea.title,
+          updatedIdea.subtitle,
+        );
 
-      if (selectedIdea.id === ideaId) {
-        setOriginalTitle(title);
-        setOriginalSubtitle(subtitle);
-        setOriginalBody(editor?.getHTML() || "");
+        if (selectedIdea.id === ideaId) {
+          setOriginalTitle(title);
+          setOriginalSubtitle(subtitle);
+          setOriginalBody(editor?.getHTML() || "");
+        }
+
+        setHasChanges(false);
+      } catch (error: any) {
+        Logger.error("Failed to save:", error);
+        setSavingError(true);
+      } finally {
+        // Add a small delay before hiding the saving indicator
+        setTimeout(() => {
+          setSaving(false);
+        }, 500);
       }
-
-      setHasChanges(false);
-    } catch (error: any) {
-      Logger.error("Failed to save:", error);
-      setSavingError(true);
-    } finally {
-      // Add a small delay before hiding the saving indicator
-      setTimeout(() => {
-        setSaving(false);
-      }, 500);
-    }
-  };
+    },
+    [selectedIdea, saving, title, subtitle, editor, updateIdea],
+  );
 
   // Create debounced save function
-  const debouncedSave = useMemo(
-    () => debounce(handleSave, 3000),
-    [selectedIdea, title, subtitle, editor, updateIdea],
-  );
+  const debouncedSave = debounce(handleSave, 3000);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -190,7 +134,7 @@ const TextEditor = ({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [hasChanges, saving]);
+  }, [hasChanges, saving, title, subtitle, editor, selectedIdea]);
 
   // Call debouncedSave when content changes
   useEffect(() => {
@@ -207,29 +151,42 @@ const TextEditor = ({
   }, [debouncedSave]);
 
   useEffect(() => {
+    console.log("I was called here");
     if (selectedIdea) {
       setOriginalTitle(selectedIdea.title);
-      setTitle(selectedIdea.title);
+      updateTitle(selectedIdea.title, false);
       setOriginalSubtitle(selectedIdea.subtitle);
-      setSubtitle(selectedIdea.subtitle);
+      updateSubtitle(selectedIdea.subtitle, false);
       setOriginalBody(selectedIdea.body);
       const formattedBody = formatText(selectedIdea.body);
       editor?.commands.setContent(formattedBody);
     }
   }, [selectedIdea, editor]);
 
+  function updateTitle(newTitle: string, checkChanges = true) {
+    setTitle(newTitle);
+    if (checkChanges) {
+      const didChange = newTitle !== originalTitle;
+      setHasChanges(didChange);
+    }
+  }
+
+  function updateSubtitle(newSubtitle: string, checkChanges = true) {
+    setSubtitle(newSubtitle);
+    if (checkChanges) {
+      const didChange = newSubtitle !== originalSubtitle;
+      setHasChanges(didChange);
+    }
+  }
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newTitle = e.target.value;
-    setTitle(newTitle);
-    const didChange = newTitle !== originalTitle;
-    setHasChanges(didChange);
+    updateTitle(newTitle);
   };
 
   const handleSubtitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newSubtitle = e.target.value;
-    setSubtitle(newSubtitle);
-    const didChange = newSubtitle !== originalSubtitle;
-    setHasChanges(didChange);
+    updateSubtitle(newSubtitle);
   };
 
   function handleBodyChange(value: string) {
@@ -329,9 +286,9 @@ const TextEditor = ({
       );
 
       if (menuType === "title") {
-        setTitle(response.title);
+        updateTitle(response.title);
       } else {
-        setSubtitle(response.subtitle);
+        updateSubtitle(response.subtitle);
       }
       setHasChanges(true);
     } catch (error: any) {
@@ -490,88 +447,37 @@ const TextEditor = ({
                 },
               )}
             >
-              <div
-                className="w-full flex items-center gap-2 relative"
-                onFocus={() => {
-                  setShowTitleMenu(true);
-                }}
-                onBlur={() => {
-                  setShowTitleMenu(false);
-                }}
-              >
-                <TextareaAutosize
-                  ref={titleRef}
-                  placeholder="Title"
-                  value={title}
-                  onChange={handleTitleChange}
-                  maxLength={200}
-                  className="w-full text-4xl font-bold outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
-                />
-                <TitleMenu
-                  open={showTitleMenu}
-                  menuType="title"
-                  onImprove={handleImproveTitle}
-                />
-              </div>
-              <div
-                className="flex items-center gap-2 relative"
-                onFocus={() => {
-                  setShowSubtitleMenu(true);
-                }}
-                onBlur={() => {
-                  setShowSubtitleMenu(false);
-                }}
-              >
-                <TextareaAutosize
-                  ref={subtitleRef}
-                  placeholder="Add a subtitle..."
-                  value={subtitle}
-                  maxLength={200}
-                  onChange={handleSubtitleChange}
-                  className="w-full text-xl text-muted-foreground outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
-                />
-                <TitleMenu
-                  open={showSubtitleMenu}
-                  menuType="subtitle"
-                  onImprove={handleImproveTitle}
-                />
-              </div>
-              <div className="pt-2 tiptap pb-4">
-                <EditorContent editor={editor} />
-              </div>
+              <TitleSection
+                title={title}
+                onTitleChange={handleTitleChange}
+                showTitleMenu={showTitleMenu}
+                setShowTitleMenu={setShowTitleMenu}
+                titleRef={titleRef}
+                onImproveTitle={handleImproveTitle}
+              />
+              <SubtitleSection
+                subtitle={subtitle}
+                onSubtitleChange={handleSubtitleChange}
+                showSubtitleMenu={showSubtitleMenu}
+                setShowSubtitleMenu={setShowSubtitleMenu}
+                subtitleRef={subtitleRef}
+                onImproveSubtitle={handleImproveTitle}
+              />
+              <EditorArea editor={editor} />
             </div>
           </div>
         </ScrollArea>
       ) : (
         <BlankPage hasPublication={!!publication} />
       )}
-      <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
-        <DialogContent
-          closeOnOutsideClick={false}
-          className="sm:max-w-[90vw] md:max-w-[60vw] max-h-[80vh] z-[9999]"
-        >
-          <DialogHeader>
-            <DialogTitle>Preview</DialogTitle>
-            <DialogDescription>
-              You can make additional edits before accepting
-            </DialogDescription>
-          </DialogHeader>
-
-          <div
-            ref={previewEditorRef}
-            className="border rounded-md p-4 pt-0 max-h-[50vh] overflow-auto relative"
-          >
-            <EditorContent editor={previewEditor} />
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCancelImprovement}>
-              Cancel
-            </Button>
-            <Button onClick={handleAcceptImprovement}>Accept</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PreviewModal
+        open={showPreviewModal}
+        onOpenChange={setShowPreviewModal}
+        previewEditor={previewEditor}
+        previewEditorRef={previewEditorRef}
+        onCancel={handleCancelImprovement}
+        onAccept={handleAcceptImprovement}
+      />
     </motion.div>
   );
 };

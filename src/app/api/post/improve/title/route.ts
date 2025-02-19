@@ -3,7 +3,7 @@ import { authOptions } from "@/auth/authOptions";
 import { getUserArticles } from "@/lib/dal/articles";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { getUserPlan } from "@/lib/dal/user";
-import { runPrompt } from "@/lib/openRouter";
+import { runPrompt } from "@/lib/open-router";
 import { generateTitleSubtitleImprovementPrompt as generateTitleImprovementPrompt } from "@/lib/prompts";
 import { handleUsageError, useAIItem } from "@/lib/utils/ideas";
 import { parseJson } from "@/lib/utils/json";

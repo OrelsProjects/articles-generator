@@ -1,6 +1,6 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
-import { Model, runPrompt } from "@/lib/openRouter";
+import { Model, runPrompt } from "@/lib/open-router";
 import {
   generateOutlinePrompt,
   IdeaLLM,
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let usageId: string = ""; 
+  let usageId: string = "";
 
   try {
     console.time("Pre-query");

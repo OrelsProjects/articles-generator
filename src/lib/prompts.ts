@@ -1,5 +1,5 @@
 import { TitleImprovementType } from "@/components/ui/text-editor/dropdowns/title-menu";
-import { Model } from "@/lib/openRouter";
+import { Model } from "@/lib/open-router";
 import { ArticleWithBody } from "@/types/article";
 import { Idea } from "@/types/idea";
 import { PublicationMetadata } from "@prisma/client";

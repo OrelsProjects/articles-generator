@@ -1,7 +1,7 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { getUserPlan } from "@/lib/dal/user";
-import { runPrompt } from "@/lib/openRouter";
+import { runPrompt } from "@/lib/open-router";
 import { generateImprovementPrompt } from "@/lib/prompts";
 import { handleUsageError, useAIItem } from "@/lib/utils/ideas";
 import loggerServer from "@/loggerServer";
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const userPlan = await getUserPlan(session.user.id);
-    
+
     const { text, type, ideaId } = await request.json();
 
     if (text.length > MAX_CHARACTERS) {

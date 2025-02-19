@@ -4,7 +4,7 @@ import * as toast from "react-toastify";
 
 export function ToastProvider() {
   return (
-    <div className="relative z-[51]">
+    <div className="relative z-[999999999999]">
       <toast.ToastContainer
         stacked
         newestOnTop

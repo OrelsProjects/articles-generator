@@ -1,7 +1,7 @@
 import prisma from "@/app/api/_db/db";
 import { getUserArticles } from "@/lib/dal/articles";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
-import { Model, runPrompt } from "@/lib/openRouter";
+import { Model, runPrompt } from "@/lib/open-router";
 import { IdeaLLM, generateIdeasPrompt, IdeasLLMResponse } from "@/lib/prompts";
 import { parseJson } from "@/lib/utils/json";
 import { runWithRetry } from "@/lib/utils/requests";

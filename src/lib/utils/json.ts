@@ -1,6 +1,6 @@
-import { runPrompt } from "@/lib/openRouter";
+import { runPrompt } from "@/lib/open-router";
 
-import { Model } from "@/lib/openRouter";
+import { Model } from "@/lib/open-router";
 import { fixJsonPrompt } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 

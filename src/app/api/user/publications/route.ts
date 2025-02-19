@@ -43,7 +43,7 @@ export async function GET() {
     });
 
     const response: PublicationResponse = {
-      publicationId: userPublication?.publication?.id,
+      id: userPublication?.publication?.id,
       image: userPublication?.publication?.image,
       url:
         buildSubstackUrl(publication?.subdomain, publication?.customDomain) ||
