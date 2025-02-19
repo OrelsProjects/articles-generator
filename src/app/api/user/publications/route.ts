@@ -50,7 +50,7 @@ export async function GET() {
         "",
       title:
         userPublication?.publication?.title ||
-        publication?.name ||
+        publication?.name  ||
         publication?.copyright ||
         "",
       description: userPublication?.publication?.description,

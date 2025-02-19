@@ -1,7 +1,8 @@
 import prisma from "@/app/api/_db/db";
-import { getStripeInstance } from "@/app/api/_payment/stripe";
 import loggerServer from "@/loggerServer";
+import { getStripeInstance } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";
+import { Plan } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("session_id");
@@ -48,11 +49,18 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    const plan: Plan = price.recurring?.interval === "year" ? "superPro" : "pro";
+
+    await prisma.userMetadata.update({
+      where: { userId },
+      data: { plan },
+    });
+
     return NextResponse.redirect(
-      req.nextUrl.origin + `/dashboard?success=true`,
+      req.nextUrl.origin + `/editor?success=true&plan=${plan}`,
     );
   } catch (error: any) {
     loggerServer.error("Failed to complete subscription", error);
-    return NextResponse.redirect(req.nextUrl.origin + "/dashboard?error=true");
+    return NextResponse.redirect(req.nextUrl.origin + "/editor?error=true");
   }
 }

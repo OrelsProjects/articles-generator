@@ -1,6 +1,32 @@
-import loggerServer from "@/loggerServer";
 import { Coupon } from "@/types/payment";
 import Stripe from "stripe";
+
+export const getStripeInstance = (
+  data?:
+    | {
+        apiKey: string;
+        accountId?: string;
+      }
+    | {
+        apiKey?: string;
+        accountId: string;
+      },
+) => {
+  const apiVersion = "2024-11-20.acacia";
+  if (!data) {
+    return new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion });
+  }
+
+  const { apiKey, accountId } = data;
+  if (accountId) {
+    return new Stripe(apiKey || (process.env.STRIPE_SECRET_KEY as string), {
+      stripeAccount: accountId,
+      apiVersion,
+    });
+  } else {
+    return new Stripe(apiKey as string, { apiVersion });
+  }
+};
 
 const LAUNCH_COUPON_NAME = "LAUNCH";
 const MAX_PERCENT_OFF = 20;
@@ -121,4 +147,38 @@ export const getTimesRedeemed = (coupon: Stripe.Coupon) => {
     ? parseInt(coupon.metadata.manual_times_redeemed)
     : 0;
   return manualTimesRedeemed || coupon.times_redeemed || 0;
+};
+
+export const generateSessionId = async (options: {
+  priceId: string;
+  productId: string;
+  userId: string;
+  email: string | null;
+  name: string | null;
+  urlOrigin: string;
+}): Promise<string> => {
+  const stripe = getStripeInstance();
+
+  const { priceId, productId, urlOrigin, userId, email, name } = options;
+
+  const stripeSession = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price: priceId,
+        quantity: 1,
+      },
+    ],
+    mode: "subscription",
+    success_url: `${urlOrigin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${urlOrigin}/cancel`,
+    client_reference_id: userId,
+    customer_email: email || "",
+    metadata: {
+      clientName: name || "",
+      productId,
+      priceId,
+    },
+  });
+  return stripeSession.id;
 };

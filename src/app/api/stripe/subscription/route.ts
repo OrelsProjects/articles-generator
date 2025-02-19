@@ -1,6 +1,6 @@
-import { getStripeInstance } from "@/app/api/_payment/stripe";
 import { authOptions } from "@/auth/authOptions";
 import loggerServer from "@/loggerServer";
+import { getStripeInstance } from "@/lib/stripe";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 

@@ -12,11 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import useAuth from "@/lib/hooks/useAuth";
 import { selectAuth } from "@/lib/features/auth/authSlice";
+import { Button } from "@/components/ui/button";
+
 export function Header({ className }: { className?: string }) {
   const { state } = useAppSelector(selectUi);
   const { user } = useAppSelector(selectAuth);
@@ -31,6 +32,20 @@ export function Header({ className }: { className?: string }) {
     signOut();
   };
 
+  const userPlan = useMemo(() => {
+    const plan = user?.meta?.plan || "free";
+    if (plan === "free") {
+      return "free";
+    }
+    if (plan === "pro") {
+      return "Write+";
+    }
+    if (plan === "superPro") {
+      return "Write+ (annual)";
+    }
+    return "free";
+  }, [user]);
+
   // if (!publication) return null;
 
   return (
@@ -42,7 +57,7 @@ export function Header({ className }: { className?: string }) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         className={cn(
-          "w-full flex items-center justify-center gap-4 bg-background px-4 border-b border-border py-2 md:py-4 z-10",
+          "w-full flex items-center justify-center gap-4 bg-background px-4 border-b border-border py-1 z-10",
           className,
         )}
       >
@@ -62,17 +77,32 @@ export function Header({ className }: { className?: string }) {
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Avatar>
-                <AvatarImage
-                  src={user?.image || ""}
-                  alt="User"
-                  className="h-10 w-10 rounded-full"
-                />
+                <Button className="p-1 w-fit h-fit rounded-full !ring-0" variant="ghost" size="icon">
+                  <AvatarImage
+                    src={user?.image || ""}
+                    alt="User"
+                    className="h-10 w-10 rounded-full"
+                  />
+                </Button>
                 <AvatarFallback>
-                  <User className="h-4 w-4" />
+                  <div className="bg-muted-foreground/20 rounded-full p-2">
+                    <User className="h-6 w-6 rounded-full" />
+                  </div>
                 </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="ml-4">
+              <DropdownMenuItem>
+                <p
+                  className={cn("text-sm text-muted-foreground", {
+                    "text-primary": userPlan !== "free",
+                  })}
+                >
+                  {`${userPlan}` || "free"}
+                </p>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+
               {/* <DropdownMenuItem asChild>
                 <Link href="/settings" className="flex items-center gap-2">
                   <Settings className="h-4 w-4" />

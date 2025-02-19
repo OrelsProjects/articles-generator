@@ -39,8 +39,8 @@ export default function AuthProvider({
   const setUser = async (session?: Session) => {
     try {
       const userPlan: Plan = session?.user?.meta
-        ? { ...session.user.meta }
-        : { plan: "free" };
+        ? session.user.meta.plan
+        : "free";
 
       const appUser: AppUser = {
         displayName: session?.user?.name || null,

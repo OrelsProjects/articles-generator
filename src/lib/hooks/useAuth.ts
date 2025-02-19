@@ -1,4 +1,5 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
+
 import { signIn, signOut as signOutAuth } from "next-auth/react";
 import { useCallback, useState } from "react";
 import { clearUser, setError } from "@/lib/features/auth/authSlice";
@@ -6,15 +7,28 @@ import { useAppDispatch } from "@/lib/hooks/redux";
 import { EventTracker } from "@/eventTracker";
 import { Logger } from "@/logger";
 import axios from "axios";
+import { useSearchParams } from "next/navigation";
 
 const useAuth = () => {
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
 
   const signInWithGoogle = useCallback(async () => {
     try {
+      const redirect = new URL(`${window.location.origin}/editor`);
+
+      // preserve query params
+      searchParams.forEach((val, key) => {
+        if (!redirect.searchParams.has(key)) {
+          redirect.searchParams.append(key, val);
+        }
+      });
       setLoading(true);
-      await signIn("google");
+      await signIn("google", {
+        redirect: true,
+        callbackUrl: redirect.toString(),
+      });
     } catch (error: any) {
       if (error?.name === "UserAlreadyAuthenticatedException") {
         EventTracker.track("User already authenticated");
@@ -26,72 +40,6 @@ const useAuth = () => {
       throw error;
     }
   }, []);
-
-  const signInWithApple = useCallback(async () => {
-    try {
-      setLoading(true);
-      await signIn("apple");
-    } catch (error: any) {
-      if (error?.name === "UserAlreadyAuthenticatedException") {
-        EventTracker.track("User already authenticated");
-        await signOut();
-        return;
-      }
-      Logger.error("Error signing in with Apple", { error });
-      dispatch(setError("Failed to sign in"));
-      throw error;
-    }
-  }, []);
-
-  const signInWithEmail = useCallback(
-    async (email: string, password: string) => {
-      try {
-        setLoading(true);
-        const result = await signIn("credentials", {
-          email,
-          password,
-          isSignIn: true,
-          redirect: false,
-        });
-        if (!result?.ok) {
-          throw new Error("Failed to sign in");
-        }
-      } catch (error: any) {
-        Logger.error("Error signing in with email", { error });
-        dispatch(setError("Failed to sign in"));
-        throw error;
-      }
-    },
-    [],
-  );
-
-  const signUpWithEmail = useCallback(
-    async (
-      email: string,
-      password: string,
-      register?: boolean,
-      displayName: string = "",
-    ) => {
-      setLoading(true);
-      try {
-        const result = await signIn("credentials", {
-          email,
-          password,
-          displayName: displayName,
-          isSignIn: !register,
-          redirect: false,
-        });
-        if (!result?.ok) {
-          throw new Error("Failed to sign in");
-        }
-      } catch (error: any) {
-        Logger.error("Error signing in with email", { error });
-        dispatch(setError("Failed to sign in"));
-        throw error;
-      }
-    },
-    [],
-  );
 
   const signOut = useCallback(async () => {
     try {
@@ -126,9 +74,6 @@ const useAuth = () => {
 
   return {
     signInWithGoogle,
-    signInWithApple,
-    signInWithEmail,
-    signUpWithEmail,
     deleteUser,
     signOut,
     loading,

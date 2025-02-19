@@ -2,6 +2,8 @@
 
 import AuthProvider from "@/app/providers/AuthProvider";
 import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
+import InitiatePlanFromLandingProvider from "@/app/providers/InitiatePlanFromLandingProvider";
+import NewSubscriptionProvider from "@/app/providers/NewSubscriptionProvider";
 
 export default function ContentLayout({
   children,
@@ -10,9 +12,12 @@ export default function ContentLayout({
 }) {
   return (
     // <AppSidebar>
-      <AuthProvider>
+    <AuthProvider>
+      <InitiatePlanFromLandingProvider>
+        <NewSubscriptionProvider />
         <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>
-      </AuthProvider>
+      </InitiatePlanFromLandingProvider>
+    </AuthProvider>
     // </AppSidebar>
   );
 }

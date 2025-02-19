@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IdeasPanel } from "./ideas-panel";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Publication } from "@/types/publication";
 import { Idea } from "@/types/idea";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 export interface IdeasSideSheetProps {
   publication: Publication | null;
   selectedIdea: Idea | null;
@@ -16,14 +17,27 @@ export const IdeasSideSheet = ({
   publication,
   selectedIdea,
 }: IdeasSideSheetProps) => {
+  const [features, setFeatures] = useLocalStorage<{ ideasPress: boolean }>(
+    "features",
+    {
+      ideasPress: false,
+    },
+  );
   const [isOpen, setIsOpen] = useState(false);
+
+  const didPressIdeas = features.ideasPress;
+
+  const handleOpenIdeas = (open: boolean) => {
+    setFeatures({ ...features, ideasPress: true });
+    setIsOpen(open);
+  };
 
   if (!publication || !selectedIdea) return null;
 
   return (
     <>
       <AnimatePresence>
-        {isOpen && (
+        {(isOpen || !didPressIdeas) && (
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -35,7 +49,7 @@ export const IdeasSideSheet = ({
               variant="ghost"
               size="icon"
               className="absolute top-4 right-4"
-              onClick={() => setIsOpen(false)}
+              onClick={() => handleOpenIdeas(false)}
             >
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -45,7 +59,7 @@ export const IdeasSideSheet = ({
       </AnimatePresence>
 
       <AnimatePresence>
-        {!isOpen && (
+        {(!isOpen && didPressIdeas) && (
           <motion.div
             initial={{ x: "150%" }}
             animate={{ x: 0, transition: { delay: 0.3 } }}
@@ -57,7 +71,7 @@ export const IdeasSideSheet = ({
               variant="default"
               size="icon"
               className="h-12 w-12 rounded-full shadow-lg"
-              onClick={() => setIsOpen(true)}
+              onClick={() => handleOpenIdeas(true)}
             >
               <Sparkles className="h-6 w-6" />
             </Button>

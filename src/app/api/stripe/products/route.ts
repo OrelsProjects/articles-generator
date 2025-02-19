@@ -1,7 +1,6 @@
-import { getStripeInstance } from "@/app/api/_payment/stripe";
-import { getCoupon } from "@/lib/stripe";
+import { getCoupon, getStripeInstance } from "@/lib/stripe";
 import loggerServer from "@/loggerServer";
-import { formatPrice, PriceStructure, Pricing, Product } from "@/types/payment";
+import { formatPrice, Pricing, Product } from "@/types/payment";
 import { NextRequest, NextResponse } from "next/server";
 
 // revalidate always
@@ -96,10 +95,8 @@ export async function GET(req: NextRequest) {
       (a, b) => a.priceStructure.monthly.price - b.priceStructure.monthly.price,
     );
 
-    const coupon = await getCoupon(stripe, shouldGetLaunch === "true");
-
     return NextResponse.json(
-      { products: productsSortedByPrice, coupon },
+      { products: productsSortedByPrice },
       { status: 200 },
     );
   } catch (error: any) {

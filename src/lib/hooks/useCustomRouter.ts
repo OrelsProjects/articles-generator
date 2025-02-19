@@ -1,13 +1,12 @@
-import { Logger } from "@/logger";
+"use client";
+
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useRouter, useSearchParams } from "next/navigation";
 
-/**
- * Options for the custom router.
- * @param preserveQuery - Whether to preserve the query params. Default is true.
- */
 export interface CustomRouterOptions {
-  preserveQuery?: boolean;
+  preserveQuery?: boolean | null; // Use null for now to not preserve query and not break existing code
+  paramsToRemove?: string[];
+  paramsToAdd?: Record<string, string>;
 }
 
 export function useCustomRouter() {
@@ -19,32 +18,41 @@ export function useCustomRouter() {
     routerOptions: CustomRouterOptions = { preserveQuery: true },
     options?: NavigateOptions,
   ) => {
-    // HACK: If relative URL given, stick the current host on the string passed to URL()
-    // as the constructor throws an error if URL without a host is given
-    try {
-      const url = new URL(
-        href.includes("http") ? href : window.location.host + href,
-      );
+    // If relative URL, prepend the current origin
+    const baseUrl = href.startsWith("http")
+      ? href
+      : `${window.location.origin}${href}`;
+    const url = new URL(baseUrl);
 
-      if (routerOptions?.preserveQuery) {
-        searchParams.forEach((val, key) => {
+    if (routerOptions?.preserveQuery) {
+      searchParams.forEach((val, key) => {
+        if (!url.searchParams.has(key)) {
           url.searchParams.append(key, val);
-        });
-      }
-
-      let urlString = url.toString();
-
-      // If the href arg was relative, strip everything before the first '/' to
-      // revert it back to a relative URL we can pass into the router.push() method
-      if (!href.includes("http")) {
-        urlString = urlString.substring(urlString.indexOf("/"));
-      }
-
-      router.push(urlString, options);
-    } catch (error: any) {
-      Logger.error("Error parsing URL", error);
-      router.push(href, options);
+        }
+      });
     }
+
+    if (routerOptions?.paramsToRemove) {
+      routerOptions.paramsToRemove.forEach(key => {
+        url.searchParams.delete(key);
+      });
+    }
+
+    if (routerOptions?.paramsToAdd) {
+      Object.entries(routerOptions.paramsToAdd).forEach(([key, val]) => {
+        if (val) {
+          url.searchParams.set(key, val); // Use set to ensure updated values replace old ones
+        }
+      });
+    }
+
+    let urlString = url.toString();
+
+    // If the href argument was relative, revert it back to relative for router.push
+    if (!href.startsWith("http")) {
+      urlString = url.pathname + url.search;
+    }
+    router.push(urlString, options);
   };
 
   return { ...router, push };

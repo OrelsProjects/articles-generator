@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export type LocalStorageKey = "lastUsedIdea";
+export type LocalStorageKey = "lastUsedIdea" | "features";
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue

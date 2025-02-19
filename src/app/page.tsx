@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import { motion, Variants } from "framer-motion";
 import { Product } from "@/types/payment";
 import {
@@ -37,10 +36,12 @@ import {
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { initialTextForEnhancement, textByType } from "@/lib/landing-consts";
 import { appName } from "@/lib/consts";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
 
 const EnhancmentDemo = () => {
+  const router = useCustomRouter();
   const [loadingTone, setLoadingTone] = useState<ImprovementType | null>(null);
   const [text, setText] = useState(initialTextForEnhancement);
   const [selectedTone, setSelectedTone] = useState<ImprovementTone | null>(
@@ -102,6 +103,7 @@ const fadeInUp: Variants = {
 const fadeInUpTransition = { transition: { duration: 0.8, ease: "easeOut" } };
 
 function App() {
+  const router = useCustomRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [fetchingProducts, setFetchingProducts] = useState(false);
   const [didFetchProducts, setDidFetchProducts] = useState(false);
@@ -122,6 +124,10 @@ function App() {
         setDidFetchProducts(true);
       });
   }, [fetchingProducts, products, didFetchProducts]);
+
+  const handleGetStarted = (productId: string, priceId: string) => {
+    router.push(`/login?pri_id=${priceId}&pro_id=${productId}`);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -390,7 +396,17 @@ function App() {
                         </li>
                       ))}
                     </ul>
-                    <Button variant="outline">Get Pro Monthly</Button>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        handleGetStarted(
+                          product.id,
+                          product.priceStructure.monthly.id,
+                        )
+                      }
+                    >
+                      Get Pro Monthly
+                    </Button>
                   </CardContent>
                 </Card>
 
@@ -431,7 +447,16 @@ function App() {
                           <span>Save 36%</span>
                         </li>
                       </ul>
-                      <Button className="w-full mt-6" variant="default">
+                      <Button
+                        className="w-full mt-6"
+                        variant="default"
+                        onClick={() =>
+                          handleGetStarted(
+                            product.id,
+                            product.priceStructure.yearly.id,
+                          )
+                        }
+                      >
                         Get Pro Yearly
                       </Button>
                     </CardContent>

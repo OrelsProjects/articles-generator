@@ -1,9 +1,9 @@
-import { getStripeInstance } from "@/app/api/_payment/stripe";
 import { authOptions } from "@/auth/authOptions";
+import { getStripeInstance } from "@/lib/stripe";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-
+import { generateSessionId } from "@/lib/stripe";
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -12,30 +12,16 @@ export async function POST(req: NextRequest) {
   try {
     const nextUrl = req.nextUrl;
     const { priceId, productId } = await req.json();
-    const stripe = getStripeInstance();
 
-    const product = await stripe.products.retrieve(productId);
-
-    const stripeSession = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: `${nextUrl.origin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${nextUrl.origin}/cancel`,
-      client_reference_id: session.user.id,
-      customer_email: session.user.email || "",
-      metadata: {
-        clientName: session.user.name || "",
-        productId,
-        priceId,
-      },
+    const sessionId = await generateSessionId({
+      priceId,
+      productId,
+      urlOrigin: nextUrl.origin,
+      userId: session.user.id,
+      email: session.user.email || null,
+      name: session.user.name || null,
     });
-    return NextResponse.json({ sessionId: stripeSession.id }, { status: 200 });
+    return NextResponse.json({ sessionId }, { status: 200 });
   } catch (error: any) {
     loggerServer.error("Error creating a checkout session", error);
     return NextResponse.json(

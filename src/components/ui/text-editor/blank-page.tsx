@@ -1,3 +1,5 @@
+import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
+
 export interface BlankPageProps {
   hasPublication: boolean;
 }
@@ -13,6 +15,7 @@ export default function BlankPage({ hasPublication }: BlankPageProps) {
             ? "Good! Now generate your first idea."
             : "Connect your Substack account above to get started."}
         </p>
+        {hasPublication && <GenerateIdeasButton />}
       </div>
     </div>
   );
