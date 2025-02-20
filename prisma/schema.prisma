@@ -61,6 +61,7 @@ model User {
   userMetadata UserMetadata[]
   ideas        Idea[]
   Payment      Payment[]
+  Subscription Subscription[]
 
   @@map("users")
 }
@@ -135,8 +136,6 @@ model UserMetadata {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  plan Plan @default(free)
 
   publication PublicationMetadata? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -308,4 +307,23 @@ model aiUsage {
   updatedAt DateTime @updatedAt
 
   @@map("aiUsage")
+}
+
+model Subscription {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId
+  plan              Plan      // "free" | "pro" | "superPro"
+  stripeSubId       String    @unique // The Stripe subscription ID
+  status            String    // "active", "canceled", etc.
+  startDate         DateTime  @default(now())
+  endDate           DateTime?
+  currentPeriodStart DateTime @default(now())
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean  @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
 }

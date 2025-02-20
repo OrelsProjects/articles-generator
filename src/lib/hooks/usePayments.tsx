@@ -51,8 +51,40 @@ export default function usePayments() {
     }
   };
 
+  /**
+   * Cancel user subscription in your backend
+   */
+  const cancelSubscription = async (userId: string) => {
+    try {
+      await axios.post("/api/stripe/subscription/cancel", { userId });
+      Logger.info("Subscription canceled successfully");
+      window.location.reload();
+    } catch (error: any) {
+      Logger.error("Failed to cancel subscription", { error });
+      throw error;
+    }
+  };
+
+  /**
+   * Upgrade subscription (monthly → yearly)
+   */
+  const upgradeSubscription = async (userId: string) => {
+    try {
+      const resp = await axios.post("/api/stripe/subscription/upgrade", {
+        userId,
+      });
+      Logger.info("Upgrade response", resp.data);
+      window.location.reload();
+    } catch (error: any) {
+      Logger.error("Failed to upgrade subscription", { error });
+      throw error;
+    }
+  };
+
   return {
     getProducts,
     goToCheckout,
+    cancelSubscription,
+    upgradeSubscription,
   };
 }

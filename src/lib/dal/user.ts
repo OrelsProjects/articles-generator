@@ -2,13 +2,18 @@ import prisma from "@/app/api/_db/db";
 import { UserNotFoundError } from "@/types/errors/UserNotFoundError";
 
 export async function getUserPlan(userId: string) {
-  const user = await prisma.userMetadata.findUnique({
-    where: { userId },
+  const subscription = await prisma.subscription.findFirst({
+    where: {
+      userId,
+    },
+    include: {
+      user: true,
+    },
   });
 
-  if (!user) {
+  if (!subscription) {
     throw new UserNotFoundError("User not found");
   }
 
-  return user.plan;
+  return subscription.plan;
 }

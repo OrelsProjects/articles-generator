@@ -150,10 +150,10 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
                           <div className="flex flex-col items-start justify-between gap-2">
                             <>
                               <CardTitle className="text-lg line-clamp-2">
-                                {idea.title}
+                                {idea.title || "Untitled"}
                               </CardTitle>
                               <p className="text-sm text-muted-foreground line-clamp-1">
-                                {idea.subtitle}
+                                {idea.subtitle || "No subtitle"}
                               </p>
                             </>
                           </div>

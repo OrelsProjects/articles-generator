@@ -1,11 +1,11 @@
 import { DefaultSession } from "next-auth";
-import { Plan } from "@/types/appUser";
+import { AppUserMeta } from "@/types/appUser";
 // Extend the SessionUser interface
 declare module "next-auth" {
   interface SessionUser {
     id: string;
     publicationId?: string;
-    meta?: Plan;
+    meta?: AppUserMeta;
   }
 
   // Extend the Session interface

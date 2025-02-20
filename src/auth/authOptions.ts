@@ -1,7 +1,7 @@
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
+import { Plan, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -17,12 +17,38 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async session({ session, token }) {
       session.user.id = token.sub as string;
-      const userMetadata = await prisma.userMetadata.findUnique({
-        where: {
-          userId: token.sub as string,
-        },
-      });
-      session.user.meta = { plan: userMetadata?.plan || "free" };
+      const promises = [
+        prisma.userMetadata.findUnique({
+          where: {
+            userId: token.sub as string,
+          },
+          select: {
+            publicationId: true,
+          },
+        }),
+        prisma.subscription.findFirst({
+          where: {
+            userId: token.sub as string,
+            status: "active",
+          },
+          select: {
+            plan: true,
+            currentPeriodStart: true,
+            currentPeriodEnd: true,
+            cancelAtPeriodEnd: true,
+          },
+        }),
+      ];
+      const [userMetadata, subscription] = (await Promise.all(promises)) as [
+        { publicationId: string | null } | null,
+        { plan: string; currentPeriodStart: Date; currentPeriodEnd: Date; cancelAtPeriodEnd: boolean } | null,
+      ];
+      session.user.meta = {
+        plan: subscription?.plan as Plan || "free",
+        currentPeriodStart: subscription?.currentPeriodStart || null,
+        currentPeriodEnd: subscription?.currentPeriodEnd || null,
+        cancelAtPeriodEnd: subscription?.cancelAtPeriodEnd || false,
+      };
       session.user.publicationId = userMetadata?.publicationId || "";
       return session;
     },
@@ -37,7 +63,6 @@ export const authOptions: AuthOptions = {
         await prisma.userMetadata.create({
           data: {
             userId: message.user.id,
-            plan: "free",
           },
         });
       } catch (error: any) {

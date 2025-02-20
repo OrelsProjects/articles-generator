@@ -213,7 +213,7 @@ export async function useAIItem(
 ) {
   let plan = userPlan;
   if (!plan) {
-    const userMetadata = await prisma.userMetadata.findUnique({
+    const subscription = await prisma.subscription.findFirst({
       where: {
         userId,
       },
@@ -222,10 +222,10 @@ export async function useAIItem(
       },
     });
 
-    if (!userMetadata?.plan) {
+    if (!subscription?.plan) {
       throw new GenerateIdeasNoPlanError();
     }
-    plan = userMetadata.plan;
+    plan = subscription.plan;
   }
 
   const startOfDay = new Date();

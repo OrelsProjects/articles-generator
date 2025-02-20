@@ -1,10 +1,9 @@
 import { useAppSelector } from "@/lib/hooks/redux";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { selectUi } from "@/lib/features/ui/uiSlice";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,15 +12,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Settings } from "lucide-react";
 import useAuth from "@/lib/hooks/useAuth";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
-import { sendMail } from "@/lib/mail/mail";
-import { welcomeTemplate } from "@/lib/mail/templates";
+import { SettingsDialog } from "@/components/settings/settings";
 
 export function Header({ className }: { className?: string }) {
-  const { state } = useAppSelector(selectUi);
   const { user } = useAppSelector(selectAuth);
   const { signOut } = useAuth();
   const { publications } = useAppSelector(state => state.publications);
@@ -98,31 +95,11 @@ export function Header({ className }: { className?: string }) {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="ml-4">
-              <DropdownMenuItem>
-                <p
-                  className={cn("text-sm text-muted-foreground", {
-                    "text-primary": userPlan !== "free",
-                  })}
-                >
-                  {`${userPlan}` || "free"}
-                </p>
+              <DropdownMenuItem asChild>
+                <SettingsDialog />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
-              {/* <DropdownMenuItem asChild>
-                <Link href="/settings" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  <span>Settings</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/settings" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  <span>Usage</span>
-                </Link>
-              </DropdownMenuItem> 
-              <DropdownMenuSeparator />
-              */}
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive flex items-center gap-2"
                 onClick={handleLogout}
@@ -134,7 +111,6 @@ export function Header({ className }: { className?: string }) {
           </DropdownMenu>
         </div>
       </motion.header>
-      {/* )} */}
     </AnimatePresence>
   );
 }

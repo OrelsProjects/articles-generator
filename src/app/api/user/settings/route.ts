@@ -11,7 +11,10 @@ export async function GET() {
   }
 
   try {
-    const usages = await getUsages(session?.user?.id, session?.user?.meta.plan);
+    const usages = await getUsages(
+      session?.user?.id,
+      session?.user?.meta?.plan || "free",
+    );
 
     return NextResponse.json({ usages });
   } catch (error) {

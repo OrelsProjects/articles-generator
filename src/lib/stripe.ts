@@ -1,6 +1,12 @@
 import { Coupon } from "@/types/payment";
 import Stripe from "stripe";
 
+const LAUNCH_COUPON_NAME = "LAUNCH";
+const MAX_PERCENT_OFF = 20;
+const LAUNCH_EMOJI = "🚀";
+
+const appName = process.env.NEXT_PUBLIC_APP_NAME;
+
 export const getStripeInstance = (
   data?:
     | {
@@ -27,12 +33,6 @@ export const getStripeInstance = (
     return new Stripe(apiKey as string, { apiVersion });
   }
 };
-
-const LAUNCH_COUPON_NAME = "LAUNCH";
-const MAX_PERCENT_OFF = 20;
-const LAUNCH_EMOJI = "🚀";
-
-const appName = process.env.NEXT_PUBLIC_APP_NAME;
 
 async function findCoupon(stripe: Stripe, month: string) {
   const coupons = await stripe.coupons.list();
@@ -149,6 +149,14 @@ export const getTimesRedeemed = (coupon: Stripe.Coupon) => {
   return manualTimesRedeemed || coupon.times_redeemed || 0;
 };
 
+export const validateSubscriptionWebhookExists = async (stripe: Stripe) => {
+  const webhooks = await stripe.webhookEndpoints.list();
+  const webhook = webhooks.data.find(
+    webhook => webhook.url === process.env.STRIPE_SUBSCRIPTION_WEBHOOK_URL,
+  );
+  return webhook;
+};
+
 export const generateSessionId = async (options: {
   priceId: string;
   productId: string;
@@ -181,4 +189,21 @@ export const generateSessionId = async (options: {
     },
   });
   return stripeSession.id;
+};
+
+export const getPlanPriceId = async (
+  stripe: Stripe,
+  interval: "month" | "year",
+) => {
+  const products = await stripe.products.list();
+  const product = products.data.find(
+    product => product.metadata?.app === appName,
+  );
+  const prices = await stripe.prices.list({
+    product: product?.id,
+    recurring: { interval },
+  });
+
+  const price = prices.data[0];
+  return price?.id;
 };

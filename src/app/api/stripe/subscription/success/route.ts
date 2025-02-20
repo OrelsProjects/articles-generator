@@ -54,11 +54,6 @@ export async function GET(req: NextRequest) {
     const plan: Plan =
       price.recurring?.interval === "year" ? "superPro" : "pro";
 
-    await prisma.userMetadata.update({
-      where: { userId },
-      data: { plan },
-    });
-
     await sendMail(
       session.customer_email || "",
       process.env.NEXT_PUBLIC_APP_NAME as string,

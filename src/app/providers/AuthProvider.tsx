@@ -47,7 +47,12 @@ export default function AuthProvider({
         email: session?.user?.email || "",
         image: session?.user?.image || null,
         userId: session?.user?.id || "",
-        meta: { plan: userPlan },
+        meta: {
+          plan: userPlan,
+          currentPeriodStart: session?.user?.meta?.currentPeriodStart || null,
+          currentPeriodEnd: session?.user?.meta?.currentPeriodEnd || null,
+          cancelAtPeriodEnd: session?.user?.meta?.cancelAtPeriodEnd || false,
+        },
       };
       dispatch(setUserAction(appUser));
 

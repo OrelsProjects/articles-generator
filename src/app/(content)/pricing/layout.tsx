@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Editor",
-  description: "Editor",
+  title: "Pricing",
+  description: "Pricing",
 };
 
-export default function EditorLayout({
+export default function PricingLayout({
   children,
 }: {
   children: React.ReactNode;

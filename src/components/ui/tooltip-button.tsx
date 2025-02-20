@@ -14,6 +14,7 @@ interface TooltipButtonProps extends ButtonProps {
   tooltipAlign?: "start" | "center" | "end";
   tooltipDelayDuration?: number;
   className?: string;
+  hideTooltip?: boolean;
   children: React.ReactNode;
 }
 
@@ -27,6 +28,7 @@ export const TooltipButton = React.forwardRef<
       tooltipSide = "top",
       tooltipAlign = "center",
       tooltipDelayDuration = 100,
+      hideTooltip = false,
       className,
       children,
       ...props
@@ -36,7 +38,7 @@ export const TooltipButton = React.forwardRef<
     return (
       <TooltipProvider>
         <Tooltip delayDuration={tooltipDelayDuration}>
-          <TooltipTrigger asChild>
+          <TooltipTrigger asChild disabled={hideTooltip}>
             <Button
               ref={ref}
               className={cn("", className)}

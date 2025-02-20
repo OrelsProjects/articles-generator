@@ -206,7 +206,7 @@ function App() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild>
-                <Link href="/login">
+                <Link href="#pricing">
                   Try {appName} for Free
                   <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
