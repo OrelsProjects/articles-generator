@@ -15,6 +15,7 @@ import { selectAuth } from "@/lib/features/auth/authSlice";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function BillingSettings() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -48,6 +49,10 @@ export function BillingSettings() {
     if (user?.meta?.plan === "pro") return "Write+";
     if (user?.meta?.plan === "superPro") return "Write+ (annual)";
     return "Write+ Free";
+  }, [user?.meta?.plan]);
+
+  const hasSubscribed = useMemo(() => {
+    return user?.meta?.plan !== "free";
   }, [user?.meta?.plan]);
 
   return (
@@ -120,17 +125,28 @@ export function BillingSettings() {
           </CardContent>
         </Card>
       </div>
-
-      <Button
-        className="w-full"
-        size="lg"
-        onClick={() =>
-          window.open(process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL, "_blank")
-        }
-      >
-        Upgrade Subscription
-        <ExternalLink className="ml-2 h-4 w-4" />
-      </Button>
+      {hasSubscribed ? (
+        <Button
+          className="w-full"
+          size="lg"
+          onClick={() =>
+            window.open(
+              process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL,
+              "_blank",
+            )
+          }
+        >
+          Upgrade Subscription
+          <ExternalLink className="ml-2 h-4 w-4" />
+        </Button>
+      ) : (
+        <Button className="w-full" size="lg" asChild>
+          <Link href="/pricing">
+            Upgrade now
+            <Crown className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+      )}
     </div>
   );
 }
