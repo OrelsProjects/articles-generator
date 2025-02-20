@@ -32,20 +32,6 @@ export function Header({ className }: { className?: string }) {
     signOut();
   };
 
-  const userPlan = useMemo(() => {
-    const plan = user?.meta?.plan || "free";
-    if (plan === "free") {
-      return "free";
-    }
-    if (plan === "pro") {
-      return "Write+";
-    }
-    if (plan === "superPro") {
-      return "Write+ (annual)";
-    }
-    return "free";
-  }, [user]);
-
   const hasPublication = useMemo(() => {
     return publications.length > 0;
   }, [publications]);
@@ -54,7 +40,7 @@ export function Header({ className }: { className?: string }) {
     <div className={cn("h-full flex items-center ml-auto", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <Avatar>
+          <Avatar className="relative flex items-center justify-center">
             <Button
               className="p-1 w-fit h-fit rounded-full relative"
               variant="ghost"
@@ -65,15 +51,15 @@ export function Header({ className }: { className?: string }) {
                 alt="User"
                 className="h-10 w-10 rounded-full border-2 border-gray-300"
               />
-              <div className="absolute bottom-0.5 right-0.5 bg-muted rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
-                <ChevronDown className="w-3 h-3" />
-              </div>
             </Button>
             <AvatarFallback>
               <div className="bg-muted-foreground/20 rounded-full p-2">
                 <User className="h-6 w-6 rounded-full" />
               </div>
             </AvatarFallback>
+            <div className="absolute bottom-0.5 right-0.5 bg-muted rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
+              <ChevronDown className="w-3 h-3" />
+            </div>
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="ml-4">
@@ -106,21 +92,23 @@ export function Header({ className }: { className?: string }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       className={cn(
-        "w-full grid grid-cols-[1fr_auto_1fr] items-center gap-4 bg-background px-4 border-b border-border py-1 z-10",
+        "w-full grid grid-cols-[auto_1fr_auto] items-center gap-4 bg-background px-4 border-b border-border py-1 z-10",
         className,
       )}
     >
-      {publication?.image && (
-        <Image
-          src={publication.image}
-          alt={publication.title || ""}
-          width={36}
-          height={36}
-          className="rounded-md col-span-1"
-        />
-      )}
-      <h1 className="text-2xl font-bold col-span-">{publication?.title}</h1>
-      <Dropdown className="col-span-1" />
+      <div className="flex items-center justify-start">
+        {publication?.image && (
+          <Image
+            src={publication.image}
+            alt={publication.title || ""}
+            width={36}
+            height={36}
+            className="rounded-md"
+          />
+        )}
+      </div>
+      <h1 className="text-2xl font-bold text-center">{publication?.title}</h1>
+      <Dropdown />
     </motion.header>
   );
 }

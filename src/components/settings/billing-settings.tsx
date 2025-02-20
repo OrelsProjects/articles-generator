@@ -51,6 +51,10 @@ export function BillingSettings() {
     return "Write+ Free";
   }, [user?.meta?.plan]);
 
+  const canUpgrade = useMemo(() => {
+    return user?.meta?.plan !== "superPro";
+  }, [user?.meta?.plan]);
+
   const hasSubscribed = useMemo(() => {
     return user?.meta?.plan !== "free";
   }, [user?.meta?.plan]);
@@ -125,28 +129,29 @@ export function BillingSettings() {
           </CardContent>
         </Card>
       </div>
-      {hasSubscribed ? (
-        <Button
-          className="w-full"
-          size="lg"
-          onClick={() =>
-            window.open(
-              process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL,
-              "_blank",
-            )
-          }
-        >
-          Upgrade Subscription
-          <ExternalLink className="ml-2 h-4 w-4" />
-        </Button>
-      ) : (
-        <Button className="w-full" size="lg" asChild>
-          <Link href="/pricing">
-            Upgrade now
-            <Crown className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
-      )}
+      {canUpgrade &&
+        (hasSubscribed ? (
+          <Button
+            className="w-full"
+            size="lg"
+            onClick={() =>
+              window.open(
+                process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL,
+                "_blank",
+              )
+            }
+          >
+            Upgrade Subscription
+            <ExternalLink className="ml-2 h-4 w-4" />
+          </Button>
+        ) : (
+          <Button className="w-full" size="lg" asChild>
+            <Link href="/pricing">
+              Upgrade now
+              <Crown className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        ))}
     </div>
   );
 }
