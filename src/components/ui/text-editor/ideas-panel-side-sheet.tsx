@@ -8,6 +8,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { Publication } from "@/types/publication";
 import { Idea } from "@/types/idea";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { MotionButton } from "@/components/ui/motion-components";
 export interface IdeasSideSheetProps {
   publication: Publication | null;
   selectedIdea: Idea | null;
@@ -45,21 +46,33 @@ export const IdeasSideSheet = ({
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="fixed top-0 right-0 h-full max-w-md bg-background z-50 shadow-lg"
           >
-            <Button
+            <IdeasPanel />
+            <MotionButton
+              initial={{ x: "100%" }}
+              animate={{
+                x: 0,
+                transition: {
+                  delay: 0.6,
+                  duration: 0.2,
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                },
+              }}
+              exit={{ opacity: 0, transition: { delay: 0, duration: 0 } }}
               variant="ghost"
               size="icon"
-              className="absolute top-4 right-4"
+              className="w-fit px-4 pl-3 absolute top-1/2 -left-10 flex justify-start bg-muted/30 rounded-l-lg rounded-r-none border border-muted-foreground/30 -z-10"
               onClick={() => handleOpenIdeas(false)}
             >
               <ArrowRight className="h-4 w-4" />
-            </Button>
-            <IdeasPanel />
+            </MotionButton>
           </motion.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {(!isOpen && didPressIdeas) && (
+        {!isOpen && didPressIdeas && (
           <motion.div
             initial={{ x: "150%" }}
             animate={{ x: 0, transition: { delay: 0.3 } }}

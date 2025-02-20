@@ -1,30 +1,11 @@
-import {
-  Calendar,
-  Home,
-  Inbox,
-  Lightbulb,
-  Pencil,
-  Search,
-  Settings,
-  User,
-  LogOut,
-} from "lucide-react";
+import { Pencil, Settings, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import {
   Sidebar,
-  SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarProvider,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
@@ -40,33 +21,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useMemo } from "react";
 import { selectUi } from "@/lib/features/ui/uiSlice";
-
-const appName = process.env.NEXT_PUBLIC_APP_NAME;
-
-const items = [
-  {
-    title: "Editor",
-    url: "/editor",
-    icon: Pencil,
-  },
-];
+import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
+import { selectPublications } from "@/lib/features/publications/publicationSlice";
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const { signOut } = useAuth();
   const { state } = useAppSelector(selectUi);
   const { user, loading } = useAppSelector(selectAuth);
+  const { publications } = useAppSelector(selectPublications);
 
   const handleLogout = () => {
     signOut();
   };
 
-  const plan = useMemo(() => {
-    if (!user?.meta?.plan || user.meta.plan === "free") {
-      return "free";
-    }
-    return user.meta.plan === "pro" ? "pro" : "Super Pro";
-  }, [user?.meta?.plan]);
+  const hasPublication = useMemo(() => {
+    return publications.length > 0;
+  }, [publications]);
 
   return (
     <SidebarProvider open={state === "full"}>
@@ -122,6 +92,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                       <Settings className="h-4 w-4" />
                       <span>Usage</span>
                     </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <AnalyzePublicationButton />
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem

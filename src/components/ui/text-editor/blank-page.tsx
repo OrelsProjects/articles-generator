@@ -10,10 +10,19 @@ export default function BlankPage({ hasPublication }: BlankPageProps) {
         <h2 className="text-3xl font-bold mb-4 text-center">
           This is the last blank page you&apos;ll see.
         </h2>
-        <p className="text-lg max-w-md text-center">
-          {hasPublication
-            ? "Good! Now generate your first idea."
-            : "Connect your Substack account above to get started."}
+        <p className="text-lg max-w-md text-center mb-1">
+          {hasPublication ? (
+            "Good! Now generate your first idea."
+          ) : (
+            <span>
+              Connect your Substack account above or create a new draft.
+              <br />
+              <span className="text-muted-foreground">
+                (You can always connect your Substack later through the
+                settings)
+              </span>
+            </span>
+          )}
         </p>
         {hasPublication && <GenerateIdeasButton />}
       </div>

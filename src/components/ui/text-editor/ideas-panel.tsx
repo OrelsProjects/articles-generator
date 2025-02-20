@@ -86,11 +86,11 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
   }, [filteredIdeas]);
 
   return (
-    <motion.div className="w-full h-full border-l">
+    <motion.div className="w-full h-full bg-background border-l z-20">
       <div className="h-full w-full space-y-4">
         <div
           id="ideas-panel-header"
-          className="flex items-center justify-center mt-2 md:mt-0 md:justify-start gap-4 p-4 border-b"
+          className="flex items-center justify-center mt-2 md:mt-0 md:justify-start gap-4 px-4 py-4"
         >
           <Sparkles className="h-4 w-4" />
           <h2 className="text-2xl font-bold">Generated Ideas</h2>
@@ -98,7 +98,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
         {ideas.length > 0 || loadingNewIdeas ? (
           <div className="h-full w-full pt-2">
             <div id="ideas-panel-tabs" className="w-full px-8 space-y-4">
-              <div className="w-full flex items-center justify-between">
+              <div className="w-full flex items-center justify-between gap-8">
                 <Tabs
                   defaultValue="new"
                   value={currentTab}

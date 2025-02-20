@@ -66,7 +66,13 @@ interface ErrorState {
   explanation: string;
 }
 
-export function AnalyzePublicationButton() {
+export function AnalyzePublicationButton({
+  variant = "default",
+  className,
+}: {
+  variant?: "default" | "ghost";
+  className?: string;
+}) {
   const { analyzePublication, validatePublication } = usePublication();
   const { publications } = useAppSelector(state => state.publications);
 
@@ -129,7 +135,7 @@ export function AnalyzePublicationButton() {
 
   return (
     <div id="create-publication-button">
-      <Button onClick={() => setOpen(true)}>
+      <Button onClick={() => setOpen(true)} variant={variant} className={className}>
         <Link2 className="mr-2 h-4 w-4" />
         Connect Substack
       </Button>

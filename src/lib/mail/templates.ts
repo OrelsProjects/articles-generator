@@ -154,8 +154,9 @@ export const welcomeTemplate = () => `<!DOCTYPE html>
         <div class="divider"></div>
 
         <footer class="footer">
-            <p>Made with ❤️ by the WriteRoom Team</p>
+            <p>Made with ❤️ by Orel</p>
             <p>If you have any questions, just hit reply. We're always here to help.</p>
+            <p>Simply reply to this email to reach us.</p>
             <p>Need to unsubscribe? <a href="%unsubscribe_url%" style="color: #cc5500; text-decoration: none;">Click here</a>.</p>
         </footer>
 

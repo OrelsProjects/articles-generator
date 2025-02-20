@@ -199,9 +199,9 @@ export const MenuBar = ({
           ) : (
             <Plus className="w-4 h-4 md:w-5 md:h-5" />
           )}
-          <p className="text-sm">New idea</p>
+          <p className="text-sm pr-1">New draft</p>
         </Button>
-        <Separator orientation="vertical" className="h-6" />
+        <Separator orientation="vertical" className={cn("h-6", { "hidden": !selectedIdea })} />
         <div className="flex items-center gap-1 md:gap-2">
           <MainActionButton publication={publication} />
           {!!selectedIdea && (
