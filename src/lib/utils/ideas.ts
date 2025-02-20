@@ -9,7 +9,7 @@ import { ArticleWithBody } from "@/types/article";
 import { GenerateIdeasNoPlanError } from "@/types/errors/GenerateIdeasNoPlanError";
 import { IdeasBeingGeneratedError } from "@/types/errors/IdeasBeingGeneratedError";
 import { MaxIdeasPerDayError } from "@/types/errors/MaxIdeasPerDayError";
-import { AIUsageType, Idea, Plan, PublicationMetadata } from "@prisma/client";
+import { AIUsageType, Idea, IdeaStatus, Plan, PublicationMetadata } from "@prisma/client";
 import {
   maxIdeasPerPlan as maxIdeasByPlan,
   maxTextEnhancmentsPerPlan,
@@ -38,8 +38,8 @@ export async function generateIdeas(
   const ideasWithoutOutlines = await prisma.idea.findMany({
     where: {
       userId,
-      outline: "",
       topic,
+      status: IdeaStatus.noOutline,
     },
   });
 
@@ -130,7 +130,7 @@ export async function generateIdeas(
         inspiration: idea.inspiration,
         image: idea.image,
         topic,
-        status: "new",
+        status: IdeaStatus.noOutline,
         search: shouldSearch === "true",
         modelUsedForIdeas,
         modelUsedForOutline,
@@ -174,7 +174,7 @@ export async function setUserGeneratingIdeas(
   // If already generating, return false
   const railGuards = await prisma.railGuards.findUnique({
     where: {
-      id: userId,
+      userId,
     },
     select: {
       isGeneratingIdeas: true,
@@ -194,10 +194,10 @@ export async function setUserGeneratingIdeas(
 
   await prisma.railGuards.upsert({
     where: {
-      id: userId,
+      userId,
     },
     create: {
-      id: userId,
+      userId,
       isGeneratingIdeas,
     },
     update: {

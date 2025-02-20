@@ -37,7 +37,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
     if (isFirstInit) {
       setIsFirstInit(false);
       const selectedStatus = selectedIdea.status;
-      setCurrentTab(selectedStatus);
+      setCurrentTab(selectedStatus as TabValue);
       // scroll to the selected idea
       const ideaElement = document.getElementById(selectedIdea.id);
       if (ideaElement) {
@@ -81,7 +81,7 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
   const sortedIdeas = useMemo(() => {
     return filteredIdeas.sort(
       (a, b) =>
-        new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
   }, [filteredIdeas]);
 

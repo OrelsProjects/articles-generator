@@ -14,6 +14,7 @@ datasource db {
 }
 
 enum IdeaStatus {
+  noOutline
   new
   used
   archived
@@ -136,6 +137,7 @@ model UserMetadata {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  plan      Plan? 
 
   publication PublicationMetadata? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -284,7 +286,8 @@ model PotentialClients {
 // 1. Generating too many ideas at once
 // 2. Generating more than one description at once
 model RailGuards {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
 
   isGeneratingIdeas       Boolean @default(false)
   isGeneratingDescription Boolean @default(false)
@@ -310,18 +313,18 @@ model aiUsage {
 }
 
 model Subscription {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String    @db.ObjectId
-  plan              Plan      // "free" | "pro" | "superPro"
-  stripeSubId       String    @unique // The Stripe subscription ID
-  status            String    // "active", "canceled", etc.
-  startDate         DateTime  @default(now())
-  endDate           DateTime?
-  currentPeriodStart DateTime @default(now())
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String    @db.ObjectId
+  plan               Plan // "free" | "pro" | "superPro"
+  stripeSubId        String    @unique // The Stripe subscription ID
+  status             String // "active", "canceled", etc.
+  startDate          DateTime  @default(now())
+  endDate            DateTime?
+  currentPeriodStart DateTime  @default(now())
   currentPeriodEnd   DateTime
-  cancelAtPeriodEnd  Boolean  @default(false)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  cancelAtPeriodEnd  Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

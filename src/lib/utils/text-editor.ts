@@ -48,10 +48,14 @@ export function getSelectedContentAsHTML(editor: Editor) {
 
 // Convert HTML → Markdown properly
 export const unformatText = (html: string): string => {
+  if (html === "") return "";
+
   return turndownService.turndown(html);
 };
 
 export const formatText = (text: string): string => {
+  if (text === "") return "";
+
   marked.setOptions({
     gfm: true,
     breaks: true,

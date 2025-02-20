@@ -5,8 +5,12 @@ import Link from "next/link";
 
 export default function SendToDraftButton({
   publicationUrl,
+  variant = "outline",
+  className,
 }: {
   publicationUrl: string | null;
+  variant?: "outline" | "ghost";
+  className?: string;
 }) {
   if (!publicationUrl) {
     return null;
@@ -15,9 +19,15 @@ export default function SendToDraftButton({
   const draftUrl = buildNewDraftUrl(publicationUrl);
 
   return (
-    <Button asChild variant="outline">
-      <Link href={draftUrl} target="_blank" rel="noopener noreferrer">
-        Create draft in Substack <ExternalLink className="w-4 h-4 ml-2" />
+    <Button asChild variant={variant} className="h-fit">
+      <Link
+        href={draftUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
+        <ExternalLink className="w-4 h-4 ml-2" />
+        Create draft in Substack
       </Link>
     </Button>
   );

@@ -12,6 +12,7 @@ import {
   ChevronDown,
   Plus,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -27,12 +28,13 @@ import MainActionButton from "@/components/ui/main-action-button";
 import SendToDraftButton from "@/components/ui/send-to-draft-button";
 import { Editor } from "@tiptap/react";
 import { Level } from "@tiptap/extension-heading";
-import { selectUi } from "@/lib/features/ui/uiSlice";
-import { useAppSelector } from "@/lib/hooks/redux";
+import { selectUi, setShowIdeasPanel } from "@/lib/features/ui/uiSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { Idea } from "@/types/idea";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -45,6 +47,7 @@ export const MenuBar = ({
   publication,
   selectedIdea,
 }: MenuBarProps) => {
+  const dispatch = useAppDispatch();
   const { state } = useAppSelector(selectUi);
   const { createNewIdea } = useIdea();
 
@@ -53,6 +56,9 @@ export const MenuBar = ({
   const handleCreateNewIdea = () => {
     setLoadingNewIdea(true);
     createNewIdea()
+      .then(() => {
+        dispatch(setShowIdeasPanel(true));
+      })
       .catch(() => {
         toast.error("Failed to create new idea");
       })
@@ -187,26 +193,49 @@ export const MenuBar = ({
         </div>
 
         <Separator orientation="vertical" className="h-6" />
-        <Button
-          variant="outline"
-          size="lg"
-          className="h-8 w-fit px-2 py-4 space-x-2"
-          onClick={handleCreateNewIdea}
-          disabled={loadingNewIdea}
-        >
-          {loadingNewIdea ? (
-            <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
-          ) : (
-            <Plus className="w-4 h-4 md:w-5 md:h-5" />
-          )}
-          <p className="text-sm pr-1">New draft</p>
-        </Button>
-        <Separator orientation="vertical" className={cn("h-6", { "hidden": !selectedIdea })} />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-8 w-fit px-2 py-4 space-x-2"
+              disabled={loadingNewIdea}
+            >
+              {loadingNewIdea ? (
+                <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4 md:w-5 md:h-5" />
+              )}
+              <p className="text-sm pr-1">New</p>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem
+              onClick={handleCreateNewIdea}
+              className="hover:cursor-pointer"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New draft
+            </DropdownMenuItem>
+
+            <GenerateIdeasButton
+              variant="ghost"
+              className="w-full h-fit font-normal text-sm pl-2 flex justify-start py-1.5"
+            />
+
+            {!!selectedIdea && (
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <SendToDraftButton
+                  publicationUrl={publication?.url || null}
+                  variant="ghost"
+                  className="w-full h-fit font-normal text-sm pl-0 gap-2 !py-1.5"
+                />
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <div className="flex items-center gap-1 md:gap-2">
           <MainActionButton publication={publication} />
-          {!!selectedIdea && (
-            <SendToDraftButton publicationUrl={publication?.url || null} />
-          )}
         </div>
       </div>
     </>

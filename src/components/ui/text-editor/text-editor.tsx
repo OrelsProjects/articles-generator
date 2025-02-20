@@ -278,6 +278,7 @@ const TextEditor = ({
     if (loadingImprovement) return;
 
     setLoadingImprovement(improveType);
+    const toastId = toast.loading("Improving " + menuType);
     try {
       const response = await improveTitle(
         menuType,
@@ -291,8 +292,14 @@ const TextEditor = ({
         updateSubtitle(response.subtitle);
       }
       setHasChanges(true);
+      toast.dismiss(toastId);
     } catch (error: any) {
-      toast.error("Failed to improve title");
+      toast.update(toastId, {
+        render: "Failed to improve title",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
     } finally {
       setLoadingImprovement(null);
     }

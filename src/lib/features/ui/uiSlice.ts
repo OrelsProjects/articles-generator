@@ -3,10 +3,12 @@ import { RootState } from "@/lib/store";
 
 export interface UiState {
   state: "full" | "writing-mode";
+  showIdeasPanel: boolean;
 }
 
 export const initialState: UiState = {
   state: "writing-mode",
+  showIdeasPanel: false,
 };
 
 const uiSlice = createSlice({
@@ -16,10 +18,13 @@ const uiSlice = createSlice({
     setUiState: (state, action) => {
       state.state = action.payload;
     },
+    setShowIdeasPanel: (state, action) => {
+      state.showIdeasPanel = action.payload;
+    },
   },
 });
 
-export const { setUiState } = uiSlice.actions;
+export const { setUiState, setShowIdeasPanel } = uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;
 

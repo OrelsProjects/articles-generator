@@ -94,6 +94,7 @@ export async function GET(req: NextRequest) {
         modelUsedForOutline,
       },
     );
+    
     const messagesForOutline = generateOutlinePrompt(
       publicationMetadata,
       ideas.map((idea, index) => ({
@@ -173,7 +174,7 @@ export async function GET(req: NextRequest) {
     console.timeEnd("Start generating ideas");
     await prisma.railGuards.update({
       where: {
-        id: session.user.id,
+        userId: session.user.id,
       },
       data: {
         isGeneratingIdeas: false,

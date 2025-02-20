@@ -22,6 +22,7 @@ import { motion } from "framer-motion";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { TooltipButton } from "@/components/ui/tooltip-button";
+import { setShowIdeasPanel } from "@/lib/features/ui/uiSlice";
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
@@ -64,10 +65,10 @@ export default function GenerateIdeasButton({
     try {
       dispatch(setLoadingNewIdeas(true));
       await generateIdeas({ topic, shouldSearch });
+      dispatch(setShowIdeasPanel(true));
       setTopic("");
       setShouldSearch(false);
     } catch (error: any) {
-      debugger;
       toast.error(
         error.response?.data?.error || "Failed to generate ideas.. try again",
       );

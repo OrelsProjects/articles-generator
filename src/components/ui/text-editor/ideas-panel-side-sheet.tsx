@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IdeasPanel } from "./ideas-panel";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, StickyNote } from "lucide-react";
 import { Publication } from "@/types/publication";
 import { Idea } from "@/types/idea";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { MotionButton } from "@/components/ui/motion-components";
+import { useSelector } from "react-redux";
+import { selectUi, setShowIdeasPanel } from "@/lib/features/ui/uiSlice";
+import { useAppDispatch } from "@/lib/hooks/redux";
 export interface IdeasSideSheetProps {
   publication: Publication | null;
   selectedIdea: Idea | null;
@@ -18,6 +21,8 @@ export const IdeasSideSheet = ({
   publication,
   selectedIdea,
 }: IdeasSideSheetProps) => {
+  const dispatch = useAppDispatch();
+  const { showIdeasPanel } = useSelector(selectUi);
   const [features, setFeatures] = useLocalStorage<{ ideasPress: boolean }>(
     "features",
     {
@@ -25,6 +30,13 @@ export const IdeasSideSheet = ({
     },
   );
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (showIdeasPanel) {
+      setIsOpen(true);
+      dispatch(setShowIdeasPanel(false));
+    }
+  }, [showIdeasPanel]);
 
   const didPressIdeas = features.ideasPress;
 
@@ -44,7 +56,7 @@ export const IdeasSideSheet = ({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 h-full max-w-md bg-background z-50 shadow-lg"
+            className="w-screen fixed top-0 right-0 h-full max-w-md bg-background z-50 shadow-lg"
           >
             <IdeasPanel />
             <MotionButton
@@ -86,7 +98,7 @@ export const IdeasSideSheet = ({
               className="h-12 w-12 rounded-full shadow-lg"
               onClick={() => handleOpenIdeas(true)}
             >
-              <Sparkles className="h-6 w-6" />
+              <StickyNote className="h-6 w-6" />
             </Button>
           </motion.div>
         )}

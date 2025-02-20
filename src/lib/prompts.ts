@@ -266,7 +266,7 @@ export const generateImprovementPrompt = (
   const { prompt, task } = improvementPrompt;
   const model = improvementPrompt.model || "anthropic/claude-3.5-sonnet";
 
-  const maxLength = text.length;
+  const maxLength = type === "elaborate" ? text.length * 2 : text.length;
 
   const messages = [
     {
@@ -277,7 +277,9 @@ export const generateImprovementPrompt = (
 
         Response must follow these strict rules:
         - Preserve all existing formatting, including Markdown elements like headings (#), lists (-, *), bold (**), italics (*), code blocks (\`\`\`), and inline code (\`...\`). This is extremely important. 
-        ${type !== "elaborate" ? `- Ensure the response is no longer than ${maxLength} characters. Strictly adhere to this constraint.` : ""}
+        ${type === "elaborate" ? `- If there is a bulleted list, elaborate on each item in the list add more details, more information, more context, etc underneath each item.` : ""}
+        ${type === "elaborate" ? `- If there is a title, elaborate on it add more details, more information, more context, etc.` : ""}
+        - Ensure the response is no longer than ${maxLength} characters. Strictly adhere to this constraint.
         - Enhance readability where needed: You may improve formatting only if it helps clarity (e.g., adding line breaks, better structuring paragraphs, or reformatting lists).
         - Do not remove any structure unless necessary: Keep the original layout but refine or expand it when beneficial.
         - Maintain proper paragraph spacing: Ensure smooth transitions and logical flow.
@@ -433,6 +435,7 @@ const improvementPromptTemplates: {
   [key: string]: {
     task: string;
     prompt: string;
+    guidelines?: string;
     model?: Model;
   };
 } = {
