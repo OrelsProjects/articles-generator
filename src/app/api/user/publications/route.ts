@@ -5,6 +5,7 @@ import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { PublicationResponse } from "@/types/publication";
 import loggerServer from "@/loggerServer";
 import { buildSubstackUrl } from "@/lib/utils/url";
+import { Idea } from "@/types/idea";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -32,9 +33,7 @@ export async function GET() {
       },
     });
 
-    if (!userPublication?.publication) {
-      return NextResponse.json({ publicationId: null }, { status: 200 });
-    }
+    let ideas: Omit<Idea, "didUserSee">[] = [];
 
     const publication = await prismaArticles.publication.findUnique({
       where: {
@@ -42,9 +41,19 @@ export async function GET() {
       },
     });
 
+    if (!publication || !userPublication?.publication) {
+      ideas = await prisma.idea.findMany({
+        where: {
+          userId: session.user.id,
+        },
+      });
+    } else {
+      ideas = userPublication.publication.ideas || [];
+    }
+
     const response: PublicationResponse = {
       id: userPublication?.publication?.id,
-      image: userPublication?.publication?.image,
+      image: userPublication?.publication?.image || null,
       url:
         buildSubstackUrl(publication?.subdomain, publication?.customDomain) ||
         "",
@@ -53,8 +62,8 @@ export async function GET() {
         publication?.name  ||
         publication?.copyright ||
         "",
-      description: userPublication?.publication?.description,
-      ideas: userPublication?.publication?.ideas.map(idea => ({
+      description: userPublication?.publication?.description || null,
+      ideas: ideas.map(idea => ({
         id: idea.id,
         topic: idea.topic,
         title: idea.title,
@@ -71,7 +80,7 @@ export async function GET() {
         modelUsedForOutline: idea.modelUsedForOutline,
         updatedAt: idea.updatedAt,
         bodyHistory: idea.bodyHistory,
-      })),
+      })) || [],
     };
 
     return NextResponse.json({ publication: response }, { status: 200 });

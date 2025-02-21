@@ -78,8 +78,8 @@ export const MenuBar = ({
       .then(() => {
         dispatch(setShowIdeasPanel(true));
       })
-      .catch(() => {
-        toast.error("Failed to create new idea");
+      .catch((error: any) => {
+        toast.error(error.response?.data?.error || "Failed to create new idea");
       })
       .finally(() => {
         setLoadingNewIdea(false);

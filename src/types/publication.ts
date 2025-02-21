@@ -9,7 +9,7 @@ export interface Publication {
 }
 
 export interface PublicationResponse {
-  id: string;
+  id?: string | null;
   image: string | null;
   title: string | null;
   description: string | null;

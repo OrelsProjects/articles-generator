@@ -37,11 +37,11 @@ import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { initialTextForEnhancement, textByType } from "@/lib/landing-consts";
 import { appName } from "@/lib/consts";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { cn } from "@/lib/utils";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
 
 const EnhancmentDemo = () => {
-  const router = useCustomRouter();
   const [loadingTone, setLoadingTone] = useState<ImprovementType | null>(null);
   const [text, setText] = useState(initialTextForEnhancement);
   const [selectedTone, setSelectedTone] = useState<ImprovementTone | null>(
@@ -62,8 +62,15 @@ const EnhancmentDemo = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <EditorContent editor={editor} value={text} disabled />
+    <div className={cn("flex flex-col gap-4")}>
+      <EditorContent
+        editor={editor}
+        value={text}
+        disabled
+        className={cn("pb-0", {
+          "pb-7": text === initialTextForEnhancement,
+        })}
+      />
       <div className="flex gap-2 flex-wrap">
         <div className="flex gap-2 flex-wrap"></div>
         {["Funny", "Creative", "Engaging", "Sarcastic"].map(tone => (
@@ -138,7 +145,7 @@ function App() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 3.5 }}
+            transition={{ duration: 0.5, delay: 3 }}
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 text-primary border border-primary/20 rounded-full"
           >
             <Sparkles className="w-4 h-4" />
@@ -170,8 +177,8 @@ function App() {
                 initial={{ width: 0 }}
                 animate={{ width: "100%" }}
                 transition={{
-                  duration: 0.75,
-                  delay: 1.4,
+                  duration: 0.5,
+                  delay: 1.1,
                   ease: "easeOut",
                 }}
                 className="absolute inset-x-0 bottom-2 h-3 bg-primary/10 -rotate-2"
@@ -179,7 +186,7 @@ function App() {
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.75, delay: 1, ease: "easeOut" }}
+                transition={{ duration: 0.5, delay: 0.75, ease: "easeOut" }}
                 className="relative"
               >
                 Stay human.
@@ -187,16 +194,17 @@ function App() {
             </motion.span>
             <motion.span
               {...fadeInUp}
-              transition={{ duration: 0.75, delay: 2.25, ease: "easeOut" }}
+              transition={{ duration: 0.5, delay: 2.1, ease: "easeOut" }}
               className="text-primary"
             >
+              <br />
               Let AI assist.
             </motion.span>
           </h1>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 4 }}
+            transition={{ duration: 0.5, delay: 3.2 }}
             className="flex flex-col gap-4"
           >
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

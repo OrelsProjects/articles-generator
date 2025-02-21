@@ -29,7 +29,7 @@ export const IdeasSideSheet = ({
       ideasPress: false,
     },
   );
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
     if (showIdeasPanel) {

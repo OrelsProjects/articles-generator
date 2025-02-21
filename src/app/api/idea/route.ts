@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (!userMetadata) {
+    loggerServer.error("User  was not initialized");
     return NextResponse.json(
       { error: "User was not initialized" },
       { status: 403 },
@@ -24,13 +25,6 @@ export async function POST(req: NextRequest) {
   }
 
   const publicationId = userMetadata.publicationId;
-
-  if (!publicationId) {
-    return NextResponse.json(
-      { error: "Publication was not initialized" },
-      { status: 403 },
-    );
-  }
 
   try {
     // Create new draft idea

@@ -53,13 +53,6 @@ export default function GenerateIdeasButton({
   const [topic, setTopic] = useState("");
   const [shouldSearch, setShouldSearch] = useState(false);
 
-  const text = useMemo(() => {
-    if (publications.length === 0) {
-      return "Connect your Substack to generate ideas";
-    }
-    return didExceedLimit ? "Daily limit reached" : "Generate ideas";
-  }, [didExceedLimit, publications.length]);
-
   const handleDialogSubmit = async () => {
     setShowTopicDialog(false);
     try {
@@ -81,6 +74,23 @@ export default function GenerateIdeasButton({
     return `${usage.ideaGeneration.count}/${usage.ideaGeneration.max}`;
   }, [usage]);
 
+  const canGenerateIdeas = useMemo(() => {
+    return didExceedLimit || publications.length > 0;
+  }, [didExceedLimit, publications.length]);
+
+  const hasPublication = useMemo(() => {
+    return publications.length > 0;
+  }, [publications.length]);
+
+
+  const text = useMemo(() => {
+    if (publications.length === 0) {
+      return "Connect your Substack to generate ideas";
+    }
+    return didExceedLimit ? "Daily limit reached" : "Generate ideas";
+  }, [didExceedLimit, publications.length]);
+
+
   return (
     <>
       <Button
@@ -88,7 +98,7 @@ export default function GenerateIdeasButton({
         variant={variant}
         size={size}
         className={className}
-        disabled={loadingNewIdeas}
+        disabled={loadingNewIdeas || !canGenerateIdeas}
         {...props}
       >
         <>

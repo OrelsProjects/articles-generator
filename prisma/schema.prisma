@@ -174,7 +174,7 @@ model PublicationMetadata {
 model Idea {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  publicationId String @db.ObjectId
+  publicationId String? @db.ObjectId
   userId        String @db.ObjectId
 
   topic       String?
@@ -201,7 +201,7 @@ model Idea {
   updatedAt DateTime @updatedAt
 
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  publication PublicationMetadata @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  publication PublicationMetadata? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
 
   Image Image[]
 
