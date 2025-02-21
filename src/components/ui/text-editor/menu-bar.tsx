@@ -13,6 +13,9 @@ import {
   Plus,
   Loader2,
   Sparkles,
+  // Add the Copy icon here
+  Copy,
+  Check,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -32,26 +35,42 @@ import { selectUi, setShowIdeasPanel } from "@/lib/features/ui/uiSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { Idea } from "@/types/idea";
 import { useIdea } from "@/lib/hooks/useIdea";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
+import { AnimatePresence, motion } from "framer-motion";
+import { Logger } from "@/logger";
+
+const MotionCheck = motion(Check);
+const MotionCopy = motion(Copy);
 
 interface MenuBarProps {
   editor: Editor | null;
   publication: Publication | null;
   selectedIdea: Idea | null;
+  onCopy: (copyType: "title" | "subtitle" | "body") => void;
 }
 
 export const MenuBar = ({
   editor,
   publication,
   selectedIdea,
+  onCopy,
 }: MenuBarProps) => {
   const dispatch = useAppDispatch();
   const { state } = useAppSelector(selectUi);
   const { createNewIdea } = useIdea();
+  const [didCopy, setDidCopy] = useState(false);
 
   const [loadingNewIdea, setLoadingNewIdea] = useState(false);
+
+  useEffect(() => {
+    if (didCopy) {
+      setTimeout(() => {
+        setDidCopy(false);
+      }, 3000);
+    }
+  }, [didCopy]);
 
   const handleCreateNewIdea = () => {
     setLoadingNewIdea(true);
@@ -65,6 +84,16 @@ export const MenuBar = ({
       .finally(() => {
         setLoadingNewIdea(false);
       });
+  };
+
+  const handleCopy = (copyType: "title" | "subtitle" | "body") => {
+    try {
+      onCopy(copyType);
+      setDidCopy(true);
+    } catch (error: any) {
+      toast.error("Failed to copy content");
+      Logger.error("Failed to copy content:", error);
+    }
   };
 
   if (!editor) return null;
@@ -95,7 +124,7 @@ export const MenuBar = ({
             className="h-8 w-8"
           >
             <Redo className="w-4 h-4 md:w-5 md:h-5" />
-          </Button>{" "}
+          </Button>
         </div>
 
         <Separator orientation="vertical" className="h-6" />
@@ -192,7 +221,54 @@ export const MenuBar = ({
           </Button>
         </div>
 
+        {/* Add another separator for the copy button */}
         <Separator orientation="vertical" className="h-6" />
+
+        {/* The new copy button */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-20 space-x-2"
+            >
+              <AnimatePresence mode="wait">
+                {didCopy ? (
+                  <MotionCheck
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, transition: { duration: 0 } }}
+                    key={`did-copy`}
+                    className="w-4 h-4"
+                  />
+                ) : (
+                  <MotionCopy
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                    key={`copy`}
+                    className="w-4 h-4"
+                  />
+                )}
+              </AnimatePresence>
+              <span>Copy</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => handleCopy("title")}>
+              Title
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleCopy("subtitle")}>
+              Subtitle
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleCopy("body")}>
+              Body
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Separator orientation="vertical" className="h-6" />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -241,25 +317,3 @@ export const MenuBar = ({
     </>
   );
 };
-
-/**
- *    <Separator orientation="vertical" className="h-6" />
-        {/* Copy dropdown, items: title, subtitle, body */
-// <DropdownMenu>
-//   <DropdownMenuTrigger asChild>
-//     <Button variant="outline" size="sm" className="gap-1 h-8 md:h-10">
-//       Copy
-//     </Button>
-//   </DropdownMenuTrigger>
-//   <DropdownMenuContent>
-//     <DropdownMenuItem onClick={() => handleCopy("title")}>
-//       Title
-//     </DropdownMenuItem>
-//     <DropdownMenuItem onClick={() => handleCopy("subtitle")}>
-//       Subtitle
-//     </DropdownMenuItem>
-//     <DropdownMenuItem onClick={() => handleCopy("body")}>
-//       Body
-//     </DropdownMenuItem>
-//   </DropdownMenuContent>
-// </DropdownMenu>

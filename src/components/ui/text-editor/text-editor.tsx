@@ -305,6 +305,28 @@ const TextEditor = ({
     }
   }
 
+  const handleCopy = async (copyType: "title" | "subtitle" | "body") => {
+    if (!editor) return;
+    let text = "";
+    switch (copyType) {
+      case "title":
+        text = title;
+        break;
+      case "subtitle":
+        text = subtitle;
+        break;
+      case "body":
+        text = editor.getHTML();
+        break;
+    }
+
+    const type = "text/html";
+    const blob = new Blob([text], { type });
+    const data = [new ClipboardItem({ [type]: blob })];
+
+    await navigator.clipboard.write(data);
+  };
+
   // Add this effect to handle scroll reset
   useEffect(() => {
     if (showPreviewModal && previewEditorRef.current) {
@@ -433,6 +455,7 @@ const TextEditor = ({
           editor={editor}
           publication={publication || null}
           selectedIdea={selectedIdea || null}
+          onCopy={handleCopy}
         />
       </div>
       {publication && !!selectedIdea ? (
