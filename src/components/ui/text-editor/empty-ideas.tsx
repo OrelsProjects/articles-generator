@@ -15,7 +15,7 @@ export function EmptyIdeas() {
         Generate your first batch of ideas based on your publication&apos;s
         style and content.
       </p>
-      <MainActionButton publication={publication} />
+      <MainActionButton />
     </div>
   );
 }
