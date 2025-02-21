@@ -38,7 +38,8 @@ import { initialTextForEnhancement, textByType } from "@/lib/landing-consts";
 import { appName } from "@/lib/consts";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { cn } from "@/lib/utils";
-import Features from "@/components/landing/features";
+import FeaturesSection from "@/components/landing/features-section";
+import { ContrastSection } from "@/components/landing/contrast-section";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
 
@@ -141,7 +142,7 @@ function App() {
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="section-padding min-h-screen flex flex-col justify-center items-center text-center relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/0 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-bl from-primary/5 to-transparent" />
         <div className="container relative space-y-8">
           <motion.div
             initial={{ opacity: 0 }}
@@ -231,15 +232,14 @@ function App() {
       {/* Pain Points Section */}
       <section className="py-20 bg-muted">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             Why writing consistently feels hard
-            <br />
-            <span className="text-muted-foreground/80 text-2xl font-normal">
-              (And how {appName} fixes it)
-            </span>
           </h2>
+          <p className="text-center text-muted-foreground/80 text-2xl font-normal">
+            (It&apos;s not just about laziness or a lack of ideas)
+          </p>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 mt-16">
             {painPoints.map((point, index) => (
               <Card
                 key={index}
@@ -247,55 +247,20 @@ function App() {
               >
                 <div className="mb-4">{point.icon}</div>
                 <h3 className="text-xl font-semibold mb-2">{point.problem}</h3>
-                <p className="text-muted-foreground">{point.solution}</p>
+                {/* Focusing on describing the problem alone */}
+                <p className="text-muted-foreground">{point.problemDetails}</p>
               </Card>
             ))}
           </div>
         </div>
       </section>
 
+      <ContrastSection />
+
       {/* Features Section */}
-      <Features />
+      <FeaturesSection />
 
-      {/* How It Works Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-muted">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-            How {appName} helps you write smarter
-            <br />
-            <span className="text-muted-foreground/80 text-2xl font-normal">
-              (Without taking over)
-            </span>
-          </h2>
-
-          <div className="space-y-16">
-            {steps.map((step, index) => (
-              <div
-                key={index}
-                className="flex flex-col md:flex-row items-center gap-8"
-              >
-                <div className="flex-1">
-                  <div className="text-primary text-lg font-semibold mb-2">
-                    Step {index + 1}
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4">{step.title}</h3>
-                  <p
-                    className="text-muted-foreground"
-                    dangerouslySetInnerHTML={{
-                      __html: step.description,
-                    }}
-                  />
-                </div>
-                <div className="flex-1">
-                  <Card className="p-6">{step.visual}</Card>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
+      {/* Testimonials Section
       <motion.section
         className="py-20 bg-muted"
         initial={{ opacity: 0 }}
@@ -328,7 +293,7 @@ function App() {
             ))}
           </div>
         </div>
-      </motion.section>
+      </motion.section> */}
 
       {/* Pricing Section */}
       <motion.section
@@ -340,9 +305,12 @@ function App() {
         viewport={{ once: true }}
       >
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-12">
+          <h2 className="text-4xl font-bold text-center mb-4">
             Write smarter with {appName}+
           </h2>
+          <p className="text-center text-muted-foreground/80 text-2xl font-normal mb-12">
+            (You can try it for free)
+          </p>
           <div className="grid md:grid-cols-3 gap-8">
             {/* Free Plan */}
             <Card className="hover:shadow-lg transition-shadow duration-300 relative flex flex-col">
@@ -549,24 +517,24 @@ function App() {
     </div>
   );
 }
-
 const painPoints = [
   {
     icon: <Lightbulb className="h-8 w-8 text-primary" />,
     problem: "I never know what to write next, I run out of ideas.",
-    solution:
-      "AI-powered ideas generator keeps your creativity flowing at all times.",
+    problemDetails:
+      "You’ve got zero direction, no coherent theme, and every new sentence feels like it might be your last decent thought.",
   },
   {
     icon: <BrainCircuit className="h-8 w-8 text-primary" />,
     problem: "I want to refine my writing, but AI tools feel robotic.",
-    solution: `${appName} suggests edits & enhances tone—without taking over.`,
+    problemDetails:
+      "It’s like giving your work to a soulless machine—helpful, but it rarely sounds like you.",
   },
   {
     icon: <FileEdit className="h-8 w-8 text-primary" />,
     problem: "I waste too much time structuring my articles.",
-    solution:
-      "Generate instant outlines based on top-performing content in your niche.",
+    problemDetails:
+      "You’re stuck mapping outlines and reorganizing paragraphs instead of actually writing anything worthwhile.",
   },
 ];
 
