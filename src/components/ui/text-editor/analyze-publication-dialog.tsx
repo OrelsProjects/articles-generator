@@ -1,3 +1,5 @@
+"use client";
+
 import { usePublication } from "@/lib/hooks/usePublication";
 import { useEffect, useState } from "react";
 import {
@@ -13,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import { AlertCircle, AlertTriangle, HelpCircle, Link2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAppSelector } from "@/lib/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { validateUrl } from "@/lib/utils/url";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -23,6 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Logger } from "@/logger";
+import { setShowAnalyzePublicationDialog } from "@/lib/features/ui/uiSlice";
 
 const loadingStatesConst = [
   { text: "Validating publication in our databases..." },
@@ -66,21 +69,23 @@ interface ErrorState {
   explanation: string;
 }
 
-export function AnalyzePublicationButton({
-  variant = "default",
-  className,
-}: {
-  variant?: "default" | "ghost";
-  className?: string;
-}) {
+export function AnalyzePublicationDialog() {
+  const dispatch = useAppDispatch();
   const { analyzePublication, validatePublication } = usePublication();
   const { publications } = useAppSelector(state => state.publications);
-
+  const { showAnalyzePublicationDialog } = useAppSelector(state => state.ui);
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
   const [loadingStates, setLoadingStates] = useState(loadingStatesConst);
+
+  useEffect(() => {
+    if (showAnalyzePublicationDialog) {
+      setOpen(true);
+      dispatch(setShowAnalyzePublicationDialog(false));
+    }
+  }, [showAnalyzePublicationDialog]);
 
   useEffect(() => {
     if (publications.length > 0) {
@@ -135,13 +140,11 @@ export function AnalyzePublicationButton({
 
   return (
     <div id="create-publication-button">
-      <Button onClick={() => setOpen(true)} variant={variant} className={className}>
-        <Link2 className="mr-2 h-4 w-4" />
-        Connect Substack
-      </Button>
-
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[425px]" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent
+          className="sm:max-w-[425px]"
+          onOpenAutoFocus={e => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>Connect your Substack</DialogTitle>
             <DialogDescription>
@@ -151,21 +154,21 @@ export function AnalyzePublicationButton({
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-              <Input
-                id="substackUrl"
-                placeholder="your-blog.substack.com"
-                className="col-span-4"
-                value={url}
-                onChange={e => setUrl(e.target.value)}
-                // disabled={loading}
-                autoFocus
-                onKeyDown={e => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                }}
-              />
+            <Input
+              id="substackUrl"
+              placeholder="your-blog.substack.com"
+              className="col-span-4"
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              // disabled={loading}
+              autoFocus
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            />
 
             <AnimatePresence mode="popLayout">
               {error?.value && (

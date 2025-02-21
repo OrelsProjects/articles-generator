@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (!userMetadata) {
-    loggerServer.error("User  was not initialized");
+    loggerServer.error("User was not initialized");
     return NextResponse.json(
       { error: "User was not initialized" },
       { status: 403 },

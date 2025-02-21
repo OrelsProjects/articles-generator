@@ -4,11 +4,13 @@ import { RootState } from "@/lib/store";
 export interface UiState {
   state: "full" | "writing-mode";
   showIdeasPanel: boolean;
+  showAnalyzePublicationDialog: boolean;
 }
 
 export const initialState: UiState = {
   state: "writing-mode",
   showIdeasPanel: false,
+  showAnalyzePublicationDialog: false,
 };
 
 const uiSlice = createSlice({
@@ -21,10 +23,14 @@ const uiSlice = createSlice({
     setShowIdeasPanel: (state, action) => {
       state.showIdeasPanel = action.payload;
     },
+    setShowAnalyzePublicationDialog: (state, action) => {
+      state.showAnalyzePublicationDialog = action.payload;
+    },
   },
 });
 
-export const { setUiState, setShowIdeasPanel } = uiSlice.actions;
+export const { setUiState, setShowIdeasPanel, setShowAnalyzePublicationDialog } =
+  uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;
 

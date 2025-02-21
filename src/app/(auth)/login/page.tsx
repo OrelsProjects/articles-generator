@@ -51,9 +51,9 @@ const Auth = () => {
           </Button>
           <div className="grid gap-4 mt-4">
             {[
-              "Access to AI-powered ideas and outlines generator",
-              "Easy integration with your Substack account",
-              "Never have writer's block again",
+              "Get smart suggestions without losing your voice",
+              "Break through writer's block",
+              "Write faster and better",
             ].map((perk, index) => (
               <div key={index} className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
@@ -63,23 +63,6 @@ const Auth = () => {
           </div>
         </CardContent>
       </Card>
-      {/* <p className="mt-8 text-center text-sm text-muted-foreground">
-        By signing in, you agree to our{" "}
-        <a
-          href="/terms"
-          className="underline underline-offset-4 hover:text-primary"
-        >
-          Terms of Service
-        </a>{" "}
-        and{" "}
-        <a
-          href="/privacy"
-          className="underline underline-offset-4 hover:text-primary"
-        >
-          Privacy Policy
-        </a>
-        .
-      </p> */}
     </div>
   );
 };

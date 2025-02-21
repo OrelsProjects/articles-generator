@@ -169,7 +169,7 @@ export const generateIdeasPrompt = (
     - **Make sure the titles and subtitles have the same format and style as the top articles.**  
     - Don't start all the words in the title and subtitle with a capital letter, unless absolutely necessary.
     - If the provided titles have emojis, use them in the generated titles.
-    - The image should be a URL of an image that is relevant to the article, must be a stock image with a valid URL.
+    - The image should be a URL of an image that is relevant to the article, must be a stock image with a valid URL from unsplash.com.
     ${options.inspirations && options.inspirations.length > 0 ? `- Use the following article ideas as inspiration: ${options.inspirations.map(inspiration => `- ${inspiration.title}`).join(", ")}.` : ""}
     ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
     ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}

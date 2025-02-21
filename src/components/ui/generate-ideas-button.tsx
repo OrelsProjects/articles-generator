@@ -24,15 +24,6 @@ import { useSettings } from "@/lib/hooks/useSettings";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { setShowIdeasPanel } from "@/lib/features/ui/uiSlice";
 
-// Define loading states for generating ideas
-const ideaLoadingStates = [
-  { text: "Finding relevant articles..." },
-  { text: "Gathering inspiration from top articles..." },
-  { text: "Crafting unique article ideas..." },
-  { text: "Building outlines for the ideas..." },
-  { text: "Finalizing the best ideas..." },
-];
-
 interface GenerateIdeasButtonProps extends Partial<ButtonProps> {
   buttonContent?: React.ReactNode;
 }
@@ -46,7 +37,7 @@ export default function GenerateIdeasButton({
 }: GenerateIdeasButtonProps) {
   const dispatch = useAppDispatch();
   const { publications, loadingNewIdeas } = useAppSelector(selectPublications);
-  const { didExceedLimit, canUseSearch } = useSettings();
+  const { didExceedLimit, canUseSearch, canGenerateIdeas, hasPublication } = useSettings();
   const { generateIdeas } = useIdea();
   const { usage } = useAppSelector(selectSettings);
   const [showTopicDialog, setShowTopicDialog] = useState(false);
@@ -74,22 +65,12 @@ export default function GenerateIdeasButton({
     return `${usage.ideaGeneration.count}/${usage.ideaGeneration.max}`;
   }, [usage]);
 
-  const canGenerateIdeas = useMemo(() => {
-    return didExceedLimit || publications.length > 0;
-  }, [didExceedLimit, publications.length]);
-
-  const hasPublication = useMemo(() => {
-    return publications.length > 0;
-  }, [publications.length]);
-
-
   const text = useMemo(() => {
-    if (publications.length === 0) {
+    if (!hasPublication) {
       return "Connect your Substack to generate ideas";
     }
     return didExceedLimit ? "Daily limit reached" : "Generate ideas";
-  }, [didExceedLimit, publications.length]);
-
+  }, [didExceedLimit, hasPublication]);
 
   return (
     <>
@@ -110,14 +91,6 @@ export default function GenerateIdeasButton({
           {text}
         </>
       </Button>
-
-      <ToastStepper
-        loadingStates={ideaLoadingStates}
-        loading={loadingNewIdeas}
-        duration={10000}
-        loop={false}
-        position="bottom-left"
-      />
 
       <Dialog open={showTopicDialog} onOpenChange={setShowTopicDialog}>
         <form

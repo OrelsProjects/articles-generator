@@ -18,10 +18,12 @@ import { selectAuth } from "@/lib/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
 import { SettingsDialog } from "@/components/settings/settings";
 import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
+import { useSettings } from "@/lib/hooks/useSettings";
 
 export function Header({ className }: { className?: string }) {
-  const { user } = useAppSelector(selectAuth);
   const { signOut } = useAuth();
+  const { hasPublication } = useSettings();
+  const { user } = useAppSelector(selectAuth);
   const { publications } = useAppSelector(state => state.publications);
 
   const publication = useMemo(() => {
@@ -31,10 +33,6 @@ export function Header({ className }: { className?: string }) {
   const handleLogout = () => {
     signOut();
   };
-
-  const hasPublication = useMemo(() => {
-    return publications.length > 0;
-  }, [publications]);
 
   const Dropdown = ({ className }: { className?: string }) => (
     <div className={cn("h-full flex items-center ml-auto", className)}>
@@ -63,11 +61,6 @@ export function Header({ className }: { className?: string }) {
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="ml-4">
-          {!hasPublication && (
-            <DropdownMenuItem asChild>
-              <AnalyzePublicationButton variant="ghost" className="pl-2" />
-            </DropdownMenuItem>
-          )}
           {!hasPublication && <DropdownMenuSeparator />}
           <DropdownMenuItem asChild>
             <SettingsDialog />

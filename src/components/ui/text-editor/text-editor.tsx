@@ -31,6 +31,7 @@ import TitleSection from "./title-section";
 import SubtitleSection from "./subtitle-section";
 import EditorArea from "./editor-area";
 import PreviewModal from "./preview-modal";
+import LoadingIdeas from "@/components/ui/loading-ideas";
 
 type ImageName = string;
 
@@ -508,6 +509,7 @@ const TextEditor = ({
         onCancel={handleCancelImprovement}
         onAccept={handleAcceptImprovement}
       />
+      <LoadingIdeas />
     </motion.div>
   );
 };

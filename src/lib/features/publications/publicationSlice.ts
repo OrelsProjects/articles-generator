@@ -27,6 +27,12 @@ const publicationSlice = createSlice({
   name: "publications",
   initialState,
   reducers: {
+    setPublication: (state, action: PayloadAction<Publication>) => {
+      state.publications[0] = {
+        ...state.publications[0],
+        ...action.payload,
+      };
+    },
     addPublication: (state, action: PayloadAction<Publication>) => {
       state.publications.push(action.payload);
     },
@@ -98,7 +104,7 @@ const publicationSlice = createSlice({
         state.selectedIdea = action.payload;
       }
     },
-    removeTempIdea: (state) => {
+    removeTempIdea: state => {
       state.ideas = state.ideas.filter(idea => idea.id !== "temp-id");
     },
     setSelectedIdea: (state, action: PayloadAction<Idea | null>) => {
@@ -113,6 +119,7 @@ const publicationSlice = createSlice({
 export const {
   setIdeas,
   addIdeas,
+  setPublication,
   addPublication,
   updateStatus,
   updateIdea,

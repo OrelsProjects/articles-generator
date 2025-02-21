@@ -311,7 +311,7 @@ export const MenuBar = ({
           </DropdownMenuContent>
         </DropdownMenu>
         <div className="flex items-center gap-1 md:gap-2">
-          <MainActionButton publication={publication} />
+          <MainActionButton />
         </div>
       </div>
     </>

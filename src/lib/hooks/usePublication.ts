@@ -1,6 +1,7 @@
-import { useAppDispatch } from "@/lib/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import {
   addPublication as addPublicationAction,
+  setPublication,
 } from "@/lib/features/publications/publicationSlice";
 import axios from "axios";
 import { Publication } from "@/types/publication";
@@ -32,7 +33,7 @@ export const usePublication = () => {
           url,
         },
       );
-      dispatch(addPublicationAction(res.data.publication));
+      dispatch(setPublication(res.data.publication));
       return res.data;
     } catch (error: any) {
       Logger.error(error);

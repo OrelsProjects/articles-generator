@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { Header } from "@/app/(content)/editor/header";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { IdeasSideSheet } from "@/components/ui/text-editor/ideas-panel-side-sheet";
+import { AnalyzePublicationDialog } from "@/components/ui/text-editor/analyze-publication-dialog";
 
 const MobilesIdeasPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,11 +51,14 @@ const MobilesIdeasPanel = () => {
 
 export default function IdeasPage() {
   const { state } = useAppSelector(selectUi);
-  const { publications, selectedIdea } = useAppSelector(state => state.publications);
+  const { publications, selectedIdea } = useAppSelector(
+    state => state.publications,
+  );
   const isWritingMode = state === "writing-mode";
 
   return (
     <div className="w-screen h-screen flex flex-col items-center overflow-clip">
+      <AnalyzePublicationDialog />
       <Header />
       <div className="h-full w-full flex flex-row md:grid md:grid-cols-8 2xl:grid-cols-7 relative">
         {/* Main editor area - expands when in writing mode */}

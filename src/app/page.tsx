@@ -38,6 +38,7 @@ import { initialTextForEnhancement, textByType } from "@/lib/landing-consts";
 import { appName } from "@/lib/consts";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { cn } from "@/lib/utils";
+import Features from "@/components/landing/features";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
 
@@ -252,6 +253,9 @@ function App() {
           </div>
         </div>
       </section>
+
+      {/* Features Section */}
+      <Features />
 
       {/* How It Works Section */}
       <section className="py-20 bg-gradient-to-b from-background to-muted">
