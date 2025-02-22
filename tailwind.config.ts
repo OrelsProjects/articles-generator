@@ -24,7 +24,7 @@ const config: Config = {
       },
       fontSize: {
         "text-editor-h1": [
-          "2.25em",
+          "2em",
           { lineHeight: "1.16em", letterSpacing: "0.01em" },
         ],
         "text-editor-h2": [
@@ -32,19 +32,19 @@ const config: Config = {
           { lineHeight: "1.16em", letterSpacing: "0.01em" },
         ],
         "text-editor-h3": [
-          "1.5em",
+          "1.375em",
           { lineHeight: "1.16em", letterSpacing: "0.01em" },
         ],
         "text-editor-h4": [
-          "1.25em",
-          { lineHeight: "1.75em", letterSpacing: "0.01em" },
+          "1.125em",
+          { lineHeight: "1.16em", letterSpacing: "0.01em" },
         ],
         "text-editor-h5": [
-          "1em",
+          "0.83em",
           { lineHeight: "1.16em", letterSpacing: "0.01em" },
         ],
         "text-editor-h6": [
-          "0.875em",
+          "0.67em",
           { lineHeight: "1.16em", letterSpacing: "0.01em" },
         ],
       },
