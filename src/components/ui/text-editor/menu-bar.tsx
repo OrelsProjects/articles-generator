@@ -129,8 +129,41 @@ export const MenuBar = ({
     }
 
     // If the select text is already a pullquote, remove it
-    if (selectedText.includes(":::pullquote")) {
-      editor.chain().focus().lift("pullquote").run();
+    if (editor.isActive("pullquote")) {
+      editor
+        .chain()
+        .focus()
+        .command(({ tr, state, dispatch }) => {
+          const { selection } = state;
+          const { from, to } = selection;
+          let changed = false;
+
+          // Traverse the document nodes in the selected range
+          state.doc.nodesBetween(from, to, (node, pos) => {
+            if (node.type.name === "pullquote") {
+              changed = true;
+              // Grab the node’s text content
+              const textContent = node.textContent;
+              // Remove the entire pullquote node
+              tr.deleteRange(pos, pos + node.nodeSize);
+              // Insert a plain paragraph with that text
+              tr.insert(
+                pos,
+                state.schema.nodes.paragraph.create(
+                  {},
+                  state.schema.text(textContent),
+                ),
+              );
+            }
+          });
+
+          if (changed && dispatch) {
+            dispatch(tr);
+            return true;
+          }
+          return false;
+        })
+        .run();
     } else if (selectedText) {
       editor
         .chain()
@@ -148,7 +181,7 @@ export const MenuBar = ({
     if (isHeader) {
       editor.chain().focus().setParagraph().run();
     }
-    if (selectedText.includes(":::blockquote")) {
+    if (editor.isActive("blockquote")) {
       editor.chain().focus().lift("blockquote").run();
     } else if (selectedText) {
       editor?.chain().focus().toggleBlockquote().run();
@@ -316,14 +349,7 @@ export const MenuBar = ({
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => {
-                  if (editor.isActive("pullquote")) {
-                    // Remove pullquote
-                    editor.chain().focus().lift("pullquote").run();
-                  } else {
-                    handlePullQuote();
-                  }
-                }}
+                onClick={handlePullQuote}
                 disabled={editor.isActive("blockquote")}
               >
                 <div className="flex items-center">

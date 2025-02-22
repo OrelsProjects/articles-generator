@@ -3,7 +3,7 @@ import TurndownService from "turndown";
 
 import { DOMSerializer } from "@tiptap/pm/model";
 import { Editor, Extension, UseEditorOptions } from "@tiptap/react";
-import { Node } from "@tiptap/core";
+import { Node, RawCommands } from "@tiptap/core";
 
 import StarterKit from "@tiptap/starter-kit";
 import BubbleMenu from "@tiptap/extension-bubble-menu";
@@ -73,8 +73,10 @@ export const formatText = (text: string): string => {
 
 export const formatSpecialFormats = (text: string): string => {
   if (text === "") return "";
-  const regexPullquote = /(?:<p>)?:::pullquote[A-Za-z]*?\s*([\s\S]*?)\s*:::(?:<\/p>)?/g;
-  const regexBlockquote = /(?:<p>)?:::blockquote[A-Za-z]*?\s*([\s\S]*?)\s*:::(?:<\/p>)?/g;
+  const regexPullquote =
+    /(?:<p>)?:::pullquote[A-Za-z]*?\s*([\s\S]*?)\s*:::(?:<\/p>)?/g;
+  const regexBlockquote =
+    /(?:<p>)?:::blockquote[A-Za-z]*?\s*([\s\S]*?)\s*:::(?:<\/p>)?/g;
 
   const quotes: { type: string; content: string }[] = [];
 
@@ -181,7 +183,8 @@ const CustomHeading = Heading.extend({
           "h1",
           {
             ...HTMLAttributes,
-            class: "text-text-editor-h1 mt-[1em] mb-[0.625em] font-bold !font-sans",
+            class:
+              "text-text-editor-h1 mt-[1em] mb-[0.625em] font-bold !font-sans",
           },
           0,
         ];
@@ -190,7 +193,8 @@ const CustomHeading = Heading.extend({
           "h2",
           {
             ...HTMLAttributes,
-            class: "text-text-editor-h2 mt-[1em] mb-[0.625em] font-bold !font-sans",
+            class:
+              "text-text-editor-h2 mt-[1em] mb-[0.625em] font-bold !font-sans",
           },
           0,
         ];
@@ -199,7 +203,8 @@ const CustomHeading = Heading.extend({
           "h3",
           {
             ...HTMLAttributes,
-            class: "text-text-editor-h3 mt-[1em] mb-[0.625em] font-bold !font-sans",
+            class:
+              "text-text-editor-h3 mt-[1em] mb-[0.625em] font-bold !font-sans",
           },
           0,
         ];
@@ -208,7 +213,8 @@ const CustomHeading = Heading.extend({
           "h4",
           {
             ...HTMLAttributes,
-            class: "text-text-editor-h4 mt-[1em] mb-[0.625em] font-bold !font-sans",
+            class:
+              "text-text-editor-h4 mt-[1em] mb-[0.625em] font-bold !font-sans",
           },
           0,
         ];
@@ -270,16 +276,6 @@ const PullQuote = Node.create({
     return ["div", { class: "pullquote" }, 0];
   },
 
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        appendTransaction: (transactions, oldState, newState) => {
-          // Prevent empty paragraph insertion before pullquotes
-          return null;
-        },
-      }),
-    ];
-  },
 });
 
 export const textEditorOptions = (
