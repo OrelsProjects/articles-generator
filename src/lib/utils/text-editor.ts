@@ -3,9 +3,10 @@ import TurndownService from "turndown";
 
 import { DOMSerializer } from "@tiptap/pm/model";
 import { Editor, Extension, UseEditorOptions } from "@tiptap/react";
-import { Node, RawCommands } from "@tiptap/core";
+import { Node } from "@tiptap/core";
 
 import StarterKit from "@tiptap/starter-kit";
+import ImageResize from "tiptap-extension-resize-image";
 import BubbleMenu from "@tiptap/extension-bubble-menu";
 import Heading from "@tiptap/extension-heading";
 import Image from "@tiptap/extension-image";
@@ -322,6 +323,7 @@ export const textEditorOptions = (
     SkeletonNode,
     CustomBlockquote,
     PullQuote,
+    ImageResize,
   ],
   content: "",
   editorProps: {
