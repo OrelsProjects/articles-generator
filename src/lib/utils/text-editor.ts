@@ -6,7 +6,6 @@ import { Editor, Extension, UseEditorOptions } from "@tiptap/react";
 import { Node } from "@tiptap/core";
 
 import StarterKit from "@tiptap/starter-kit";
-import ImageResize from "tiptap-extension-resize-image";
 import BubbleMenu from "@tiptap/extension-bubble-menu";
 import Heading from "@tiptap/extension-heading";
 import Image from "@tiptap/extension-image";
@@ -24,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { Lora } from "@/lib/utils/fonts";
 import Blockquote from "@tiptap/extension-blockquote";
 import { Plugin } from "prosemirror-state";
+import ResizableImageExtension from "@/components/ui/extenstions/ResizeImage";
 
 export function getSelectedContentAsMarkdown(editor: Editor): string {
   const selectedHTML = getSelectedContentAsHTML(editor);
@@ -68,6 +68,13 @@ export const formatText = (text: string): string => {
     gfm: true,
     breaks: false,
   });
+
+  // Handle custom image dimensions before passing to marked
+  text = text.replace(
+    /!\[(.*?)\]\((.*?)\){width=(\d+)}/g,
+    (_, alt, src, width) =>
+      `<img src="${src}" alt="${alt}" width="${width}" />`,
+  );
 
   return marked(text) as string;
 };
@@ -131,6 +138,21 @@ turndownService.addRule("heading", {
   replacement: function (content, node) {
     const level = Number(node.nodeName.charAt(1));
     return `\n${"#".repeat(level)} ${content}\n`;
+  },
+});
+
+// Add this to where turndownService is configured
+turndownService.addRule("images", {
+  filter: "img",
+  replacement: function (content, node: any) {
+    const alt = node.getAttribute("alt") || "";
+    const src = node.getAttribute("src") || "";
+    const width = node.getAttribute("width") || "";
+    const height = node.getAttribute("height") || "";
+    debugger;
+    // Include width and height in the markdown if they exist
+    const dimensions = width ? `{width=${width}}` : "";
+    return `![${alt}](${src})${dimensions}`;
   },
 });
 
@@ -276,7 +298,6 @@ const PullQuote = Node.create({
   renderHTML() {
     return ["div", { class: "pullquote" }, 0];
   },
-
 });
 
 export const textEditorOptions = (
@@ -323,7 +344,8 @@ export const textEditorOptions = (
     SkeletonNode,
     CustomBlockquote,
     PullQuote,
-    ImageResize,
+    // make sure the image is always centered
+    ResizableImageExtension,
   ],
   content: "",
   editorProps: {
@@ -363,7 +385,6 @@ export const SkeletonNode = Node.create({
 export const loadContent = (markdownContent: string, editor: Editor | null) => {
   let formattedContent = formatText(markdownContent);
   let contentWithSpecialFormats = formatSpecialFormats(formattedContent);
-
   // Clean up empty paragraphs with trailing breaks before quotes
   let cleanedHtml = contentWithSpecialFormats.replace(
     /<br\s*class=["']ProseMirror-trailingBreak["']\s*\/?>/g,

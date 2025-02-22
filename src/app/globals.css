@@ -453,3 +453,7 @@
 p:empty::after {
   content: "\00A0";
 }
+
+.ProseMirror-selectednode {
+  @apply flex justify-center;
+}
