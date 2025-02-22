@@ -56,7 +56,7 @@ export async function PATCH(
       data,
     });
 
-    return NextResponse.json(idea);
+    return NextResponse.json({}, { status: 200 });
   } catch (error: any) {
     loggerServer.error("Error updating idea:", error.message);
     return NextResponse.json({ error: "Error updating idea" }, { status: 500 });

@@ -374,13 +374,15 @@
   margin-top: 1em;
   margin-bottom: 0.625em;
   font-weight: bold;
+  @apply !font-sans;
 }
 .text-editor-h2 {
   font-size: 1.625rem;
   line-height: 1.16rem;
-
+  margin-top: 1em;
   margin-bottom: 0.625rem;
   font-weight: bold;
+  @apply !font-sans;
 }
 .text-editor-h3 {
   font-size: 1.375em;
@@ -388,6 +390,7 @@
   margin-top: 1em;
   margin-bottom: 0.625em;
   font-weight: bold;
+  @apply !font-sans;
 }
 .text-editor-h4 {
   font-size: 1.125em;
@@ -395,6 +398,7 @@
   margin-top: 1em;
   margin-bottom: 0.625em;
   font-weight: bold;
+  @apply !font-sans;
 }
 .text-editor-h5 {
   font-size: 0.83em;
@@ -402,6 +406,7 @@
   margin-top: 1em;
   margin-bottom: 0.625em;
   font-weight: bold;
+  @apply !font-sans;
 }
 .text-editor-h6 {
   font-size: 0.67em;
@@ -409,6 +414,7 @@
   margin-top: 1em;
   margin-bottom: 0.625em;
   font-weight: bold;
+  @apply !font-sans;
 }
 
 /* Add to your existing styles */
@@ -421,6 +427,7 @@
   padding-left: 1rem;
   margin: 1.5rem 0;
   font-style: italic;
+  color: hsl(var(--foreground));
 }
 
 .tiptap .pullquote {
@@ -441,4 +448,8 @@
   border-radius: 0.375rem;
   margin: 1rem auto;
   display: block;
+}
+
+p:empty::after {
+  content: "\00A0";
 }

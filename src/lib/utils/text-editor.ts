@@ -22,8 +22,7 @@ import Text from "@tiptap/extension-text";
 import { cn } from "@/lib/utils";
 import { Lora } from "@/lib/utils/fonts";
 import Blockquote from "@tiptap/extension-blockquote";
-
-
+import { Plugin } from "prosemirror-state";
 
 export function getSelectedContentAsMarkdown(editor: Editor): string {
   const selectedHTML = getSelectedContentAsHTML(editor);
@@ -53,9 +52,12 @@ export function getSelectedContentAsHTML(editor: Editor) {
 
 // Convert HTML → Markdown properly
 export const unformatText = (html: string): string => {
-  if (html === "") return "";
+  if (!html) return "";
 
-  return turndownService.turndown(html);
+  // Clean up any potential double spaces or unnecessary newlines
+  const cleanHtml = html.replace(/\s+/g, " ").replace(/>\s+</g, "><").trim();
+
+  return turndownService.turndown(cleanHtml);
 };
 
 export const formatText = (text: string): string => {
@@ -63,57 +65,89 @@ export const formatText = (text: string): string => {
 
   marked.setOptions({
     gfm: true,
-    breaks: true,
+    breaks: false,
   });
 
-  const markedText = marked(text) as string;
-  return markedText;
+  return marked(text) as string;
 };
 
 export const formatSpecialFormats = (text: string): string => {
   if (text === "") return "";
-  const regexPullquote = /:::pullquote\s*([\s\S]*?)\s*:::/g;
-  const regexBlockquote = /:::blockquote\s*([\s\S]*?)\s*:::/g;
-  // For debugging purposes, find all matches and console.log them
-  const matchesPullquote = text.match(regexPullquote);
-  const matchesBlockquote = text.match(regexBlockquote);
-  
-  console.log("Matches pullquote:", matchesPullquote);
-  console.log("Matches blockquote:", matchesBlockquote);
-  const textWithSpecialFormats = text
-    .replace(regexBlockquote, "<blockquote><p>$1</p></blockquote>")
-    .replace(regexPullquote, '<div class="pullquote"><p>$1</p></div>');
-  return textWithSpecialFormats;
+  const regexPullquote = /(?:<p>)?:::pullquote[A-Za-z]*?\s*([\s\S]*?)\s*:::(?:<\/p>)?/g;
+  const regexBlockquote = /(?:<p>)?:::blockquote[A-Za-z]*?\s*([\s\S]*?)\s*:::(?:<\/p>)?/g;
+
+  const quotes: { type: string; content: string }[] = [];
+
+  // Extract pullquotes with better whitespace handling
+  text = text.replace(regexPullquote, (match, content, offset, string) => {
+    quotes.push({ type: "pullquote", content: content.trim() });
+    // Check if we need to preserve a newline
+    const needsNewline = string[offset + match.length] === "\n" ? "\n" : "";
+    return `###PULLQUOTE${quotes.length - 1}###${needsNewline}`;
+  });
+
+  // Extract blockquotes with better whitespace handling
+  text = text.replace(regexBlockquote, (match, content, offset, string) => {
+    quotes.push({ type: "blockquote", content: content.trim() });
+    // Check if we need to preserve a newline
+    const needsNewline = string[offset + match.length] === "\n" ? "\n" : "";
+    return `###BLOCKQUOTE${quotes.length - 1}###${needsNewline}`;
+  });
+
+  // Replace quote placeholders with formatted HTML, preserving only necessary whitespace
+  quotes.forEach((quote, index) => {
+    const formattedContent = formatText(quote.content);
+    if (quote.type === "pullquote") {
+      text = text.replace(
+        `###PULLQUOTE${index}###`,
+        `<div class="pullquote">${formattedContent}</div>`,
+      );
+    } else {
+      text = text.replace(
+        `###BLOCKQUOTE${index}###`,
+        `<blockquote>${formattedContent}</blockquote>`,
+      );
+    }
+  });
+
+  // Clean up any potential double newlines
+  return text.replace(/\n{3,}/g, "\n\n");
 };
 
 const turndownService = new TurndownService({
   headingStyle: "atx", // Converts headings into `#`, `##`, etc.
   codeBlockStyle: "fenced", // Ensures code blocks use triple backticks
+  strongDelimiter: "**",
+  emDelimiter: "*",
+  bulletListMarker: "*",
 });
 
 // Custom rules for improved Markdown output
-turndownService.addRule("headers", {
+turndownService.addRule("heading", {
   filter: ["h1", "h2", "h3", "h4", "h5", "h6"],
   replacement: function (content, node) {
-    const level = parseInt(node.nodeName.replace("H", ""), 10);
-    return `${"#".repeat(level)} ${content}\n`;
+    const level = Number(node.nodeName.charAt(1));
+    return `\n${"#".repeat(level)} ${content}\n`;
   },
 });
 
 // Add custom rules for quotes
 turndownService.addRule("blockquote", {
   filter: "blockquote",
-  replacement: function (content) {
-    return `:::blockquote${content}:::`;
+  replacement: function (content, node) {
+    // Clean up newlines and spaces while preserving content structure
+    const cleanContent = content.replace(/\n+/g, "\n").trim();
+    return `:::blockquote${cleanContent}:::`;
   },
 });
 
 turndownService.addRule("pullquote", {
-  filter: node => {
-    return node.nodeName === "DIV" && node.classList.contains("pullquote");
-  },
-  replacement: function (content) {
-    return `:::pullquote${content}:::`;
+  filter: node =>
+    node.nodeName === "DIV" && node.classList.contains("pullquote"),
+  replacement: function (content, node) {
+    // Clean up newlines and spaces while preserving content structure
+    const cleanContent = content.replace(/\n+/g, "\n").trim();
+    return `:::pullquote${cleanContent}:::`;
   },
 });
 
@@ -147,7 +181,7 @@ const CustomHeading = Heading.extend({
           "h1",
           {
             ...HTMLAttributes,
-            class: "text-text-editor-h1 mt-[1em] mb-[0.625em] font-bold",
+            class: "text-text-editor-h1 mt-[1em] mb-[0.625em] font-bold !font-sans",
           },
           0,
         ];
@@ -156,7 +190,7 @@ const CustomHeading = Heading.extend({
           "h2",
           {
             ...HTMLAttributes,
-            class: "text-text-editor-h2 mt-[1em] mb-[0.625em] font-bold",
+            class: "text-text-editor-h2 mt-[1em] mb-[0.625em] font-bold !font-sans",
           },
           0,
         ];
@@ -165,7 +199,7 @@ const CustomHeading = Heading.extend({
           "h3",
           {
             ...HTMLAttributes,
-            class: "text-text-editor-h3 mt-[1em] mb-[0.625em] font-bold",
+            class: "text-text-editor-h3 mt-[1em] mb-[0.625em] font-bold !font-sans",
           },
           0,
         ];
@@ -174,7 +208,7 @@ const CustomHeading = Heading.extend({
           "h4",
           {
             ...HTMLAttributes,
-            class: "text-text-editor-h4 mt-[1em] mb-[0.625em] font-bold",
+            class: "text-text-editor-h4 mt-[1em] mb-[0.625em] font-bold !font-sans",
           },
           0,
         ];
@@ -208,7 +242,17 @@ const CustomBlockquote = Blockquote.extend({
     return [{ tag: "blockquote" }];
   },
   renderHTML() {
-    return ["blockquote", { class: "blockquote" }, ["p", 0]];
+    return ["blockquote", { class: "blockquote" }, 0];
+  },
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        appendTransaction: (transactions, oldState, newState) => {
+          // Prevent empty paragraph insertion before blockquotes
+          return null;
+        },
+      }),
+    ];
   },
 });
 
@@ -223,7 +267,18 @@ const PullQuote = Node.create({
   },
 
   renderHTML() {
-    return ["div", { class: "pullquote" }, ["p", 0]];
+    return ["div", { class: "pullquote" }, 0];
+  },
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        appendTransaction: (transactions, oldState, newState) => {
+          // Prevent empty paragraph insertion before pullquotes
+          return null;
+        },
+      }),
+    ];
   },
 });
 
@@ -306,3 +361,16 @@ export const SkeletonNode = Node.create({
     ];
   },
 });
+
+export const loadContent = (markdownContent: string, editor: Editor | null) => {
+  let formattedContent = formatText(markdownContent);
+  let contentWithSpecialFormats = formatSpecialFormats(formattedContent);
+
+  // Clean up empty paragraphs with trailing breaks before quotes
+  let cleanedHtml = contentWithSpecialFormats.replace(
+    /<br\s*class=["']ProseMirror-trailingBreak["']\s*\/?>/g,
+    "",
+  );
+
+  editor?.commands.setContent(cleanedHtml);
+};

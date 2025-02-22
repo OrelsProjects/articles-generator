@@ -16,6 +16,7 @@ import {
   unformatText,
   textEditorOptions,
   formatSpecialFormats,
+  loadContent,
 } from "@/lib/utils/text-editor";
 import { Logger } from "@/logger";
 import cuid from "cuid";
@@ -83,16 +84,23 @@ const TextEditor = ({
 
   const handleSave = useCallback(
     async (ideaId: string) => {
-      if (!selectedIdea) return;
-      if (saving) return;
+      if (!selectedIdea || saving || !editor) return;
+
       setSaving(true);
       setSavingError(false);
+
       try {
+        // Get the HTML content directly from the editor
+        const htmlContent = editor.getHTML();
+
+        // Convert to Markdown with our configured turndown service
+        const markdownContent = unformatText(htmlContent);
+
         const updatedIdea: Idea = {
           ...selectedIdea,
           title,
           subtitle,
-          body: unformatText(editor?.getHTML() || ""),
+          body: markdownContent,
         };
 
         await updateIdea(
@@ -105,7 +113,7 @@ const TextEditor = ({
         if (selectedIdea.id === ideaId) {
           setOriginalTitle(title);
           setOriginalSubtitle(subtitle);
-          setOriginalBody(editor?.getHTML() || "");
+          setOriginalBody(htmlContent); // Store the original HTML
         }
 
         setHasChanges(false);
@@ -113,7 +121,6 @@ const TextEditor = ({
         Logger.error("Failed to save:", error);
         setSavingError(true);
       } finally {
-        // Add a small delay before hiding the saving indicator
         setTimeout(() => {
           setSaving(false);
         }, 500);
@@ -158,10 +165,7 @@ const TextEditor = ({
       setOriginalSubtitle(selectedIdea.subtitle);
       updateSubtitle(selectedIdea.subtitle, false);
       setOriginalBody(selectedIdea.body);
-      const formattedBody = formatText(selectedIdea.body);
-      const formattedBodyWithSpecialFormats =
-        formatSpecialFormats(formattedBody);
-      editor?.commands.setContent(formattedBodyWithSpecialFormats);
+      loadContent(selectedIdea.body, editor);
     }
   }, [selectedIdea, editor]);
 

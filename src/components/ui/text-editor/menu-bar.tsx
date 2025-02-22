@@ -122,6 +122,12 @@ export const MenuBar = ({
   const handlePullQuote = () => {
     if (!editor) return;
     const selectedText = getSelectedContentAsMarkdown(editor);
+    // If the selected text is a header, remove the header. Use editor to check it
+    const isHeader = editor.isActive("heading");
+    if (isHeader) {
+      editor.chain().focus().setParagraph().run();
+    }
+
     // If the select text is already a pullquote, remove it
     if (selectedText.includes(":::pullquote")) {
       editor.chain().focus().lift("pullquote").run();
@@ -131,6 +137,21 @@ export const MenuBar = ({
         .focus()
         .insertContent(`<div class="pullquote"><p>${selectedText}</p></div>`)
         .run();
+    }
+  };
+
+  const handleBlockquote = () => {
+    if (!editor) return;
+    const selectedText = getSelectedContentAsMarkdown(editor);
+    // If the selected text is a header, remove the header. Use editor to check it
+    const isHeader = editor.isActive("heading");
+    if (isHeader) {
+      editor.chain().focus().setParagraph().run();
+    }
+    if (selectedText.includes(":::blockquote")) {
+      editor.chain().focus().lift("blockquote").run();
+    } else if (selectedText) {
+      editor?.chain().focus().toggleBlockquote().run();
     }
   };
 
@@ -282,7 +303,7 @@ export const MenuBar = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuItem
-                onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+                onClick={() => handleBlockquote()}
                 disabled={editor.isActive("pullquote")}
               >
                 <div className="flex items-center">
