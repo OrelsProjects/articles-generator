@@ -92,14 +92,21 @@ export const IdeasSideSheet = ({
             transition={{ type: "spring", stiffness: 500, damping: 20 }}
             className="fixed top-1/2 right-4 -translate-y-full z-50"
           >
-            <Button
-              variant="default"
-              size="icon"
-              className="h-12 w-12 rounded-full shadow-lg"
-              onClick={() => handleOpenIdeas(true)}
+            <motion.div
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0.4 }}
+              transition={{ delay: 1.5, duration: 0.3 }}
+              className="hover:!opacity-100 transition-opacity duration-200"
             >
-              <StickyNote className="h-6 w-6" />
-            </Button>
+              <Button
+                variant="default"
+                size="icon"
+                className="h-12 w-12 rounded-full shadow-lg"
+                onClick={() => handleOpenIdeas(true)}
+              >
+                <StickyNote className="h-6 w-6" />
+              </Button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

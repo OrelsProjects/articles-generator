@@ -1,6 +1,6 @@
 import type React from "react";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export interface DraftIndicatorProps {
   saving: boolean;
@@ -13,12 +13,25 @@ const DraftIndicator: React.FC<DraftIndicatorProps> = ({
   error,
   hasIdea,
 }) => {
-  const state = useMemo((): "no-idea" | "saving" | "error" | "saved" => {
+  const [showSaved, setShowSaved] = useState(false);
+
+  useEffect(() => {
+    if (!saving && !error && hasIdea) {
+      setShowSaved(true);
+      const timer = setTimeout(() => {
+        setShowSaved(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [saving, error, hasIdea]);
+
+  const state = useMemo((): "no-idea" | "saving" | "error" | "saved" | "draft" => {
     if (!hasIdea) return "no-idea";
     if (saving) return "saving";
     if (error) return "error";
-    return "saved";
-  }, [saving, error, hasIdea]);
+    if (showSaved) return "saved";
+    return "draft";
+  }, [saving, error, hasIdea, showSaved]);
 
   return (
     <div className="absolute top-4 left-8 flex items-center gap-2 text-sm text-muted-foreground">
@@ -39,10 +52,15 @@ const DraftIndicator: React.FC<DraftIndicatorProps> = ({
           <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
           <span className="text-blue-500">Saving draft...</span>
         </>
-      ) : (
+      ) : state === "saved" ? (
         <>
           <CheckCircle className="w-5 h-5 text-green-500" />
           <span className="text-green-500">Draft saved</span>
+        </>
+      ) : (
+        <>
+          <CheckCircle className="w-5 h-5 text-blue-500" />
+          <span className="text-blue-500">Draft</span>
         </>
       )}
     </div>
