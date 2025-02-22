@@ -3,6 +3,7 @@ import { ImprovementType } from "@/lib/prompts";
 import { getSelectedContentAsMarkdown } from "@/lib/utils/text-editor";
 import { Editor, BubbleMenu } from "@tiptap/react";
 import {
+  Check,
   FileText,
   MessageSquare,
   Smile,
@@ -20,6 +21,13 @@ const formatOptions: {
   subLabel?: string;
   type: ImprovementType;
 }[] = [
+  {
+    type: "fact-check",
+    label: "Fact-check",
+    subLabel: "Check the text for accuracy",
+    icon: Check,
+    divider: false,
+  },
   {
     type: "elaborate",
     label: "Elaborate",

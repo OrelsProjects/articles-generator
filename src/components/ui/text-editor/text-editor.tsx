@@ -202,7 +202,12 @@ const TextEditor = ({
 
     setLoadingImprovement(type);
 
-    const toastId = toast.loading(`Making it more ${type}`);
+    let toastId: number | string = "";
+    if (type === "fact-check") {
+      toastId = toast.loading(`Fact-checking...`);
+    } else {
+      toastId = toast.loading(`Making it more ${type}`);
+    }
 
     try {
       const { state } = editor;

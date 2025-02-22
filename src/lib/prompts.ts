@@ -498,6 +498,10 @@ const improvementPromptTemplates: {
     task: "make user's article more concise",
     prompt: `You are a succinct communicator, refine the user's article to express the message as concisely as possible without losing essential meaning. Eliminate unnecessary words or redundancy. The final article should be clear, to the point, and read naturally, without signs of abrupt truncation or AI editing.`,
   },
+  "fact-check": {
+    task: "fact-check the user's text",
+    prompt: `Check the user's text for accuracy and correctness using the web. If you find any incorrect information, correct it. If you don't find any incorrect information, fix the inaccuracies in the text.`,
+  },
 };
 
 const titleImprovementPromptTemplates: {
