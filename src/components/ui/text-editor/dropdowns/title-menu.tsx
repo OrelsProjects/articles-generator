@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { FormatDropdown, FormatOption } from "./format-dropdown";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type TitleImprovementType =
   | "catchy"
@@ -16,7 +16,17 @@ export type TitleImprovementType =
   | "clearer"
   | "engaging"
   | "context"
-  | "expand";
+  | "expand"
+  | "generate";
+
+const emptyTitleOptions: FormatOption[] = [
+  {
+    type: "generate",
+    label: "Generate title",
+    icon: Sparkles,
+  },
+];
+
 
 const titleOptions: FormatOption[] = [
   {
@@ -33,6 +43,14 @@ const titleOptions: FormatOption[] = [
     type: "clearer",
     label: "Make it clearer",
     icon: MessageSquare,
+  },
+];
+
+const emptySubtitleOptions: FormatOption[] = [
+  {
+    type: "generate",
+    label: "Generate subtitle",
+    icon: Sparkles,
   },
 ];
 
@@ -58,6 +76,7 @@ export type TitleMenuProps = {
   open: boolean;
   menuType: "title" | "subtitle";
   className?: string;
+  value?: string;
   onImprove?: (
     menuType: "title" | "subtitle",
     improveType: TitleImprovementType,
@@ -68,12 +87,20 @@ export const TitleMenu = ({
   open,
   menuType,
   className = "",
+  value,
   onImprove = async (menuType: string, improveType: string) => {},
 }: TitleMenuProps) => {
   const [isOpen, setIsOpen] = useState(open);
   const [isHovering, setIsHovering] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
-  const options = menuType === "title" ? titleOptions : subtitleOptions;
+
+  const options = useMemo(() => {
+    if (menuType === "title") {
+      return value ? titleOptions : emptyTitleOptions;
+    } else {
+      return value ? subtitleOptions : emptySubtitleOptions;
+    }
+  }, [menuType, value]);
 
   // If not hovered, controlled by open prop. Otherwise, controlled by isHovering
   const updateOpen = (open: boolean) => {

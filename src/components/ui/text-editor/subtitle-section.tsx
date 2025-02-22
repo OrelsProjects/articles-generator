@@ -43,6 +43,7 @@ const SubtitleSection: React.FC<SubtitleSectionProps> = ({
         open={showSubtitleMenu}
         menuType="subtitle"
         onImprove={onImproveSubtitle}
+        value={subtitle}
       />
     </div>
   );

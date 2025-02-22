@@ -524,6 +524,10 @@ const titleImprovementPromptTemplates: {
     task: "make the title clearer",
     prompt: `You are a clear communicator. Refine the user's title to ensure it clearly conveys the main message of the article, eliminating any ambiguity or confusion. Focus on precision and clarity.`,
   },
+  generate: {
+    task: "generate a title",
+    prompt: `You are an expert writer and marketing guru. Generate a title for the user's article that is engaging and relevant to the article's content.`,
+  },
 };
 
 const subtitleImprovementPromptTemplates: {
@@ -544,5 +548,9 @@ const subtitleImprovementPromptTemplates: {
   context: {
     task: "add context to the subtitle",
     prompt: `You are an insightful writer. Improve the user's subtitle by adding relevant context that clarifies the article's theme and supports the title effectively. Ensure the subtitle provides a clear, informative backdrop to the article.`,
+  },
+  generate: {
+    task: "generate a subtitle",
+    prompt: `You are an expert writer and marketing guru. Generate a subtitle for the user's article that is engaging and relevant to the article's content.`,
   },
 };

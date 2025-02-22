@@ -42,7 +42,7 @@ import FeaturesSection from "@/components/landing/features-section";
 import { ContrastSection } from "@/components/landing/contrast-section";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
-
+// ADD: Sterile place to write. no notifications, no distractions
 const EnhancmentDemo = () => {
   const [loadingTone, setLoadingTone] = useState<ImprovementType | null>(null);
   const [text, setText] = useState(initialTextForEnhancement);

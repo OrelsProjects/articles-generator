@@ -231,7 +231,7 @@ const TextEditor = ({
       if (response.text === originalBody) {
         let text = "No changes made";
         if (type === "fact-check") {
-          text = "Your text is accurate.";
+          text = "No changes made.";
         }
         toast.update(toastId, {
           render: text,
@@ -298,7 +298,14 @@ const TextEditor = ({
     if (loadingImprovement) return;
 
     setLoadingImprovement(improveType);
-    const toastId = toast.loading("Improving " + menuType);
+
+    let toastId: number | string = "";
+    if (improveType === "generate") {
+      toastId = toast.loading("Generating " + menuType);
+    } else {
+      toastId = toast.loading("Improving " + menuType);
+    }
+
     try {
       const response = await improveTitle(
         menuType,

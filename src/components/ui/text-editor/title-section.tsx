@@ -1,6 +1,9 @@
 import React from "react";
 import TextareaAutosize from "react-textarea-autosize";
-import { TitleImprovementType, TitleMenu } from "@/components/ui/text-editor/dropdowns/title-menu";
+import {
+  TitleImprovementType,
+  TitleMenu,
+} from "@/components/ui/text-editor/dropdowns/title-menu";
 
 export interface TitleSectionProps {
   title: string;
@@ -8,7 +11,10 @@ export interface TitleSectionProps {
   showTitleMenu: boolean;
   setShowTitleMenu: (open: boolean) => void;
   titleRef: React.Ref<HTMLTextAreaElement>;
-  onImproveTitle: (menuType: "title" | "subtitle", improveType: TitleImprovementType) => Promise<void>;
+  onImproveTitle: (
+    menuType: "title" | "subtitle",
+    improveType: TitleImprovementType,
+  ) => Promise<void>;
 }
 
 const TitleSection: React.FC<TitleSectionProps> = ({
@@ -33,9 +39,14 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         maxLength={200}
         className="w-full text-4xl font-bold outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
       />
-      <TitleMenu open={showTitleMenu} menuType="title" onImprove={onImproveTitle} />
+      <TitleMenu
+        open={showTitleMenu}
+        menuType="title"
+        onImprove={onImproveTitle}
+        value={title}
+      />
     </div>
   );
 };
 
-export default TitleSection; 
+export default TitleSection;
