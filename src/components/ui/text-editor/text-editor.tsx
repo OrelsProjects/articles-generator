@@ -228,6 +228,20 @@ const TextEditor = ({
         throw new Error("Improvement service failed.");
       }
 
+      if (response.text === originalBody) {
+        let text = "No changes made";
+        if (type === "fact-check") {
+          text = "Your text is accurate.";
+        }
+        toast.update(toastId, {
+          render: text,
+          type: "info",
+          isLoading: false,
+          autoClose: 3000,
+        });
+        return;
+      }
+
       // store the range so we know where to re-insert later
       setImprovementRange({ from: response.textFrom, to: response.textTo });
 

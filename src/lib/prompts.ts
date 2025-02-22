@@ -279,6 +279,7 @@ export const generateImprovementPrompt = (
         - Preserve all existing formatting, including Markdown elements like headings (#), lists (-, *), bold (**), italics (*), code blocks (\`\`\`), and inline code (\`...\`). This is extremely important. 
         ${type === "elaborate" ? `- If there is a bulleted list, elaborate on each item in the list add more details, more information, more context, etc underneath each item.` : ""}
         ${type === "elaborate" ? `- If there is a title, elaborate on it add more details, more information, more context, etc.` : ""}
+        ${type === "fact-check" ? `- If the text is mostly correct and there are only places to elaborate, return the original text.` : ""}
         - Ensure the response is no longer than ${maxLength} characters. Strictly adhere to this constraint.
         - Enhance readability where needed: You may improve formatting only if it helps clarity (e.g., adding line breaks, better structuring paragraphs, or reformatting lists).
         - Do not remove any structure unless necessary: Keep the original layout but refine or expand it when beneficial.
