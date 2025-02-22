@@ -21,6 +21,9 @@ import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
 import { cn } from "@/lib/utils";
 import { Lora } from "@/lib/utils/fonts";
+import Blockquote from "@tiptap/extension-blockquote";
+
+
 
 export function getSelectedContentAsMarkdown(editor: Editor): string {
   const selectedHTML = getSelectedContentAsHTML(editor);
@@ -67,6 +70,22 @@ export const formatText = (text: string): string => {
   return markedText;
 };
 
+export const formatSpecialFormats = (text: string): string => {
+  if (text === "") return "";
+  const regexPullquote = /:::pullquote\s*([\s\S]*?)\s*:::/g;
+  const regexBlockquote = /:::blockquote\s*([\s\S]*?)\s*:::/g;
+  // For debugging purposes, find all matches and console.log them
+  const matchesPullquote = text.match(regexPullquote);
+  const matchesBlockquote = text.match(regexBlockquote);
+  
+  console.log("Matches pullquote:", matchesPullquote);
+  console.log("Matches blockquote:", matchesBlockquote);
+  const textWithSpecialFormats = text
+    .replace(regexBlockquote, "<blockquote><p>$1</p></blockquote>")
+    .replace(regexPullquote, '<div class="pullquote"><p>$1</p></div>');
+  return textWithSpecialFormats;
+};
+
 const turndownService = new TurndownService({
   headingStyle: "atx", // Converts headings into `#`, `##`, etc.
   codeBlockStyle: "fenced", // Ensures code blocks use triple backticks
@@ -78,6 +97,23 @@ turndownService.addRule("headers", {
   replacement: function (content, node) {
     const level = parseInt(node.nodeName.replace("H", ""), 10);
     return `${"#".repeat(level)} ${content}\n`;
+  },
+});
+
+// Add custom rules for quotes
+turndownService.addRule("blockquote", {
+  filter: "blockquote",
+  replacement: function (content) {
+    return `:::blockquote${content}:::`;
+  },
+});
+
+turndownService.addRule("pullquote", {
+  filter: node => {
+    return node.nodeName === "DIV" && node.classList.contains("pullquote");
+  },
+  replacement: function (content) {
+    return `:::pullquote${content}:::`;
   },
 });
 
@@ -100,28 +136,6 @@ const CustomImage = Image.extend({
       contenteditable: { default: "false" },
       draggable: { default: "true" },
     };
-  },
-  // make it centered horizontally
-  parseHTML() {
-    return [
-      {
-        tag: "img",
-        getAttrs: dom => ({
-          src: dom.getAttribute("src"),
-          alt: dom.getAttribute("alt") || "",
-          class: dom.getAttribute("class") || "rounded-md max-w-full h-auto",
-          contenteditable: dom.getAttribute("contenteditable") || "false",
-          draggable: dom.getAttribute("draggable") || "true",
-        }),
-      },
-    ];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return [
-      "div",
-      { style: "display: flex; justify-content: center;" }, // Centering the image
-      ["img", HTMLAttributes],
-    ];
   },
 });
 
@@ -188,6 +202,31 @@ const CustomHeading = Heading.extend({
   },
 });
 
+// Add custom blockquote with styling
+const CustomBlockquote = Blockquote.extend({
+  parseHTML() {
+    return [{ tag: "blockquote" }];
+  },
+  renderHTML() {
+    return ["blockquote", { class: "blockquote" }, ["p", 0]];
+  },
+});
+
+// Add new PullQuote node
+const PullQuote = Node.create({
+  name: "pullquote",
+  group: "block",
+  content: "inline*",
+
+  parseHTML() {
+    return [{ tag: "div.pullquote" }];
+  },
+
+  renderHTML() {
+    return ["div", { class: "pullquote" }, ["p", 0]];
+  },
+});
+
 export const textEditorOptions = (
   onUpdate?: (html: string) => void,
   disabled?: boolean,
@@ -230,6 +269,8 @@ export const textEditorOptions = (
       placeholder: "Start writing...",
     }),
     SkeletonNode,
+    CustomBlockquote,
+    PullQuote,
   ],
   content: "",
   editorProps: {

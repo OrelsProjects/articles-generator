@@ -16,6 +16,8 @@ import {
   // Add the Copy icon here
   Copy,
   Check,
+  Quote,
+  ImagePlus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -40,6 +42,17 @@ import { toast } from "react-toastify";
 import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Logger } from "@/logger";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { getSelectedContentAsMarkdown } from "@/lib/utils/text-editor";
 
 const MotionCheck = motion(Check);
 const MotionCopy = motion(Copy);
@@ -63,6 +76,8 @@ export const MenuBar = ({
   const [didCopy, setDidCopy] = useState(false);
 
   const [loadingNewIdea, setLoadingNewIdea] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [showImageDialog, setShowImageDialog] = useState(false);
 
   useEffect(() => {
     if (didCopy) {
@@ -93,6 +108,41 @@ export const MenuBar = ({
     } catch (error: any) {
       toast.error("Failed to copy content");
       Logger.error("Failed to copy content:", error);
+    }
+  };
+
+  const handleImageInsert = () => {
+    if (imageUrl && editor) {
+      editor.chain().focus().setImage({ src: imageUrl }).run();
+      setImageUrl("");
+      setShowImageDialog(false);
+    }
+  };
+
+  const handlePullQuote = () => {
+    if (!editor) return;
+    const selectedText = getSelectedContentAsMarkdown(editor);
+    // If the select text is already a pullquote, remove it
+    if (selectedText.includes(":::pullquote")) {
+      editor.chain().focus().lift("pullquote").run();
+    } else if (selectedText) {
+      editor
+        .chain()
+        .focus()
+        .insertContent(`<div class="pullquote"><p>${selectedText}</p></div>`)
+        .run();
+    }
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const imageUrl = e.target?.result as string;
+        editor?.chain().focus().setImage({ src: imageUrl }).run();
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -221,10 +271,73 @@ export const MenuBar = ({
           </Button>
         </div>
 
-        {/* Add another separator for the copy button */}
         <Separator orientation="vertical" className="h-6" />
 
-        {/* The new copy button */}
+        <div className="flex items-center gap-1 md:gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Quote className="w-4 h-4 md:w-5 md:h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem
+                onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+                disabled={editor.isActive("pullquote")}
+              >
+                <div className="flex items-center">
+                  {editor.isActive("blockquote") ? (
+                    <Check className="mr-2 h-4 w-4" />
+                  ) : (
+                    <div className="w-4 mr-2" />
+                  )}
+                  Block quote
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (editor.isActive("pullquote")) {
+                    // Remove pullquote
+                    editor.chain().focus().lift("pullquote").run();
+                  } else {
+                    handlePullQuote();
+                  }
+                }}
+                disabled={editor.isActive("blockquote")}
+              >
+                <div className="flex items-center">
+                  {editor.isActive("pullquote") ? (
+                    <Check className="mr-2 h-4 w-4" />
+                  ) : (
+                    <div className="w-4 mr-2" />
+                  )}
+                  Pull quote
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div className="relative">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              id="image-upload"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => document.getElementById("image-upload")?.click()}
+            >
+              <ImagePlus className="w-4 h-4 md:w-5 md:h-5" />
+            </Button>
+          </div>
+        </div>
+
+        <Separator orientation="vertical" className="h-6" />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

@@ -15,6 +15,7 @@ import {
   getSelectedContentAsMarkdown,
   unformatText,
   textEditorOptions,
+  formatSpecialFormats,
 } from "@/lib/utils/text-editor";
 import { Logger } from "@/logger";
 import cuid from "cuid";
@@ -93,7 +94,6 @@ const TextEditor = ({
           subtitle,
           body: unformatText(editor?.getHTML() || ""),
         };
-        console.log("Updated idea", updatedIdea);
 
         await updateIdea(
           ideaId,
@@ -152,7 +152,6 @@ const TextEditor = ({
   }, [debouncedSave]);
 
   useEffect(() => {
-    console.log("I was called here");
     if (selectedIdea) {
       setOriginalTitle(selectedIdea.title);
       updateTitle(selectedIdea.title, false);
@@ -160,7 +159,9 @@ const TextEditor = ({
       updateSubtitle(selectedIdea.subtitle, false);
       setOriginalBody(selectedIdea.body);
       const formattedBody = formatText(selectedIdea.body);
-      editor?.commands.setContent(formattedBody);
+      const formattedBodyWithSpecialFormats =
+        formatSpecialFormats(formattedBody);
+      editor?.commands.setContent(formattedBodyWithSpecialFormats);
     }
   }, [selectedIdea, editor]);
 
@@ -468,7 +469,10 @@ const TextEditor = ({
       initial={{ width: state === "full" ? "100%" : "100%" }}
       animate={{ width: state === "full" ? "100%" : "100%" }}
       transition={{ duration: 0.2 }}
-      className={cn("w-full h-full bg-background relative", className)}
+      className={cn(
+        "w-full h-full bg-background relative prose prose-quoteless",
+        className,
+      )}
     >
       <BubbleMenuComponent
         editor={editor}

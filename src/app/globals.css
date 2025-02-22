@@ -415,3 +415,30 @@
 [data-active="true"] {
   @apply bg-primary/10 text-primary;
 }
+
+.tiptap blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+}
+
+.tiptap .pullquote {
+  margin: 2rem 0;
+  padding: 1.5rem 2rem;
+  position: relative;
+  text-align: center;
+  font-style: italic;
+  font-size: 1.25rem;
+  border-top: 2px solid hsl(var(--muted));
+  border-bottom: 2px solid hsl(var(--muted));
+  font-family: var(--font-lora);
+}
+
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+  margin: 1rem auto;
+  display: block;
+}
