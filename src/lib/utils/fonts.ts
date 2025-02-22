@@ -2,7 +2,13 @@ import {
   Poppins as PoppinsFont,
   Gabarito as GabaritoFont,
   Montserrat,
+  Lora as LoraFont,
 } from "next/font/google";
+
+export const Lora = LoraFont({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+});
 
 export const Poppins = PoppinsFont({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],

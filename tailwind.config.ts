@@ -23,12 +23,30 @@ const config: Config = {
         display: ["SF Pro Display", "system-ui", "sans-serif"],
       },
       fontSize: {
-        "text-editor-h1": ["2.25rem", { lineHeight: "2.5rem" }],
-        "text-editor-h2": ["1.875rem", { lineHeight: "2.25rem" }],
-        "text-editor-h3": ["1.5rem", { lineHeight: "2rem" }],
-        "text-editor-h4": ["1.25rem", { lineHeight: "1.75rem" }],
-        "text-editor-h5": ["1rem", { lineHeight: "1.5rem" }],
-        "text-editor-h6": ["0.875rem", { lineHeight: "1.25rem" }],
+        "text-editor-h1": [
+          "2.25em",
+          { lineHeight: "1.16em", letterSpacing: "0.01em" },
+        ],
+        "text-editor-h2": [
+          "1.625em",
+          { lineHeight: "1.16em", letterSpacing: "0.01em" },
+        ],
+        "text-editor-h3": [
+          "1.5em",
+          { lineHeight: "1.16em", letterSpacing: "0.01em" },
+        ],
+        "text-editor-h4": [
+          "1.25em",
+          { lineHeight: "1.75em", letterSpacing: "0.01em" },
+        ],
+        "text-editor-h5": [
+          "1em",
+          { lineHeight: "1.16em", letterSpacing: "0.01em" },
+        ],
+        "text-editor-h6": [
+          "0.875em",
+          { lineHeight: "1.16em", letterSpacing: "0.01em" },
+        ],
       },
       colors: {
         border: "hsl(var(--border))",

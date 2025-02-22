@@ -19,6 +19,8 @@ import Document from "@tiptap/extension-document";
 import ListItem from "@tiptap/extension-list-item";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
+import { cn } from "@/lib/utils";
+import { Lora } from "@/lib/utils/fonts";
 
 export function getSelectedContentAsMarkdown(editor: Editor): string {
   const selectedHTML = getSelectedContentAsHTML(editor);
@@ -198,12 +200,12 @@ export const textEditorOptions = (
   extensions: [
     StarterKit.configure({
       paragraph: {
-        HTMLAttributes: { class: "mb-5" },
+        HTMLAttributes: { class: cn("mb-5 leading-8", Lora.className) },
       },
     }),
     Document,
     Paragraph.configure({
-      HTMLAttributes: { class: "mb-5" },
+      HTMLAttributes: { class: cn("mb-5 leading-8", Lora.className) },
     }),
     Text,
     BulletList,
