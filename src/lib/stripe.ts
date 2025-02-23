@@ -164,10 +164,17 @@ export const generateSessionId = async (options: {
   email: string | null;
   name: string | null;
   urlOrigin: string;
+  freeTrial?: number;
 }): Promise<string> => {
   const stripe = getStripeInstance();
 
   const { priceId, productId, urlOrigin, userId, email, name } = options;
+
+  const subscriptionData = options.freeTrial
+    ? {
+        trial_period_days: options.freeTrial,
+      }
+    : undefined;
 
   const stripeSession = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -177,6 +184,7 @@ export const generateSessionId = async (options: {
         quantity: 1,
       },
     ],
+    subscription_data: subscriptionData,
     mode: "subscription",
     success_url: `${urlOrigin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${urlOrigin}/cancel`,

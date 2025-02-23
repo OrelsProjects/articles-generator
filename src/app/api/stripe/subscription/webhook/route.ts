@@ -3,11 +3,14 @@ import { headers } from "next/headers";
 import { getStripeInstance } from "@/lib/stripe";
 import prisma from "@/app/api/_db/db";
 import loggerServer from "@/loggerServer";
+import { sendMail } from "@/lib/mail/mail";
+import { generateSubscriptionTrialEndingEmail } from "@/lib/mail/templates";
 
 const relevantEvents = new Set([
   "customer.subscription.updated",
   "customer.subscription.deleted",
   "customer.subscription.created",
+  "customer.subscription.trial_will_end",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -107,6 +110,8 @@ export async function POST(req: NextRequest) {
         const customer = await stripe.customers.retrieve(customerId);
         const userEmail = (customer as any).email;
 
+        const isTrialing = subscription.status === 'trialing';
+        
         await prisma.subscription.create({
           data: {
             stripeSubId: subscription.id,
@@ -117,6 +122,9 @@ export async function POST(req: NextRequest) {
             ),
             currentPeriodEnd: new Date(subscription.current_period_end * 1000),
             cancelAtPeriodEnd: false,
+            isTrialing: isTrialing,
+            trialStart: isTrialing ? new Date(subscription.trial_start * 1000) : null,
+            trialEnd: isTrialing ? new Date(subscription.trial_end * 1000) : null,
             user: {
               connect: {
                 email: userEmail,
@@ -125,6 +133,23 @@ export async function POST(req: NextRequest) {
           },
         });
       }
+    }
+
+    if (event.type === "customer.subscription.trial_will_end") {
+      const subscription = event.data.object as any;
+      const customer = await stripe.customers.retrieve(subscription.customer);
+      const userEmail = (customer as any).email;
+
+      // Send email notification about trial ending
+      await sendMail(
+        userEmail,
+        process.env.NEXT_PUBLIC_APP_NAME as string,
+        "Your Trial is Ending Soon",
+        generateSubscriptionTrialEndingEmail(
+          subscription.id,
+          new Date(subscription.trial_end * 1000)
+        )
+      );
     }
 
     return NextResponse.json({ received: true }, { status: 200 });

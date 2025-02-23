@@ -184,7 +184,8 @@ export function generateSubscriptionTrialEndingEmail(
     <h2>Your WriteRoom Trial is Ending Soon</h2>
     <p>Your trial for subscription <strong>${subscriptionId}</strong> will end on 
     <strong>${trialEndDate.toLocaleDateString()}</strong>.</p>
-    <p>If you'd like to keep receiving AI-powered outlines, real-time writing enhancements, and fresh ideas from WriteRoom, please ensure your payment method is up to date.</p>
+    <p>If you find value in WriteRoom, you can safely ignore this email and keep up the amazing writing :).</p>
+    <p>Otherwise, you can cancel your subscription at any time.</p>
     <a href="https://dashboard.stripe.com/subscriptions/${subscriptionId}" class="button">Manage Subscription</a>
   `;
   return baseEmailTemplate(content);

@@ -320,6 +320,10 @@ model Subscription {
   status             String // "active", "canceled", etc.
   startDate          DateTime  @default(now())
   endDate            DateTime?
+  isTrialing         Boolean   @default(false)
+  trialStart         DateTime?
+  trialEnd           DateTime?
+
   currentPeriodStart DateTime  @default(now())
   currentPeriodEnd   DateTime
   cancelAtPeriodEnd  Boolean   @default(false)

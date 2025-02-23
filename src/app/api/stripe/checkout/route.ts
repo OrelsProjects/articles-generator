@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       email: session.user.email || null,
       name: session.user.name || null,
+      freeTrial: 7,
     });
     return NextResponse.json({ sessionId }, { status: 200 });
   } catch (error: any) {

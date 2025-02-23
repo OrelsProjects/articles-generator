@@ -43,6 +43,7 @@ import { ContrastSection } from "@/components/landing/contrast-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import Header from "@/components/landing/header";
 import OtherSolutions from "@/components/landing/other-solutions";
+import Pricing from "@/components/landing/pricing-section";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
 // ADD: Sterile place to write. no notifications, no distractions
@@ -205,157 +206,7 @@ function App() {
       </motion.section> */}
 
       {/* Pricing Section */}
-      <motion.section
-        id="pricing"
-        className="py-20 bg-muted"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 1.2, ease: "easeOut" }}
-        viewport={{ once: true }}
-      >
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl mb-4">
-            Write smarter with {appName}+
-          </h2>
-          <p className="text-center text-muted-foreground/80 text-2xl font-normal mb-12">
-            (You can try it for free)
-          </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Free Plan */}
-            <Card className="hover:shadow-lg transition-shadow duration-300 relative flex flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Free Plan</span>
-                  <span className="text-2xl font-bold">$0</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="h-full flex flex-col justify-between">
-                <ul className="space-y-4">
-                  <li className="flex items-center">
-                    <Check className="text-green-500 mr-2" size={16} />
-                    <span>{textEditorTypePerPlan.free} text editor access</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="text-green-500 mr-2" size={16} />
-                    <span>
-                      {maxIdeasPerPlan.free} AI-powered idea generations/day
-                    </span>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="text-green-500 mr-2" size={16} />
-                    <span>
-                      {maxTitleAndSubtitleRefinementsPerPlan.free} title &
-                      subtitle refinements/day
-                    </span>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="text-green-500 mr-2" size={16} />
-                    <span>
-                      {maxTextEnhancmentsPerPlan.free} text enhancements/day
-                    </span>
-                  </li>
-                </ul>
-                <Button className="w-full mt-6" variant="outline" asChild>
-                  <Link href="/login">Start Free</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Pro Monthly */}
-            {products.map(product => (
-              <>
-                <Card className="hover:shadow-lg transition-shadow duration-300 relative flex flex-col">
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>{product.name}</span>
-                      <span className="text-2xl font-bold">
-                        ${product.priceStructure.monthly.priceFormatted}
-                      </span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-full flex flex-col justify-between">
-                    <ul className="space-y-4 mb-6">
-                      {product.features.map(feature => (
-                        <li
-                          className="flex items-center"
-                          key={`${feature}-monthly`}
-                        >
-                          <Check className="text-green-500 mr-2" size={16} />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        handleGetStarted(
-                          product.id,
-                          product.priceStructure.monthly.id,
-                        )
-                      }
-                    >
-                      Get Pro Monthly
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Pro Yearly */}
-                <BackgroundGradient className="rounded-xl p-0">
-                  <Card className="relative flex flex-col shadow-none border-none">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span>{product.name} Yearly</span>
-                        <div className="text-right relative">
-                          <span className="text-2xl font-bold">
-                            ${product.priceStructure.yearly.priceFormatted}
-                          </span>
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-full flex flex-col justify-between">
-                      <ul className="space-y-4 mb-6">
-                        {product.features.map(feature => (
-                          <li
-                            className="flex items-center"
-                            key={`${feature}-yearly`}
-                          >
-                            <Check className="text-green-500 mr-2" size={16} />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                        <li className="flex items-center text-primary">
-                          <Plus className="text-primary mr-2" size={16} />
-                          <span>Extra 15 AI-powered ideas/day</span>
-                        </li>
-                        <li className="flex items-center text-primary">
-                          <Plus className="text-primary mr-2" size={16} />
-                          <span>Same price-forever</span>
-                        </li>
-                        <li className="flex items-center text-primary font-semibold">
-                          <Plus className="text-primary mr-2" size={16} />
-                          <span>Save 36%</span>
-                        </li>
-                      </ul>
-                      <Button
-                        className="w-full mt-6"
-                        variant="default"
-                        onClick={() =>
-                          handleGetStarted(
-                            product.id,
-                            product.priceStructure.yearly.id,
-                          )
-                        }
-                      >
-                        Get Pro Yearly
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </BackgroundGradient>
-              </>
-            ))}
-          </div>
-        </div>
-      </motion.section>
+      <Pricing className="bg-muted" />
 
       {/* FAQ Section */}
       <motion.section
@@ -421,6 +272,17 @@ function App() {
               <Link href="#pricing">Upgrade to Pro</Link>
             </Button>
           </div>
+        </div>
+        <div className="text-center text-foreground text-sm mt-6">
+          <p>
+            Need help?{" "}
+            <a
+              href="mailto:orelsmail@gmail.com"
+              className="underline text-primary"
+            >
+              contact me
+            </a>
+          </p>
         </div>
       </section>
     </div>

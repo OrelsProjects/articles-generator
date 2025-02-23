@@ -97,8 +97,8 @@ function FeatureCard({
         });
       },
       {
-        threshold: isMobile ? 0.2 : 0.4,
-        rootMargin: isMobile ? "-20%" : "0px 0px -40% 0px",
+        threshold: isMobile ? 0.3 : 0.4,
+        rootMargin: isMobile ? "-30%" : "0px 0px -40% 0px",
       },
     );
 
