@@ -27,27 +27,6 @@ export default function Header() {
           </ul>
         </nav>
 
-        {/* Mobile navigation button */}
-        <Button
-          aria-label="Toggle menu"
-          variant="outline"
-          className="inline-flex items-center justify-center rounded-md p-2.5 text-muted-foreground md:hidden"
-        >
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </Button>
-
         <Button
           size="lg"
           variant="default"

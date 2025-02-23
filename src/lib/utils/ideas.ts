@@ -265,7 +265,6 @@ export async function useAIItem(
           `You have reached the maximum number of ideas per day (${maxIdeas})`,
         );
       }
-      await setUserGeneratingIdeas(userId, true);
       break;
   }
 

@@ -1,84 +1,126 @@
-import React, { useEffect, useRef } from "react";
-import { Brain, Pen, Fingerprint, Database, Layout } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Brain, Pen, Folders } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import useMediaQuery from "@/lib/hooks/useMediaQuery";
 
+const SubstackLogo = ({ className }: { className?: string }) => (
+  <div className={cn("bg-primary rounded-lg p-1", className)}>
+    <Image
+      src="/landing/substack-logo-white.png"
+      alt="Substack Logo"
+      fill
+      className={cn("!relative object-contain")}
+    />
+  </div>
+);
 const features = [
   {
     title: "Idea generation & outlines",
     description:
-      "Never stare at a blank page again. Get unique ideas, customized titles and outlines suggestions drawn from millions of the <strong>best</strong> articles.",
+      "Never stare at a blank page again. Get unique ideas, customized titles and outlines suggestions <strong>based on millions of the best articles in your niche</strong>.",
     icon: Brain,
-    imageUrl: "/landing/generated-ideas.png",
+    // imageUrl: "/landing/generated-ideas.png",
+    videoUrl:
+      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/generate-ideas.mp4",
+    objectFit: "fit",
   },
   {
     title: "Real-Time AI assistance",
     description:
-      "Refine your tone, improve readability, and spot overlooked details without losing your signature style.",
+      "Refine your tone, improve readability, and get more details without losing your writing style. <strong>Outline only.</strong>",
     icon: Pen,
-    imageUrl: "/landing/ai-assistance.png",
+    videoUrl:
+      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/ai-assistance.mp4",
+    objectFit: "fit",
   },
   {
-    title: "Research at your fingertips",
-    description:
-      "Pull in relevant data and insights from top articles to keep your content informed and up-to-date.",
-    icon: Database,
-    imageUrl: "/landing/top-writers.png",
+    title: "Same beloved text features",
+    description: `<strong>Pullquote?</strong> Check.
+      <br/><strong>Blockquote?</strong> Check.
+      <br/><strong>Easy copy to and from Substack?</strong> Check.
+      <br/><strong>Create a new Substack draft fast?</strong> Check.
+      <br/><br/> Something's missing? Send me a <a class="text-primary underline" href='mailto:orelsmail@gmail.com'>message</a> to my private email.
+      <br/>I'll take care of it.`,
+    icon: SubstackLogo,
+    videoUrl:
+      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/substack-adjusted-full.mp4",
+    objectFit: "cover",
   },
-  // {
-  //   title: "Voice Preservation",
-  //   description:
-  //     "You're the writer—WriteRoom only assists. Our agents learn your style and tone, so you can maintain authenticity.",
-  //   icon: Fingerprint,
-  //   imageUrl:
-  //     "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=500&h=300",
-  // },
-  // {
-  //   title: "Streamlined Workflow",
-  //   description:
-  //     "Use our clutter-free interface designed to keep you focused on writing—no distractions, no complex menus.",
-  //   icon: Layout,
-  //   imageUrl:
-  //     "https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?auto=format&fit=crop&q=80&w=500&h=300",
-  // },
+  {
+    title: "No more mess in drafts",
+    description: `Easily organize your drafts into folders, instead of having them all in one place.
+      <br/>Oh, and deleting a draft doesn't take ages. ;)
+      `,
+    icon: Folders,
+    videoUrl:
+      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/organized-folders.mp4",
+    objectFit: "fit",
+  },
 ];
 
 function FeatureCard({
   feature,
   isReversed = false,
+  isMobile = false,
 }: {
   feature: any;
   isReversed: boolean;
+  isMobile: boolean;
 }) {
-  const cardRef = useRef(null);
-  const { title, description, icon: Icon, imageUrl } = feature;
+  const cardRef = useRef<HTMLDivElement>(null);
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const {
+    title,
+    description,
+    icon: Icon,
+    imageUrl,
+    videoUrl,
+    objectFit = "cover",
+  } = feature;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("show");
+            setIsVisible(true);
+            setTimeout(() => {
+              videoRef.current?.play();
+            }, 200);
+
             observer.unobserve(entry.target);
           }
         });
       },
       {
-        threshold: 0.5,
-        rootMargin: "0px",
+        threshold: isMobile ? 0.2 : 0.4,
+        rootMargin: isMobile ? "-20%" : "0px 0px -40% 0px",
       },
     );
 
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
+    if (mediaRef.current) {
+      observer.observe(mediaRef.current);
     }
 
     return () => {
-      if (cardRef.current) {
-        observer.unobserve(cardRef.current);
+      if (mediaRef.current) {
+        observer.unobserve(mediaRef.current);
       }
     };
-  }, []);
+  }, [isMobile]);
+
+  // set video speed to 1.5
+  useEffect(() => {
+    if (videoUrl) {
+      if (videoRef.current) {
+        videoRef.current.playbackRate = 1.5;
+      }
+    }
+  }, [videoUrl]);
 
   return (
     <div
@@ -90,7 +132,7 @@ function FeatureCard({
     >
       <div className="flex-1 space-y-4">
         <div className="flex items-center gap-3">
-          <Icon className="w-6 h-6 text-primary" />
+          <Icon className="!w-6 !h-6 text-primary" />
           <h3 className="text-2xl font-semibold text-primary">{title}</h3>
         </div>
         <p
@@ -100,23 +142,55 @@ function FeatureCard({
           }}
         />
       </div>
-      <motion.div
-        initial={{ opacity: 0, y: 100 }}
-        whileInView={{ opacity: 1, y: 40 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
-      >
-        <img
-          src={imageUrl}
-          alt={title}
-          className="rounded-lg w-[430px] h-[300px] object-cover"
-        />
-      </motion.div>
+      <div ref={mediaRef}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: 100 }}
+          animate={{
+            opacity: isVisible ? 1 : 0,
+            scale: isVisible ? 1 : 0.8,
+            y: isVisible ? 0 : 100,
+          }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="bg-white rounded-lg w-[330px] h-[200px] md:w-[430px] md:h-[300px] flex justify-center items-center"
+        >
+          {videoUrl ? (
+            <video
+              ref={videoRef}
+              id={`${title}-video`}
+              src={videoUrl}
+              muted
+              loop
+              playsInline
+              className={cn(
+                "rounded-lg w-[330px] h-[200px] md:w-[430px] md:h-[300px] object-fit",
+                {
+                  "!object-cover": objectFit === "cover",
+                },
+              )}
+              style={{ opacity: isVisible ? 1 : 0 }}
+            />
+          ) : imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={title}
+              className={cn(
+                "rounded-lg w-[330px] h-[200px] md:w-[430px] md:h-[300px] object-fit",
+                {
+                  "!object-cover": objectFit === "cover",
+                },
+              )}
+              style={{ opacity: isVisible ? 1 : 0 }}
+            />
+          ) : null}
+        </motion.div>
+      </div>
     </div>
   );
 }
 
 function FeaturesSection() {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   return (
     <section className="min-h-screen bg-background relative">
       <div className="container max-w-6xl mx-auto px-4 py-16 sm:px-6 lg:px-8 relative">
@@ -138,6 +212,7 @@ function FeaturesSection() {
               key={feature.title}
               feature={feature}
               isReversed={index % 2 !== 0}
+              isMobile={isMobile}
             />
           ))}
         </div>

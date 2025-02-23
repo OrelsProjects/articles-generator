@@ -13,7 +13,12 @@ import { parseJson } from "@/lib/utils/json";
 import loggerServer from "@/loggerServer";
 import { cleanArticleBody } from "@/lib/utils/article";
 import { runWithRetry } from "@/lib/utils/requests";
-import { useAIItem, generateIdeas, handleUsageError } from "@/lib/utils/ideas";
+import {
+  useAIItem,
+  generateIdeas,
+  handleUsageError,
+  setUserGeneratingIdeas,
+} from "@/lib/utils/ideas";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -34,7 +39,6 @@ export async function GET(req: NextRequest) {
 
   try {
     console.time("Pre-query");
-    usageId = await useAIItem(session.user.id, "ideaGeneration");
 
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
@@ -64,6 +68,8 @@ export async function GET(req: NextRequest) {
     }
 
     console.timeEnd("Pre-query");
+
+    await setUserGeneratingIdeas(session.user.id, true);
 
     console.time("Getting user articles with order by reaction count");
     const userArticles = await getUserArticlesWithBody(
@@ -165,6 +171,13 @@ export async function GET(req: NextRequest) {
     }
 
     console.timeEnd("Start generating ideas");
+
+    try {
+      usageId = await useAIItem(session.user.id, "ideaGeneration");
+    } catch (error: any) {
+      loggerServer.error("Error generating ideas:", error);
+    }
+
     return NextResponse.json(ideasWithOutlines);
   } catch (error: any) {
     loggerServer.error("Error generating ideas:", error);
