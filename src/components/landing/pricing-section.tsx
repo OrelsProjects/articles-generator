@@ -103,7 +103,7 @@ export default function Pricing({ className }: { className?: string }) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.8 }}
           >
-            Startwriting with a 7-day free trial. Cancel anytime.
+            Start writing with a 7-day free trial. Cancel anytime.
           </motion.p>
         </div>
 
