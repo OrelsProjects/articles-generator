@@ -18,6 +18,7 @@ import { Header } from "@/app/(content)/editor/header";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { IdeasSideSheet } from "@/components/ui/text-editor/ideas-panel-side-sheet";
 import { AnalyzePublicationDialog } from "@/components/ui/text-editor/analyze-publication-dialog";
+import GenerateIdeasDialog from "@/components/ui/generate-ideas-dialog";
 
 const MobilesIdeasPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,6 +59,7 @@ export default function IdeasPage() {
 
   return (
     <div className="w-screen h-screen flex flex-col items-center overflow-clip">
+      <GenerateIdeasDialog />
       <AnalyzePublicationDialog />
       <Header />
       <div className="h-full w-full flex flex-row md:grid md:grid-cols-8 2xl:grid-cols-7 relative">

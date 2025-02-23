@@ -40,6 +40,9 @@ import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { cn } from "@/lib/utils";
 import FeaturesSection from "@/components/landing/features-section";
 import { ContrastSection } from "@/components/landing/contrast-section";
+import { HeroSection } from "@/components/landing/hero-section";
+import Header from "@/components/landing/header";
+import OtherSolutions from "@/components/landing/other-solutions";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
 // ADD: Sterile place to write. no notifications, no distractions
@@ -103,14 +106,6 @@ const gentleFadeIn: Variants = {
 const gentleFadeInTransition = {
   transition: { duration: 1.2, ease: "easeOut" },
 };
-
-const fadeInUp: Variants = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-};
-
-const fadeInUpTransition = { transition: { duration: 0.8, ease: "easeOut" } };
-
 function App() {
   const router = useCustomRouter();
   const [products, setProducts] = useState<Product[]>([]);
@@ -140,97 +135,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="section-padding min-h-screen flex flex-col justify-center items-center text-center relative">
-        <div className="absolute inset-0 bg-gradient-to-bl from-primary/5 to-transparent" />
-        <div className="container relative space-y-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 3 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 text-primary border border-primary/20 rounded-full"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              AI-Powered article editor
-            </span>
-          </motion.div>
-          <h1 className="h1 max-w-3xl mx-auto text-6xl">
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.75, delay: 0, ease: "easeOut" }}
-              className="relative"
-            >
-              Write better.
-            </motion.span>
-            <motion.span
-              {...fadeInUp}
-              transition={{
-                ...fadeInUpTransition,
-                duration: 1,
-                delay: 1,
-                ease: "easeOut",
-              }}
-              className="relative"
-            >
-              {/* Underline */}
-              <motion.span
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{
-                  duration: 0.5,
-                  delay: 1.1,
-                  ease: "easeOut",
-                }}
-                className="absolute inset-x-0 bottom-2 h-3 bg-primary/10 -rotate-2"
-              />
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.75, ease: "easeOut" }}
-                className="relative"
-              >
-                Stay human.
-              </motion.span>
-            </motion.span>
-            <motion.span
-              {...fadeInUp}
-              transition={{ duration: 0.5, delay: 2.1, ease: "easeOut" }}
-              className="text-primary"
-            >
-              <br />
-              Let AI assist.
-            </motion.span>
-          </h1>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 3.2 }}
-            className="flex flex-col gap-4"
-          >
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              The AI-powered text editor that helps you generate ideas,
-              structure content, and refine your writing—without replacing your
-              voice.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" asChild>
-                <Link href="#pricing">
-                  Try {appName} for Free
-                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg">
-                See How It Works
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <Header />
+      <HeroSection />
+      <OtherSolutions />
 
       {/* Pain Points Section */}
-      <section className="py-20 bg-muted">
+      {/* <section className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             Why writing consistently feels hard
@@ -247,7 +157,6 @@ function App() {
               >
                 <div className="mb-4">{point.icon}</div>
                 <h3 className="text-xl font-semibold mb-2">{point.problem}</h3>
-                {/* Focusing on describing the problem alone */}
                 <p className="text-muted-foreground">{point.problemDetails}</p>
               </Card>
             ))}
@@ -255,7 +164,7 @@ function App() {
         </div>
       </section>
 
-      <ContrastSection />
+      <ContrastSection /> */}
 
       {/* Features Section */}
       <FeaturesSection />
@@ -305,7 +214,7 @@ function App() {
         viewport={{ once: true }}
       >
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-4">
+          <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl mb-4">
             Write smarter with {appName}+
           </h2>
           <p className="text-center text-muted-foreground/80 text-2xl font-normal mb-12">

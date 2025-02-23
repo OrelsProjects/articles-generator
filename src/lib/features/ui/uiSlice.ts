@@ -5,12 +5,14 @@ export interface UiState {
   state: "full" | "writing-mode";
   showIdeasPanel: boolean;
   showAnalyzePublicationDialog: boolean;
+  showGenerateIdeasDialog: boolean;
 }
 
 export const initialState: UiState = {
   state: "writing-mode",
   showIdeasPanel: false,
   showAnalyzePublicationDialog: false,
+  showGenerateIdeasDialog: false,
 };
 
 const uiSlice = createSlice({
@@ -26,11 +28,18 @@ const uiSlice = createSlice({
     setShowAnalyzePublicationDialog: (state, action) => {
       state.showAnalyzePublicationDialog = action.payload;
     },
+    setShowGenerateIdeasDialog: (state, action) => {
+      state.showGenerateIdeasDialog = action.payload;
+    },
   },
 });
 
-export const { setUiState, setShowIdeasPanel, setShowAnalyzePublicationDialog } =
-  uiSlice.actions;
+export const {
+  setUiState,
+  setShowIdeasPanel,
+  setShowAnalyzePublicationDialog,
+  setShowGenerateIdeasDialog,
+} = uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;
 

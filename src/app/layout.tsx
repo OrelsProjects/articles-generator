@@ -12,6 +12,7 @@ import { Metadata, Viewport } from "next";
 import AnimationProvider from "@/app/providers/AnimationProvider";
 import { cn } from "@/lib/utils";
 import { ToastProvider } from "@/app/providers/ToastProvider";
+import { PlusJakartaSans } from "@/lib/utils/fonts";
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -75,7 +76,7 @@ export default function Layout({ children }: RootLayoutProps) {
   initLogger();
 
   return (
-    <html lang="en" className={cn("antialiased font-sans")}>
+    <html lang="en" className={cn("antialiased", PlusJakartaSans.className)}>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

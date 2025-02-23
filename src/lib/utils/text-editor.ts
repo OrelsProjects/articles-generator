@@ -149,7 +149,6 @@ turndownService.addRule("images", {
     const src = node.getAttribute("src") || "";
     const width = node.getAttribute("width") || "";
     const height = node.getAttribute("height") || "";
-    debugger;
     // Include width and height in the markdown if they exist
     const dimensions = width ? `{width=${width}}` : "";
     return `![${alt}](${src})${dimensions}`;

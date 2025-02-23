@@ -120,9 +120,11 @@ function FeaturesSection() {
   return (
     <section className="min-h-screen bg-background relative">
       <div className="container max-w-6xl mx-auto px-4 py-16 sm:px-6 lg:px-8 relative">
-        <p className="absolute w-full flex justify-center top-0 py-4 text-pink-400">There&apos;s a better way...</p>
+        <p className="absolute w-full flex justify-center top-0 py-4 text-pink-400">
+          There&apos;s a better way...
+        </p>
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
             Powerful features for modern writers
           </h2>
           <p className="text-muted-foreground/80 text-2xl font-normal">

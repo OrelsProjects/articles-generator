@@ -92,6 +92,7 @@ const config: Config = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "substack-orange": "hsl(var(--substack-orange))",
       },
       borderRadius: {
         lg: "var(--radius)",

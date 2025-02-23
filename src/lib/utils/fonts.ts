@@ -3,6 +3,7 @@ import {
   Gabarito as GabaritoFont,
   Montserrat,
   Lora as LoraFont,
+  Plus_Jakarta_Sans,
 } from "next/font/google";
 
 export const Lora = LoraFont({
@@ -22,5 +23,10 @@ export const Gabarito = GabaritoFont({
 
 export const MontserratAlternates = Montserrat({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  subsets: ["latin"],
+});
+
+export const PlusJakartaSans = Plus_Jakarta_Sans({
+  weight: ["300", "400", "500", "600", "700"],
   subsets: ["latin"],
 });

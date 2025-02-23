@@ -17,7 +17,8 @@ import { useAIItem, generateIdeas, handleUsageError } from "@/lib/utils/ideas";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
-const modelUsedForIdeas: Model = "openai/gpt-4o";
+// const modelUsedForIdeas: Model = "openai/gpt-4o";
+const modelUsedForIdeas: Model = "anthropic/claude-3.5-sonnet";
 const modelUsedForOutline: Model = "anthropic/claude-3.5-sonnet";
 
 const MAX_IDEAS_COUNT = 3;
@@ -94,7 +95,7 @@ export async function GET(req: NextRequest) {
         modelUsedForOutline,
       },
     );
-    
+
     const messagesForOutline = generateOutlinePrompt(
       publicationMetadata,
       ideas.map((idea, index) => ({

@@ -5,7 +5,7 @@ export const ContrastSection = () => (
     <div className="container max-w-6xl mx-auto px-4">
       <div className="text-center mb-20">
         <h2 className="text-4xl font-bold mb-4">
-          Other solutions won&apos;t cut it
+MAKE THIS SECTION: AI Alone will not work
         </h2>
         <p className="text-muted-foreground/80 text-2xl font-normal">
           (Here&apos;s what&apos;s wrong)
