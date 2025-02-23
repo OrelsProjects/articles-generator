@@ -385,7 +385,7 @@ export const MenuBar = ({
 
         <Separator orientation="vertical" className="h-6" />
 
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
@@ -453,7 +453,6 @@ export const MenuBar = ({
               <Plus className="w-4 h-4 mr-2" />
               New draft
             </DropdownMenuItem>
-
             <GenerateIdeasButton
               variant="ghost"
               className="w-full h-fit font-normal text-sm pl-2 flex justify-start py-1.5"
