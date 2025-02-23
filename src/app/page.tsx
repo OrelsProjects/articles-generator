@@ -255,7 +255,7 @@ function App() {
 
       {/* Final CTA */}
       <section className="py-20 bg-gradient-to-r from-background to-muted-foreground/10">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+        <div className="max-w-5xl mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">
             Write Better. Stay Human.{" "}
             <span className="text-primary">Let AI assist.</span>

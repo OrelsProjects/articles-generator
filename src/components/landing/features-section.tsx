@@ -126,7 +126,7 @@ function FeatureCard({
     <div
       ref={cardRef}
       className={cn(
-        "overflow-clip flex flex-col lg:flex-row lg:justify-between items-center gap-8 p-6 rounded-2xl bg-gradient-to-tl from-primary/15 to-background backdrop-blur-lg",
+        "w-full overflow-clip flex flex-col lg:flex-row lg:justify-between items-center gap-8 p-6 rounded-2xl bg-gradient-to-tl from-primary/15 to-background backdrop-blur-lg",
         isReversed ? "lg:flex-row-reverse bg-gradient-to-tr" : "",
       )}
     >
@@ -193,7 +193,7 @@ function FeaturesSection() {
 
   return (
     <section className="min-h-screen bg-background relative">
-      <div className="container max-w-6xl mx-auto px-4 py-16 sm:px-6 lg:px-8 relative">
+      <div className="w-screen max-w-5xl mx-auto px-4 py-16 md:px-0 relative">
         <p className="absolute w-full flex justify-center top-0 py-4 text-pink-400">
           There&apos;s a better way...
         </p>
@@ -206,7 +206,7 @@ function FeaturesSection() {
           </p>
         </div>
 
-        <div className="space-y-12">
+        <div className="w-full space-y-12">
           {features.map((feature, index) => (
             <FeatureCard
               key={feature.title}

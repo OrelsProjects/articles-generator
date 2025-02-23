@@ -4,12 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const HeroSection = () => (
-  <section className="min-h-[98vh] container px-4 py-12 mx-auto flex flex-col items-center justify-center">
-    <div className="max-w-6xl mx-auto bg-base-100 flex flex-col lg:flex-row items-center justify-center gap-12 px-8 py-8 lg:py-20">
+  <section className="min-h-[98vh] container py-12 mx-auto flex flex-col items-center justify-center">
+    <div className="w-screen container bg-base-100 flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-12 py-8 lg:py-20 px-6 md:px-0 xl:px-20">
       {/* Left side content */}
       <div className="flex-1 space-y-8 w-full">
         <div className="flex flex-col gap-8 items-center lg:items-start text-center lg:text-left">
-          <h1 className="font-extrabold text-4xl sm:text-5xl tracking-tight !leading-[1.2] md:-mb-4">
+          <h1 className="font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] md:-mb-4">
             Generate article ideas
             <br />
             and write them in minutes
@@ -39,7 +39,7 @@ export const HeroSection = () => (
 
           <Button
             size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 sm:px-16 py-5 font-semibold rounded-xl w-full sm:w-auto"
+            className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground px-8 sm:px-20 py-6 font-semibold rounded-xl w-full sm:w-auto"
             asChild
           >
             <Link href="#pricing">Try it for free</Link>
@@ -52,9 +52,9 @@ export const HeroSection = () => (
         <Image
           src="/landing/substack-logo-shadow.png"
           alt="Substack Logo"
-          width={208}
-          height={208}
-          className="w-32 h-32 sm:w-52 sm:h-52"
+          width={300}
+          height={300}
+          className="w-32 h-32 sm:w-64 sm:h-64"
         />
         <div className="flex flex-col gap-2 items-center justify-center text-center">
           <p className="text-3xl sm:text-5xl font-semibold text-primary">

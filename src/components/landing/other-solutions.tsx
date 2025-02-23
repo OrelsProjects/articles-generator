@@ -60,7 +60,7 @@ const SolutionCard = ({
 
 export default function OtherSolutions() {
   return (
-    <div className="max-w-4xl pb-36 mx-auto px-6 md:px-0">
+    <div className="max-w-5xl pb-36 mx-auto px-6 md:px-0">
       <div className="mb-12">
         <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
           Writing articles shouldn&apos;t be this{" "}
