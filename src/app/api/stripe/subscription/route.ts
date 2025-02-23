@@ -4,6 +4,8 @@ import { getStripeInstance } from "@/lib/stripe";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/api/_db/db";
+import { generateSubscriptionTrialEndingEmail } from "@/lib/mail/templates";
+import { sendMail } from "@/lib/mail/mail";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -20,7 +22,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -31,19 +33,24 @@ export async function GET() {
         userId: session.user.id,
         OR: [
           { status: "active" },
-          { 
+          {
             status: "canceled",
-            currentPeriodEnd: { gt: new Date() }
-          }
-        ]
+            currentPeriodEnd: { gt: new Date() },
+          },
+        ],
       },
       select: {
+        id: true,
+        stripeSubId: true,
         currentPeriodStart: true,
         currentPeriodEnd: true,
         cancelAtPeriodEnd: true,
         status: true,
-        plan: true
-      }
+        plan: true,
+        isTrialing: true,
+        trialStart: true,
+        trialEnd: true,
+      },
     });
 
     if (!subscription) {
@@ -53,6 +60,9 @@ export async function GET() {
     return NextResponse.json(subscription);
   } catch (error: any) {
     loggerServer.error("Error fetching subscription details", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

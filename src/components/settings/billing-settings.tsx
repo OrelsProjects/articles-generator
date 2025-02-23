@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Sparkles, Crown, Star, ExternalLink } from "lucide-react";
+import { Sparkles, Crown, Star, ExternalLink, AlertCircle } from "lucide-react";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import axios from "axios";
@@ -24,6 +24,8 @@ export function BillingSettings() {
     currentPeriodEnd: Date;
     cancelAtPeriodEnd: boolean;
     status: string;
+    isTrialing: boolean;
+    trialEnd?: Date;
   } | null>(null);
 
   useEffect(() => {
@@ -44,6 +46,22 @@ export function BillingSettings() {
       fetchSubscription();
     }
   }, [user?.userId]);
+
+  const trialStatus = useMemo(() => {
+    if (!subscription?.isTrialing) return null;
+    const trialEnd = subscription.trialEnd
+      ? new Date(subscription.trialEnd)
+      : null;
+    if (!trialEnd) return null;
+
+    const daysLeft = Math.ceil(
+      (trialEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    );
+    return {
+      daysLeft,
+      endDate: trialEnd,
+    };
+  }, [subscription]);
 
   const planName = useMemo(() => {
     if (user?.meta?.plan === "pro") return "Write+";
@@ -88,20 +106,33 @@ export function BillingSettings() {
             <CardDescription className="text-base mt-2">
               {isLoading ? (
                 <Skeleton className="w-40 h-4" />
-              ) : subscription?.cancelAtPeriodEnd ? (
-                <div className="text-yellow-600">
-                  Your subscription will end on{" "}
-                  {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                </div>
               ) : (
-                <div>
-                  Next billing date:{" "}
-                  {subscription?.currentPeriodEnd
-                    ? new Date(
+                <>
+                  {trialStatus ? (
+                    <div className="flex items-center gap-2 text-primary">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>
+                        Trial period: {trialStatus.daysLeft} days remaining
+                      </span>
+                    </div>
+                  ) : subscription?.cancelAtPeriodEnd ? (
+                    <div className="text-yellow-600">
+                      Your subscription will end on{" "}
+                      {new Date(
                         subscription.currentPeriodEnd,
-                      ).toLocaleDateString()
-                    : "N/A"}
-                </div>
+                      ).toLocaleDateString()}
+                    </div>
+                  ) : (
+                    <div>
+                      Next billing date:{" "}
+                      {subscription?.currentPeriodEnd
+                        ? new Date(
+                            subscription.currentPeriodEnd,
+                          ).toLocaleDateString()
+                        : "N/A"}
+                    </div>
+                  )}
+                </>
               )}
             </CardDescription>
           </CardHeader>
@@ -113,7 +144,11 @@ export function BillingSettings() {
                   <Skeleton className="w-40 h-4" />
                 ) : (
                   <p className="text-muted-foreground">
-                    {subscription?.cancelAtPeriodEnd ? (
+                    {subscription?.isTrialing ? (
+                      <span className="text-primary font-medium">
+                        Trial Active
+                      </span>
+                    ) : subscription?.cancelAtPeriodEnd ? (
                       <span className="text-yellow-600">
                         Cancels at end of period
                       </span>
@@ -125,6 +160,14 @@ export function BillingSettings() {
                   </p>
                 )}
               </div>
+              {trialStatus && (
+                <div className="space-y-1 text-right">
+                  <p className="font-medium">Trial Ends</p>
+                  <p className="text-muted-foreground">
+                    {trialStatus.endDate.toLocaleDateString()}
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

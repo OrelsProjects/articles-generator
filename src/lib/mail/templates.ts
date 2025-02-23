@@ -186,7 +186,7 @@ export function generateSubscriptionTrialEndingEmail(
     <strong>${trialEndDate.toLocaleDateString()}</strong>.</p>
     <p>If you find value in WriteRoom, you can safely ignore this email and keep up the amazing writing :).</p>
     <p>Otherwise, you can cancel your subscription at any time.</p>
-    <a href="https://dashboard.stripe.com/subscriptions/${subscriptionId}" class="button">Manage Subscription</a>
+    <a href=${process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL} class="button">Manage Subscription</a>
   `;
   return baseEmailTemplate(content);
 }
