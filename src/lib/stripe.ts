@@ -18,7 +18,7 @@ export const getStripeInstance = (
         accountId: string;
       },
 ) => {
-  const apiVersion = "2024-11-20.acacia";
+  const apiVersion = "2025-01-27.acacia";
   if (!data) {
     return new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion });
   }

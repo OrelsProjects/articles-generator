@@ -63,7 +63,7 @@ export default function OtherSolutions() {
     <div className="max-w-4xl pb-36 mx-auto">
       <div className="mb-12">
         <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-          Writing articles shouldn't be this{" "}
+          Writing articles shouldn&apos;t be this{" "}
           <span className="text-destructive">hard</span>
         </h2>
       </div>
