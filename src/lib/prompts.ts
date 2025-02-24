@@ -84,6 +84,7 @@ export const generateOutlinePrompt = (
       - Ensure the outline promotes clarity, coherence, and reader engagement.
       - VERY IMPORTANT: The outline should rely MAINLY on the writing style and the top articles to generate the outline.
       - Use h2 for the title of each section.
+      - If the idea is a list of items, make sure the outline has a list of suggestions for those items.
       - Don't start all the words in the headings with a capital letter, unless absolutely necessary. First word of the heading can be capitalized.
       ${shouldSearch ? `- Search the web for data and use it to improve the outline of the article.` : ""}
       ** The response should be in Markdown (.md) format. **
@@ -170,6 +171,7 @@ export const generateIdeasPrompt = (
     - Don't start all the words in the title and subtitle with a capital letter, unless absolutely necessary.
     - If the provided titles have emojis, use them in the generated titles.
     - The image should be a URL of an image that is relevant to the article, must be a stock image with a valid URL from unsplash.com.
+    ${options?.topic ? `- If the topic is about a list of items, make sure the title and subtitle are very relevant to the list description.` : ""}
     ${options.inspirations && options.inspirations.length > 0 ? `- Use the following article ideas as inspiration: ${options.inspirations.map(inspiration => `- ${inspiration.title}`).join(", ")}.` : ""}
     ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
     ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}
