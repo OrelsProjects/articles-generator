@@ -1,4 +1,5 @@
 import {
+  Bell,
   Bot,
   Box,
   Brain,
@@ -25,10 +26,10 @@ const solutionCards: SolutionCardProps[] = [
       "Your unique style and personality disappears into AI, making you sound like a robot.",
   },
   {
-    icon: Box,
-    title: "Too generic for Substack",
+    icon: Bell,
+    title: "Too many distractions",
     description:
-      "You want specialized support for newsletter writing, but all you get is a one-size-fits-all approach.",
+      "You want a steralized place to write, but once you see those Substack notifications, you can't resist them.",
   },
   {
     icon: Dices,
