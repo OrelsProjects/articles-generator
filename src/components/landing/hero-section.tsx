@@ -50,7 +50,7 @@ export const HeroSection = () => (
       {/* Right side - Substack branding */}
       <div className="hidden md:flex flex-col items-center justify-center gap-4 w-full lg:w-auto">
         <Image
-          src="/landing/substack-logo-shadow.png"
+          src="/landing/substack.png"
           alt="Substack Logo"
           width={300}
           height={300}
