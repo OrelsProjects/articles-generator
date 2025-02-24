@@ -12,12 +12,10 @@ import {
   ChevronDown,
   Plus,
   Loader2,
-  Sparkles,
-  // Add the Copy icon here
   Copy,
   Check,
-  Quote,
   ImagePlus,
+  MessageSquareQuote,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -42,16 +40,6 @@ import { toast } from "react-toastify";
 import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Logger } from "@/logger";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { getSelectedContentAsMarkdown } from "@/lib/utils/text-editor";
 
 const MotionCheck = motion(Check);
@@ -331,7 +319,7 @@ export const MenuBar = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Quote className="w-4 h-4 md:w-5 md:h-5" />
+                <MessageSquareQuote className="w-4 h-4 md:w-5 md:h-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
