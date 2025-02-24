@@ -9,7 +9,13 @@ import { ArticleWithBody } from "@/types/article";
 import { GenerateIdeasNoPlanError } from "@/types/errors/GenerateIdeasNoPlanError";
 import { IdeasBeingGeneratedError } from "@/types/errors/IdeasBeingGeneratedError";
 import { MaxIdeasPerDayError } from "@/types/errors/MaxIdeasPerDayError";
-import { AIUsageType, Idea, IdeaStatus, Plan, PublicationMetadata } from "@prisma/client";
+import {
+  AIUsageType,
+  Idea,
+  IdeaStatus,
+  Plan,
+  PublicationMetadata,
+} from "@prisma/client";
 import {
   maxIdeasPerPlan as maxIdeasByPlan,
   maxTextEnhancmentsPerPlan,
@@ -66,6 +72,7 @@ export async function generateIdeas(
         description: true,
         title: true,
         subtitle: true,
+        status: true,
       },
     });
 
@@ -85,13 +92,25 @@ export async function generateIdeas(
         subtitle: post.subtitle || "",
         description: post.description || "",
       }))
+      .slice(0, 20)
       .concat(
-        ideasUsed.map(idea => ({
-          title: idea.title || "",
-          subtitle: idea.subtitle || "",
-          description: idea.description || "",
-        })),
+        ideasUsed
+          .map(idea => ({
+            title: idea.title || "",
+            subtitle: idea.subtitle || "",
+            description: idea.description || "",
+          }))
+          .slice(0, 10),
       );
+
+    const ideasArchived = ideasUsed
+      .filter(idea => idea.status === IdeaStatus.archived)
+      .map(idea => ({
+        title: idea.title || "",
+        subtitle: idea.subtitle || "",
+        description: idea.description || "",
+      }))
+      .slice(0, 30);
 
     const messages = generateIdeasPrompt(
       publicationMetadata,
@@ -101,6 +120,11 @@ export async function generateIdeas(
         inspirations,
         ideasCount,
         ideasUsed: allPostsUsed,
+        ideasArchived: ideasArchived.map(idea => ({
+          title: idea.title || "",
+          subtitle: idea.subtitle || "",
+          description: idea.description || "",
+        })),
         shouldSearch: shouldSearch === "true",
       },
     );

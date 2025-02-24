@@ -122,6 +122,11 @@ export const generateIdeasPrompt = (
       subtitle: string;
       description: string;
     }[];
+    ideasArchived?: {
+      title: string;
+      subtitle: string;
+      description: string;
+    }[];
     ideasCount: number;
     shouldSearch: boolean;
   } = {
@@ -193,22 +198,28 @@ export const generateIdeasPrompt = (
 
         ${
           options.ideasUsed && options.ideasUsed.length > 0
-            ? `Here are the ideas that you should not generate: ${options.ideasUsed.map(idea => `Title: ${idea.title}, Subtitle: ${idea.subtitle}, Description: ${idea.description}`).join("\n")}.`
+            ? `Here are the ideas that the user already has and should not be repeated: ${options.ideasUsed.map(idea => `Title: ${idea.title}, Subtitle: ${idea.subtitle}, Description: ${idea.description}`).join("\n")}.`
+            : ""
+        }
+
+        ${
+          options.ideasArchived && options.ideasArchived.length > 0
+            ? `Here are the ideas that the user has archived and should either be improved or not repeated at all: ${options.ideasArchived.map(idea => `Title: ${idea.title}, Subtitle: ${idea.subtitle}, Description: ${idea.description}`).join("\n")}.`
             : ""
         }
 
     Here are the articles you need to use as guidelines:
 
-${topArticles
-  .map(
-    (article, index) =>
-      `Article ${index + 1}:
-      Title: ${article.title}
-      Subtitle: ${article.subtitle}
-      Body: ${article.bodyText}`,
-  )
-  .join("\n---\n")}`,
-  },
+    ${topArticles
+      .map(
+        (article, index) =>
+          `Article ${index + 1}:
+          Title: ${article.title}
+          Subtitle: ${article.subtitle}
+          Body: ${article.bodyText}`,
+      )
+      .join("\n---\n")}`,
+      },
 ];
 
 export const generateDescriptionPrompt = (
