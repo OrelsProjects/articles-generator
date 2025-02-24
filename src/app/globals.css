@@ -223,14 +223,14 @@
 
 /* Nested dots for unordered lists */
 .tiptap ul ul li::before {
-  left: 0.5em;
+  left: 0.25em;
   width: 5px;
   height: 5px;
   opacity: 0.5;
 }
 
 .tiptap ul ul ul li::before {
-  left: 0.5em;
+  left: 0.25em;
   width: 4px;
   height: 4px;
   opacity: 0.4;
@@ -238,16 +238,16 @@
 
 /* Add this to ensure proper list indentation */
 .tiptap ul {
-  padding-left: 1.5em;
-  margin-bottom: 1em;
+  padding-left: 0.75em;
+  margin-bottom: 0.75em;
 }
 
 /* Ordered list styling */
 .tiptap ol {
   counter-reset: level1;
   list-style: none;
-  padding-left: 1.5em;
-  margin-bottom: 1em;
+  padding-left: 0.75em;
+  margin-bottom: 0.75em;
 }
 
 .tiptap ol > li {
@@ -265,7 +265,7 @@
 /* Second level: a, b, c... */
 .tiptap ol ol {
   counter-reset: level2;
-  padding-left: 1.5em;
+  padding-left: 0.75em;
 }
 
 .tiptap ol ol > li {
