@@ -94,7 +94,7 @@ export default function Pricing({ className }: { className?: string }) {
           >
             <div className="bg-primary/10 text-primary px-4 py-2 rounded-full font-medium flex items-center gap-2">
               <Star className="h-4 w-4" />
-              <span>7-Day Free Trial on all pPlans</span>{" "}
+              <span>7-Day Free Trial on all plans</span>{" "}
             </div>
           </motion.div>
           <motion.p
