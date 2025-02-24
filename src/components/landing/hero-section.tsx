@@ -11,7 +11,7 @@ export const HeroSection = () => (
         <div className="flex flex-col gap-8 items-center lg:items-start text-center lg:text-left">
           <h1 className="font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] md:-mb-4">
             Write your next
-            <br /> Substack post in minutes.
+            Substack post in minutes.
           </h1>
           <p className="text-lg leading-relaxed max-w-xl">
             The text editor that helps you find ideas, structure
