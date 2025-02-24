@@ -295,7 +295,7 @@ const PullQuote = Node.create({
   },
 
   renderHTML() {
-    return ["div", { class: "pullquote" }, 0];
+    return ["div", { class: "pullquote " + Lora.className }, 0];
   },
 });
 

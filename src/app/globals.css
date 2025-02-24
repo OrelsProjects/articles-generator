@@ -439,7 +439,6 @@
   font-size: 1.25rem;
   border-top: 2px solid hsl(var(--muted));
   border-bottom: 2px solid hsl(var(--muted));
-  font-family: var(--font-lora);
 }
 
 .tiptap img {
