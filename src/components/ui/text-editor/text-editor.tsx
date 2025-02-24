@@ -316,6 +316,7 @@ const TextEditor = ({
         menuType,
         improveType,
         selectedIdea.id,
+        menuType === "title" ? title : subtitle,
       );
 
       if (menuType === "title") {
