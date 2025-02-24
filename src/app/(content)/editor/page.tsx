@@ -44,7 +44,7 @@ const MobilesIdeasPanel = () => {
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:w-[400px] p-0">
         <SheetTitle className="sr-only">Ideas</SheetTitle>
-        <IdeasPanel onSelectIdea={handleSelectIdea} />
+        <IdeasPanel onSelectIdea={handleSelectIdea} onClose={() => setIsOpen(false)} />
       </SheetContent>
     </Sheet>
   );
