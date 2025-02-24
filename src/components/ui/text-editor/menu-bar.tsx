@@ -327,26 +327,22 @@ export const MenuBar = ({
                 onClick={() => handleBlockquote()}
                 disabled={editor.isActive("pullquote")}
               >
-                <div className="flex items-center">
+                <div className="flex items-center justify-between">
+                  Block quote
                   {editor.isActive("blockquote") ? (
                     <Check className="mr-2 h-4 w-4" />
-                  ) : (
-                    <div className="w-4 mr-2" />
-                  )}
-                  Block quote
+                  ) : null}
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={handlePullQuote}
                 disabled={editor.isActive("blockquote")}
               >
-                <div className="flex items-center">
+                <div className="flex items-center justify-between">
+                  Pull quote
                   {editor.isActive("pullquote") ? (
                     <Check className="mr-2 h-4 w-4" />
-                  ) : (
-                    <div className="w-4 mr-2" />
-                  )}
-                  Pull quote
+                  ) : null}
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
