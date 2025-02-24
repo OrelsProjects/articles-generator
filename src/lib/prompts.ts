@@ -279,7 +279,7 @@ export const generateImprovementPrompt = (
 
         Response must follow these strict rules:
         - Preserve all existing formatting, including Markdown elements like headings (#), lists (-, *), bold (**), italics (*), code blocks (\`\`\`), and inline code (\`...\`). This is extremely important. 
-        ${type === "elaborate" ? `- If there is a bulleted list, elaborate on each item in the list add more details, more information, more context, etc underneath each item.` : ""}
+        ${type === "elaborate" ? `- If there is a bulleted list, elaborate on each item in the list add more details, more information, more context, etc underneath each item. Bold the original text your elaborate on.` : ""}
         ${type === "elaborate" ? `- If there is a title, elaborate on it add more details, more information, more context, etc.` : ""}
         ${type === "fact-check" ? `- If the text is mostly correct and there are only places to elaborate, return only the original text, without any explanations or changes.` : ""}
         - Ensure the response is no longer than ${maxLength} characters. Strictly adhere to this constraint.
