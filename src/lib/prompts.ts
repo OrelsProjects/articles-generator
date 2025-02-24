@@ -352,7 +352,7 @@ export const generateTitleSubtitleImprovementPrompt = (
     improvementPromptTemplate.prompt
   }
 
-Below is a list of related titles and subtitles to draw inspiration from:
+Below is a list of related titles and subtitles to draw inspiration from, but not to copy from:
 ${relatedTitles
   .map(
     (item, index) =>
@@ -382,7 +382,8 @@ Your task is to ${improvementPromptTemplate.task} for the article provided. The 
 2. Exactly match the style and formatting of the user's other ${menuType === "title" ? "titles" : "subtitles"}.
 3. Remain compelling, concise, and reflective of the article’s main theme.
 4. Use the same approach to punctuation, capitalization, potential emojis, or numeric references that you see in the user’s reference ${menuType === "title" ? "titles" : "subtitles"}.
-5. Do not add extra text or deviate from the user’s established style.
+5. If numbers or emojis are not present in the user's reference ${menuType === "title" ? "titles" : "subtitles"}, do not add them unless they add a lot of value to the ${menuType}.
+6. Do not add extra text or deviate from the user’s established style.
 
 Return only the result in the following JSON format, without additional commentary:
 ${
