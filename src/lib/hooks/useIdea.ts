@@ -146,11 +146,13 @@ export const useIdea = () => {
     menuType: "title" | "subtitle",
     improveType: string,
     ideaId: string,
+    value: string,
   ): Promise<{ title: string; subtitle: string }> => {
     const res = await axios.post("/api/post/improve/title", {
       menuType,
       improveType,
       ideaId,
+      value,
     });
     if (!res.data || (!res.data.title && !res.data.subtitle)) {
       throw new Error("Improvement service failed.");

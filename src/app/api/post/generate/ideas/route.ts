@@ -69,6 +69,8 @@ export async function GET(req: NextRequest) {
 
     console.timeEnd("Pre-query");
 
+    usageId = await useAIItem(session.user.id, "ideaGeneration");
+
     await setUserGeneratingIdeas(session.user.id, true);
 
     console.time("Getting user articles with order by reaction count");
@@ -171,12 +173,6 @@ export async function GET(req: NextRequest) {
     }
 
     console.timeEnd("Start generating ideas");
-
-    try {
-      usageId = await useAIItem(session.user.id, "ideaGeneration");
-    } catch (error: any) {
-      loggerServer.error("Error generating ideas:", error);
-    }
 
     return NextResponse.json(ideasWithOutlines);
   } catch (error: any) {

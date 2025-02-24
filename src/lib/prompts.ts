@@ -329,16 +329,17 @@ export const generateTitleSubtitleImprovementPrompt = (
   improveType: TitleImprovementType,
   relatedTitles: { title: string; subtitle: string }[],
   idea: Idea,
+  value: string,
   userTopArticlesTitles: { title: string; subtitle: string }[],
 ): { messages: { role: string; content: string }[]; model: Model } => {
   const model = "anthropic/claude-3.5-sonnet";
   const isTitle = menuType === "title";
   const currentReference = isTitle
     ? idea.title
-      ? `Current Title: ${idea.title}`
+      ? `Current Title: ${value}`
       : ""
     : idea.subtitle
-      ? `Current Subtitle: ${idea.subtitle}`
+      ? `Current Subtitle: ${value}`
       : "";
 
   // Get the corresponding improvement prompt template based on the menu type and improveType

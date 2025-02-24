@@ -12,7 +12,6 @@ import { ArticleWithBody } from "@/types/article";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
-const MAX_CHARACTERS = 15000;
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
 const getRelatedArticles = async (query: string) => {
@@ -39,7 +38,7 @@ export async function POST(request: NextRequest) {
   let usageId: string = "";
 
   try {
-    const { menuType, improveType, ideaId } = await request.json();
+    const { menuType, improveType, ideaId, value } = await request.json();
 
     const idea = await prisma.idea.findUnique({
       where: {
@@ -50,7 +49,7 @@ export async function POST(request: NextRequest) {
     if (!idea) {
       return NextResponse.json({ error: "Idea not found" }, { status: 404 });
     }
-
+    
     usageId = await useAIItem(session.user.id, "titleOrSubtitleRefinement");
 
     const relatedArticles = await getRelatedArticles(
@@ -80,6 +79,7 @@ export async function POST(request: NextRequest) {
       improveType,
       relatedArticlesTitles,
       idea,
+      value,
       userTopArticles.map(article => ({
         title: article.title || "",
         subtitle: article.subtitle || "",
