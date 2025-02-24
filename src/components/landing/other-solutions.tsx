@@ -62,15 +62,15 @@ const SolutionCard = ({
 export default function OtherSolutions() {
   return (
     <div className="max-w-4xl pb-36 mx-auto px-6 md:px-0">
-      <div className="mb-12">
-        <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+      <div className="mb-16">
+        <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl">
           Writing articles shouldn&apos;t be this{" "}
           <span className="text-destructive">hard</span>
         </h2>
+        <p className="mt-4 text-2xl text-muted-foreground text-center">
+          (Other solutions and tools)
+        </p>
       </div>
-      <p className="mt-4 text-base text-muted-foreground">
-        Other solutions and tools...
-      </p>
 
       <div className="grid gap-8 mt-12 md:grid-cols-2">
         {solutionCards.map((card, index) => (

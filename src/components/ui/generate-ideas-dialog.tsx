@@ -70,7 +70,7 @@ export default function GenerateIdeasDialog() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Specify a topic (optional)</DialogTitle>
+            <DialogTitle>Specify a topic</DialogTitle>
           </DialogHeader>
           <Input
             type="text"

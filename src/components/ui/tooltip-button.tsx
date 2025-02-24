@@ -35,7 +35,11 @@ export const TooltipButton = React.forwardRef<
     },
     ref,
   ) => {
-    return (
+    return !tooltipContent ? (
+      <Button ref={ref} className={cn(className)} {...props}>
+        {children}
+      </Button>
+    ) : (
       <TooltipProvider>
         <Tooltip delayDuration={tooltipDelayDuration}>
           <TooltipTrigger asChild disabled={hideTooltip}>

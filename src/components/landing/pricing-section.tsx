@@ -97,14 +97,14 @@ export default function Pricing({ className }: { className?: string }) {
               <span>7-Day Free Trial on all plans</span>{" "}
             </div>
           </motion.div>
-          <motion.p
-            className="text-xl text-gray-600"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-          >
-            Start writing with a 7-day free trial. Cancel anytime.
-          </motion.p>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4">
+              Start writing with a 7-day free trial. Cancel anytime.
+            </h2>
+            <p className="text-muted-foreground text-xl font-normal">
+              (Don&apos;t worry, I will remind you before your trial ends)
+            </p>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">

@@ -7,46 +7,32 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImprovementType } from "@/lib/prompts";
 import { formatText, textEditorOptions } from "@/lib/utils/text-editor";
 import { EditorContent, useEditor } from "@tiptap/react";
 import {
-  ArrowRight,
   BrainCircuit,
-  Check,
   Edit3,
   FileEdit,
   Lightbulb,
   Loader2,
-  Pencil,
-  Plus,
-  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { Product } from "@/types/payment";
-import {
-  maxIdeasPerPlan,
-  maxTextEnhancmentsPerPlan,
-  maxTitleAndSubtitleRefinementsPerPlan,
-  textEditorTypePerPlan,
-} from "@/lib/plans-consts";
-import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { initialTextForEnhancement, textByType } from "@/lib/landing-consts";
 import { appName } from "@/lib/consts";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { cn } from "@/lib/utils";
 import FeaturesSection from "@/components/landing/features-section";
-import { ContrastSection } from "@/components/landing/contrast-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import Header from "@/components/landing/header";
 import OtherSolutions from "@/components/landing/other-solutions";
 import Pricing from "@/components/landing/pricing-section";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
-// ADD: Sterile place to write. no notifications, no distractions
+
 const EnhancmentDemo = () => {
   const [loadingTone, setLoadingTone] = useState<ImprovementType | null>(null);
   const [text, setText] = useState(initialTextForEnhancement);
@@ -107,6 +93,28 @@ const gentleFadeIn: Variants = {
 const gentleFadeInTransition = {
   transition: { duration: 1.2, ease: "easeOut" },
 };
+
+const faq = [
+  {
+    question: `Can I specify the outline and let ${appName} work with it?`,
+    answer: `Yes! Create a new, empty draft, fill up your outline and ask the AI to elaborate on it.`,
+  },
+  {
+    question: `Does ${appName} write for me?`,
+    answer: `No! ${appName} enhances your writing, but you are always in control. We provide tools and suggestions to improve your writing while maintaining your unique voice.`,
+  },
+  {
+    question: `Is this just another AI ghostwriter?`,
+    answer: `No! ${appName} provides research, structure, and enhancement
+    tools—not AI-generated articles. We believe in augmenting human
+    creativity, not replacing it.`,
+  },
+  {
+    question: `Can I cancel anytime?`,
+    answer: `Yes. No contracts, no tricks—just smarter writing. You can cancel your subscription at any time with no questions asked.`,
+  },
+];
+
 function App() {
   const router = useCustomRouter();
   const [products, setProducts] = useState<Product[]>([]);
@@ -139,33 +147,6 @@ function App() {
       <Header />
       <HeroSection />
       <OtherSolutions />
-
-      {/* Pain Points Section */}
-      {/* <section className="py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Why writing consistently feels hard
-          </h2>
-          <p className="text-center text-muted-foreground/80 text-2xl font-normal">
-            (It&apos;s not just about laziness or a lack of ideas)
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-8 mt-16">
-            {painPoints.map((point, index) => (
-              <Card
-                key={index}
-                className="p-6 hover:shadow-lg transition-shadow"
-              >
-                <div className="mb-4">{point.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{point.problem}</h3>
-                <p className="text-muted-foreground">{point.problemDetails}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <ContrastSection /> */}
 
       {/* Features Section */}
       <FeaturesSection />
@@ -218,37 +199,21 @@ function App() {
         viewport={{ once: true }}
       >
         <div className="max-w-3xl mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-muted-foreground mb-12">
-            Frequently Asked Questions
-          </h2>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground/80 text-center text-2xl font-normal">
+              (Based on actual users feedback)
+            </p>
+          </div>
           <Accordion type="single" collapsible className="space-y-4">
-            <AccordionItem value="item-1">
-              <AccordionTrigger>Does {appName} write for me?</AccordionTrigger>
-              <AccordionContent>
-                No! {appName} enhances your writing, but you are always in
-                control. We provide tools and suggestions to improve your
-                writing while maintaining your unique voice.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-2">
-              <AccordionTrigger>
-                Is this just another AI ghostwriter?
-              </AccordionTrigger>
-              <AccordionContent>
-                No! {appName} provides research, structure, and enhancement
-                tools—not AI-generated articles. We believe in augmenting human
-                creativity, not replacing it.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-3">
-              <AccordionTrigger>Can I cancel anytime?</AccordionTrigger>
-              <AccordionContent>
-                Yes. No contracts, no tricks—just smarter writing. You can
-                cancel your subscription at any time with no questions asked.
-              </AccordionContent>
-            </AccordionItem>
+            {faq.map((item, index) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger>{item.question}</AccordionTrigger>
+                <AccordionContent>{item.answer}</AccordionContent>
+              </AccordionItem>
+            ))}
           </Accordion>
         </div>
       </motion.section>

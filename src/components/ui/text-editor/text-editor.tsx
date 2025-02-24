@@ -15,7 +15,6 @@ import {
   getSelectedContentAsMarkdown,
   unformatText,
   textEditorOptions,
-  formatSpecialFormats,
   loadContent,
 } from "@/lib/utils/text-editor";
 import { Logger } from "@/logger";
@@ -89,20 +88,19 @@ const TextEditor = ({
       setSaving(true);
       setSavingError(false);
 
+      // Get the HTML content directly from the editor
+      const htmlContent = editor.getHTML();
+
+      // Convert to Markdown with our configured turndown service
+      const markdownContent = unformatText(htmlContent);
+
+      const updatedIdea: Idea = {
+        ...selectedIdea,
+        title,
+        subtitle,
+        body: markdownContent,
+      };
       try {
-        // Get the HTML content directly from the editor
-        const htmlContent = editor.getHTML();
-
-        // Convert to Markdown with our configured turndown service
-        const markdownContent = unformatText(htmlContent);
-
-        const updatedIdea: Idea = {
-          ...selectedIdea,
-          title,
-          subtitle,
-          body: markdownContent,
-        };
-
         await updateIdea(
           ideaId,
           updatedIdea.body,

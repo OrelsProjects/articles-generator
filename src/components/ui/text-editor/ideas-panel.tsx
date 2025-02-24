@@ -18,11 +18,12 @@ import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
 
 interface IdeasPanelProps {
   onSelectIdea?: (idea: Idea) => void;
+  onClose: () => void;
 }
 
 type TabValue = "new" | "archived" | "all" | "used";
 
-export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
+export const IdeasPanel = ({ onSelectIdea, onClose }: IdeasPanelProps) => {
   const { updateStatus, setSelectedIdea } = useIdea();
   const { selectedIdea, ideas, loadingNewIdeas } = useAppSelector(
     state => state.publications,
@@ -87,6 +88,12 @@ export const IdeasPanel = ({ onSelectIdea }: IdeasPanelProps) => {
 
   return (
     <motion.div className="w-full h-full bg-background border-l z-20">
+      <X
+        className="absolute top-6 right-6"
+        onClick={() => {
+          onClose();
+        }}
+      />
       <div className="h-full w-full space-y-4">
         <div
           id="ideas-panel-header"

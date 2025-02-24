@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IdeasPanel } from "./ideas-panel";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, StickyNote } from "lucide-react";
+import { ArrowRight, StickyNote } from "lucide-react";
 import { Publication } from "@/types/publication";
 import { Idea } from "@/types/idea";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
@@ -29,7 +29,14 @@ export const IdeasSideSheet = ({
       ideasPress: false,
     },
   );
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!features.ideasPress) {
+      setIsOpen(true);
+      setFeatures({ ...features, ideasPress: true });
+    }
+  }, [features.ideasPress]);
 
   useEffect(() => {
     if (showIdeasPanel) {
@@ -50,36 +57,42 @@ export const IdeasSideSheet = ({
   return (
     <>
       <AnimatePresence>
-        {(isOpen || !didPressIdeas) && (
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="w-screen fixed top-0 right-0 h-full max-w-md bg-background z-50 shadow-lg"
-          >
-            <IdeasPanel />
-            <MotionButton
-              initial={{ x: "100%" }}
-              animate={{
-                x: 0,
-                transition: {
-                  delay: 0.6,
-                  duration: 0.2,
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                },
-              }}
-              exit={{ opacity: 0, transition: { delay: 0, duration: 0 } }}
-              variant="ghost"
-              size="icon"
-              className="w-fit px-4 pl-3 absolute top-1/2 -left-10 flex justify-start bg-muted/30 rounded-l-lg rounded-r-none border border-muted-foreground/30 -z-10"
+        {isOpen && (
+          <>
+            <div
+              className="absolute inset-0 w-screen h-screen"
               onClick={() => handleOpenIdeas(false)}
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="w-screen fixed top-0 right-0 h-full max-w-md bg-background z-50 shadow-lg"
             >
-              <ArrowRight className="h-4 w-4" />
-            </MotionButton>
-          </motion.div>
+              <IdeasPanel onClose={() => handleOpenIdeas(false)} />
+              <MotionButton
+                initial={{ x: "100%" }}
+                animate={{
+                  x: 0,
+                  transition: {
+                    delay: 0.6,
+                    duration: 0.2,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                  },
+                }}
+                exit={{ opacity: 0, transition: { delay: 0, duration: 0 } }}
+                variant="ghost"
+                size="icon"
+                className="w-fit px-4 pl-3 absolute top-1/2 -left-10 flex justify-start bg-muted/30 rounded-l-lg rounded-r-none border border-muted-foreground/30 -z-10"
+                onClick={() => handleOpenIdeas(false)}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </MotionButton>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

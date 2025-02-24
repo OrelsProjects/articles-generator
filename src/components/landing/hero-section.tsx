@@ -10,23 +10,21 @@ export const HeroSection = () => (
       <div className="flex-1 space-y-8 w-full">
         <div className="flex flex-col gap-8 items-center lg:items-start text-center lg:text-left">
           <h1 className="font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] md:-mb-4">
-            Generate article ideas
-            <br />
-            and write them in minutes
+            Write your next
+            <br /> Substack post in minutes.
           </h1>
           <p className="text-lg leading-relaxed max-w-xl">
-            The AI-powered text editor that helps you generate ideas, structure
+            The text editor that helps you find ideas, structure
             outlines, and refine your writing—without replacing your voice.
           </p>
 
           {/* Feature list */}
+          {/* Feature list */}
           <ul className="space-y-3 w-full max-w-xl">
             {[
-              "Generate personally-tailored unique ideas",
-              "Get an outline based on your writing style",
-              "Based on millions of the best articles",
-              "Break through writer's block",
-              "Write faster and better",
+              "Personally-tailored unique ideas",
+              "Outline based on your writing style",
+              "Substack-like text editor",
             ].map((feature, index) => (
               <li key={index} className="flex items-center space-x-3">
                 <CheckCircle className="h-5 w-5 flex-none text-primary" />
