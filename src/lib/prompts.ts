@@ -84,6 +84,7 @@ export const generateOutlinePrompt = (
       - Ensure the outline promotes clarity, coherence, and reader engagement.
       - VERY IMPORTANT: The outline should rely MAINLY on the writing style and the top articles to generate the outline.
       - Use h2 for the title of each section.
+      - If the user has a specific opening/closing for the article, use it in the outline.
       - If the idea is a list of items, make sure the outline has a list of suggestions for those items.
       - Don't start all the words in the headings with a capital letter, unless absolutely necessary. First word of the heading can be capitalized.
       ${shouldSearch ? `- Search the web for data and use it to improve the outline of the article.` : ""}
