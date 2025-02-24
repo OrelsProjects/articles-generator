@@ -1,5 +1,7 @@
 import { FormatDropdown } from "@/components/ui/text-editor/dropdowns/format-dropdown";
 import { ImprovementType } from "@/lib/prompts";
+import { cn } from "@/lib/utils";
+import { PlusJakartaSans } from "@/lib/utils/fonts";
 import { getSelectedContentAsMarkdown } from "@/lib/utils/text-editor";
 import { Editor, BubbleMenu } from "@tiptap/react";
 import {
@@ -115,7 +117,10 @@ export const BubbleMenuComponent = ({
         delay: 0,
         sticky: true,
       }}
-      className="flex items-center gap-1 p-1 rounded-lg border bg-background shadow-lg"
+      className={cn(
+        "flex items-center gap-1 p-1 rounded-lg border bg-background shadow-lg",
+        PlusJakartaSans.className,
+      )}
     >
       <FormatDropdown
         options={formatOptions}
