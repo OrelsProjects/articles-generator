@@ -12,18 +12,16 @@ export default function Header() {
         {/* Desktop navigation */}
         <nav className="hidden md:flex justify-center items-center">
           <ul className="flex gap-12">
-            {["Pricing", "Reviews", "Features", "Platforms", "FAQ"].map(
-              item => (
-                <li key={item}>
-                  <Link
-                    href={`#${item.toLowerCase()}`}
-                    className="font-medium text-foreground transition-colors hover:text-primary"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ),
-            )}
+            {["Pricing", "Features", "FAQ"].map(item => (
+              <li key={item}>
+                <Link
+                  href={`#${item.toLowerCase()}`}
+                  className="font-medium text-foreground transition-colors hover:text-primary"
+                >
+                  {item}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
 

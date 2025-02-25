@@ -191,6 +191,7 @@ function App() {
 
       {/* FAQ Section */}
       <motion.section
+        id="faq"
         className="py-20 bg-muted"
         variants={gentleFadeIn}
         {...gentleFadeInTransition}
