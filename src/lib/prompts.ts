@@ -70,11 +70,11 @@ export const generateOutlinePrompt = (
 
       The user will provide 5 top-performing articles. Analyze these articles to understand the publication's editorial focus, tone, and style. Ensure the outline aligns with the brand's voice and resonates with the target audience.
 
-      Here are multiple article ideas:
+      Here are the article ideas:
       ${ideaDescriptions.map(idea => `- (${idea.id}): ${idea.description}`).join("\n")}
 
       Your task:
-      - Craft a detailed outline for EACH article idea provided, using insights from the top articles and the publication's editorial direction.
+      - Craft a detailed outline for EACH article idea provided, basing the outline the the user's articles structure.
       - Use clear, hierarchical headings (H2 to H6) to organize the structure logically.
       - Include concise bullet points or brief notes under each heading to clarify key points, arguments, or ideas that should be covered.
       
@@ -82,11 +82,9 @@ export const generateOutlinePrompt = (
       - Do NOT include the article title (H1) in the outline.
       - Write in a natural, human-like voice, avoiding any robotic or AI-generated tone.
       - Ensure the outline promotes clarity, coherence, and reader engagement.
-      - VERY IMPORTANT: The outline should rely MAINLY on the writing style and the top articles to generate the outline.
-      - Use h2 for the title of each section.
+      - VERY IMPORTANT: The outline should rely MAINLY on the writing style and the structure of the user's articles.
       - If the user has a specific opening/closing for the article, use it in the outline.
-      - If the idea is a list of items, make sure the outline has a list of suggestions for those items.
-      - Don't start all the words in the headings with a capital letter, unless absolutely necessary. First word of the heading can be capitalized.
+      - If the idea is a list of items (Ex: Top 10 productivity tips, 7 ways to improve your writing, etc.), make sure the outline has a list of suggestions for those items.
       ${shouldSearch ? `- Search the web for data and use it to improve the outline of the article.` : ""}
       ** The response should be in Markdown (.md) format. **
 
@@ -104,7 +102,7 @@ export const generateOutlinePrompt = (
   {
     role: "user",
     content: `
-      Here are the top 5 articles for reference:
+      Here are my articles:
       ${topArticles.map((article, index) => `Article ${index + 1}: ${article.bodyText}`).join("\n\n")}
 
       Analyze these articles carefully and generate comprehensive outlines for each provided idea description, including the corresponding ID for each.
