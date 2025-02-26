@@ -44,9 +44,6 @@ export function Header({ className }: { className?: string }) {
               className="p-1 w-fit h-fit rounded-full relative hover:cursor-pointer"
               variant="ghost"
               size="icon"
-              onClick={() => {
-                if (publication.url) router.push(publication.url);
-              }}
             >
               <AvatarImage
                 src={user?.image || ""}
@@ -95,13 +92,22 @@ export function Header({ className }: { className?: string }) {
     >
       <div className="flex items-center justify-start">
         {publication?.image && (
-          <Image
-            src={publication.image}
-            alt={publication.title || ""}
-            width={36}
-            height={36}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              if (publication.url) router.push(publication.url);
+            }}
             className="rounded-md"
-          />
+          >
+            <Image
+              src={publication.image}
+              alt={publication.title || ""}
+              width={36}
+              height={36}
+              className="rounded-md"
+            />
+          </Button>
         )}
       </div>
       <h1 className="text-2xl font-bold text-center">{publication?.title}</h1>
