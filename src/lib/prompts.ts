@@ -276,7 +276,7 @@ export const generateImprovementPrompt = (
 } => {
   const improvementPrompt = improvementPromptTemplates[type];
   const { prompt, task } = improvementPrompt;
-  const model = improvementPrompt.model || "anthropic/claude-3.5-sonnet";
+  const model = improvementPrompt.model || "anthropic/claude-3.7-sonnet";
 
   const maxLength = type === "elaborate" ? text.length * 2 : text.length;
 
@@ -338,7 +338,7 @@ export const generateTitleSubtitleImprovementPrompt = (
   value: string,
   userTopArticlesTitles: { title: string; subtitle: string }[],
 ): { messages: { role: string; content: string }[]; model: Model } => {
-  const model = "anthropic/claude-3.5-sonnet";
+  const model = "anthropic/claude-3.7-sonnet";
   const isTitle = menuType === "title";
   const currentReference = isTitle
     ? idea.title
@@ -523,6 +523,10 @@ const improvementPromptTemplates: {
   "fact-check": {
     task: "fact-check the user's text",
     prompt: `Check the user's text for accuracy and correctness using the web. If you find any incorrect information, correct it. If you don't find any incorrect information, fix the inaccuracies in the text.`,
+  },
+  "spell-check": {
+    task: "spell-check the user's text",
+    prompt: `Check the user's text for spelling and grammar errors. If you find any errors, correct them. If you don't find any errors, fix the errors in the text.`,
   },
 };
 

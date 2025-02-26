@@ -23,8 +23,8 @@ import {
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
 const modelUsedForIdeas: Model = "openai/gpt-4o";
-// const modelUsedForIdeas: Model = "anthropic/claude-3.5-sonnet";
-const modelUsedForOutline: Model = "anthropic/claude-3.5-sonnet";
+// const modelUsedForIdeas: Model = "anthropic/claude-3.7-sonnet";
+const modelUsedForOutline: Model = "anthropic/claude-3.7-sonnet";
 
 const MAX_IDEAS_COUNT = 3;
 

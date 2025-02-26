@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
 
   //   const outlineString = await runPrompt(
   //     messages,
-  //     "anthropic/claude-3.5-sonnet",
+  //     "anthropic/claude-3.7-sonnet",
   //   );
 
   //   let outline: any | null = null;
