@@ -7,6 +7,7 @@ export interface CustomRouterOptions {
   preserveQuery?: boolean | null; // Use null for now to not preserve query and not break existing code
   paramsToRemove?: string[];
   paramsToAdd?: Record<string, string>;
+  newTab?: boolean;
 }
 
 export function useCustomRouter() {
@@ -52,7 +53,11 @@ export function useCustomRouter() {
     if (!href.startsWith("http")) {
       urlString = url.pathname + url.search;
     }
-    router.push(urlString, options);
+    if (routerOptions?.newTab) {
+      window.open(urlString, "_blank");
+    } else {
+      router.push(urlString, options);
+    }
   };
 
   return { ...router, push };

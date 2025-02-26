@@ -18,10 +18,9 @@ import { Button } from "@/components/ui/button";
 import { SettingsDialog } from "@/components/settings/settings";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
-import { useRouter } from "next/navigation";
 
 export function Header({ className }: { className?: string }) {
-  const router = useRouter();
+  const router = useCustomRouter();
   const { signOut } = useAuth();
   const { hasPublication } = useSettings();
   const { user } = useAppSelector(selectAuth);
