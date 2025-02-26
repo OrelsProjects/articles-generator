@@ -1,9 +1,8 @@
 import { useAppSelector } from "@/lib/hooks/redux";
 import { cn } from "@/lib/utils";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,15 +11,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
-import { User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { User, LogOut, ChevronDown } from "lucide-react";
 import useAuth from "@/lib/hooks/useAuth";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
 import { SettingsDialog } from "@/components/settings/settings";
-import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
 import { useSettings } from "@/lib/hooks/useSettings";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { useRouter } from "next/navigation";
 
 export function Header({ className }: { className?: string }) {
+  const router = useRouter();
   const { signOut } = useAuth();
   const { hasPublication } = useSettings();
   const { user } = useAppSelector(selectAuth);
@@ -40,9 +41,12 @@ export function Header({ className }: { className?: string }) {
         <DropdownMenuTrigger>
           <Avatar className="relative flex items-center justify-center">
             <Button
-              className="p-1 w-fit h-fit rounded-full relative"
+              className="p-1 w-fit h-fit rounded-full relative hover:cursor-pointer"
               variant="ghost"
               size="icon"
+              onClick={() => {
+                if (publication.url) router.push(publication.url);
+              }}
             >
               <AvatarImage
                 src={user?.image || ""}
