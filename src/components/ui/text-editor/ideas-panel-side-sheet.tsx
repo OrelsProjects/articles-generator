@@ -52,7 +52,7 @@ export const IdeasSideSheet = ({
     setIsOpen(open);
   };
 
-  if (!publication || !selectedIdea) return null;
+  if (!publication) return null;
 
   return (
     <>

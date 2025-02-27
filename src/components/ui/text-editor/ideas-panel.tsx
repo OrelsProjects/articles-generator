@@ -1,4 +1,13 @@
-import { Sparkles, Star, CheckCircle, Archive, SearchX, X } from "lucide-react";
+import {
+  Sparkles,
+  Star,
+  CheckCircle,
+  Archive,
+  SearchX,
+  X,
+  Plus,
+  Loader2,
+} from "lucide-react";
 import { IdeaStatus } from "@prisma/client";
 import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,6 +24,7 @@ import { EmptyIdeas } from "@/components/ui/text-editor/empty-ideas";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import GenerateIdeasButton from "@/components/ui/generate-ideas-button";
+import { Button } from "@/components/ui/button";
 
 interface IdeasPanelProps {
   onSelectIdea?: (idea: Idea) => void;
@@ -24,14 +34,20 @@ interface IdeasPanelProps {
 type TabValue = "new" | "archived" | "all" | "used";
 
 export const IdeasPanel = ({ onSelectIdea, onClose }: IdeasPanelProps) => {
-  const { updateStatus, setSelectedIdea } = useIdea();
+  const { updateStatus, setSelectedIdea, createNewIdea } = useIdea();
   const { selectedIdea, ideas, loadingNewIdeas } = useAppSelector(
     state => state.publications,
   );
   const [currentTab, setCurrentTab] = useState<TabValue>("new");
   const [showFavorites, setShowFavorites] = useState(false);
   const [isFirstInit, setIsFirstInit] = useState(true);
+  const [loadingNewIdea, setLoadingNewIdea] = useState(false);
   const ideasContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleCreateNewIdea = () => {
+    setLoadingNewIdea(true);
+    createNewIdea().finally(() => setLoadingNewIdea(false));
+  };
 
   useEffect(() => {
     if (!selectedIdea) return;
@@ -85,6 +101,10 @@ export const IdeasPanel = ({ onSelectIdea, onClose }: IdeasPanelProps) => {
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
   }, [filteredIdeas]);
+
+  const nonArchivedIdeas = useMemo(() => {
+    return ideas.filter(idea => idea.status !== "archived");
+  }, [ideas]);
 
   return (
     <motion.div className="w-full h-full bg-background border-l z-20">
@@ -236,20 +256,52 @@ export const IdeasPanel = ({ onSelectIdea, onClose }: IdeasPanelProps) => {
                     <SearchX className="h-12 w-12" />
                     <div className="space-y-2">
                       <h3 className="text-lg font-semibold">No ideas found</h3>
-                      <p className="text-sm">
-                        {showFavorites
-                          ? "No favorite ideas found in the current view. Try changing filters or marking some ideas as favorites."
-                          : currentTab === "archived"
-                            ? "No archived ideas found. Archive some ideas to see them here."
-                            : "No ideas match your current filters. Try adjusting them to see more ideas."}
-                      </p>
+                      {ideas.length === 0 ? (
+                        <p className="text-sm">
+                          You haven&apos;t generated any ideas yet. Generate
+                          some ideas or start a new draft to get started.
+                        </p>
+                      ) : nonArchivedIdeas.length === 0 ? (
+                        <p className="text-sm">
+                          You have archived all your ideas.
+                          <br />
+                          Unarchive some or create new ones.
+                        </p>
+                      ) : (
+                        <p className="text-sm">
+                          {showFavorites
+                            ? "No favorite ideas found in the current view. Try changing filters or marking some ideas as favorites."
+                            : currentTab === "archived"
+                              ? "No archived ideas found. Archive some ideas to see them here."
+                              : "No ideas match your current filters. Try adjusting them to see more ideas."}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
+                <div
+                  className={cn(
+                    "w-full flex flex-col items-center justify-center gap-2 py-4 sticky bottom-0",
+                    {
+                      hidden: !!selectedIdea,
+                    },
+                  )}
+                >
+                  <GenerateIdeasButton size="lg" className="font-semibold" />
+                  <Button
+                    variant="outline"
+                    onClick={handleCreateNewIdea}
+                    disabled={loadingNewIdea}
+                  >
+                    {loadingNewIdea ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Plus className="w-4 h-4 mr-2" />
+                    )}
+                    Create a draft
+                  </Button>
+                </div>
               </ScrollArea>
-              <div className="w-full flex justify-center py-4 sticky bottom-0">
-                <GenerateIdeasButton size="lg" className="font-semibold" />
-              </div>
             </div>
           </div>
         ) : (

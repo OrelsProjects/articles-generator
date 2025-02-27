@@ -5,20 +5,18 @@ import {
   setSelectedIdea as setSelectedIdeaAction,
   setIdeas as setIdeasAction,
   addIdeas as addIdeasAction,
-  removeTempIdea,
-  replaceTempIdea,
 } from "@/lib/features/publications/publicationSlice";
 import axios from "axios";
 import { AIUsageType, IdeaStatus } from "@prisma/client";
-import { EmptyIdea, Idea } from "@/types/idea";
+import { Idea } from "@/types/idea";
 import { ImprovementType } from "@/lib/prompts";
 import { Logger } from "@/logger";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { incrementUsage } from "@/lib/features/settings/settingsSlice";
+import { setShowIdeasPanel } from "@/lib/features/ui/uiSlice";
 
 export const useIdea = () => {
-  const { publications, ideas } = useAppSelector(state => state.publications);
-  const { user } = useAppSelector(state => state.auth);
+  const { ideas, selectedIdea } = useAppSelector(state => state.publications);
   const [lastUsedIdea, setLastUsedIdea] = useLocalStorage<string | null>(
     "lastUsedIdea",
     null,
@@ -30,6 +28,7 @@ export const useIdea = () => {
     status: IdeaStatus | "favorite",
   ) => {
     let newStatus = status;
+    let didReplaceSelectedIdea = false;
     const idea = ideas.find(idea => idea.id === ideaId);
     if (!idea) {
       throw new Error("Idea not found");
@@ -39,6 +38,23 @@ export const useIdea = () => {
     }
     // optimistic update
     dispatch(updateStatusAction({ ideaId, status: newStatus }));
+    if (status === "archived" && selectedIdea?.id === ideaId) {
+      didReplaceSelectedIdea = true;
+      // Select next idea in the list
+      const nextIdea = ideas.find(
+        idea => idea.status !== "archived" && idea.id !== ideaId,
+      );
+      if (nextIdea) {
+        dispatch(setSelectedIdeaAction(nextIdea));
+      } else {
+        dispatch(setSelectedIdeaAction(null));
+      }
+    } else {
+      if (!selectedIdea) {
+        dispatch(setSelectedIdeaAction(idea));
+      }
+    }
+
     try {
       const searchParamsStatus =
         status === "favorite" ? "isFavorite=true" : `status=${newStatus}`;
@@ -47,6 +63,9 @@ export const useIdea = () => {
       Logger.error("Error updating idea status:", error);
       // revert optimistic update
       dispatch(updateStatusAction({ ideaId, status: idea.status }));
+      if (didReplaceSelectedIdea) {
+        dispatch(setSelectedIdeaAction(idea));
+      }
       throw error;
     }
   };
@@ -161,12 +180,15 @@ export const useIdea = () => {
     return res.data;
   };
 
-  const createNewIdea = async () => {
+  const createNewIdea = async (options?: { showIdeasAfterCreate: boolean }) => {
     try {
       const res = await axios.post("/api/idea");
       addIdeas([res.data]);
       setSelectedIdea(res.data);
       setLastUsedIdea(res.data.id);
+      if (options?.showIdeasAfterCreate) {
+        dispatch(setShowIdeasPanel(true));
+      }
       return res.data;
     } catch (error: any) {
       throw error;

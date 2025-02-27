@@ -16,6 +16,7 @@ import {
   Check,
   ImagePlus,
   MessageSquareQuote,
+  StickyNote,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -77,10 +78,7 @@ export const MenuBar = ({
 
   const handleCreateNewIdea = () => {
     setLoadingNewIdea(true);
-    createNewIdea()
-      .then(() => {
-        dispatch(setShowIdeasPanel(true));
-      })
+    createNewIdea({ showIdeasAfterCreate: true })
       .catch((error: any) => {
         toast.error(error.response?.data?.error || "Failed to create new idea");
       })
@@ -434,8 +432,8 @@ export const MenuBar = ({
               onClick={handleCreateNewIdea}
               className="hover:cursor-pointer"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              New draft
+              <StickyNote className="w-4 h-4 mr-2" />
+              Draft
             </DropdownMenuItem>
             <GenerateIdeasButton
               variant="ghost"

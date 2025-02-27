@@ -494,7 +494,6 @@ const TextEditor = ({
       </div>
       {publication && !!selectedIdea ? (
         <ScrollArea className="h-[calc(100vh-6rem)] w-full flex flex-col justify-start items-center relative mt-4 md:mt-0 pb-16">
-          {/* <ExpandButton /> */}
           {publication && (
             <DraftIndicator
               saving={saving}
