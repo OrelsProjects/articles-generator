@@ -2,11 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import usePayments from "@/lib/hooks/usePayments";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { CreditCard } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
 const LoadingRedirect = () => (
   <div className="min-h-screen h-full w-full flex items-center justify-center pb-16 bg-background">
@@ -77,6 +76,7 @@ export default function InitiatePlanFromLandingProvider({
   const productId = searchParams.get("pro_id");
   const priceId = searchParams.get("pri_id");
   const discountApplied = searchParams.get("promo");
+  const code = searchParams.get("code");
 
   useEffect(() => {
     if (productId && priceId) {
@@ -91,6 +91,11 @@ export default function InitiatePlanFromLandingProvider({
       });
     }
   }, [productId, priceId]);
+
+  if (code) {
+    // Means it's a free subscriber, no payment needed
+    return children;
+  }
 
   return loadingRedirect ? <LoadingRedirect /> : children;
 }
