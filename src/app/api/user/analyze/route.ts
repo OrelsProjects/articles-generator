@@ -174,11 +174,27 @@ export async function POST(req: NextRequest) {
       image,
       title: userPublication?.name || userPublication?.copyright || "",
       description,
-      url: buildSubstackUrl(
-        publicationFromDb?.subdomain,
-        publicationFromDb?.customDomain,
-      ) || "",
+      url:
+        buildSubstackUrl(
+          publicationFromDb?.subdomain,
+          publicationFromDb?.customDomain,
+        ) || "",
     };
+
+    const scrapeAllArticlesUrl = process.env.TRIGGER_LAMBDAS_LAMBDA_URL;
+    if (scrapeAllArticlesUrl) {
+      // Run the lambda to scrape all articles and forget about it
+      void fetch(scrapeAllArticlesUrl, {
+        method: "GET",
+        body: JSON.stringify({
+          lambdaName: "substack-scraper",
+          body: {
+            url,
+            includeBody: "true",
+          },
+        }),
+      });
+    }
 
     return NextResponse.json({
       publication,

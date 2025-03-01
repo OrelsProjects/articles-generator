@@ -16,7 +16,7 @@ import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import { AlertCircle, AlertTriangle, HelpCircle, Link2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
-import { validateUrl } from "@/lib/utils/url";
+import { validateSubstackUrl, validateUrl } from "@/lib/utils/url";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Tooltip,
@@ -45,9 +45,10 @@ const ERRORS = {
       "Make sure your URL follows the format: your-blog.substack.com",
   },
   INVALID_SUBSTACK_URL: {
-    value: "Substack does not exist 🤔",
+    value: "Something's wrong with your URL 🤔",
     type: "warn" as const,
-    explanation: "Seems like the URL doesn't have a Substack. 🤔",
+    explanation:
+      "A valid URL looks like this: <strong>your-blog.substack.com</strong> or <strong>your-blog.com/co/ai/etc</strong>",
   },
   PUBLICATION_NOT_FOUND: {
     value: "Publication not found 🤔",
@@ -69,27 +70,41 @@ interface ErrorState {
   explanation: string;
 }
 
-export function AnalyzePublicationDialog() {
+interface AnalyzePublicationDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function AnalyzePublicationDialog({
+  open,
+  onOpenChange,
+}: AnalyzePublicationDialogProps) {
   const dispatch = useAppDispatch();
   const { analyzePublication, validatePublication } = usePublication();
   const { publications } = useAppSelector(state => state.publications);
   const { showAnalyzePublicationDialog } = useAppSelector(state => state.ui);
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
   const [loadingStates, setLoadingStates] = useState(loadingStatesConst);
 
   useEffect(() => {
+    if (open !== undefined) {
+      setIsOpen(open);
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (showAnalyzePublicationDialog) {
-      setOpen(true);
+      setIsOpen(true);
       dispatch(setShowAnalyzePublicationDialog(false));
     }
   }, [showAnalyzePublicationDialog]);
 
   useEffect(() => {
     if (publications.length > 0) {
-      setOpen(false);
+      setIsOpen(false);
     }
   }, [publications]);
 
@@ -98,14 +113,18 @@ export function AnalyzePublicationDialog() {
       setError(ERRORS.INVALID_URL);
       return;
     }
+    if (!validateSubstackUrl(url)) {
+      setError(ERRORS.INVALID_SUBSTACK_URL);
+      return;
+    }
     setError(null);
     setLoading(true);
-    setOpen(false);
+    setIsOpen(false);
     try {
       const { valid, hasPublication } = await validatePublication(url);
       if (!valid) {
         setError(ERRORS.INVALID_SUBSTACK_URL);
-        setOpen(true);
+        setIsOpen(true);
         return;
       }
       if (hasPublication) {
@@ -132,7 +151,7 @@ export function AnalyzePublicationDialog() {
           value: errorMessage,
         });
       }
-      setOpen(true);
+      setIsOpen(true);
     } finally {
       setLoading(false);
     }
@@ -140,7 +159,13 @@ export function AnalyzePublicationDialog() {
 
   return (
     <div id="create-publication-button">
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={isOpen}
+        onOpenChange={open => {
+          onOpenChange?.(open);
+          setIsOpen(open);
+        }}
+      >
         <DialogContent
           className="sm:max-w-[425px]"
           onOpenAutoFocus={e => e.preventDefault()}
@@ -198,7 +223,12 @@ export function AnalyzePublicationDialog() {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p className="text-sm">{error.explanation}</p>
+                        <p
+                          className="text-sm"
+                          dangerouslySetInnerHTML={{
+                            __html: error.explanation,
+                          }}
+                        />
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

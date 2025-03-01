@@ -58,7 +58,7 @@ export default function BlankPage({ hasPublication }: BlankPageProps) {
                     hidden: hasIdeas,
                   })}
                 >
-                  Or create a new idea from scratch and use AI to enhance it
+                  Or create a new idea from scratch and connect your Substack
                   later.
                 </p>
                 <Button

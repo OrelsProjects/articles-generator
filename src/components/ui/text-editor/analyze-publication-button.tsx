@@ -1,28 +1,14 @@
 import { usePublication } from "@/lib/hooks/usePublication";
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
-import { AlertCircle, AlertTriangle, HelpCircle, Link2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Link2 } from "lucide-react";
+import { Alert } from "@/components/ui/alert";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { validateUrl } from "@/lib/utils/url";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { motion } from "framer-motion";
 import { Logger } from "@/logger";
+import { AnalyzePublicationDialog } from "./analyze-publication-dialog";
 
 const loadingStatesConst = [
   { text: "Validating publication in our databases..." },
@@ -135,92 +121,18 @@ export function AnalyzePublicationButton({
 
   return (
     <div id="create-publication-button">
-      <Button onClick={() => setOpen(true)} variant={variant} className={className}>
+      <Button
+        onClick={() => setOpen(true)}
+        variant={variant}
+        className={className}
+      >
         <Link2 className="mr-2 h-4 w-4" />
         Connect Substack
       </Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[425px]" onOpenAutoFocus={(e) => e.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle>Connect your Substack</DialogTitle>
-            <DialogDescription>
-              Enter your Substack URL to connect your newsletter. We&apos;ll
-              analyze your content and writing style.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-4">
-              <Input
-                id="substackUrl"
-                placeholder="your-blog.substack.com"
-                className="col-span-4"
-                value={url}
-                onChange={e => setUrl(e.target.value)}
-                // disabled={loading}
-                autoFocus
-                onKeyDown={e => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                }}
-              />
-
-            <AnimatePresence mode="popLayout">
-              {error?.value && (
-                <MotionAlert
-                  key={error.value}
-                  variant={error.type === "error" ? "destructive" : "warning"}
-                  className="flex flex-row items-center pb-1.5 pr-2"
-                >
-                  {error.type === "error" ? (
-                    <AlertCircle className="h-4 w-4" />
-                  ) : (
-                    <AlertTriangle className="h-4 w-4" />
-                  )}
-                  <AlertDescription className="flex-1 leading-7">
-                    {error.value}
-                  </AlertDescription>
-                  <TooltipProvider delayDuration={350}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 rounded-full !p-0 !pb-1.5"
-                          type="button"
-                        >
-                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-sm">{error.explanation}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </MotionAlert>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="submit"
-              onClick={handleSubmit}
-              disabled={!url.trim() || loading}
-            >
-              {loading ? "Analyzing..." : "Connect Newsletter"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <MultiStepLoader
-        loadingStates={loadingStates}
-        loading={loading}
-        duration={3000}
-        loop={false}
+      <AnalyzePublicationDialog
+        open={open}
+        onOpenChange={setOpen}
       />
     </div>
   );
