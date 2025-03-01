@@ -12,7 +12,11 @@ import loggerServer from "@/loggerServer";
 import { getUserArticlesBody } from "@/lib/dal/articles";
 import { toValidUrl } from "@/lib/utils/url";
 
-export const getArticleEndpoint = (url: string, offset: number, limit: number) => {
+export const getArticleEndpoint = (
+  url: string,
+  offset: number,
+  limit: number,
+) => {
   return `${url}/api/v1/archive?sort=new&search=&offset=${offset}&limit=${limit}`;
 };
 
@@ -328,7 +332,6 @@ export async function populatePublications(
     //     podcastFields,
     //   } = convertPostsToDbRows(post);
 
-      
     //   // Audio Items
     //   // if (audioItems.length > 0) {
     //   //   for (const audio of audioItems) {
@@ -582,11 +585,7 @@ export async function setPublications(
   if (req && req.body && req.body.url) {
     let { url } = req.body;
     url = toValidUrl(url);
-    await populatePublications(
-      url,
-      includeBody,
-      maxArticlesToGetBody,
-    );
+    await populatePublications(url, includeBody, maxArticlesToGetBody);
     return;
   }
 

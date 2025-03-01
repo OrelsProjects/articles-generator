@@ -142,7 +142,6 @@ model Publication {
     language              String?   @map("language") @db.VarChar(50)
     explicit              Boolean?  @default(false) @map("explicit")
     isPersonalMode        Boolean?  @default(false) @map("is_personal_mode")
-    userId                BigInt?   @map("user_id")
 
     @@index([subdomain(ops: raw("gin_trgm_ops"))], map: "idx_publications_subdomain_trgm", type: Gin)
     @@map("publications")
