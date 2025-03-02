@@ -9,6 +9,8 @@ import {
   Dice2,
   Dices,
   DollarSign,
+  Copy,
+  Shuffle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -21,27 +23,27 @@ interface SolutionCardProps {
 const solutionCards: SolutionCardProps[] = [
   {
     icon: Bot,
-    title: "ChatGPT hijacks your voice",
+    title: "ChatGPT doesn't understand Substack",
     description:
-      "Your unique style and personality disappears into AI, making you sound like a robot.",
+      "Generic AI tools don't integrate with Substack, forcing you to constantly copy/paste and switch between platforms.",
   },
   {
-    icon: Bell,
-    title: "Too many distractions",
+    icon: Copy,
+    title: "Copy/paste workflow wastes time",
     description:
-      "You want a steralized place to write, but once you see those Substack notifications, you can't resist them.",
+      "You need a dedicated workspace that connects directly to Substack, not another tool that adds steps to your process.",
   },
   {
-    icon: Dices,
-    title: "Random, boring topics",
+    icon: Shuffle,
+    title: "Inconsistent newsletter quality",
     description:
-      "Generic, repeated ideas that don’t resonate with your audience or match your brand.",
+      "Without a specialized tool for newsletter writers, your content quality varies wildly from issue to issue.",
   },
   {
     icon: Clock,
     title: "Hours lost finding inspiration",
     description:
-      "Endless hours of reading and sifting through articles to spark a single article idea.",
+      "Successful Substack writers earning $1k+/month can't afford to waste time searching for their next great newsletter idea.",
   },
 ];
 
@@ -64,11 +66,11 @@ export default function OtherSolutions() {
     <div className="max-w-4xl pb-36 mx-auto px-6 md:px-0">
       <div className="mb-16">
         <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl">
-          Writing articles shouldn&apos;t be this{" "}
+          Growing your Substack shouldn&apos;t be this{" "}
           <span className="text-destructive">hard</span>
         </h2>
         <p className="mt-4 text-2xl text-muted-foreground text-center">
-          (Other solutions and tools)
+          (Problems with current solutions)
         </p>
       </div>
 

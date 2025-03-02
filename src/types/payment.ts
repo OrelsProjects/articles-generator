@@ -29,7 +29,7 @@ export const subscriptionEvents: EnabledEvent[] = [
   "customer.subscription.created",
   "customer.subscription.updated",
   "customer.subscription.deleted",
-  "customer.subscription.trial_will_end"
+  "customer.subscription.trial_will_end",
 ];
 
 export const invoiceEvents: EnabledEvent[] = [
@@ -62,6 +62,7 @@ export interface PriceStructure {
   cents: number;
   tokens: number;
   currency: string;
+  perMonth: number;
 }
 
 export interface Product {

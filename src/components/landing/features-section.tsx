@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Brain, Pen, Folders } from "lucide-react";
+import { Brain, Pen, Folders, DollarSign, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -17,43 +17,36 @@ const SubstackLogo = ({ className }: { className?: string }) => (
 );
 const features = [
   {
-    title: "Idea generation & outlines",
+    title: "Newsletter idea generation",
     description:
-      "Never stare at a blank page again. Get unique ideas, customized titles and outlines suggestions <strong>based on millions of the best articles in your niche</strong>.",
+      "Never stare at a blank page again. Get unique ideas, customized titles and outlines suggestions <strong>based on millions of the best Substack newsletters in your niche</strong>. Perfect for writers with <strong>20+ published newsletters</strong>.",
     icon: Brain,
-    // imageUrl: "/landing/generated-ideas.png",
     videoUrl:
       "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/generate-ideas.mp4",
     objectFit: "fit",
   },
   {
-    title: "Real-Time AI assistance",
+    title: "Direct Substack integration",
     description:
-      "Refine your tone, improve readability, and get more details without losing your writing style. <strong>Outline only.</strong>",
-    icon: Pen,
-    videoUrl:
-      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/ai-assistance.mp4",
-    objectFit: "fit",
-  },
-  {
-    title: "Same beloved text features",
-    description: `<strong>Pullquote?</strong> Check.
-      <br/><strong>Blockquote?</strong> Check.
-      <br/><strong>Easy copy to and from Substack?</strong> Check.
-      <br/><strong>Create a new Substack draft fast?</strong> Check.
-      <br/><br/> Something's missing? Send me a <a class="text-primary underline" href='mailto:orelsmail@gmail.com'>message</a> to my private email.
-      <br/>I'll take care of it.`,
+      "No more copying and pasting between ChatGPT and Substack. Write, enhance, and publish—all in one place. <strong>Save hours every week</strong> with our seamless workflow.",
     icon: SubstackLogo,
     videoUrl:
       "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/substack-adjusted-full.mp4",
     objectFit: "cover",
   },
   {
-    title: "No more mess in drafts",
-    description: `Easily organize your drafts into folders, instead of having them all in one place.
-      <br/>Oh, and deleting a draft doesn't take ages. ;)
-      `,
-    icon: Folders,
+    title: "AI assistance that preserves your voice",
+    description:
+      "Refine your tone, improve readability, and add details without losing your unique writing style. <strong>Grow your audience</strong> with consistently high-quality newsletters.",
+    icon: Pen,
+    videoUrl:
+      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/ai-assistance.mp4",
+    objectFit: "fit",
+  },
+  {
+    title: "Audience & income growth tools",
+    description: `Specifically designed for Substack writers earning <strong>$1k+/month</strong> who want to scale their newsletter business. Our tools help you <strong>increase subscriber engagement</strong> and <strong>boost your monthly income</strong>.`,
+    icon: DollarSign,
     videoUrl:
       "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/organized-folders.mp4",
     objectFit: "fit",
@@ -195,14 +188,14 @@ function FeaturesSection() {
     <section id="features" className="min-h-screen bg-background relative">
       <div className="w-screen max-w-5xl mx-auto px-4 py-16 md:px-0 relative">
         <p className="absolute w-full flex justify-center top-0 py-4 text-pink-400">
-          There&apos;s a better way...
+          The solution you&apos;ve been waiting for...
         </p>
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
-            Powerful features for modern writers
+            Powerful features for serious Substack writers
           </h2>
           <p className="text-muted-foreground/80 text-2xl font-normal">
-            (Everything you need)
+            (Designed for writers with 20+ newsletters earning $1k+/month)
           </p>
         </div>
 

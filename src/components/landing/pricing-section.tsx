@@ -13,8 +13,11 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { cn } from "@/lib/utils";
 import usePayments from "@/lib/hooks/usePayments";
 import { TooltipButton } from "@/components/ui/tooltip-button";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function Pricing({ className }: { className?: string }) {
+  const [billingCycle, setBillingCycle] = useState<"month" | "year">("year");
   const router = useCustomRouter();
   const { user } = useAppSelector(state => state.auth);
   const { upgradeSubscription } = usePayments();
@@ -76,6 +79,18 @@ export default function Pricing({ className }: { className?: string }) {
     }
   };
 
+  const yearlyPricePerMonth = useMemo(() => {
+    if (products.length === 0) return null;
+    const price =
+      parseInt(products[0].priceStructure.yearly.priceFormatted) / 12;
+    return price;
+    // If price is a round number, return the price minus 1 cent
+    // if (price === Math.round(price)) {
+    //   return (price - 0.01).toFixed(2);
+    // }
+    // return price.toFixed(2);
+  }, [products]);
+
   return (
     <motion.section
       id="pricing"
@@ -94,125 +109,113 @@ export default function Pricing({ className }: { className?: string }) {
           >
             <div className="bg-primary/10 text-primary px-4 py-2 rounded-full font-medium flex items-center gap-2">
               <Star className="h-4 w-4" />
-              <span>7-Day Free Trial on all plans</span>{" "}
+              <span>7-Day Free Trial on all plans</span>
             </div>
           </motion.div>
-          <div className="text-center mb-16">
+          <div className="text-center mb-8">
             <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4">
-              Start writing with a 7-day free trial. Cancel anytime.
+              Grow your Substack audience and income
             </h2>
             <p className="text-muted-foreground text-xl font-normal">
-              (Don&apos;t worry, I will remind you before your trial ends)
+              Perfect for writers with 20+ newsletters earning $1k+/month
             </p>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Pro Monthly */}
-          {products.map((product, index) => (
-            <motion.div
-              key={`${product.id}-monthly`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + index * 0.2, duration: 0.8 }}
+        {/* Billing cycle toggle */}
+        <div
+          className={cn("flex flex-col items-center mb-4", {
+            hidden: products.length === 0,
+          })}
+        >
+          <div className="relative p-1 rounded-full shadow-sm bg-background/70">
+            <RadioGroup
+              value={billingCycle}
+              onValueChange={value =>
+                setBillingCycle(value as "month" | "year")
+              }
+              className="flex items-center relative z-10"
             >
-              <Card
-                className={cn(
-                  "hover:shadow-lg transition-shadow duration-300 relative flex flex-col h-full overflow-hidden",
-                  userPlan === "month" && "border-2 border-primary",
-                )}
-              >
-                <div className="absolute top-0 left-0 w-full bg-primary/20 text-center py-1 text-sm font-medium">
-                  Billed monthly
-                </div>
-                <CardHeader className="pt-8">
-                  {userPlan === "month" && (
-                    <div className="absolute -top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                      Current Plan
-                    </div>
+              <div className="flex items-center">
+                <RadioGroupItem value="month" id="month" className="sr-only" />
+                <Label
+                  htmlFor="month"
+                  className={cn(
+                    "cursor-pointer px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
+                    billingCycle === "month"
+                      ? "text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
-                  <CardTitle className="flex items-center justify-between">
-                    <span>{product.name}</span>
-                    <div className="text-right">
-                      <span className="text-3xl font-bold">
-                        ${product.priceStructure.monthly.priceFormatted}
-                      </span>
-                      <div className="text-sm text-muted-foreground">
-                        per month
-                      </div>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col">
-                  <ul className="space-y-4 mb-8 flex-1">
-                    {product.features.map((feature, i) => (
-                      <li className="flex items-center" key={i}>
-                        <Check className="text-green-500 mr-2" size={16} />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {getPlanButton(
-                    "month",
-                    <TooltipButton
-                      tooltipContent={
-                        userPlan === "year"
-                          ? "Cannot downgrade. Cancel your yearly plan first."
-                          : ""
-                      }
-                      variant="outline"
-                      className={cn("w-full", {
-                        "opacity-50 cursor-not-allowed hover:bg-transparent":
-                          userPlan === "year",
-                      })}
-                      onClick={() =>
-                        handleGetStarted(
-                          product.id,
-                          product.priceStructure.monthly.id,
-                        )
-                      }
-                    >
-                      Start 7-Day Free Trial
-                    </TooltipButton>,
+                >
+                  Monthly
+                </Label>
+              </div>
+              <div className="flex items-center">
+                <RadioGroupItem value="year" id="year" className="sr-only" />
+                <Label
+                  htmlFor="year"
+                  className={cn(
+                    "cursor-pointer px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
+                    billingCycle === "year"
+                      ? "text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                >
+                  Yearly
+                </Label>
+              </div>
+            </RadioGroup>
 
-          {/* Pro Yearly */}
-          {products.map((product, index) => (
+            {/* Active background that moves based on selection */}
+            <div
+              className={cn(
+                "absolute top-1 bottom-1 rounded-full bg-primary transition-all duration-300 ease-in-out",
+                billingCycle === "month"
+                  ? "left-1 right-[50%]"
+                  : "left-[50%] right-1",
+              )}
+            />
+          </div>
+        </div>
+
+        <div className="max-w-md mx-auto">
+          {products.map(product => (
             <motion.div
-              key={`${product.id}-yearly`}
+              key={`${product.id}-${billingCycle}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 + index * 0.2, duration: 0.8 }}
+              transition={{ duration: 0.1 }}
+              className="w-full"
             >
-              <BackgroundGradient>
+              {billingCycle === "month" ? (
                 <Card
                   className={cn(
-                    "relative flex flex-col h-full border-0 overflow-hidden",
-                    userPlan === "year" && "border-2 border-primary",
+                    "hover:shadow-lg transition-shadow duration-300 relative flex flex-col h-full overflow-hidden",
+                    userPlan === "month" && "border-2 border-primary",
                   )}
                 >
                   <div className="absolute top-0 left-0 w-full bg-primary/20 text-center py-1 text-sm font-medium">
-                    Billed Annually • Save 36%
+                    Billed monthly
                   </div>
                   <CardHeader className="pt-8">
-                    {userPlan === "year" && (
+                    {userPlan === "month" && (
                       <div className="absolute -top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
                         Current Plan
                       </div>
                     )}
-                    <CardTitle className="flex items-center justify-between">
-                      <span>{product.name}</span>
+                    <CardTitle className="flex flex-col items-start justify-between mt-4">
+                      <span className="text-xl md:text-2xl mb-6">
+                        {product.name}
+                      </span>
                       <div className="text-right">
-                        <span className="text-3xl font-bold">
-                          ${product.priceStructure.yearly.priceFormatted}
-                        </span>
-                        <div className="text-sm text-muted-foreground">
-                          per year
-                        </div>
+                        <p className="flex items-center justify-start gap-1">
+                          <span className="text-3xl font-bold">
+                            ${product.priceStructure.monthly.dollars}
+                          </span>
+                          <div className="mt-2 text-sm text-muted-foreground">
+                            /mo
+                          </div>
+                        </p>
                       </div>
                     </CardTitle>
                   </CardHeader>
@@ -224,32 +227,110 @@ export default function Pricing({ className }: { className?: string }) {
                           <span>{feature}</span>
                         </li>
                       ))}
-                      <li className="flex items-center text-primary">
-                        <Plus className="mr-2" size={16} />
-                        <span>Extra 15 AI-powered ideas/day</span>
-                      </li>
-                      <li className="flex items-center text-primary">
-                        <Plus className="mr-2" size={16} />
-                        <span>Price locked forever</span>
-                      </li>
                     </ul>
                     {getPlanButton(
-                      "year",
-                      <Button
+                      "month",
+                      <TooltipButton
+                        tooltipContent={
+                          userPlan === "year"
+                            ? "Cannot downgrade. Cancel your yearly plan first."
+                            : ""
+                        }
+                        variant="outline"
+                        className={cn("w-full", {
+                          "opacity-50 cursor-not-allowed hover:bg-transparent":
+                            userPlan === "year",
+                        })}
                         onClick={() =>
                           handleGetStarted(
                             product.id,
-                            product.priceStructure.yearly.id,
+                            product.priceStructure.monthly.id,
                           )
                         }
-                        className="w-full bg-primary hover:bg-primary/90"
                       >
                         Start 7-Day Free Trial
-                      </Button>,
+                      </TooltipButton>,
                     )}
                   </CardContent>
                 </Card>
-              </BackgroundGradient>
+              ) : (
+                <BackgroundGradient>
+                  <Card
+                    className={cn(
+                      "relative flex flex-col h-full border-0 overflow-hidden",
+                      userPlan === "year" && "border-2 border-primary",
+                    )}
+                  >
+                    <div className="absolute top-0 left-0 w-full bg-primary/20 text-center py-1 text-sm font-medium">
+                      Billed Annually • Save 20%
+                    </div>
+                    <CardHeader className="pt-8">
+                      {userPlan === "year" && (
+                        <div className="absolute -top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                          Current Plan
+                        </div>
+                      )}
+                      <CardTitle className="flex flex-col items-start justify-between mt-4">
+                        <span className="text-xl md:text-2xl mb-6">
+                          {product.name}
+                        </span>
+                        <div className="text-right">
+                          <p className="flex items-center justify-start gap-1">
+                            <span className="text-3xl font-bold">
+                              ${yearlyPricePerMonth}
+                            </span>
+                            <div className="mt-2 text-sm text-muted-foreground">
+                              /mo
+                            </div>
+                          </p>
+                          {/* <p className="text-xs text-muted-foreground">
+                            ${yearlyPrice} billed annually
+                          </p> */}
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex flex-col">
+                      <ul className="space-y-4 mb-8 flex-1">
+                        {product.features.map((feature, i) => (
+                          <li className="flex items-center" key={i}>
+                            <Check className="text-green-500 mr-2" size={16} />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                        <li className="flex items-center text-primary">
+                          <div className="flex items-center justify-start col gap-0">
+                            <p className="flex items-center">
+                              <Plus className="mr-2" size={16} />
+                              <span>Chrome extension</span>
+                            </p>
+                            <p className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-md ml-2">
+                              coming soon
+                            </p>
+                          </div>
+                        </li>
+                        <li className="flex items-center text-primary">
+                          <Plus className="mr-2" size={16} />
+                          <span>Price locked forever</span>
+                        </li>
+                      </ul>
+                      {getPlanButton(
+                        "year",
+                        <Button
+                          onClick={() =>
+                            handleGetStarted(
+                              product.id,
+                              product.priceStructure.yearly.id,
+                            )
+                          }
+                          className="w-full bg-primary hover:bg-primary/90"
+                        >
+                          Start 7-Day Free Trial
+                        </Button>,
+                      )}
+                    </CardContent>
+                  </Card>
+                </BackgroundGradient>
+              )}
             </motion.div>
           ))}
         </div>

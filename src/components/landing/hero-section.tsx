@@ -1,66 +1,106 @@
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
-import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 import Link from "next/link";
 
 export const HeroSection = () => (
-  <section className="min-h-[98vh] container py-12 mx-auto flex flex-col items-center justify-center">
-    <div className="w-screen container bg-base-100 flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-12 py-8 lg:py-20 px-6 md:px-0 xl:px-20">
-      {/* Left side content */}
+  <section className="h-[100vh] w-screen max-w-6xl mx-auto flex flex-col items-center justify-start py-12 pb-28 relative">
+    {/* Background grid lines */}
+    <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+      {/* Vertical lines */}
+      <div className="absolute inset-0 flex justify-between h-[33rem] w-full">
+        {[...Array(2)].map((_, i) => (
+          <div
+            key={`v-line-${i}`}
+            className="h-full w-0.5 bg-gradient-to-b from-transparent to-primary/20"
+          />
+        ))}
+      </div>
+      <div className="absolute inset-0 top-[33rem] flex justify-between h-[calc(100%-33rem)] w-full">
+        {[...Array(2)].map((_, i) => (
+          <div
+            key={`v-line-${i}`}
+            className="h-[full] w-0.5 bg-primary/20"
+          />
+        ))}
+      </div>
+
+      {/* Horizontal lines */}
+      <div className="absolute inset-0 flex flex-col justify-end pb-5 gap-20 h-[33rem]">
+        {[...Array(2)].map((_, i) => (
+          <div
+            key={`h-line-${i}`}
+            className={cn("w-full h-0.5 bg-primary/20", {
+              "bg-primary/0": i === 1,
+            })}
+          />
+        ))}
+      </div>
+      {/* <div className="absolute bottom-2 flex justify-between w-full h-[27rem]">
+        {[...Array(11)].map((_, i) => (
+          <div
+            key={`v-line-${i}`}
+            className={cn("h-full w-5 border-x-2 border-primary/20", {
+              "border-none": i === 0 || i === 10,
+            })}
+          />
+        ))}
+      </div> */}
+
+      {/* Blue accent line at the bottom */}
+      {/* <div className="absolute bottom-0 left-0 right-0 h-2 bg-primary/20 rounded-t-full" /> */}
+    </div>
+
+    <div className="w-screen container flex items-center justify-center relative z-10">
       <div className="flex-1 space-y-8 w-full">
-        <div className="flex flex-col gap-8 items-center lg:items-start text-center lg:text-left">
-          <h1 className="font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] md:-mb-4">
-            Write your next
-            Substack post in minutes.
+        <div className="flex flex-col gap-16 items-center text-center lg:text-left">
+          <h1 className="text-center font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] md:-mb-4">
+            Write the posts you need
+            <br />
+            to grow on{" "}
+            <span className="text-primary bg-primary/20 rounded-md p-1 py-0">
+              Substack
+            </span>
           </h1>
-          <p className="text-lg leading-relaxed max-w-xl">
-            The text editor that helps you find ideas, structure
-            outlines, and refine your writing—without replacing your voice.
-          </p>
 
           {/* Feature list */}
-          {/* Feature list */}
-          <ul className="space-y-3 w-full max-w-xl">
+          <ul className="w-full flex gap-2 justify-center">
             {[
-              "Personally-tailored unique ideas",
-              "Outline based on your writing style",
-              "Substack-like text editor",
+              "SEARCH VIRAL NOTES FOR IDEAS",
+              "WRITTEN DRAFT IN SECONDS",
+              "AI-ASSISTED TEXT-EDITOR",
             ].map((feature, index) => (
-              <li key={index} className="flex items-center space-x-3">
-                <CheckCircle className="h-5 w-5 flex-none text-primary" />
-                <span className="text-base md:text-lg leading-tight md:leading-relaxed text-left">
+              <li
+                key={index}
+                className="w-fit flex items-center space-x-3 bg-primary/10 rounded-full p-1 border border-primary/60 shadow-md shadow-primary/20"
+              >
+                <div className="bg-primary rounded-full p-1">
+                  <Check className="h-2 w-2 flex-none text-background" />
+                </div>
+                <span className="text-sm font-black text-primary leading-tight md:leading-relaxed text-left">
                   {feature}
                 </span>
               </li>
             ))}
           </ul>
 
-          <Button
-            size="lg"
-            className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground px-8 sm:px-20 py-6 font-semibold rounded-xl w-full sm:w-auto"
-            asChild
-          >
-            <Link href="#pricing">Try it for free</Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* Right side - Substack branding */}
-      <div className="hidden md:flex flex-col items-center justify-center gap-4 w-full lg:w-auto">
-        <Image
-          src="/landing/substack.png"
-          alt="Substack Logo"
-          width={300}
-          height={300}
-          className="w-32 h-32 sm:w-64 sm:h-64"
-        />
-        <div className="flex flex-col gap-2 items-center justify-center text-center">
-          <p className="text-3xl sm:text-5xl font-semibold text-primary">
-            For Substack writers
-          </p>
-          <p className="text-lg sm:text-xl font-semibold">
-            By Substack writers
-          </p>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <Button
+              size="lg"
+              className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground px-8 sm:px-16 py-6 font-bold rounded-xl w-full sm:w-auto"
+              asChild
+            >
+              <Link href="#pricing">Try 7-day free trial</Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-lg hover:bg-primary/10 px-8 sm:px-16 py-6 font-semibold rounded-xl w-full sm:w-auto"
+              asChild
+            >
+              <Link href="/login">Login</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

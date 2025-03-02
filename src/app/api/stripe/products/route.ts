@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
       const priceMonthlyValue = priceMonthly.unit_amount || 0;
       const priceYearlyValue = priceYearly.unit_amount || 0;
 
+      const priceYearlyPerMonth = (priceYearlyValue / 12 / 100).toFixed(2);
       const priceMonthlyDollars = priceMonthlyValue / 100;
       const priceYearlyDollars = priceYearlyValue / 100;
 
@@ -60,6 +61,7 @@ export async function GET(req: NextRequest) {
           dollars: priceMonthlyDollars,
           cents: priceMonthlyCents,
           tokens: parseInt(stripeProduct.metadata.tokens),
+          perMonth: priceMonthlyDollars,
           priceFormatted: formatPrice({
             priceWithCents: priceMonthlyValue,
           }),
@@ -71,6 +73,7 @@ export async function GET(req: NextRequest) {
           dollars: priceYearlyDollars,
           cents: priceYearlyCents,
           tokens: parseInt(stripeProduct.metadata.tokens),
+          perMonth: priceYearlyPerMonth,
           priceFormatted: formatPrice({
             priceWithCents: priceYearlyValue,
           }),

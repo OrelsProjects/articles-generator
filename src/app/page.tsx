@@ -101,12 +101,12 @@ const faq = [
   },
   {
     question: `Does ${appName} write for me?`,
-    answer: `No! ${appName} enhances your writing, but you are always in control. We provide tools and suggestions to improve your writing while maintaining your unique voice.`,
+    answer: `No! ${appName} enhances your writing, but you are always in control. We provide tools and suggestions to improve your newsletter while maintaining your unique voice.`,
   },
   {
     question: `Is this just another AI ghostwriter?`,
     answer: `No! ${appName} provides research, structure, and enhancement
-    tools—not AI-generated articles. We believe in augmenting human
+    tools—not AI-generated newsletters. We believe in augmenting human
     creativity, not replacing it.`,
   },
   {
@@ -146,12 +146,79 @@ function App() {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Header />
       <HeroSection />
+      
+      {/* Social Proof Banner */}
+      <motion.section
+        className="py-6 bg-primary/10"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        viewport={{ once: true }}
+      >
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-lg font-medium">
+            <span className="font-bold">1,000+ Substack writers</span> with <span className="font-bold">20+ published newsletters</span> trust {appName}
+          </p>
+          <div className="flex justify-center gap-8 mt-4">
+            <div className="flex items-center">
+              <div className="flex -space-x-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="w-8 h-8 rounded-full bg-primary/20 border-2 border-background flex items-center justify-center text-xs font-bold">
+                    {i}
+                  </div>
+                ))}
+              </div>
+              <span className="ml-2 text-sm font-medium">Earning $1k+/month</span>
+            </div>
+            <div className="flex items-center">
+              <div className="flex items-center">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+                <span className="ml-1 text-sm font-medium">4.9/5 (87 reviews)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Visual Demo Section - Moved higher up */}
+      <motion.section
+        className="py-16 bg-background"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        viewport={{ once: true }}
+      >
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Seamlessly Integrated with Substack
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              No more copying and pasting between ChatGPT and Substack. Write, enhance, and publish—all in one place.
+            </p>
+          </div>
+          
+          <div className="max-w-5xl mx-auto bg-card rounded-xl shadow-lg overflow-hidden">
+            <div className="p-6">
+              <EnhancmentDemo />
+            </div>
+            <div className="bg-muted p-4 text-center">
+              <p className="font-medium">Direct publishing to Substack with one click</p>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
       <OtherSolutions />
 
       {/* Features Section */}
       <FeaturesSection />
 
-      {/* Testimonials Section
+      {/* Testimonials Section */}
       <motion.section
         className="py-20 bg-muted"
         initial={{ opacity: 0 }}
@@ -160,19 +227,24 @@ function App() {
         viewport={{ once: true }}
       >
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
             Writers Love {appName}—Here&apos;s Why
           </h2>
+          <p className="text-xl text-center text-muted-foreground mb-16 max-w-3xl mx-auto">
+            Join successful Substack writers who are growing their audience and income with {appName}
+          </p>
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6">
-                <div className="flex items-start mb-4">
-                  <div className="bg-primary rounded-full p-2">
-                    <Pencil className="h-4 w-4 text-primary-foreground" />
-                  </div>
+              <div key={index} className="bg-card p-6 rounded-lg shadow-sm">
+                <div className="flex items-center mb-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  {testimonial.quote}
+                  &ldquo;{testimonial.quote}&rdquo;
                 </p>
                 <div>
                   <div className="font-semibold">{testimonial.author}</div>
@@ -180,11 +252,11 @@ function App() {
                     {testimonial.title}
                   </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </div>
-      </motion.section> */}
+      </motion.section>
 
       {/* Pricing Section */}
       <Pricing className="bg-muted" />
@@ -223,12 +295,11 @@ function App() {
       <section className="py-20 bg-gradient-to-r from-background to-muted-foreground/10">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">
-            Write Better. Stay Human.{" "}
-            <span className="text-primary">Let AI assist.</span>
+            Write Better Newsletters. Grow Your Audience.{" "}
+            <span className="text-primary">Increase Your Income.</span>
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Smarter writing, structured ideas, and a clutter-free workspace—all
-            in your control. Join 1,000+ writers using {appName} today.
+            Join 1,000+ Substack writers earning $1k+/month with {appName}&apos;s fully-integrated AI assistant.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button variant="outline" size="lg" asChild>
@@ -257,29 +328,29 @@ function App() {
 const painPoints = [
   {
     icon: <Lightbulb className="h-8 w-8 text-primary" />,
-    problem: "I never know what to write next, I run out of ideas.",
+    problem: "I never know what to write next in my newsletter.",
     problemDetails:
-      "You’ve got zero direction, no coherent theme, and every new sentence feels like it might be your last decent thought.",
+      "You've got zero direction, no coherent theme, and every new issue feels like you're starting from scratch.",
   },
   {
     icon: <BrainCircuit className="h-8 w-8 text-primary" />,
-    problem: "I want to refine my writing, but AI tools feel robotic.",
+    problem: "I want to refine my writing, but AI tools feel disconnected from Substack.",
     problemDetails:
-      "It’s like giving your work to a soulless machine—helpful, but it rarely sounds like you.",
+      "Constantly switching between ChatGPT and Substack breaks your flow and wastes valuable time.",
   },
   {
     icon: <FileEdit className="h-8 w-8 text-primary" />,
-    problem: "I waste too much time structuring my articles.",
+    problem: "I waste too much time structuring my newsletters.",
     problemDetails:
-      "You’re stuck mapping outlines and reorganizing paragraphs instead of actually writing anything worthwhile.",
+      "You're stuck mapping outlines and reorganizing paragraphs instead of growing your audience and income.",
   },
 ];
 
 const steps = [
   {
-    title: "AI-Powered idea generation",
+    title: "AI-Powered newsletter idea generation",
     description:
-      "Get title, subtitle & outline ideas based on 5M+ high-performing articles.",
+      "Get title, subtitle & outline ideas based on 5M+ high-performing Substack newsletters.",
     visual: (
       <div className="space-y-2">
         <div className="h-8 bg-muted rounded animate-pulse" />
@@ -289,16 +360,16 @@ const steps = [
     ),
   },
   {
-    title: "Smart text editing & enhancements",
-    description: `Expand ideas, refine tone, and improve clarity—all in one clean editor.<br/>
+    title: "Smart newsletter editing & enhancements",
+    description: `Expand ideas, refine tone, and improve clarity—all in one clean editor that integrates directly with Substack.<br/>
       And the best part? The AI will not add any text. Only refine what's already there.
       `,
     visual: <EnhancmentDemo />,
   },
   {
-    title: "Publish with confidence",
+    title: "Publish directly to Substack",
     description:
-      "A distraction-free, minimal UI so you can focus on what matters—your words.",
+      "One-click publishing to Substack so you can focus on what matters—growing your audience and income.",
     visual: (
       <div className="relative">
         <Edit3 className="h-12 w-12 text-primary mx-auto" />
@@ -309,19 +380,19 @@ const steps = [
 
 const testimonials = [
   {
-    quote: `${appName} helps me plan Substack posts faster than ever.`,
+    quote: `${appName} helps me plan Substack newsletters faster than ever, growing my subscriber base by 32% in just 3 months.`,
     author: "Jessica L.",
-    title: "8K subscribers",
+    title: "8K subscribers, $2.3K/month",
   },
   {
-    quote: "Finally, an AI tool that assists, not replaces my writing.",
+    quote: "Finally, an AI tool that integrates with Substack and assists without replacing my writing voice.",
     author: "David W.",
-    title: "Tech Blogger",
+    title: "Tech Newsletter, $1.8K/month",
   },
   {
-    quote: "This tool is a must-have for serious content creators.",
+    quote: "This tool is a must-have for serious Substack writers with 20+ posts who want to scale their income.",
     author: "Mark T.",
-    title: "Newsletter Writer",
+    title: "Newsletter Writer, $3.5K/month",
   },
 ];
 
