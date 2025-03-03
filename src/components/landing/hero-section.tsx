@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export const HeroSection = () => (
-  <section className="h-[100vh] w-screen max-w-6xl mx-auto flex flex-col items-center justify-start py-12 pb-28 relative">
+  <section className="h-fit min-h-screen w-screen max-w-6xl mx-auto flex flex-col items-center justify-start py-12 pb-28 relative">
     {/* Background grid lines */}
     <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
       {/* Vertical lines */}
@@ -18,10 +20,7 @@ export const HeroSection = () => (
       </div>
       <div className="absolute inset-0 top-[33rem] flex justify-between h-[calc(100%-33rem)] w-full">
         {[...Array(2)].map((_, i) => (
-          <div
-            key={`v-line-${i}`}
-            className="h-[full] w-0.5 bg-primary/20"
-          />
+          <div key={`v-line-${i}`} className="h-[full] w-0.5 bg-primary/20" />
         ))}
       </div>
 
@@ -100,6 +99,15 @@ export const HeroSection = () => (
             >
               <Link href="/login">Login</Link>
             </Button>
+          </div>
+          <div className="relative w-screen max-w-6xl h-[600px] bg-gradient-to-b from-primary via-primary/80 to-primary/60 rounded-[32px] flex items-center justify-center">
+            <motion.img
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+              src="/landing/landing-hero.png"
+              alt="Hero"
+              className="absolute mx-auto mt-32 w-screen max-w-5xl !h-[600px] rounded-[32px] shadow-md"
+            />
           </div>
         </div>
       </div>

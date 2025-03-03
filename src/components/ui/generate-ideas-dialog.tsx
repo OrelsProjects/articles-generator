@@ -11,10 +11,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { TooltipButton } from "@/components/ui/tooltip-button";
-import {
-  selectPublications,
-  setLoadingNewIdeas,
-} from "@/lib/features/publications/publicationSlice";
+import { setLoadingNewIdeas } from "@/lib/features/publications/publicationSlice";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { useIdea } from "@/lib/hooks/useIdea";
@@ -32,7 +29,7 @@ export default function GenerateIdeasDialog() {
   const { showGenerateIdeasDialog } = useAppSelector(selectUi);
   const { didExceedLimit, canUseSearch } = useSettings();
   const { generateIdeas } = useIdea();
-  const { usage } = useAppSelector(selectSettings);
+  const { credits } = useAppSelector(selectSettings);
   const [topic, setTopic] = useState("");
   const [shouldSearch, setShouldSearch] = useState(false);
 
@@ -54,8 +51,8 @@ export default function GenerateIdeasDialog() {
   };
 
   const usageLabel = useMemo(() => {
-    return `${usage.ideaGeneration.count}/${usage.ideaGeneration.max}`;
-  }, [usage]);
+    return `${credits.remaining}/${credits.total}`;
+  }, [credits]);
 
   return (
     <Dialog

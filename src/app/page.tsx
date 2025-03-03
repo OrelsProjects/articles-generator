@@ -148,7 +148,7 @@ function App() {
       <HeroSection />
       
       {/* Social Proof Banner */}
-      <motion.section
+      {/* <motion.section
         className="py-6 bg-primary/10"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -182,36 +182,7 @@ function App() {
             </div>
           </div>
         </div>
-      </motion.section>
-
-      {/* Visual Demo Section - Moved higher up */}
-      <motion.section
-        className="py-16 bg-background"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 1, ease: "easeOut" }}
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Seamlessly Integrated with Substack
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              No more copying and pasting between ChatGPT and Substack. Write, enhance, and publish—all in one place.
-            </p>
-          </div>
-          
-          <div className="max-w-5xl mx-auto bg-card rounded-xl shadow-lg overflow-hidden">
-            <div className="p-6">
-              <EnhancmentDemo />
-            </div>
-            <div className="bg-muted p-4 text-center">
-              <p className="font-medium">Direct publishing to Substack with one click</p>
-            </div>
-          </div>
-        </div>
-      </motion.section>
+      </motion.section> */}
 
       <OtherSolutions />
 

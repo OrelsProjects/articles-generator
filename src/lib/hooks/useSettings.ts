@@ -18,11 +18,11 @@ export const useSettings = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(selectAuth);
   const { publications } = useAppSelector(selectPublications);
-  const { usage } = useAppSelector(selectSettings);
+  const { credits } = useAppSelector(selectSettings);
 
   const didExceedLimit = useMemo(() => {
-    return usage.ideaGeneration.didExceed;
-  }, [usage]);
+    return credits.remaining <= 0;
+  }, [credits]);
 
   const hasPublication = useMemo(() => {
     // Can have ideas in an empty publication

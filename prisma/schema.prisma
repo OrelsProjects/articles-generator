@@ -137,7 +137,8 @@ model UserMetadata {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  plan      Plan? 
+  plan      Plan?
+  credits   Int      @default(0) // Available credits for the user
 
   publication PublicationMetadata? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -175,7 +176,7 @@ model Idea {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   publicationId String? @db.ObjectId
-  userId        String @db.ObjectId
+  userId        String  @db.ObjectId
 
   topic       String?
   title       String
@@ -200,12 +201,26 @@ model Idea {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   publication PublicationMetadata? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
 
   Image Image[]
 
   @@map("ideas")
+}
+
+model Note {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId String? @db.ObjectId
+
+  body     String
+  bodyJson Json
+  summary  String
+
+  handle String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Image {
@@ -305,6 +320,7 @@ model aiUsage {
   plan      Plan
   type      AIUsageType
   usageName String
+  credits   Int         @default(1) // Credits consumed by this usage
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -313,22 +329,27 @@ model aiUsage {
 }
 
 model Subscription {
-  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId             String    @db.ObjectId
-  plan               Plan // "free" | "pro" | "superPro"
-  stripeSubId        String    @unique // The Stripe subscription ID
-  status             String // "active", "canceled", etc.
-  startDate          DateTime  @default(now())
-  endDate            DateTime?
-  isTrialing         Boolean   @default(false)
-  trialStart         DateTime?
-  trialEnd           DateTime?
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  plan        Plan // "free" | "pro" | "superPro"
+  stripeSubId String    @unique // The Stripe subscription ID
+  status      String // "active", "canceled", etc.
+  startDate   DateTime  @default(now())
+  endDate     DateTime?
+  isTrialing  Boolean   @default(false)
+  trialStart  DateTime?
+  trialEnd    DateTime?
 
-  currentPeriodStart DateTime  @default(now())
+  // Credits information
+  creditsPerPeriod Int      @default(0) // Credits allocated per billing period
+  creditsRemaining Int      @default(0) // Credits remaining in current period
+  lastCreditReset  DateTime @default(now()) // When credits were last reset
+
+  currentPeriodStart DateTime @default(now())
   currentPeriodEnd   DateTime
-  cancelAtPeriodEnd  Boolean   @default(false)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  cancelAtPeriodEnd  Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

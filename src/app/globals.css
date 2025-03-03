@@ -302,71 +302,106 @@
   content: counter(level4) ".";
 }
 
-/* 
-    switch (node.attrs.level) {
-      case 1:
-        return [
-          "h1",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[2em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 2:
-        return [
-          "h2",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[1.625em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 3:
-        return [
-          "h3",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[1.375em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 4:
-        return [
-          "h4",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[1.125em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 5:
-        return [
-          "h5",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[0.83em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 6:
-        return [
-          "h6",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[0.67em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      default:
-        return ["h" + node.attrs.level, HTMLAttributes, 0];
-    } */
+li {
+  position: relative;
+  padding-left: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.5;
+}
+
+/* Apply dots only to unordered lists */
+ul li::before {
+  content: "";
+  position: absolute;
+  left: 0.5em;
+  top: 0.75em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.7;
+}
+
+/* Nested dots for unordered lists */
+ul ul li::before {
+  left: 0.25em;
+  width: 5px;
+  height: 5px;
+  opacity: 0.5;
+}
+
+ul ul ul li::before {
+  left: 0.25em;
+  width: 4px;
+  height: 4px;
+  opacity: 0.4;
+}
+
+/* Ensure proper list indentation */
+ul {
+  padding-left: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+/* Ordered list styling */
+ol {
+  counter-reset: level1;
+  list-style: none;
+  padding-left: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+ol > li {
+  counter-increment: level1;
+}
+
+ol > li::before {
+  content: counter(level1) ".";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 500;
+}
+
+/* Second level: a, b, c... */
+ol ol {
+  counter-reset: level2;
+  padding-left: 0.75em;
+}
+
+ol ol > li {
+  counter-increment: level2;
+}
+
+ol ol > li::before {
+  content: counter(level2, lower-alpha) ".";
+}
+
+/* Third level: i, ii, iii... */
+ol ol ol {
+  counter-reset: level3;
+}
+
+ol ol ol > li {
+  counter-increment: level3;
+}
+
+ol ol ol > li::before {
+  content: counter(level3, lower-roman) ".";
+}
+
+/* Fourth level: back to numbers */
+ol ol ol ol {
+  counter-reset: level4;
+}
+
+ol ol ol ol > li {
+  counter-increment: level4;
+}
+
+ol ol ol ol > li::before {
+  content: counter(level4) ".";
+}
 
 .text-editor-h1 {
   font-size: 2em;

@@ -414,6 +414,79 @@ ${currentReference}
   return { messages, model };
 };
 
+export const generateNotesPrompt = (
+  inspirationNotes: string[],
+  userNotes: string[],
+  noteCount: number = 3
+) => {
+  const messages = [
+    {
+      role: "system",
+      content: `
+    You are an expert at writing engaging and thought-provoking Substack notes. Your goal is to generate ${noteCount} new notes based on:
+    
+    - The user's writing style and previously written notes.
+    - A set of inspiration notes provided by the user.
+    
+    The generated notes should follow these guidelines:
+    
+    1. **Style Consistency**: Maintain the tone, phrasing, sentence length, and structure that the user prefers. If they use humor, be witty. If they are direct and to the point, be concise.
+    2. **Varied Yet Aligned**: Use the inspiration notes as a guide, but don't copy them exactly. Generate unique notes that are related to the inspiration notes.
+    3. **Avoid Repetition**: No note should be a simple rewording of an existing one—each should bring something fresh, even if it's an alternative take.
+    4. **No AI-Tell**: The writing should feel completely human, avoiding robotic structures or over-explaining.
+    5. **Rich-Text Format**: The notes should be formatted using the ProseMirror document schema, which is used in rich-text editors like Tiptap. This ensures the structured representation of the note.
+    6. **Add rich-text if needed**: If adding rich text adds value to the note, add it.
+    7. **Concise summary**: Add a concise summary, so when I send it again, you will not repeat the same notes.
+    The response **must** be an array of notes in the following JSON format, without additional text:
+    [
+      {
+        "body": "<Generated Note 1>",
+        "bodyJson": "<Generated Note 1 JSON>",
+        "summary": "<Generated Summary>"
+      },
+    ]
+      bodyJson should follow the ProseMirror document schema, which is used in rich-text editors like Tiptap. This ensures the structured representation of the note. The format is:
+          {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "text": "<Note Text>",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    }
+    Explanation of bodyJson fields:
+
+    "type": "doc" → Defines the root document structure.
+    "content" → Holds an array of paragraph objects.
+    Each "paragraph" contains a "content" array of inline elements, such as:
+    "text" → The actual text content of the note.
+    "type": "text" → Specifies that this is a plain text node.
+    Optional "marks" field can be added for formatting (e.g., links, bold text).
+    By using this structured format, the output will be compatible with rich-text editors while maintaining the user’s preferred writing style.
+    `,
+    },
+    {
+      role: "user",
+      content: `
+    Here are my previously written notes:
+    ${userNotes.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}
+    
+    Here are some inspiration notes I liked:
+    ${inspirationNotes.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}
+    
+    Generate ${noteCount} new notes in my writing style while drawing inspiration from these.`,
+    },
+  ];
+
+  return messages;
+};
+
 export const generateFirstMessagePrompt = (
   article: string,
   writer?: string,

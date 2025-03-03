@@ -52,7 +52,7 @@ const SolutionCard = ({
   title,
   description,
 }: SolutionCardProps) => (
-  <div className="p-6 bg-muted/50 rounded-lg shadow-sm border">
+  <div className="p-6 bg-background rounded-lg shadow-sm border">
     <div className="text-2xl mb-2 flex items-center gap-2">
       <Icon className="w-6 h-6 text-destructive" />
       <h3 className="font-medium">{title}</h3>
@@ -63,21 +63,23 @@ const SolutionCard = ({
 
 export default function OtherSolutions() {
   return (
-    <div className="max-w-4xl pb-36 mx-auto px-6 md:px-0">
-      <div className="mb-16">
-        <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl">
-          Growing your Substack shouldn&apos;t be this{" "}
-          <span className="text-destructive">hard</span>
-        </h2>
-        <p className="mt-4 text-2xl text-muted-foreground text-center">
-          (Problems with current solutions)
-        </p>
-      </div>
+    <div className="w-screen  bg-muted">
+      <div className="max-w-4xl pb-36 mx-auto px-6 md:px-0 py-32">
+        <div className="mb-16">
+          <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl">
+            Growing your Substack shouldn&apos;t be this{" "}
+            <span className="text-destructive">hard</span>
+          </h2>
+          <p className="mt-4 text-2xl text-muted-foreground text-center">
+            (Problems with current solutions)
+          </p>
+        </div>
 
-      <div className="grid gap-8 mt-12 md:grid-cols-2">
-        {solutionCards.map((card, index) => (
-          <SolutionCard key={index} {...card} />
-        ))}
+        <div className="grid gap-8 mt-12 md:grid-cols-2">
+          {solutionCards.map((card, index) => (
+            <SolutionCard key={index} {...card} />
+          ))}
+        </div>
       </div>
     </div>
   );

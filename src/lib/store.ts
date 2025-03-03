@@ -4,6 +4,7 @@ import publicationReducer from "@/lib/features/publications/publicationSlice";
 import uiReducer from "@/lib/features/ui/uiSlice";
 import productsReducer from "@/lib/features/products/productsSlice";
 import settingsReducer from "@/lib/features/settings/settingsSlice";
+import notesReducer from "@/lib/features/notes/notesSlice";
 
 export const makeStore = () => {
   return configureStore({
@@ -13,6 +14,7 @@ export const makeStore = () => {
       products: productsReducer,
       publications: publicationReducer,
       settings: settingsReducer,
+      notes: notesReducer,
     },
   });
 };

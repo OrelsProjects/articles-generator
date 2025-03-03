@@ -16,6 +16,8 @@ import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import CreditsDisplay from "./CreditsDisplay";
+import UsageDisplay from "./UsageDisplay";
 
 export function BillingSettings() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -171,6 +173,14 @@ export function BillingSettings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Credits Display */}
+        <CreditsDisplay />
+
+        {/* Usage Display */}
+        <div className="md:col-span-1">
+          <UsageDisplay />
+        </div>
       </div>
       {canUpgrade &&
         (hasSubscribed ? (
