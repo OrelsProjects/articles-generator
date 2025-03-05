@@ -27,17 +27,16 @@ const emptyTitleOptions: FormatOption[] = [
   },
 ];
 
-
 const titleOptions: FormatOption[] = [
-  {
-    type: "catchy",
-    label: "Make it catchier",
-    icon: Sparkles,
-  },
   {
     type: "better hook",
     label: "Better hook",
     icon: Feather,
+  },
+  {
+    type: "catchy",
+    label: "Make it catchier",
+    icon: Sparkles,
   },
   {
     type: "clearer",
