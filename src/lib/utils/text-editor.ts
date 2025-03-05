@@ -299,6 +299,57 @@ const PullQuote = Node.create({
   },
 });
 
+// Allow bold/italic/underline/strikethrough/code/list (numbers/dots)/blockquote
+// <p> has margin top-bottom of 6px.
+// images
+// Nothing else.
+export const notesTextEditorOptions = (
+  onUpdate?: (html: string) => void,
+  disabled?: boolean,
+): UseEditorOptions => ({
+  onUpdate: ({ editor }) => {
+    const html = editor.getHTML();
+    onUpdate?.(html);
+  },
+  editable: !disabled,
+  extensions: [
+    StarterKit.configure({
+      paragraph: {
+        HTMLAttributes: { class: cn("mb-5 leading-8", Lora.className) },
+      },
+    }),
+    BulletList,
+    ListItem,
+    Document,
+    CustomBlockquote,
+    CodeBlock,
+    Paragraph.configure({
+      HTMLAttributes: { class: "my-3" },
+    }),
+    Text,
+    CustomImage.configure({
+      inline: true,
+      HTMLAttributes: {
+        class: "max-w-full h-auto rounded-md my-2",
+      },
+    }),
+    Link.configure({
+      HTMLAttributes: {
+        class:
+          "text-primary underline underline-offset-4 hover:text-primary/80",
+      },
+    }),
+    Placeholder.configure({
+      placeholder: "What's on your mind?",
+    }),
+  ],
+  editorProps: {
+    attributes: {
+      class: "prose prose-sm max-w-none focus:outline-none",
+    },
+  },
+});
+
 export const textEditorOptions = (
   onUpdate?: (html: string) => void,
   disabled?: boolean,
@@ -391,4 +442,17 @@ export const loadContent = (markdownContent: string, editor: Editor | null) => {
   );
 
   editor?.commands.setContent(cleanedHtml);
+};
+
+export const htmlToRichText = (html: string) => {
+  const type = "text/html";
+  const blob = new Blob([html], { type });
+  const data = [new ClipboardItem({ [type]: blob })];
+
+  return data;
+};
+
+export const copyHTMLToClipboard = async (html: string) => {
+  const data = htmlToRichText(html);
+  await navigator.clipboard.write(data);
 };

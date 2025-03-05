@@ -1,9 +1,3 @@
-import { NotesComments } from "../../prisma/generated/articles";
-
-export type NoteCommentWithAttachment = NotesComments & {
-  attachment?: string;
-};
-
 export type JsonBody = {
   type: string;
   content: {
@@ -12,18 +6,30 @@ export type JsonBody = {
   }[];
 };
 
-export interface Note {
+export interface NoteDraft {
   id: string;
-  title: string;
   content: string;
-  thumbnail: string;
+  thumbnail?: string;
   jsonBody: any[];
   timestamp: Date;
   authorId: number;
   authorName: string;
+  attachments?: string[];
+}
+
+export interface Note {
+  id: string;
+  content: string;
+  thumbnail?: string;
+  jsonBody: any[];
+  timestamp: Date;
+  authorId: number;
+  authorName: string;
+  handle: string;
   reactionCount: number;
-  reactions: any[];
+  commentsCount: number;
   restacks: number;
+  attachment?: string;
 }
 
 function convertJsonToMarkdown(json: any): string {
@@ -139,4 +145,3 @@ export function convertJsonToHtml(json: any): string {
   }
   return processNode(json);
 }
-

@@ -1,19 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Note } from "@/types/note";
 import { RootState } from "@/lib/store";
-import { NotesComments } from "../../../../prisma/generated/articles";
-import { NoteCommentWithAttachment } from "@/types/note";
+import { Note, NoteDraft } from "@/types/note";
 
 export interface NotesState {
-  notes: Note[];
-  inspirationNotes: NoteCommentWithAttachment[];
-  selectedNote: Note | null;
+  userNotes: NoteDraft[];
+  inspirationNotes: Note[];
+  selectedNote: NoteDraft | null;
   loading: boolean;
   error: string | null;
 }
 
 export const initialState: NotesState = {
-  notes: [],
+  userNotes: [],
   inspirationNotes: [],
   selectedNote: null,
   loading: false,
@@ -25,41 +23,65 @@ const notesSlice = createSlice({
   initialState,
   reducers: {
     setNotes: (state, action: PayloadAction<Note[]>) => {
-      state.notes = action.payload;
+      state.userNotes = action.payload;
       state.loading = false;
       state.error = null;
     },
     addNote: (state, action: PayloadAction<Note>) => {
-      state.notes.push(action.payload);
+      state.userNotes.push(action.payload);
     },
-    updateNote: (
-      state,
-      action: PayloadAction<{
-        noteId: string;
-        title: string;
-        content: string;
-      }>,
-    ) => {
-      const note = state.notes.find(note => note.id === action.payload.noteId);
-      if (note) {
-        note.title = action.payload.title;
-        note.content = action.payload.content;
+    updateNote: (state, action: PayloadAction<Note>) => {
+      let newNote = state.userNotes.find(note => note.id === action.payload.id);
+      if (newNote) {
+        newNote = {
+          ...newNote,
+          ...action.payload,
+        };
+        state.userNotes = state.userNotes.map(note =>
+          note.id === action.payload.id && newNote ? newNote : note,
+        );
       }
     },
     setInspirationNotes: (
       state,
-      action: PayloadAction<NoteCommentWithAttachment[]>,
+      action: PayloadAction<Note[]>,
     ) => {
       state.inspirationNotes = action.payload;
     },
     addInspirationNotes: (
       state,
-      action: PayloadAction<NoteCommentWithAttachment[]>,
+      action: PayloadAction<{
+        notes: Note[];
+        options?: { toStart: boolean };
+      }>,
     ) => {
       debugger;
-      state.inspirationNotes.push(...action.payload);
+      if (action.payload.options?.toStart) {
+        state.inspirationNotes = [
+          ...action.payload.notes,
+          ...state.inspirationNotes,
+        ];
+      } else {
+        state.inspirationNotes.push(...action.payload.notes);
+      }
     },
-    setSelectedNote: (state, action: PayloadAction<Note | null>) => {
+    addNotes: (
+      state,
+      action: PayloadAction<{
+        notes: Note[];
+        options?: { toStart: boolean };
+      }>,
+    ) => {
+      if (action.payload.options?.toStart) {
+        state.userNotes = [...action.payload.notes, ...state.userNotes];
+      } else {
+        state.userNotes.push(...action.payload.notes);
+      }
+    },
+    setSelectedNote: (
+      state,
+      action: PayloadAction<Note | null>,
+    ) => {
       state.selectedNote = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
@@ -75,6 +97,7 @@ const notesSlice = createSlice({
 export const {
   setNotes,
   addNote,
+  addNotes,
   updateNote,
   setSelectedNote,
   setLoading,

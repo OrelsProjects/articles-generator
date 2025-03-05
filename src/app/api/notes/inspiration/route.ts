@@ -4,7 +4,8 @@ import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { NotesComments } from "../../../../../prisma/generated/articles";
+import { NotesComments } from "@/../prisma/generated/articles";
+import { Note } from "@/types/note";
 
 const filterNotes = (notes: NotesComments[]) => {
   const uniqueInspirations = notes.filter(
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const query = `You are interested in ${publication.topics}.\nProvide **only** generic data, not specific advice.`;
+    const query = `${publication.topics}.`;
     console.log("query", query);
     const randomMinReaction = Math.floor(Math.random() * 200);
     const randomMaxReaction =
@@ -82,11 +83,6 @@ export async function POST(req: NextRequest) {
         rightSideValue: `["${existingNotesIds.join('","')}"]`,
         operator: "not in",
       },
-      // {
-      //   leftSideValue: "comment_count",
-      //   rightSideValue: randomMaxComment.toString(),
-      //   operator: "<=",
-      // },
     ];
 
     const inspirationNotes = await searchSimilarNotes({
@@ -112,7 +108,35 @@ export async function POST(req: NextRequest) {
       return { ...note, attachment: attachment?.imageUrl };
     });
 
-    return NextResponse.json(filteredNotesWithAttachments);
+    /**
+     *   id: string;
+  content: string;
+  thumbnail?: string;
+  jsonBody: any[];
+  timestamp: Date;
+  authorId: number;
+  authorName: string;
+  handle: string;
+  reactionCount: number;
+  commentsCount: number;
+  restacks: number;
+  attachment?: string;
+     */
+    const notesResponse: Note[] = filteredNotesWithAttachments.map(note => ({
+      id: note.commentId,
+      content: note.body,
+      jsonBody: note.bodyJson as any[],
+      timestamp: note.date,
+      authorId: note.authorId,
+      authorName: note.handle,
+      handle: note.handle,
+      reactionCount: note.reactionCount,
+      commentsCount: note.commentsCount || 0,
+      restacks: note.noteIsRestacked ? 1 : 0,
+      attachment: note.attachment || undefined,
+    }));
+
+    return NextResponse.json(notesResponse);
   } catch (error: any) {
     loggerServer.error("Failed to fetch notes", error);
     return NextResponse.json(

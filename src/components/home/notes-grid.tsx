@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
 import { useNotes } from "@/lib/hooks/useNotes";
-import { convertJsonToHtml, NoteCommentWithAttachment } from "@/types/note";
+import { convertJsonToHtml, Note } from "@/types/note";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { RefreshCw, Heart, MessageCircle } from "lucide-react";
@@ -12,14 +12,24 @@ import { Button } from "@/components/ui/button";
 import { NotesComments } from "../../../prisma/generated/articles";
 import { ImageModal } from "@/components/ui/image-modal";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
-export default function HomeContent() {
-  const { loading, error, fetchNotes, notes } = useNotes();
+export default function NotesGrid() {
+  const { loading, error, fetchNotes, notes, selectNote } = useNotes();
   // Track expanded cards
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>(
     {},
   );
-  const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{
+    url: string;
+    alt: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const toggleCardExpansion = (id: string) => {
     setExpandedCards(prev => ({
@@ -27,6 +37,8 @@ export default function HomeContent() {
       [id]: !prev[id],
     }));
   };
+
+  const shouldShowError = error && !notes.length;
 
   if (loading && !notes.length) {
     return (
@@ -43,7 +55,7 @@ export default function HomeContent() {
     );
   }
 
-  if (error) {
+  if (shouldShowError) {
     return (
       <div className="container mx-auto py-12 text-center bg-background min-h-screen">
         <h1 className="text-4xl font-bold mb-8 text-foreground">
@@ -62,11 +74,11 @@ export default function HomeContent() {
 
   // Transform notes into the format expected by MasonryGrid
   const gridCards = notes.map(
-    (note: NoteCommentWithAttachment, index: number) => {
+    (note: Note, index: number) => {
       const isExpanded = expandedCards[note.id] || false;
 
       // Convert HTML content to a format we can manipulate
-      const htmlContent = convertJsonToHtml(note.bodyJson);
+      const htmlContent = convertJsonToHtml(note.jsonBody);
 
       return {
         id: parseInt(note.id),
@@ -74,13 +86,19 @@ export default function HomeContent() {
         content: (
           <div className="flex flex-col">
             <div className="flex items-start">
-              <div 
+              <div
                 className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0 overflow-hidden cursor-pointer"
-                onClick={() => note.photoUrl && setSelectedImage({ url: note.photoUrl, alt: note.handle || "Author" })}
+                onClick={() =>
+                  note.thumbnail &&
+                  setSelectedImage({
+                    url: note.thumbnail,
+                    alt: note.handle || "Author",
+                  })
+                }
               >
-                {note.photoUrl ? (
+                {note.thumbnail ? (
                   <Image
-                    src={note.photoUrl}
+                    src={note.thumbnail}
                     alt={note.handle || "Author"}
                     width={40}
                     height={40}
@@ -112,8 +130,8 @@ export default function HomeContent() {
                 <div className="mt-1 relative">
                   <div
                     className={cn(
-                      "text-base text-foreground overflow-hidden transition-all duration-200",
-                      isExpanded ? "max-h-none" : "max-h-[200px]"
+                      "relative text-base text-foreground overflow-hidden transition-all duration-200",
+                      isExpanded ? "max-h-none" : "max-h-[200px]",
                     )}
                   >
                     <div
@@ -122,31 +140,41 @@ export default function HomeContent() {
                         __html: htmlContent,
                       }}
                     />
-                    {!isExpanded && (
-                      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent" />
-                    )}
                   </div>
-                  {note.attachment && (
-                    <div 
-                      className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
-                      onClick={() => setSelectedImage({ url: note.attachment!, alt: "Note attachment" })}
+                  <div className="relative h-full w-full">
+                    <button
+                      onClick={() => toggleCardExpansion(note.id)}
+                      className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto z-10"
                     >
-                      <Image
-                        src={note.attachment}
-                        alt="Attachment"
-                        width={400}
-                        height={300}
-                        className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
-                      />
-                    </div>
-                  )}
-                  <button
-                    onClick={() => toggleCardExpansion(note.id)}
-                    className="text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto"
-                  >
-                    {isExpanded ? "less" : "more"}
-                  </button>
+                      {isExpanded ? "less" : "more"}
+                    </button>
+                    <div
+                      className={cn(
+                        "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent z-0",
+                        isExpanded ? "opacity-0" : "opacity-100",
+                      )}
+                    />
+                  </div>
                 </div>
+                {note.attachment && (
+                  <div
+                    className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
+                    onClick={() =>
+                      setSelectedImage({
+                        url: note.attachment!,
+                        alt: "Note attachment",
+                      })
+                    }
+                  >
+                    <Image
+                      src={note.attachment}
+                      alt="Attachment"
+                      width={400}
+                      height={300}
+                      className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
+                    />
+                  </div>
+                )}
 
                 <div className="flex justify-between items-center mt-3">
                   <div className="flex space-x-3">
@@ -166,6 +194,7 @@ export default function HomeContent() {
                   <Button
                     variant="outline"
                     className="text-primary/80 text-sm shadow-none"
+                    onClick={() => selectNote(note)}
                   >
                     <p className="text-xs">Edit & post</p>
                   </Button>

@@ -45,6 +45,8 @@ export async function runPrompt(
 
   let llmResponse = response.data.choices[0].message.content;
 
+  console.log("Prompt output token count:", getTokenCount(llmResponse));
+
   if (!model.includes("anthropic")) {
     llmResponse = llmResponse.replace(/```json|```/g, "").trim();
   }

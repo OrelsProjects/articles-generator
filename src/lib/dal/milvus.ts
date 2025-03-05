@@ -168,7 +168,7 @@ async function searchSimilarNotes({
 }: SearchOptions) {
   const MILVUS_API_KEY = process.env.MILVUS_API_KEY;
   const MILVUS_ENDPOINT = process.env.MILVUS_ENDPOINT;
-  const COLLECTION_NAME = "notes";
+  const COLLECTION_NAME = "notes_copy";
   if (!MILVUS_API_KEY || !MILVUS_ENDPOINT) {
     throw new Error("Missing Milvus configuration");
   }

@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
-import HomeContent from "@/components/home/notes-grid";
+import React, { useState } from "react";
+import NotesGrid from "@/components/home/notes-grid";
 import Sidebar from "@/components/home/sidebar";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Edit, Info } from "lucide-react";
+import { RefreshCw, Edit, Info, Plus } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useNotes } from "@/lib/hooks/useNotes";
+import GenerateNotesSidebar from "@/components/home/generate-notes-sidebar";
 
 export default function HomePage() {
   const { loading, fetchNotes } = useNotes();
@@ -23,8 +24,8 @@ export default function HomePage() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="flex-1 overflow-auto relative">
+        <div className="max-w-7xl mx-auto px-4 py-6 z-10">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center mb-1">
@@ -68,16 +69,21 @@ export default function HomePage() {
                 className="text-sm flex items-center gap-2 rounded-md bg-gradient-to-b from-primary via-primary/80 to-primary/60 text-primary-foreground shadow-md border-primary border px-4 py-2 transition-colors"
               >
                 <RefreshCw
-                  className={cn("h-4 w-4", { "animate-spin": loading })}
+                  className={cn("h-4 w-4 hidden", {
+                    "animate-spin block": loading,
+                  })}
                 />
-                Refresh
+                <Plus className={cn("h-4 w-4", { hidden: loading })} />
+                Find more
               </Button>
             </div>
           </div>
 
           {/* Content */}
-          <HomeContent />
+          <NotesGrid />
         </div>
+
+        <GenerateNotesSidebar />
       </div>
     </div>
   );

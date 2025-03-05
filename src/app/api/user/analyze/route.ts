@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     // Check if the articles have a bodyText
     // If less than 50%, get their body as well.
     let articlesWithBody = userArticles.filter(article => article.bodyText);
-    if (articlesWithBody.length < userArticles.length * 0.5) {
+    if (articlesWithBody.length <= userArticles.length * 0.5) {
       const freeArticles = userArticles.filter(
         article => article.audience === "everyone",
       );

@@ -7,27 +7,38 @@ import {
   setError,
   setSelectedNote,
   addInspirationNotes,
+  addNotes,
 } from "@/lib/features/notes/notesSlice";
 import { Note } from "@/types/note";
 import axios from "axios";
 
 export const useNotes = () => {
   const dispatch = useAppDispatch();
-  const { notes, selectedNote, loading, error, inspirationNotes } =
-    useAppSelector(selectNotes);
+  const {
+    userNotes: notes,
+    selectedNote,
+    loading,
+    error,
+    inspirationNotes,
+  } = useAppSelector(selectNotes);
 
-  const loadingRef = useRef(false);
-
-  const fetchNotes = async () => {
-    if (loadingRef.current) return;
+  const loadingInspirationRef = useRef(false);
+  const loadingNotesRef = useRef(false);
+  const fetchInspirationNotes = async () => {
+    if (loadingInspirationRef.current) return;
     try {
-      loadingRef.current = true;
+      loadingInspirationRef.current = true;
       dispatch(setLoading(true));
       const response = await axios.post("/api/notes/inspiration", {
         existingNotesIds: inspirationNotes.map(note => note.id),
       });
       dispatch(setError(null));
-      dispatch(addInspirationNotes(response.data));
+      dispatch(
+        addInspirationNotes({
+          notes: response.data,
+          options: { toStart: true },
+        }),
+      );
     } catch (error) {
       dispatch(
         setError(
@@ -37,7 +48,33 @@ export const useNotes = () => {
       console.error("Error fetching notes:", error);
     } finally {
       dispatch(setLoading(false));
-      loadingRef.current = false;
+      loadingInspirationRef.current = false;
+    }
+  };
+
+  const fetchNotes = async () => {
+    if (loadingNotesRef.current) return;
+    try {
+      loadingNotesRef.current = true;
+      dispatch(setLoading(true));
+      const response = await axios.get("/api/user/notes");
+      dispatch(setError(null));
+      dispatch(
+        addNotes({
+          notes: response.data,
+          options: { toStart: true },
+        }),
+      );
+    } catch (error) {
+      dispatch(
+        setError(
+          error instanceof Error ? error.message : "An unknown error occurred",
+        ),
+      );
+      console.error("Error fetching notes:", error);
+    } finally {
+      dispatch(setLoading(false));
+      loadingNotesRef.current = false;
     }
   };
 
@@ -48,18 +85,37 @@ export const useNotes = () => {
     [dispatch],
   );
 
+  const generateNewNote = useCallback(async () => {
+    try {
+      const response = await axios.post<Note[]>("/api/notes/generate?count=1", {
+        existingNotesIds: notes.map(note => note.id),
+      });
+      dispatch(addNotes({ notes: response.data, options: { toStart: true } }));
+      selectNote(response.data[0]);
+    } catch (error) {
+      console.error("Error generating new note:", error);
+    }
+  }, [dispatch]);
+
   useEffect(() => {
     if (inspirationNotes.length === 0) {
       fetchNotes();
     }
   }, [inspirationNotes]);
 
+  useEffect(() => {
+    if (notes.length === 0) {
+      fetchInspirationNotes();
+    }
+  }, []);
+
   return {
     notes: inspirationNotes,
     selectedNote,
     loading,
     error,
-    fetchNotes,
+    fetchNotes: fetchInspirationNotes,
     selectNote,
+    generateNewNote,
   };
 };

@@ -16,6 +16,8 @@ import {
   unformatText,
   textEditorOptions,
   loadContent,
+  htmlToRichText,
+  copyHTMLToClipboard,
 } from "@/lib/utils/text-editor";
 import { Logger } from "@/logger";
 import cuid from "cuid";
@@ -351,11 +353,7 @@ const TextEditor = ({
         break;
     }
 
-    const type = "text/html";
-    const blob = new Blob([text], { type });
-    const data = [new ClipboardItem({ [type]: blob })];
-
-    await navigator.clipboard.write(data);
+    await copyHTMLToClipboard(text);
   };
 
   // Add this effect to handle scroll reset

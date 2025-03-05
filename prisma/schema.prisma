@@ -211,13 +211,27 @@ model Idea {
 
 model Note {
   id     String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId String? @db.ObjectId
+  userId String @db.ObjectId
 
   body     String
   bodyJson Json
   summary  String
+  type     String?
 
+  authorId Int
   handle String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("note")
+}
+
+model NoteSuggestions {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @db.ObjectId
+  noteId String @db.ObjectId  
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
