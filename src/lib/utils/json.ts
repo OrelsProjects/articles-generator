@@ -25,13 +25,14 @@ export async function parseJson<T>(
   try {
     parsedJson = JSON.parse(json);
   } catch (error: any) {
-    loggerServer.error("Error parsing JSON:", error);
+    loggerServer.warn("Error parsing JSON:", error);
     const jsonFixedSync = fixJson<T>(json);
     if (!jsonFixedSync) {
       const jsonFixedString = await runPrompt(fixJsonPrompt(json), model);
       let jsonFixed = jsonFixedString.replace("```json", "").replace("```", "");
       const jsonFixedObject = fixJson<{ json: T }>(jsonFixed);
       if (!jsonFixedObject) {
+        loggerServer.error("Failed to fix JSON:", { jsonFixed });
         throw new Error("Failed to fix JSON");
       }
       const attemptParseJson = jsonFixedObject.json;

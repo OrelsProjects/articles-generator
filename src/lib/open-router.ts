@@ -7,6 +7,7 @@ export type Model =
   | "openai/gpt-4o"
   | "openai/gpt-4o-mini"
   | "anthropic/claude-3.7-sonnet"
+  | "anthropic/claude-3.5-sonnet"
   | "google/gemini-2.0-flash-001";
 
 function getTokenCount(text: string) {
