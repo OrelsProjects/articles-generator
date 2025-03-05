@@ -294,6 +294,7 @@ export const generateImprovementPrompt = (
             ? `
           - If there is a bulleted list, elaborate on each item in the list add more details, more information, more context, etc. Bold the title of the item you elaborate on and write the new text in a new line.
           - No matter what, never cut short the text. Elaborate on everything, and if you can't elaborate on something, just write the original text.
+          - Use the article context as a guideline to the writing style of the elaborated response.
           `
             : ""
         }
@@ -316,7 +317,7 @@ export const generateImprovementPrompt = (
       Text: ${text}
        ${
          idea
-           ? `Article:
+           ? `Article context:
       ${idea?.body.slice(0, 3000)}`
            : ""
        }
