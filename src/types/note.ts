@@ -1,3 +1,8 @@
+import { marked } from "marked";
+
+export type NoteStatus = "draft" | "generated" | "published" | "archived";
+export type NoteFeedback = "dislike" | "like";
+
 export type JsonBody = {
   type: string;
   content: {
@@ -8,19 +13,26 @@ export type JsonBody = {
 
 export interface NoteDraft {
   id: string;
-  content: string;
   thumbnail?: string;
-  jsonBody: any[];
+  body: string;
+  jsonBody?: any[];
   timestamp: Date;
-  authorId: number;
+  authorId: number | null;
+  name?: string;
+  handle?: string;
+  status: NoteStatus;
+  feedback?: NoteFeedback;
+  feedbackComment?: string;
   authorName: string;
   attachments?: string[];
 }
 
 export interface Note {
   id: string;
+  entityKey: string;
   content: string;
   thumbnail?: string;
+  body: string;
   jsonBody: any[];
   timestamp: Date;
   authorId: number;
@@ -29,7 +41,7 @@ export interface Note {
   reactionCount: number;
   commentsCount: number;
   restacks: number;
-  attachment?: string;
+  attachments?: string[];
 }
 
 function convertJsonToMarkdown(json: any): string {
@@ -91,6 +103,18 @@ function convertJsonToMarkdown(json: any): string {
   return processNode(json);
 }
 
+export async function convertMDToHtml(md: string) {
+  marked.setOptions({
+    breaks: true, // Enable line breaks
+    gfm: true, // Enable GitHub Flavored Markdown
+  });
+
+  // Replace arrow characters with HTML entities
+  const processedMd = md.replace(/→/g, "&rarr;");
+
+  return marked.parse(processedMd);
+}
+
 // Function to convert a JSON rich text structure to HTML
 export function convertJsonToHtml(json: any): string {
   // Recursive helper to process each node
@@ -144,4 +168,23 @@ export function convertJsonToHtml(json: any): string {
     }
   }
   return processNode(json);
+}
+
+export function noteToNoteDraft(
+  note: Note | NoteDraft | null,
+): NoteDraft | null {
+  if (!note) {
+    return null;
+  }
+  return {
+    id: note.id,
+    thumbnail: note.thumbnail,
+    body: note.body,
+    jsonBody: note.jsonBody,
+    timestamp: note.timestamp,
+    authorId: note.authorId,
+    status: "draft",
+    authorName: note.authorName,
+    attachments: note.attachments ? note.attachments : [],
+  };
 }

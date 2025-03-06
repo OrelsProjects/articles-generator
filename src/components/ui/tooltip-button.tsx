@@ -9,7 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface TooltipButtonProps extends ButtonProps {
-  tooltipContent: React.ReactNode;
+  tooltipContent?: React.ReactNode;
   tooltipSide?: "top" | "right" | "bottom" | "left";
   tooltipAlign?: "start" | "center" | "end";
   tooltipDelayDuration?: number;
@@ -36,7 +36,12 @@ export const TooltipButton = React.forwardRef<
     ref,
   ) => {
     return !tooltipContent ? (
-      <Button ref={ref} className={cn(className)} {...props}>
+      <Button
+        ref={ref}
+        className={cn(className)}
+        disabled={props.disabled}
+        {...props}
+      >
         {children}
       </Button>
     ) : (
@@ -45,6 +50,7 @@ export const TooltipButton = React.forwardRef<
           <TooltipTrigger asChild disabled={hideTooltip}>
             <Button
               ref={ref}
+              disabled={props.disabled}
               className={cn("", className)}
               onClick={e => {
                 e.preventDefault();

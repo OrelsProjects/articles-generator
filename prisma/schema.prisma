@@ -13,6 +13,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum NoteStatus {
+  draft
+  generated
+  published
+  archived
+}
+
+enum NoteFeedback {
+  dislike
+  like
+}
+
 enum IdeaStatus {
   noOutline
   new
@@ -149,6 +161,7 @@ model UserMetadata {
 model PublicationMetadata {
   id             String @id @default(auto()) @map("_id") @db.ObjectId
   idInArticlesDb Int?
+  authorId       Int?
 
   publicationUrl String  @unique
   image          String?
@@ -210,16 +223,25 @@ model Idea {
 }
 
 model Note {
-  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @db.ObjectId
 
-  body     String
-  bodyJson Json
-  summary  String
-  type     String?
+  body      String
+  bodyJson  Json?
+  summary   String
+  type      String?
+  thumbnail String?
+  topics    String[]
 
-  authorId Int
-  handle String?
+  status          NoteStatus    @default(draft)
+  feedback        NoteFeedback?
+  feedbackComment String?
+
+  inspiration String?
+
+  authorId Int?
+  handle   String?
+  name     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -231,7 +253,7 @@ model NoteSuggestions {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   userId String @db.ObjectId
-  noteId String @db.ObjectId  
+  noteId String @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

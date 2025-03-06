@@ -2,7 +2,7 @@ import { TitleImprovementType } from "@/components/ui/text-editor/dropdowns/titl
 import { Model } from "@/lib/open-router";
 import { ArticleWithBody } from "@/types/article";
 import { Idea } from "@/types/idea";
-import { PublicationMetadata } from "@prisma/client";
+import { Note, PublicationMetadata } from "@prisma/client";
 
 export type ImprovementType = keyof typeof improvementPromptTemplates;
 
@@ -228,12 +228,12 @@ export const generateDescriptionPrompt = (
   {
     role: "system",
     content: `
-   Help user generate a summary of a writer's profile based on their description
- and articles. Response should be concise, but cover the overall information and don't leave out
-  important details. Response must be in the second-person point of view, include only the following information:
-- About them: who they are, what they do, what they like, projects they're working on (if any). Write like you're asking someone to mimic that person
+    Help user generate a summary of a writer's profile based on their description
+    and articles. Response should be concise, but cover the overall information and don't leave out
+    important details. Response must be in the second-person point of view, **no they/them**. Only second person.  include only the following information:
+- About: who they are, what they do, what they like, projects they're working on (if any). Write like you're asking someone to mimic that person. Make it detailed and specific.  
 - Topics: topics they write about 
-- Writing style: Describe their writing style and tone. It's important to stress the writing characteristics like short and concise, or detailed, use of metaphors, technical depth, etc. Be as detailed as possible
+- Writing style: Describe their writing style and tone. It's important to stress the writing characteristics like short and concise, or detailed, use of metaphors, technical depth, etc. Be very detailed.
 - Personality: Describe their personality, what they're like, what they're known for, what they're famous for.
 - Sepcial events: Describe any special events they've been part of, awards they've won, or any other notable achievements.
 - Private life: Describe their private life, their family, their friends, their pets, their hobbies, their interests.
@@ -276,7 +276,7 @@ export const generateImprovementPrompt = (
 } => {
   const improvementPrompt = improvementPromptTemplates[type];
   const { prompt, task } = improvementPrompt;
-  const model = improvementPrompt.model || "anthropic/claude-3.7-sonnet";
+  const model = improvementPrompt.model || "anthropic/claude-3.5-sonnet";
 
   const maxLength = type === "elaborate" ? text.length * 2 : text.length;
 
@@ -338,7 +338,7 @@ export const generateTitleSubtitleImprovementPrompt = (
   value: string,
   userTopArticlesTitles: { title: string; subtitle: string }[],
 ): { messages: { role: string; content: string }[]; model: Model } => {
-  const model = "anthropic/claude-3.7-sonnet";
+  const model = "anthropic/claude-3.5-sonnet";
   const isTitle = menuType === "title";
   const currentReference = isTitle
     ? idea.title
@@ -414,79 +414,135 @@ ${currentReference}
   return { messages, model };
 };
 
+export const generateImproveNoteTextPrompt = (
+  text: { index: string; text: string }[],
+) => {
+  const humanizePrompt = improvementPromptTemplates.human;
+  const messages = [
+    {
+      role: "system",
+      content: `${humanizePrompt.prompt}
+      - Format the text so it's more engaging and readable.
+      - Use markdown formatting.
+      - The response must not have a title. It's a note for Substack, similar to a tweet.
+      - Only if the text includes emojis, use them.
+      - Use the text given as an inspiration and reference. Don't copy it, but stick to the main idea and style.
+      - Don't make the response longer than the original text.
+
+      The response must be an array of texts in the following JSON format, without additional text:
+      [
+        {
+          "index": "<index>",
+          "text": "<generated text>"
+        },
+      ]`,
+    },
+    {
+      role: "user",
+      content: `
+      ${text.map(item => `(${item.index}) ${item.text}`).join("\n")}
+      `,
+    },
+  ];
+
+  return {
+    messages,
+    model: humanizePrompt.model || "anthropic/claude-3.5-sonnet",
+  };
+};
 export const generateNotesPrompt = (
   publication: PublicationMetadata,
   inspirationNotes: string[],
-  userNotes: string[],
-  userNotesSummaries: string[],
+  userPastNotes: string[],
+  userNotes: Note[],
+  notesUserDisliked: Note[],
+  notesUserLiked: Note[],
   noteCount: number = 3,
 ) => {
+  const allTopics = [...userNotes.map(note => note.topics).flat()];
+  // Topics count, json of topic to count
+  const topicsCount = allTopics.reduce((acc: Record<string, number>, topic) => {
+    acc[topic] = (acc[topic] || 0) + 1;
+    return acc;
+  }, {});
+  const likedTopicsCount = notesUserLiked
+    .map(note => note.topics)
+    .flat()
+    .reduce((acc: Record<string, number>, topic) => {
+      acc[topic] = (acc[topic] || 0) + 1;
+      return acc;
+    }, {});
+
   const messages = [
     {
       role: "system",
       content: `
       ${publication.generatedDescription}
       ${publication.writingStyle}
+      ${publication.highlights}
 
-    Act as a brilliant social media influencer, very efficient at writing engaging Substack notes. Help user write a note with your writing style. Response must follow the following rules:
+    Act as a brilliant social media influencer, very efficient at writing engaging Substack notes.
+    Help user write a note with your description, writing style and highlights.
+    Think about unique ideas and use the user's provided notes as inspiration only. Be original.
+
+    Response must follow the following rules:
+
   - Must use new lines when needed, avoid using hashtags
   - Write with human-writing style, natural language, and avoid sounding like AI generated note
   - Must use a proper person point of view, depending on user request and your writing style
   - Reponse body must have less than 280 characters, unless the writing style demands more
-  - The note should be formatted using the ProseMirror document schema, which is used in rich-text editors like Tiptap. This ensures the structured representation of the note.
-  - Add rich-text if needed: If adding rich text adds value to the note, add it.
   - Add a concise summary of the note.
   - Add the type of the note. Listicle, Opinion, Analysis, How-To, etc.
-  - Be unique and generate new and creative ideas with different types.
+  - Body has to be in markdown format.
+  - Maintain the same tone and writing style as the user's past notes.
+  - 'topics': The topics of the note. Up to 3 topics.
+  - 'inspiration': Which notes inspired you to write this note and why.
+  - Include emojis ONLY if the user's past written notes include them. And only for 1-2 notes.
+  - At least one note has to be clean from emojis.
+  - **Don't come up with random things about the user**. Stick to the facts and don't make up things about the user.
+  - Very important - Make sure it passes the flesch-kincaid test with a score of 70 or higher.
 
     The response **must** be an array of notes in the following JSON format, without additional text:
     [
       {
         "body": "<Generated Note 1>",
-        "bodyJson": "<Generated Note 1 JSON>",
         "summary": "<Generated Summary>",
+        "topics": ["<Generated Topic 1>", "<Generated Topic 2>", "<Generated Topic 3>"],
+        "inspiration": "<Generated Inspiration>",
         "type": "<Generated type>"
       },
     ]
-      bodyJson should follow the ProseMirror document schema, which is used in rich-text editors like Tiptap. This ensures the structured representation of the note. The format is:
-          {
-          "type": "doc",
-          "content": [
-            {
-              "type": "paragraph",
-              "content": [
-                {
-                  "text": "<Note Text>",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    }
-    Explanation of bodyJson fields:
 
-    "type": "doc" → Defines the root document structure.
-    "content" → Holds an array of paragraph objects.
-    Each "paragraph" contains a "content" array of inline elements, such as:
-    "text" → The actual text content of the note.
-    "type": "text" → Specifies that this is a plain text node.
-    Optional "marks" field can be added for formatting (e.g., links, bold text).
-    By using this structured format, the output will be compatible with rich-text editors while maintaining the user’s preferred writing style.
-
-    Avoid repeating the same notes as the user's previously written notes or inspiration notes and these ideas:
-    ${userNotesSummaries.map((summary, index) => `(${index + 1}) ${summary}`).join("\\n")}
+    Avoid repeating the same notes as the user's previously written notes or inspiration notes.
+    
     `,
     },
     {
       role: "user",
       content: `
-    Here are my previously written notes:
-    ${userNotes.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}
-    
-    Here are some inspiration notes I liked:
-    ${inspirationNotes.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}
-    
-    Generate ${noteCount} new notes in my writing style while drawing inspiration from these.`,
+          ${userNotes.length > 0 ? `Here are my previously written notes:` : ""}
+          ${userPastNotes.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}
+          
+          ${inspirationNotes.length > 0 ? `Here are some inspiration notes I liked.` : ""}
+          ${inspirationNotes.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}
+          
+          ${userNotes.length > 0 ? `Here are types of my posts. Please, do not repeat them or create very unique ones:` : ""}  
+          ${userNotes.map((note, index) => `(${index + 1}) ${note.type}`).join("\\n")}
+
+          ${userNotes.length > 0 ? `Past notes summaries:` : ""}
+          ${userNotes.map((note, index) => `(${index + 1}) ${note.summary}`).join("\\n")}
+
+          ${notesUserDisliked.length > 0 ? `Here are some notes I didn't like. Don't repeat them:` : ""}
+          ${notesUserDisliked.map((note, index) => `(${index + 1}) Summary: ${note.summary}, ${note.feedbackComment ? `Reason: ${note.feedbackComment}` : ""}`).join("\\n")}
+
+          ${notesUserLiked.length > 0 ? `Here are some notes I liked:` : ""}
+          ${notesUserLiked.map((note, index) => `(${index + 1}) ${note.summary}`).join("\\n")}
+
+          ${allTopics.length > 0 ? `Here are all the topics I've written about and their count:` : ""}
+          ${JSON.stringify(topicsCount)}
+          ${allTopics.length > 0 && notesUserLiked.length > 0 ? `Make sure not to repeat topics that are already in the list. If the list is too long and you need to repeat, repeat the ones with the highest count. from this list: ${Object.keys(likedTopicsCount).join("\\n")}` : ""}
+      
+          Generate ${noteCount} new notes in my writing style while drawing inspiration from these.`,
     },
   ];
 
@@ -546,6 +602,15 @@ const improvementPromptTemplates: {
     Add more details, bullet points and other information to make the text more informative.
     `,
     // model: "google/gemini-2.0-flash-001",
+  },
+  human: {
+    task: "make it human",
+    prompt: `Act like a seasoned editor and improve the user's article.
+    Make it sound human and natural, without any signs of AI involvement.
+    Keep the same tone and writing style.
+    The generated text has to pass the flesch-kincaid test with a score of 70 or higher.
+    `,
+    model: "anthropic/claude-3.5-sonnet",
   },
   improve: {
     task: "make it better",

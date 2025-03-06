@@ -1,95 +1,123 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
-import { Note, NoteDraft } from "@/types/note";
+import { Note, NoteDraft, NoteStatus } from "@/types/note";
 
 export interface NotesState {
   userNotes: NoteDraft[];
   inspirationNotes: Note[];
   selectedNote: NoteDraft | null;
-  loading: boolean;
+  selectedImage: { url: string; alt: string } | null;
+  loadingNotes: boolean;
+  loadingInspiration: boolean;
   error: string | null;
+  hasMoreUserNotes: boolean;
+  hasMoreInspirationNotes: boolean;
+  userNotesCursor: string | null;
+  inspirationNotesCursor: string | null;
 }
 
 export const initialState: NotesState = {
   userNotes: [],
   inspirationNotes: [],
   selectedNote: null,
-  loading: false,
+  selectedImage: null,
+  loadingNotes: false,
+  loadingInspiration: false,
   error: null,
+  hasMoreUserNotes: true,
+  hasMoreInspirationNotes: true,
+  userNotesCursor: null,
+  inspirationNotesCursor: null,
 };
 
 const notesSlice = createSlice({
   name: "notes",
   initialState,
   reducers: {
-    setNotes: (state, action: PayloadAction<Note[]>) => {
-      state.userNotes = action.payload;
-      state.loading = false;
+    setNotes: (state, action: PayloadAction<{ items: NoteDraft[]; nextCursor: string | null }>) => {
+      state.userNotes = action.payload.items;
+      state.userNotesCursor = action.payload.nextCursor;
+      state.hasMoreUserNotes = !!action.payload.nextCursor;
+      state.loadingNotes = false;
       state.error = null;
     },
-    addNote: (state, action: PayloadAction<Note>) => {
+    addNote: (state, action: PayloadAction<NoteDraft>) => {
       state.userNotes.push(action.payload);
     },
-    updateNote: (state, action: PayloadAction<Note>) => {
-      let newNote = state.userNotes.find(note => note.id === action.payload.id);
+    updateNote: (state, action: PayloadAction<{id: string, note: Partial<NoteDraft>}>) => {
+      const { id, note } = action.payload;
+      let newNote = state.userNotes.find(userNote => userNote.id === id);
       if (newNote) {
         newNote = {
           ...newNote,
-          ...action.payload,
+          ...note,
         };
-        state.userNotes = state.userNotes.map(note =>
-          note.id === action.payload.id && newNote ? newNote : note,
+        state.userNotes = state.userNotes.map(userNote =>
+          userNote.id === id && newNote ? newNote : userNote,
         );
       }
     },
-    setInspirationNotes: (
-      state,
-      action: PayloadAction<Note[]>,
-    ) => {
-      state.inspirationNotes = action.payload;
+    removeNote: (state, action: PayloadAction<string>) => {
+      state.userNotes = state.userNotes.filter(userNote => userNote.id !== action.payload);
+    },
+    setInspirationNotes: (state, action: PayloadAction<{ items: Note[]; nextCursor: string | null }>) => {
+      state.inspirationNotes = action.payload.items;
+      state.inspirationNotesCursor = action.payload.nextCursor;
+      state.hasMoreInspirationNotes = !!action.payload.nextCursor;
     },
     addInspirationNotes: (
       state,
       action: PayloadAction<{
-        notes: Note[];
+        items: Note[];
+        nextCursor: string | null;
         options?: { toStart: boolean };
       }>,
     ) => {
-      debugger;
       if (action.payload.options?.toStart) {
         state.inspirationNotes = [
-          ...action.payload.notes,
+          ...action.payload.items,
           ...state.inspirationNotes,
         ];
       } else {
-        state.inspirationNotes.push(...action.payload.notes);
+        state.inspirationNotes.push(...action.payload.items);
       }
+      state.inspirationNotesCursor = action.payload.nextCursor;
+      state.hasMoreInspirationNotes = !!action.payload.nextCursor;
     },
     addNotes: (
       state,
       action: PayloadAction<{
-        notes: Note[];
+        items: NoteDraft[];
+        nextCursor: string | null;
         options?: { toStart: boolean };
       }>,
     ) => {
       if (action.payload.options?.toStart) {
-        state.userNotes = [...action.payload.notes, ...state.userNotes];
+        state.userNotes = [...action.payload.items, ...state.userNotes];
       } else {
-        state.userNotes.push(...action.payload.notes);
+        state.userNotes.push(...action.payload.items);
       }
+      state.userNotesCursor = action.payload.nextCursor;
+      state.hasMoreUserNotes = !!action.payload.nextCursor;
     },
-    setSelectedNote: (
-      state,
-      action: PayloadAction<Note | null>,
-    ) => {
+    setSelectedNote: (state, action: PayloadAction<NoteDraft | null>) => {
       state.selectedNote = action.payload;
     },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
+    setSelectedImage: (
+      state,
+      action: PayloadAction<{ url: string; alt: string } | null>,
+    ) => {
+      state.selectedImage = action.payload;
+    },
+    setLoadingNotes: (state, action: PayloadAction<boolean>) => {
+      state.loadingNotes = action.payload;
+    },
+    setLoadingInspiration: (state, action: PayloadAction<boolean>) => {
+      state.loadingInspiration = action.payload;
     },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
-      state.loading = false;
+      state.loadingNotes = false;
     },
   },
 });
@@ -100,10 +128,13 @@ export const {
   addNotes,
   updateNote,
   setSelectedNote,
-  setLoading,
+  setSelectedImage,
+  setLoadingNotes,
+  setLoadingInspiration,
   setError,
   setInspirationNotes,
   addInspirationNotes,
+  removeNote,
 } = notesSlice.actions;
 
 export const selectNotes = (state: RootState) => state.notes;

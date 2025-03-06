@@ -4,6 +4,7 @@ import { RootState } from "@/lib/store";
 export interface UiState {
   state: "full" | "writing-mode";
   showIdeasPanel: boolean;
+  showGenerateNotesSidebar: boolean;
   showAnalyzePublicationDialog: boolean;
   showGenerateIdeasDialog: boolean;
 }
@@ -11,6 +12,7 @@ export interface UiState {
 export const initialState: UiState = {
   state: "writing-mode",
   showIdeasPanel: false,
+  showGenerateNotesSidebar: false,
   showAnalyzePublicationDialog: false,
   showGenerateIdeasDialog: false,
 };
@@ -31,6 +33,9 @@ const uiSlice = createSlice({
     setShowGenerateIdeasDialog: (state, action) => {
       state.showGenerateIdeasDialog = action.payload;
     },
+    setShowGenerateNotesSidebar: (state, action) => {
+      state.showGenerateNotesSidebar = action.payload;
+    },
   },
 });
 
@@ -39,6 +44,7 @@ export const {
   setShowIdeasPanel,
   setShowAnalyzePublicationDialog,
   setShowGenerateIdeasDialog,
+  setShowGenerateNotesSidebar,
 } = uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;

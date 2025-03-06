@@ -27,31 +27,34 @@ export const MasonryGrid = ({
   const columnsArray = React.useMemo(() => {
     // Initialize empty columns
     const cols: Card[][] = Array.from({ length: columns }, () => []);
-    
+
     // Sort cards by height (if we had that data) or distribute evenly
     // For now, we'll distribute cards evenly across columns
     cards.forEach((card, index) => {
       const columnIndex = index % columns;
       cols[columnIndex].push(card);
     });
-    
+
     return cols;
   }, [cards, columns]);
 
   return (
     <div className={cn("w-screen max-w-7xl mx-auto", className)}>
-      <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3", {
-        "lg:grid-cols-2": columns === 2,
-        "lg:grid-cols-3": columns === 3,
-        "lg:grid-cols-4": columns === 4,
-      })} style={{ gap: `${gap * 0.25}rem` }}>
+      <div
+        className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3", {
+          "lg:grid-cols-2": columns === 2,
+          "lg:grid-cols-3": columns === 3,
+          "lg:grid-cols-4": columns === 4,
+        })}
+        style={{ gap: `${gap * 0.25}rem` }}
+      >
         {columnsArray.map((column, columnIndex) => (
           <div key={columnIndex} className="flex flex-col space-y-4">
-            {column.map((card) => (
+            {column.map(card => (
               <div
                 key={card.id}
                 className={cn(
-                  "relative overflow-hidden bg-background/90 text-foreground rounded-xl shadow-sm border border-border/60",
+                  "relative overflow-hidden bg-background/90 text-foreground rounded-xl",
                   card.className,
                 )}
               >
@@ -66,9 +69,7 @@ export const MasonryGrid = ({
                     />
                   </div>
                 )}
-                <div className="p-3 w-full">
-                  <div className="relative">{card.content}</div>
-                </div>
+                <div className="relative">{card.content}</div>
               </div>
             ))}
           </div>

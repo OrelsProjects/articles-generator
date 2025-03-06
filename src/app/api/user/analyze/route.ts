@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { runPrompt } from "@/lib/open-router";
 import { Publication } from "@/types/publication";
-import { getPublicationByUrl } from "@/lib/dal/publication";
+import { getAuthorId, getPublicationByUrl } from "@/lib/dal/publication";
 import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 import { Article } from "@/types/article";
@@ -141,6 +141,7 @@ export async function POST(req: NextRequest) {
         },
       });
     } else {
+      const authorId = await getAuthorId(session.user.id);
       publicationMetadata = await prisma.publicationMetadata.create({
         data: {
           publicationUrl: url,
@@ -154,6 +155,7 @@ export async function POST(req: NextRequest) {
           specialEvents: descriptionObject.specialEvents,
           privateLife: descriptionObject.privateLife,
           idInArticlesDb: Number(userPublication.id),
+          authorId,
         },
       });
     }

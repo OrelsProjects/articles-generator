@@ -305,13 +305,15 @@ const PullQuote = Node.create({
 // Nothing else.
 export const notesTextEditorOptions = (
   onUpdate?: (html: string) => void,
-  disabled?: boolean,
+  options: {
+    disabled?: boolean;
+  } = {},
 ): UseEditorOptions => ({
   onUpdate: ({ editor }) => {
     const html = editor.getHTML();
     onUpdate?.(html);
   },
-  editable: !disabled,
+  editable: !options.disabled,
   extensions: [
     StarterKit.configure({
       paragraph: {
@@ -340,15 +342,19 @@ export const notesTextEditorOptions = (
       },
     }),
     Placeholder.configure({
-      placeholder: "What's on your mind?",
+      placeholder: options.disabled ? "" : "What's on your mind?",
     }),
   ],
   editorProps: {
     attributes: {
-      class: "prose prose-sm max-w-none focus:outline-none",
+      class: cn(
+        "prose prose-sm max-w-none focus:outline-none transition-opacity",
+        options.disabled ? "opacity-50 cursor-not-allowed" : "",
+      ),
     },
   },
 });
+
 
 export const textEditorOptions = (
   onUpdate?: (html: string) => void,

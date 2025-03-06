@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import {
-  ChevronLeft,
   ChevronRight,
   Pencil,
   Bold,
@@ -12,15 +11,19 @@ import {
   Code,
   List,
   ListOrdered,
-  Image as ImageIcon,
   Sparkles,
   SmilePlus,
-  RefreshCcw,
   RefreshCw,
+  Copy,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Editor, EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
-import { notesTextEditorOptions } from "@/lib/utils/text-editor";
+import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
+import {
+  copyHTMLToClipboard,
+  notesTextEditorOptions,
+  unformatText,
+} from "@/lib/utils/text-editor";
 import { Toggle } from "@/components/ui/toggle";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
@@ -30,24 +33,68 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useNotes } from "@/lib/hooks/useNotes";
-import { convertJsonToHtml, NoteDraft } from "@/types/note";
+import { convertMDToHtml, NoteDraft } from "@/types/note";
 import { toast } from "react-toastify";
+import { useUi } from "@/lib/hooks/useUi";
+import { debounce } from "lodash";
+import { TooltipButton } from "@/components/ui/tooltip-button";
 
 export default function GenerateNotesSidebar() {
-  const { generateNewNote, selectedNote } = useNotes();
-  const [isOpen, setIsOpen] = useState(false);
+  const { updateShowGenerateNotesSidebar, showGenerateNotesSidebar } = useUi();
+  const {
+    generateNewNote,
+    selectedNote,
+    editNoteBody,
+    loadingEditNote,
+    selectNote,
+    loadingCreateDraftNote,
+  } = useNotes();
   const [content, setContent] = useState("");
+  const [open, setOpen] = useState(false);
   const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
-  const [previousSelectedNote, setPreviousSelectedNote] = useState<NoteDraft | null>(
-    null,
-  );
+  const [previousSelectedNote, setPreviousSelectedNote] =
+    useState<NoteDraft | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (showGenerateNotesSidebar) {
+      setOpen(true);
+      // set to false after 100ms
+      setTimeout(() => {
+        updateShowGenerateNotesSidebar(false);
+      }, 100);
+    }
+  }, [showGenerateNotesSidebar]);
+
+  const handleEditNoteBody = (noteId: string | null, html: string) => {
+    const body = unformatText(html);
+    console.log("editNoteBody", noteId, body);
+    editNoteBody(noteId, body);
+  };
+
+  const onEditNoteBody = useCallback(
+    debounce(async (noteId: string | null, html: string) => {
+      handleEditNoteBody(noteId, html);
+    }, 3500),
+    [],
+  );
 
   const editor = useEditor(
     notesTextEditorOptions(html => {
       setContent(html);
+      onEditNoteBody(selectedNote?.id || null, html);
     }),
   );
+
+  const handleCopy = async () => {
+    const html = editor?.getHTML();
+    if (!html) {
+      toast.error("No content to copy");
+      return;
+    }
+    await copyHTMLToClipboard(html);
+    toast.success("Copied to clipboard");
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,6 +102,7 @@ export default function GenerateNotesSidebar() {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === "string") {
+          // add to the end of the file
           editor.chain().focus().setImage({ src: reader.result }).run();
         }
       };
@@ -81,18 +129,45 @@ export default function GenerateNotesSidebar() {
   };
 
   useEffect(() => {
-      debugger;
+    if (!selectedNote) {
+      setContent("");
+      editor?.commands.setContent("");
+      return;
+    }
     if (selectedNote?.id !== previousSelectedNote?.id) {
       setPreviousSelectedNote(selectedNote);
-      if (!isOpen) {
-        setIsOpen(true);
+      if (!open) {
+        setOpen(true);
       }
     }
     if (selectedNote) {
-      const htmlContent = convertJsonToHtml(selectedNote.jsonBody);
-      editor?.commands.setContent(htmlContent);
+      convertMDToHtml(selectedNote.body).then(html => {
+        editor?.commands.setContent(html);
+      });
     }
   }, [selectedNote]);
+
+  const handleToggleSidebar = () => {
+    setOpen(!open);
+  };
+
+  const handleCreateDraftNote = async () => {
+    selectNote(null);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        handleEditNoteBody(selectedNote?.id || null, content);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedNote, content]);
 
   if (!editor) {
     return null;
@@ -105,15 +180,15 @@ export default function GenerateNotesSidebar() {
         variant="neumorphic-primary"
         size="icon"
         className={cn(
-          "fixed h-10 w-10 bottom-0 right-4 -translate-y-1/2 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0",
-          isOpen ? "!right-[400px]" : "",
+          "fixed h-12 w-12 bottom-0 right-4 -translate-y-1/2 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0",
+          open ? "!right-[400px]" : "",
         )}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleSidebar}
       >
-        {isOpen ? (
-          <ChevronRight className="h-5 w-5 text-primary-foreground" />
+        {open ? (
+          <ChevronRight className="h-6 w-6 text-primary-foreground" />
         ) : (
-          <Pencil className="h-5 w-5" />
+          <Pencil className="h-6 w-6" />
         )}
       </Button>
 
@@ -121,7 +196,7 @@ export default function GenerateNotesSidebar() {
       <div
         className={cn(
           "fixed top-0 right-0 w-[400px] h-full bg-background border-l border-border transition-all duration-300 transform",
-          isOpen ? "translate-x-0" : "translate-x-full",
+          open ? "translate-x-0" : "translate-x-full",
         )}
       >
         <div className="flex flex-col h-full">
@@ -130,7 +205,7 @@ export default function GenerateNotesSidebar() {
             <button className="px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary">
               Compose
             </button>
-            <button className="px-4 py-2 text-sm font-medium text-muted-foreground">
+            {/* <button className="px-4 py-2 text-sm font-medium text-muted-foreground">
               Drafts
             </button>
             <button className="px-4 py-2 text-sm font-medium text-muted-foreground">
@@ -138,19 +213,26 @@ export default function GenerateNotesSidebar() {
             </button>
             <button className="px-4 py-2 text-sm font-medium text-muted-foreground">
               Sent
-            </button>
+            </button> */}
           </div>
 
           {/* Content Area */}
           <div className="flex-1 overflow-auto p-4">
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-medium">Your content</h3>
+              <h3 className="text-sm">Your content</h3>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-primary text-sm"
+                className="text-primary text-sm hover:text-primary"
+                onClick={handleCreateDraftNote}
+                disabled={loadingCreateDraftNote}
               >
-                + New draft
+                {loadingCreateDraftNote ? (
+                  <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
+                ) : (
+                  <Plus className="h-5 w-5 text-primary" />
+                )}
+                New draft
               </Button>
             </div>
 
@@ -225,75 +307,93 @@ export default function GenerateNotesSidebar() {
                 </BubbleMenu>
               )}
               <EditorContent
+                disabled={loadingGenerateNewIdea}
                 editor={editor}
-                className="min-h-[200px] max-h-[300px] p-3 prose prose-sm max-w-none focus:outline-none overflow-auto"
+                className="min-h-[200px] max-h-[300px] px-3 prose prose-sm max-w-none focus:outline-none overflow-auto"
               />
 
               {/* Toolbar */}
-              <div className="border-t border-border p-2 flex items-center gap-2">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  disabled={loadingGenerateNewIdea}
-                  onClick={handleGenerateNewNote}
-                >
-                  {loadingGenerateNewIdea ? (
-                    <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
-                  ) : (
-                    <Sparkles className="h-5 w-5 text-muted-foreground" />
-                  )}
-                </Button>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <SmilePlus className="h-5 w-5 text-muted-foreground" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-full p-0 border-none"
-                    side="top"
-                    align="start"
+              <div className="border-t border-border p-2 flex items-center justify-between gap-4 z-20">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  {/* <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => fileInputRef.current?.click()}
                   >
-                    <Picker
-                      data={data}
-                      onEmojiSelect={addEmoji}
-                      theme="light"
-                      previewPosition="none"
-                      skinTonePosition="none"
-                    />
-                  </PopoverContent>
-                </Popover>
+                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                  </Button> */}
+                  <TooltipButton
+                    tooltipContent="Generate new notes (3 credits)"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    disabled={loadingGenerateNewIdea}
+                    onClick={handleGenerateNewNote}
+                  >
+                    {loadingGenerateNewIdea ? (
+                      <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
+                    ) : (
+                      <Sparkles className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </TooltipButton>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <SmilePlus className="h-5 w-5 text-muted-foreground" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-full p-0 border-none"
+                      side="top"
+                      align="start"
+                    >
+                      <Picker
+                        data={data}
+                        onEmojiSelect={addEmoji}
+                        theme="light"
+                        previewPosition="none"
+                        skinTonePosition="none"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={handleCopy}
+                >
+                  <Copy className="h-5 w-5 text-muted-foreground" />
+                </Button>
               </div>
             </div>
 
-            <div className="mt-2 text-xs text-muted-foreground">saved</div>
+            <div className="mt-2 text-xs text-muted-foreground">
+              {loadingEditNote
+                ? "saving..."
+                : selectedNote?.id
+                  ? "saved"
+                  : "Start writing"}
+            </div>
           </div>
 
           {/* Footer */}
-          <div className="border-t border-border p-4">
+          {/* <div className="border-t border-border p-4">
             <div className="flex justify-between items-center">
               <Button variant="secondary">Post now</Button>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Add to Queue
               </Button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

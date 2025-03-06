@@ -2,11 +2,12 @@ import axios from "axios";
 import { Tiktoken } from "js-tiktoken/lite";
 import o200k_base from "js-tiktoken/ranks/o200k_base";
 
-// const models = ["anthropic/claude-3.7-sonnet", "openai/gpt-4o-mini"];
+// const models = ["anthropic/claude-3.5-sonnet", "openai/gpt-4o-mini"];
 export type Model =
   | "openai/gpt-4o"
   | "openai/gpt-4o-mini"
-  | "anthropic/claude-3.7-sonnet"
+  | "anthropic/claude-3.5-sonnet"
+  | "anthropic/claude-3.5-sonnet"
   | "google/gemini-2.0-flash-001";
 
 function getTokenCount(text: string) {

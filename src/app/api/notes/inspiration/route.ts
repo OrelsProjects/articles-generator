@@ -7,25 +7,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { NotesComments } from "@/../prisma/generated/articles";
 import { Note } from "@/types/note";
 
-const filterNotes = (notes: NotesComments[]) => {
-  const uniqueInspirations = notes.filter(
-    (note, index, self) => index === self.findIndex(t => t.body === note.body),
-  );
-  const orderedByReaction = uniqueInspirations.sort(
-    (a, b) => b.reactionCount - a.reactionCount,
-  );
-  const uniqueAuthors = orderedByReaction.filter(
+const filterNotes = (
+  notes: NotesComments[],
+  existingNotes: NotesComments[],
+  limit: number = 10
+) => {
+  const existingNotesBodys = existingNotes.map(note => note.body.slice(0, 100));
+  let newNotes = [...notes];
+  newNotes = newNotes.filter(
     (note, index, self) =>
-      index === self.findIndex(t => t.authorId === note.authorId),
+      index === self.findIndex(t => t.entityKey === note.entityKey),
   );
-  const notesNoLookingFor = uniqueAuthors.filter(
+  newNotes = newNotes.sort((a, b) => b.reactionCount - a.reactionCount);
+  newNotes = newNotes.filter(note => !existingNotesBodys.includes(note.body.slice(0, 100)));
+
+  newNotes = newNotes.filter(
     note =>
       !note.body.toLowerCase().includes("looking for") &&
       !note.body.toLowerCase().includes("connect with") &&
       !note.body.toLowerCase().includes("to connect"),
   );
 
-  return notesNoLookingFor.slice(0, 12);
+  return newNotes.slice(0, limit + 1); // Take one extra to know if there are more
 };
 
 export async function POST(req: NextRequest) {
@@ -35,9 +38,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const limit = 10; // Number of items per page
+
   try {
     const body = await req.json();
-    const { existingNotesIds } = body;
+    const { existingNotesIds, cursor } = body;
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId: session.user.id,
@@ -91,7 +96,21 @@ export async function POST(req: NextRequest) {
       filters,
     });
 
-    const filteredNotes = filterNotes(inspirationNotes);
+    const existingNotes = await prismaArticles.notesComments.findMany({
+      where: {
+        id: {
+          in: existingNotesIds,
+        },
+      },
+    });
+
+    const filteredNotes = filterNotes(inspirationNotes, existingNotes, limit);
+    let nextCursor: string | undefined = undefined;
+
+    if (filteredNotes.length > limit) {
+      const nextItem = filteredNotes.pop(); // Remove the extra item
+      nextCursor = nextItem?.commentId;
+    }
 
     const attachments = await prismaArticles.notesAttachments.findMany({
       where: {
@@ -108,35 +127,27 @@ export async function POST(req: NextRequest) {
       return { ...note, attachment: attachment?.imageUrl };
     });
 
-    /**
-     *   id: string;
-  content: string;
-  thumbnail?: string;
-  jsonBody: any[];
-  timestamp: Date;
-  authorId: number;
-  authorName: string;
-  handle: string;
-  reactionCount: number;
-  commentsCount: number;
-  restacks: number;
-  attachment?: string;
-     */
     const notesResponse: Note[] = filteredNotesWithAttachments.map(note => ({
       id: note.commentId,
       content: note.body,
       jsonBody: note.bodyJson as any[],
       timestamp: note.date,
       authorId: note.authorId,
-      authorName: note.handle,
+      authorName: note.name,
+      body: note.body,
       handle: note.handle,
+      thumbnail: note.photoUrl,
       reactionCount: note.reactionCount,
+      entityKey: note.entityKey,
       commentsCount: note.commentsCount || 0,
       restacks: note.noteIsRestacked ? 1 : 0,
       attachment: note.attachment || undefined,
     }));
 
-    return NextResponse.json(notesResponse);
+    return NextResponse.json({
+      items: notesResponse,
+      nextCursor,
+    });
   } catch (error: any) {
     loggerServer.error("Failed to fetch notes", error);
     return NextResponse.json(

@@ -491,3 +491,12 @@ p:empty::after {
 .ProseMirror-selectednode {
   @apply flex justify-center;
 }
+
+/* <p> tags in note-component-content should have padding top 4px and bottom 4px */
+.note-component-content p {
+  @apply pt-1.5 pb-1.5;
+}
+
+.note-component-content ol p {
+  @apply !pt-0 !pb-0;
+}

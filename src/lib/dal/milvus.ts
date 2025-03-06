@@ -25,7 +25,11 @@ export interface ArticleContent {
   } | null;
 }
 
-function addRandomJitter(vector: number[], jitter = 0) {
+function addRandomJitter(vector: number[], jitter?: number) {
+  if (!jitter) {
+    // Random between 0.01 and 0.04
+    jitter = Math.random() * 0.03 + 0.01;
+  }
   return vector.map(v => v + (Math.random() * 2 - 1) * jitter);
 }
 
