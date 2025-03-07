@@ -51,17 +51,22 @@ const MobilesIdeasPanel = () => {
 };
 
 export default function IdeasPage() {
+  const [draftStatus, setDraftStatus] = useState<{ error: boolean, saving: boolean }>({ error: false, saving: false });
   const { state } = useAppSelector(selectUi);
   const { publications, selectedIdea } = useAppSelector(
     state => state.publications,
   );
   const isWritingMode = state === "writing-mode";
 
+  const handleDraftStatusChange = (error?: boolean, saving?: boolean) => {
+    setDraftStatus({ error: error || false, saving: saving || false });
+  };
+
   return (
-    <div className="w-screen h-screen flex flex-col items-center overflow-clip">
+    <div className="w-full max-w-screen h-screen flex flex-col items-center overflow-clip">
       <GenerateIdeasDialog />
       <AnalyzePublicationDialog />
-      <Header />
+      <Header draftStatus={draftStatus} />
       <div className="h-full w-full flex flex-row md:grid md:grid-cols-8 2xl:grid-cols-7 relative">
         {/* Main editor area - expands when in writing mode */}
         <div
@@ -72,7 +77,7 @@ export default function IdeasPage() {
               : "md:col-span-6 2xl:col-span-5",
           )}
         >
-          <TextEditor publication={publications[0]} />
+          <TextEditor publication={publications[0]} onDraftStatusChange={handleDraftStatusChange} />
         </div>
 
         {/* Desktop Ideas Panel - collapses when in writing mode */}

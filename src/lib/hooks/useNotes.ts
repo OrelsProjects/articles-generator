@@ -88,13 +88,18 @@ export const useNotes = () => {
     }
   };
 
-  const fetchNotes = async (loadMore = false) => {
+  const fetchNotes = async (limit?: number, loadMore = false) => {
     if (loadingNotesRef.current) return;
     try {
       loadingNotesRef.current = true;
       dispatch(setLoadingNotes(true));
+      const queryParams = new URLSearchParams();
+      if (limit) queryParams.set("limit", limit.toString());
+      if (loadMore && userNotesCursor)
+        queryParams.set("cursor", userNotesCursor);
+
       const response = await axios.get(
-        `/api/user/notes${loadMore && userNotesCursor ? `?cursor=${userNotesCursor}` : ""}`,
+        `/api/user/notes?${queryParams.toString()}`,
       );
       dispatch(setError(null));
       if (loadMore) {

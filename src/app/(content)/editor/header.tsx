@@ -3,24 +3,21 @@ import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
-import { User, LogOut, ChevronDown } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import useAuth from "@/lib/hooks/useAuth";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
-import { SettingsDialog } from "@/components/settings/settings";
 import { useSettings } from "@/lib/hooks/useSettings";
-import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import Link from "next/link";
+import DraftIndicator from "@/components/ui/text-editor/draft-indicator";
 
-export function Header({ className }: { className?: string }) {
-  const router = useCustomRouter();
+export function Header({
+  className,
+  draftStatus,
+}: {
+  className?: string;
+  draftStatus?: { error: boolean; saving: boolean };
+}) {
   const { signOut } = useAuth();
   const { hasPublication } = useSettings();
   const { user } = useAppSelector(selectAuth);
@@ -34,50 +31,6 @@ export function Header({ className }: { className?: string }) {
     signOut();
   };
 
-  const Dropdown = ({ className }: { className?: string }) => (
-    <div className={cn("h-full flex items-center ml-auto", className)}>
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Avatar className="relative flex items-center justify-center">
-            <Button
-              className="p-1 w-fit h-fit rounded-full relative hover:cursor-pointer"
-              variant="ghost"
-              size="icon"
-            >
-              <AvatarImage
-                src={user?.image || ""}
-                alt="User"
-                className="h-10 w-10 rounded-full border-2 border-gray-300"
-              />
-            </Button>
-            <AvatarFallback>
-              <div className="bg-muted-foreground/20 rounded-full p-2">
-                <User className="h-6 w-6 rounded-full" />
-              </div>
-            </AvatarFallback>
-            <div className="absolute bottom-0.5 right-0.5 bg-muted rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
-              <ChevronDown className="w-3 h-3" />
-            </div>
-          </Avatar>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="ml-4">
-          {!hasPublication && <DropdownMenuSeparator />}
-          <DropdownMenuItem asChild>
-            <SettingsDialog />
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-destructive focus:text-destructive flex items-center gap-2"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Log out</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-
   return (
     <motion.header
       key={`header`}
@@ -85,20 +38,25 @@ export function Header({ className }: { className?: string }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       className={cn(
-        "w-full grid grid-cols-[auto_1fr_auto] items-center gap-4 bg-background px-4 border-b border-border py-1 z-10",
+        "w-full grid grid-cols-[auto_1fr_auto] items-center gap-4 bg-background px-4 border-b border-border z-10 py-4 relative",
         className,
       )}
     >
-      <div className="flex items-center justify-start">
+      <div className="flex items-center justify-center col-span-1 gap-4 relative">
+        <Button variant="ghost" size="icon" asChild className="bg-muted">
+          <Link href="/home" className="hover:cursor-pointer">
+            <ChevronLeft className="hover:cursor-pointer" size={24} />
+          </Link>
+        </Button>
+        <DraftIndicator
+          saving={!!draftStatus?.saving}
+          error={!!draftStatus?.error}
+          hasIdea={hasPublication}
+        />
+      </div>
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center gap-4 col-span-2">
         {publication?.image && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              if (publication.url) router.push(publication.url);
-            }}
-            className="rounded-md"
-          >
+          <Button variant="ghost" size="icon" className="rounded-md">
             <Image
               src={publication.image}
               alt={publication.title || ""}
@@ -108,9 +66,8 @@ export function Header({ className }: { className?: string }) {
             />
           </Button>
         )}
+        <h1 className="text-2xl font-bold text-center">{publication?.title}</h1>
       </div>
-      <h1 className="text-2xl font-bold text-center">{publication?.title}</h1>
-      <Dropdown />
     </motion.header>
   );
 }

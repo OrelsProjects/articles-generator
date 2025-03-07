@@ -18,7 +18,6 @@ export default function ContentLayout({
         <InitiatePlanFromLandingProvider>
           <NewSubscriptionProvider />
           <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>
-          <GenerateNotesSidebar />
         </InitiatePlanFromLandingProvider>
       </AuthProvider>
     </AppSidebar>

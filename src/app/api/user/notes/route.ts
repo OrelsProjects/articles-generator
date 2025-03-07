@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   const searchParams = req.nextUrl.searchParams;
   const cursor = searchParams.get("cursor");
-  const limit = 30; // Number of items per page
+  const limit = parseInt(searchParams.get("limit") || "10");
 
   try {
     const now = new Date();

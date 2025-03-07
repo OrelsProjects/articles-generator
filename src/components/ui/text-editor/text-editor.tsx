@@ -41,9 +41,11 @@ type ImageName = string;
 const TextEditor = ({
   publication,
   className,
+  onDraftStatusChange,
 }: {
   publication?: Publication;
   className?: string;
+  onDraftStatusChange?: (error?: boolean, saving?: boolean) => void;
 }) => {
   const { state } = useAppSelector(selectUi);
   const { selectedIdea } = useAppSelector(selectPublications);
@@ -82,6 +84,10 @@ const TextEditor = ({
   const [showSubtitleMenu, setShowSubtitleMenu] = useState(false);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const subtitleRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    onDraftStatusChange?.(savingError, saving);
+  }, [savingError, saving]);
 
   const handleSave = useCallback(
     async (ideaId: string) => {
@@ -492,13 +498,6 @@ const TextEditor = ({
       </div>
       {publication && !!selectedIdea ? (
         <ScrollArea className="h-[calc(100vh-6rem)] w-full flex flex-col justify-start items-center relative mt-4 md:mt-0 pb-16">
-          {publication && (
-            <DraftIndicator
-              saving={saving}
-              error={savingError}
-              hasIdea={!!selectedIdea}
-            />
-          )}
           <div className="h-full flex flex-col justify-start items-center gap-2 w-full">
             <div
               className={cn(

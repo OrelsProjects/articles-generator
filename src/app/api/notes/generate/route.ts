@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
           summary: note.summary,
           topics: note.topics,
           userId: session.user.id,
-          status: NoteStatus.generated,
+          status: NoteStatus.draft,
           handle,
           thumbnail,
           type: note.type,

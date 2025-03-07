@@ -9,7 +9,7 @@ export default function StatusBoardPage() {
   const { fetchNotes, userNotes, loadingNotes } = useNotes();
 
   useEffect(() => {
-    fetchNotes();
+    fetchNotes(30);
   }, []);
 
   if (loadingNotes && userNotes.length === 0) {
@@ -29,9 +29,9 @@ export default function StatusBoardPage() {
   }
 
   return (
-    <div className="w-full py-8 px-12">
+    <div className="container py-8">
       <h1 className="text-3xl font-bold mb-8">Notes Status Board</h1>
       <NotesStatusBoard notes={userNotes} />
     </div>
   );
-} 
+}

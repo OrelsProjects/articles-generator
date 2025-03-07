@@ -15,17 +15,10 @@ export interface NotesStatusBoardProps {
 }
 
 export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
-  const {
-    updateNoteStatus,
-    fetchNotes,
-    createDraftNote,
-    selectNote,
-    selectedNote,
-  } = useNotes();
+  const { updateNoteStatus, createDraftNote, selectNote, selectedNote } =
+    useNotes();
   const [isUpdating, setIsUpdating] = useState(false);
-  const [statusUpdated, setStatusUpdated] = useState(false);
   const [columns, setColumns] = useState<StatusColumn[]>([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Convert notes to status items
   const convertToStatusItems = useCallback(
@@ -112,7 +105,6 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
 
         // Update the note status
         await updateNoteStatus(note.id, newStatus as NoteStatus);
-        setStatusUpdated(true);
       } catch (error) {
         console.error("Error updating note status:", error);
         toast.error("Failed to update note status");
@@ -124,48 +116,18 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
     [notes, updateNoteStatus, isUpdating],
   );
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      await fetchNotes();
-    } catch (error) {
-      console.error("Error refreshing notes:", error);
-      toast.error("Failed to refresh notes");
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [fetchNotes]);
-
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="flex items-center gap-2"
-        >
-          {isRefreshing ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
-          )}
-          Refresh
-        </Button>
-      </div>
-      <StatusBoard
-        initialColumns={columns}
-        selectedItem={selectedNote?.id}
-        onStatusChange={handleStatusChange}
-        onEditItem={(itemId: UniqueIdentifier) => selectNote(itemId.toString())}
-        onNewItem={async (status: UniqueIdentifier) => {
-          await createDraftNote({ status: status as NoteStatus });
-        }}
-        hideArchiveColumn={true}
-        className="min-h-[600px]"
-        debug={true}
-      />
-    </div>
+    <StatusBoard
+      initialColumns={columns}
+      selectedItem={selectedNote?.id}
+      onStatusChange={handleStatusChange}
+      onEditItem={(itemId: UniqueIdentifier) => selectNote(itemId.toString())}
+      onNewItem={async (status: UniqueIdentifier) => {
+        await createDraftNote({ status: status as NoteStatus });
+      }}
+      hideArchiveColumn={true}
+      className="min-h-[600px]"
+      debug={true}
+    />
   );
 }
