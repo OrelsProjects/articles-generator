@@ -433,15 +433,15 @@ export default function NoteComponent({ note }: NoteProps) {
           </div>
         </div>
         <div
-          className={cn("flex-1", {
+          className={cn("w-full flex-1", {
             "opacity-60": feedback === "dislike",
           })}
         >
-          <div className="relative">
+          <div className="w-full relative">
             <div
               ref={contentRef}
               className={cn(
-                "relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0",
+                "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0",
                 isExpanded ? "max-h-none" : "max-h-[260px]",
               )}
             >

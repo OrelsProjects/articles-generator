@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
         publicationId: publicationMetadata.idInArticlesDb,
       },
       {
-        limit: 8,
+        limit: 5,
         freeOnly: true,
         order: { by: "reactionCount", direction: "desc" },
       },
@@ -116,20 +116,27 @@ export async function GET(req: NextRequest) {
     );
 
     let outlines: { id: number; outline: string }[] = [];
+    const outlinesString = await runPrompt(
+      messagesForOutline,
+      modelUsedForOutline,
+    );
 
     await runWithRetry(
-      async () => {
-        const outlinesString = await runPrompt(
-          messagesForOutline,
-          modelUsedForOutline,
+      async (retryCount: number) => {
+        const model =
+          retryCount === 0
+            ? "openai/gpt-4o-mini"
+            : retryCount === 2
+              ? "anthropic/claude-3.5-sonnet"
+              : "openai/gpt-4o";
+        const outlineResponse = await parseJson<OutlineLLMResponse>(
+          outlinesString,
+          model,
         );
-
-        const outlineResponse =
-          await parseJson<OutlineLLMResponse>(outlinesString);
         outlines = outlineResponse.outlines;
       },
       {
-        retries: 2,
+        retries: 3,
         delayTime: 0,
       },
     );

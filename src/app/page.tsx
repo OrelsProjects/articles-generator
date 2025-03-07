@@ -146,7 +146,7 @@ function App() {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Header />
       <HeroSection />
-      
+
       {/* Social Proof Banner */}
       {/* <motion.section
         className="py-6 bg-primary/10"
@@ -202,14 +202,20 @@ function App() {
             Writers Love {appName}—Here&apos;s Why
           </h2>
           <p className="text-xl text-center text-muted-foreground mb-16 max-w-3xl mx-auto">
-            Join successful Substack writers who are growing their audience and income with {appName}
+            Join successful Substack writers who are growing their audience and
+            income with {appName}
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-card p-6 rounded-lg shadow-sm">
                 <div className="flex items-center mb-4">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <svg
+                      key={i}
+                      className="w-5 h-5 text-yellow-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   ))}
@@ -230,7 +236,7 @@ function App() {
       </motion.section>
 
       {/* Pricing Section */}
-      <Pricing className="bg-muted" />
+      <Pricing className="bg-background" />
 
       {/* FAQ Section */}
       <motion.section
@@ -270,7 +276,8 @@ function App() {
             <span className="text-primary">Increase Your Income.</span>
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join 1,000+ Substack writers earning $1k+/month with {appName}&apos;s fully-integrated AI assistant.
+            Join 1,000+ Substack writers earning $1k+/month with {appName}
+            &apos;s fully-integrated AI assistant.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button variant="outline" size="lg" asChild>
@@ -305,7 +312,8 @@ const painPoints = [
   },
   {
     icon: <BrainCircuit className="h-8 w-8 text-primary" />,
-    problem: "I want to refine my writing, but AI tools feel disconnected from Substack.",
+    problem:
+      "I want to refine my writing, but AI tools feel disconnected from Substack.",
     problemDetails:
       "Constantly switching between ChatGPT and Substack breaks your flow and wastes valuable time.",
   },
@@ -356,12 +364,14 @@ const testimonials = [
     title: "8K subscribers, $2.3K/month",
   },
   {
-    quote: "Finally, an AI tool that integrates with Substack and assists without replacing my writing voice.",
+    quote:
+      "Finally, an AI tool that integrates with Substack and assists without replacing my writing voice.",
     author: "David W.",
     title: "Tech Newsletter, $1.8K/month",
   },
   {
-    quote: "This tool is a must-have for serious Substack writers with 20+ posts who want to scale their income.",
+    quote:
+      "This tool is a must-have for serious Substack writers with 20+ posts who want to scale their income.",
     author: "Mark T.",
     title: "Newsletter Writer, $3.5K/month",
   },

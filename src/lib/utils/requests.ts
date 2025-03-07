@@ -77,20 +77,19 @@ export async function fetchWithHeaders(
 }
 
 export async function runWithRetry<T>(
-  fn: () => Promise<T>,
+  fn: (retryCount: number) => Promise<T>,
   options: { retries: number; delayTime: number } = {
     retries: 3,
     delayTime: 2000,
   },
 ) {
-  for (let attempt = 1; attempt <= options.retries; attempt++) {
+  for (let attempt = 0; attempt < options.retries; attempt++) {
     try {
-      return await fn();
+      return await fn(attempt);
     } catch (error: any) {
-      console.error(`Attempt ${attempt} failed:`, error);
+      console.error(`Attempt ${attempt + 1} failed:`, error);
       await delay(options.delayTime * attempt);
     }
   }
   throw new Error("All attempts failed");
 }
-

@@ -19,13 +19,13 @@ function fixJson<T>(json: string): T | null {
 
 export async function parseJson<T>(
   json: string,
-  model: Model = "openai/gpt-4o-mini",
+  model: Model = "openai/gpt-4o",
 ): Promise<T> {
   let parsedJson: T;
   try {
     parsedJson = JSON.parse(json);
   } catch (error: any) {
-    loggerServer.error("Error parsing JSON:", error);
+    loggerServer.error("Error parsing JSON:\n" + json, error);
     const jsonFixedSync = fixJson<T>(json);
     if (!jsonFixedSync) {
       const jsonFixedString = await runPrompt(fixJsonPrompt(json), model);

@@ -1,6 +1,6 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
-import { searchSimilarNotes } from "@/lib/dal/milvus";
+import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
 import {
   generateNotesPrompt,
   generateImproveNoteTextPrompt,
@@ -135,18 +135,18 @@ export async function POST(req: NextRequest) {
     console.log("randomMaxReaction", randomMaxReaction);
     console.log("randomMaxComment", randomMaxComment);
 
-    // const filters: Filter[] = [
-    //   {
-    //     leftSideValue: "reaction_count",
-    //     rightSideValue: randomMinReaction.toString(),
-    //     operator: ">=",
-    //   },
-    //   {
-    //     leftSideValue: "reaction_count",
-    //     rightSideValue: randomMaxReaction.toString(),
-    //     operator: "<=",
-    //   },
-    // ];
+    const filters: Filter[] = [
+      {
+        leftSideValue: "reaction_count",
+        rightSideValue: randomMinReaction.toString(),
+        operator: ">=",
+      },
+      {
+        leftSideValue: "reaction_count",
+        rightSideValue: randomMaxReaction.toString(),
+        operator: "<=",
+      },
+    ];
 
     const inspirations = await searchSimilarNotes({
       query,
