@@ -121,7 +121,7 @@ export function PublicationPreferences() {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="max-w-xs">
-                    We've generated a description based on your publication, but you can provide your own to improve content generation.
+                    We&apos;ve generated a description based on your publication, but you can provide your own to improve content generation.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -153,7 +153,7 @@ export function PublicationPreferences() {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="max-w-xs">
-                    Topics you're interested in writing about. These will be used to generate content ideas.
+                    Topics you&apos;re interested in writing about. These will be used to generate content ideas.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -199,7 +199,7 @@ export function PublicationPreferences() {
         <Alert className="bg-muted">
           <InfoIcon className="h-4 w-4" />
           <AlertDescription>
-            We've generated some data about your publication to help with content creation. Your custom preferences will be prioritized over the generated data.
+            We&apos;ve generated some data about your publication to help with content creation. Your custom preferences will be prioritized over the generated data.
           </AlertDescription>
         </Alert>
 

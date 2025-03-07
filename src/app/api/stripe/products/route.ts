@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
           dollars: priceYearlyDollars,
           cents: priceYearlyCents,
           tokens: parseInt(stripeProduct.metadata.tokens),
-          perMonth: priceYearlyPerMonth,
+          perMonth: parseFloat(priceYearlyPerMonth),
           priceFormatted: formatPrice({
             priceWithCents: priceYearlyValue,
           }),

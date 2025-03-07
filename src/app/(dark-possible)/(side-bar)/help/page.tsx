@@ -92,7 +92,7 @@ export default function HelpPage() {
                     </AccordionItem>
                   ))
                 ) : (
-                  <p className="text-center py-4 text-muted-foreground">No results found for "{searchQuery}"</p>
+                  <p className="text-center py-4 text-muted-foreground">No results found for &quot;{searchQuery}&quot;</p>
                 )}
               </Accordion>
             </CardContent>
