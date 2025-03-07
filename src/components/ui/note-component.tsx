@@ -188,6 +188,19 @@ export default function NoteComponent({ note }: NoteProps) {
     return null;
   }, [note]);
 
+  const thumbnail = useMemo(() => {
+    if ("thumbnail" in note) {
+      if (
+        note.thumbnail?.includes("substackcdn") ||
+        note.thumbnail?.includes("substack-post-media")
+      ) {
+        return note.thumbnail;
+      }
+    }
+    console.log(note.thumbnail);
+    return null;
+  }, [note]);
+
   const noteReactions = useMemo(() => {
     let reactions: {
       reactionCount: number;
@@ -207,9 +220,7 @@ export default function NoteComponent({ note }: NoteProps) {
     }
     return reactions;
   }, [note]);
-  // , {
-  //   "border-primary/60": note.id === selectedNote?.id,
-  // }
+
   const Reactions = () =>
     noteReactions && (
       <div className="flex justify-between items-center mt-3">
@@ -235,9 +246,9 @@ export default function NoteComponent({ note }: NoteProps) {
       <PopoverTrigger asChild>
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0 overflow-hidden cursor-pointer">
-            {note.thumbnail ? (
+            {thumbnail ? (
               <Image
-                src={note.thumbnail}
+                src={thumbnail}
                 alt={note.authorName || "Author"}
                 width={32}
                 height={32}
@@ -411,84 +422,86 @@ export default function NoteComponent({ note }: NoteProps) {
         },
       )}
     >
-      <div className="flex flex-col items-start gap-4 transition-opacity duration-200">
-        <div
-          className={cn(
-            "w-full flex justify-between border-b border-border/60 p-2",
-            {
-              "opacity-60": feedback === "dislike",
-            },
-          )}
-        >
-          <Author />
-          <div className="flex items-center gap-2">
-            {/* date */}
-            <p className="text-xs text-muted-foreground">
-              {new Date(note.timestamp).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </p>
-          </div>
-        </div>
-        <div
-          className={cn("w-full flex-1", {
-            "opacity-60": feedback === "dislike",
-          })}
-        >
-          <div className="w-full relative">
-            <div
-              ref={contentRef}
-              className={cn(
-                "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0",
-                isExpanded ? "max-h-none" : "max-h-[260px]",
-              )}
-            >
-              <div
-                className="prose prose-sm max-w-none note-component-content"
-                dangerouslySetInnerHTML={{
-                  __html: htmlContent,
-                }}
-              />
+      <div className="h-full flex flex-col justify-between gap-4 transition-opacity duration-200">
+        <div className="w-full flex-col items-start gap-4 transition-opacity duration-200">
+          <div
+            className={cn(
+              "w-full flex justify-between border-b border-border/60 p-2",
+              {
+                "opacity-60": feedback === "dislike",
+              },
+            )}
+          >
+            <Author />
+            <div className="flex items-center gap-2">
+              {/* date */}
+              <p className="text-xs text-muted-foreground">
+                {new Date(note.timestamp).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </p>
             </div>
-            {showExpandButton && (
-              <div className="relative h-4 w-full">
-                <Button
-                  variant="link"
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto z-10"
-                >
-                  {isExpanded ? "less" : "more"}
-                </Button>
+          </div>
+          <div
+            className={cn("w-full flex-1", {
+              "opacity-60": feedback === "dislike",
+            })}
+          >
+            <div className="w-full relative">
+              <div
+                ref={contentRef}
+                className={cn(
+                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0",
+                  isExpanded ? "max-h-none" : "max-h-[260px]",
+                )}
+              >
                 <div
-                  className={cn(
-                    "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent z-0",
-                    isExpanded ? "opacity-0" : "opacity-100",
-                  )}
+                  className="prose prose-sm max-w-none note-component-content"
+                  dangerouslySetInnerHTML={{
+                    __html: htmlContent,
+                  }}
+                />
+              </div>
+              {showExpandButton && (
+                <div className="relative h-4 w-full">
+                  <Button
+                    variant="link"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto z-10"
+                  >
+                    {isExpanded ? "less" : "more"}
+                  </Button>
+                  <div
+                    className={cn(
+                      "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent z-0",
+                      isExpanded ? "opacity-0" : "opacity-100",
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+            {attachment && (
+              <div
+                className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
+                onClick={() =>
+                  selectImage({
+                    url: attachment[0],
+                    alt: "Note attachment",
+                  })
+                }
+              >
+                <Image
+                  src={attachment}
+                  alt="Attachment"
+                  width={400}
+                  height={300}
+                  className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
                 />
               </div>
             )}
           </div>
-          {attachment && (
-            <div
-              className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
-              onClick={() =>
-                selectImage({
-                  url: attachment[0],
-                  alt: "Note attachment",
-                })
-              }
-            >
-              <Image
-                src={attachment}
-                alt="Attachment"
-                width={400}
-                height={300}
-                className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
-              />
-            </div>
-          )}
         </div>
         <div className="w-full flex items-center justify-between border-t border-border/60 py-2">
           <div className="w-full flex items-center gap-2">

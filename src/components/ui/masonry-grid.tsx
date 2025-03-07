@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 type Card = {
-  id: number;
+  id: number | string;
   content: JSX.Element | React.ReactNode | string;
   className?: string;
   thumbnail?: string;
