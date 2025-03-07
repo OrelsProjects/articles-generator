@@ -15,14 +15,14 @@ export async function PATCH(
   }
   try {
     const { id } = params;
-    const note: NoteDraft = await req.json();
+    const note: Partial<NoteDraft> = await req.json();
     const isOwner = await isOwnerOfNote(id, session.user.id);
 
     if (!isOwner) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await updateNote(note);
+    await updateNote(id, note);
 
     return NextResponse.json({}, { status: 200 });
   } catch (error: any) {

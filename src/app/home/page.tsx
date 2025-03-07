@@ -26,7 +26,6 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto flex-1 relative">
           <PersonalNotesGrid />
           <InspirationGrid />
-          <GenerateNotesSidebar />
           <ImageModal />
         </div>
       </div>

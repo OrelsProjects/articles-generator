@@ -59,28 +59,29 @@ export async function GET() {
         "",
       title:
         userPublication?.publication?.title ||
-        publication?.name  ||
+        publication?.name ||
         publication?.copyright ||
         "",
       description: userPublication?.publication?.description || null,
-      ideas: ideas.map(idea => ({
-        id: idea.id,
-        topic: idea.topic,
-        title: idea.title,
-        subtitle: idea.subtitle,
-        outline: idea.outline,
-        description: idea.description,
-        inspiration: idea.inspiration,
-        body: idea.body,
-        status: idea.status,
-        image: idea.image,
-        search: idea.search,
-        isFavorite: idea.isFavorite,
-        modelUsedForIdeas: idea.modelUsedForIdeas,
-        modelUsedForOutline: idea.modelUsedForOutline,
-        updatedAt: idea.updatedAt,
-        bodyHistory: idea.bodyHistory,
-      })) || [],
+      ideas:
+        ideas.map(idea => ({
+          id: idea.id,
+          topic: idea.topic,
+          title: idea.title,
+          subtitle: idea.subtitle,
+          outline: idea.outline,
+          description: idea.description,
+          inspiration: idea.inspiration,
+          body: idea.body,
+          status: idea.status,
+          image: idea.image,
+          search: idea.search,
+          isFavorite: idea.isFavorite,
+          modelUsedForIdeas: idea.modelUsedForIdeas,
+          modelUsedForOutline: idea.modelUsedForOutline,
+          updatedAt: idea.updatedAt,
+          bodyHistory: idea.bodyHistory,
+        })) || [],
     };
 
     return NextResponse.json({ publication: response }, { status: 200 });
@@ -90,5 +91,7 @@ export async function GET() {
       { error: "Internal Server Error" },
       { status: 500 },
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

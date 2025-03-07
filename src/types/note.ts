@@ -1,6 +1,6 @@
 import { marked } from "marked";
 
-export type NoteStatus = "draft" | "generated" | "published" | "archived";
+export type NoteStatus = "draft" | "ready" | "published" | "archived";
 export type NoteFeedback = "dislike" | "like";
 
 export type JsonBody = {

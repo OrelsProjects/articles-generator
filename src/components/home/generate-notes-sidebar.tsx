@@ -66,10 +66,14 @@ export default function GenerateNotesSidebar() {
     }
   }, [showGenerateNotesSidebar]);
 
-  const handleEditNoteBody = (noteId: string | null, html: string) => {
+  const handleEditNoteBody = async (noteId: string | null, html: string) => {
+    if (loadingEditNote) return;
     const body = unformatText(html);
-    console.log("editNoteBody", noteId, body);
-    editNoteBody(noteId, body);
+    try {
+      await editNoteBody(noteId, body);
+    } catch (e: any) {
+      toast.error(e.message);
+    }
   };
 
   const onEditNoteBody = useCallback(
@@ -225,7 +229,7 @@ export default function GenerateNotesSidebar() {
                 size="sm"
                 className="text-primary text-sm hover:text-primary"
                 onClick={handleCreateDraftNote}
-                disabled={loadingCreateDraftNote}
+                disabled={loadingCreateDraftNote || !selectedNote}
               >
                 {loadingCreateDraftNote ? (
                   <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />

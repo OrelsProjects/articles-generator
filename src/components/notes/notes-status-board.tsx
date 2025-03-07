@@ -1,0 +1,171 @@
+"use client";
+
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { StatusBoard } from "@/components/ui/status-board/status-board";
+import { StatusColumn, StatusItem } from "@/components/ui/status-board/types";
+import { NoteDraft, NoteStatus } from "@/types/note";
+import { useNotes } from "@/lib/hooks/useNotes";
+import { toast } from "react-toastify";
+import { UniqueIdentifier } from "@dnd-kit/core";
+import { FileText, Clock, CheckCircle, Archive, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+export interface NotesStatusBoardProps {
+  notes: NoteDraft[];
+}
+
+export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
+  const {
+    updateNoteStatus,
+    fetchNotes,
+    createDraftNote,
+    selectNote,
+    selectedNote,
+  } = useNotes();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [statusUpdated, setStatusUpdated] = useState(false);
+  const [columns, setColumns] = useState<StatusColumn[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Convert notes to status items
+  const convertToStatusItems = useCallback(
+    (notes: NoteDraft[]): StatusItem[] => {
+      return notes.map(note => ({
+        id: note.id,
+        content:
+          note.body.substring(0, 100) + (note.body.length > 100 ? "..." : ""),
+        status: note.status,
+        author: note.authorName,
+        avatar: note.thumbnail,
+        createdAt: new Date(note.timestamp).toLocaleDateString(),
+      }));
+    },
+    [],
+  );
+
+  // Update columns when notes change
+  useEffect(() => {
+    // Group notes by status
+    const draftNotes = notes.filter(note => note.status === "draft");
+    const generatedNotes = notes.filter(note => note.status === "ready");
+    const publishedNotes = notes.filter(note => note.status === "published");
+    const archivedNotes = notes.filter(note => note.status === "archived");
+
+    setColumns([
+      {
+        id: "draft",
+        title: "Draft",
+        items: convertToStatusItems(draftNotes),
+        color: "bg-yellow-500",
+        icon: FileText,
+      },
+      {
+        id: "ready",
+        title: "Ready",
+        items: convertToStatusItems(generatedNotes),
+        color: "bg-blue-500",
+        icon: Clock,
+      },
+      {
+        id: "published",
+        title: "Published",
+        items: convertToStatusItems(publishedNotes),
+        color: "bg-green-500",
+        icon: CheckCircle,
+      },
+      {
+        id: "archived",
+        title: "Archived",
+        items: convertToStatusItems(archivedNotes),
+        color: "bg-gray-500",
+        icon: Archive,
+      },
+    ]);
+  }, [notes, convertToStatusItems]);
+
+  // Handle status change
+  const handleStatusChange = useCallback(
+    async (item: StatusItem, newStatus: UniqueIdentifier) => {
+      if (isUpdating) return;
+
+      console.log("Status change requested:", item.id, "to", newStatus);
+
+      try {
+        setIsUpdating(true);
+
+        // Find the note by id
+        const note = notes.find(n => n.id === item.id);
+        if (!note) {
+          console.error("Note not found:", item.id);
+          toast.error("Note not found");
+          return;
+        }
+
+        console.log(
+          "Updating note status:",
+          note.id,
+          "from",
+          note.status,
+          "to",
+          newStatus,
+        );
+
+        // Update the note status
+        await updateNoteStatus(note.id, newStatus as NoteStatus);
+        setStatusUpdated(true);
+      } catch (error) {
+        console.error("Error updating note status:", error);
+        toast.error("Failed to update note status");
+        throw error;
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    [notes, updateNoteStatus, isUpdating],
+  );
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchNotes();
+    } catch (error) {
+      console.error("Error refreshing notes:", error);
+      toast.error("Failed to refresh notes");
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [fetchNotes]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="flex items-center gap-2"
+        >
+          {isRefreshing ? (
+            <RefreshCw className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          Refresh
+        </Button>
+      </div>
+      <StatusBoard
+        initialColumns={columns}
+        selectedItem={selectedNote?.id}
+        onStatusChange={handleStatusChange}
+        onEditItem={(itemId: UniqueIdentifier) => selectNote(itemId.toString())}
+        onNewItem={async (status: UniqueIdentifier) => {
+          await createDraftNote({ status: status as NoteStatus });
+        }}
+        hideArchiveColumn={true}
+        className="min-h-[600px]"
+        debug={true}
+      />
+    </div>
+  );
+}

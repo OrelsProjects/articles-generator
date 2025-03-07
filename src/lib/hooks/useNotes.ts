@@ -122,10 +122,16 @@ export const useNotes = () => {
 
   const selectNote = useCallback(
     (
-      note: Note | NoteDraft | null,
+      note: Note | NoteDraft | string | null,
       options?: { forceShowEditor?: boolean },
     ) => {
-      const noteDraft = noteToNoteDraft(note);
+      let noteToUpdate: NoteDraft | Note | null = null;
+      if (typeof note === "string") {
+        noteToUpdate = userNotes.find(userNote => userNote.id === note) || null;
+      } else {
+        noteToUpdate = note;
+      }
+      const noteDraft = noteToNoteDraft(noteToUpdate);
       if (options?.forceShowEditor) {
         updateShowGenerateNotesSidebar(true);
       }
@@ -161,8 +167,12 @@ export const useNotes = () => {
 
   const updateNoteStatus = useCallback(
     async (noteId: string, status: NoteStatus) => {
+      const previousStatus = userNotes.find(note => note.id === noteId)?.status;
+      if (!previousStatus) {
+        Logger.error("Note not found");
+        throw new Error("Note not found");
+      }
       try {
-        await axios.delete<NoteDraft[]>(`/api/note/${noteId}`);
         if (status === "archived") {
           dispatch(removeNote(noteId));
           if (selectedNote?.id === noteId) {
@@ -171,8 +181,12 @@ export const useNotes = () => {
         } else {
           dispatch(updateNote({ id: noteId, note: { status } }));
         }
+        await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, {
+          status: status,
+        });
       } catch (error: any) {
         Logger.error("Error updating status:", error);
+        dispatch(updateNote({ id: noteId, note: { status: previousStatus } }));
         throw error;
       }
     },
@@ -198,9 +212,9 @@ export const useNotes = () => {
       try {
         await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, {
           ...note,
-          feedback: newFeedback || "undefined",
-          feedbackComment: feedbackComment || "undefined",
-          status: status || note.status,
+          feedback: newFeedback || null,
+          feedbackComment: feedbackComment || null,
+          status: note.status || null,
         });
       } catch (error: any) {
         dispatch(
@@ -220,8 +234,8 @@ export const useNotes = () => {
         await createDraftNote({ body });
         return;
       }
-      const note = userNotes.find(note => note.id === noteId);
-      await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, note);
+      const partialNote: Partial<NoteDraft> = { body };
+      await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, partialNote);
       dispatch(updateNote({ id: noteId, note: { body } }));
     } catch (error: any) {
       Logger.error("Error editing note:", error);

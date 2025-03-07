@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       userId,
       body: "",
       authorId,
-      status: NoteStatus.draft,
+      status: newNoteDraft?.status || NoteStatus.draft,
       name: name,
       bodyJson: null,
       summary: "",

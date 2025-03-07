@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   const searchParams = req.nextUrl.searchParams;
   const cursor = searchParams.get("cursor");
-  const limit = 10; // Number of items per page
+  const limit = 30; // Number of items per page
 
   try {
     const now = new Date();
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
           }
         : {}),
       orderBy: {
-        createdAt: "desc",
+        updatedAt: "desc",
       },
     });
 

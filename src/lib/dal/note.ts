@@ -8,6 +8,7 @@ export const updateableFields = [
   "status",
   "feedback",
   "feedbackComment",
+  "body",
 ] as (keyof NoteDraft)[];
 
 export async function isOwnerOfNote(noteId: string, userId: string) {
@@ -23,17 +24,18 @@ export async function isOwnerOfNote(noteId: string, userId: string) {
   return note?.userId === userId;
 }
 
-export const updateNote = async (note: NoteDraft) => {
-  const fieldsToUpdate = updateableFields.filter(field => note[field]);
-  const data: any = {};
-  fieldsToUpdate.forEach(field => {
-    if (note[field] !== "undefined") {
-      data[field] = note[field];
-    } else {
-      data[field] = undefined;
-    }
-  });
-  await prisma.note.update({ where: { id: note.id }, data });
+export const updateNote = async (id: string, newNote: Partial<NoteDraft>) => {
+  try {
+    const fieldsToUpdate = updateableFields.filter(field => newNote[field]);
+    const data: any = {};
+    fieldsToUpdate.forEach(field => {
+      data[field] = newNote[field];
+    });
+
+    await prisma.note.update({ where: { id }, data });
+  } finally {
+    await prisma.$disconnect();
+  }
 };
 
 export const createNote = async (note: CreateNote): Promise<Note> => {
@@ -44,7 +46,9 @@ export const createNote = async (note: CreateNote): Promise<Note> => {
   });
 };
 
-
 export const archiveNote = async (noteId: string) => {
-  await prisma.note.update({ where: { id: noteId }, data: { status: "archived" } });
+  await prisma.note.update({
+    where: { id: noteId },
+    data: { status: "archived" },
+  });
 };

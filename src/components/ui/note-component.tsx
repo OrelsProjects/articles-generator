@@ -98,7 +98,7 @@ const DislikeFeedbackPopover = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-medium text-sm">
-              What didn't you like about this note?
+              What didn&apos;t you like about this note?
             </h4>
             <Button
               variant="ghost"

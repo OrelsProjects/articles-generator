@@ -91,7 +91,10 @@
     "tailwindcss-animate": "^1.0.7",
     "turndown": "^7.2.0",
     "uuid": "^9.0.1",
-    "winston": "^3.13.0"
+    "winston": "^3.13.0",
+    "@dnd-kit/core": "latest",
+    "@dnd-kit/sortable": "latest",
+    "@dnd-kit/utilities": "latest"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

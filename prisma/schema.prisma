@@ -15,7 +15,7 @@ datasource db {
 
 enum NoteStatus {
   draft
-  generated
+  ready
   published
   archived
 }

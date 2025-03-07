@@ -20,9 +20,11 @@ import {
   MessageSquare,
   Users,
   HelpCircle,
+  KanbanSquare,
 } from "lucide-react";
 import Logo from "@/components/ui/logo";
 import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
 
 export default function Sidebar() {
   return (
@@ -44,6 +46,21 @@ export default function Sidebar() {
               </TooltipTrigger>
               <TooltipContent side="right">
                 <p>Create Post</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/notes/status-board">
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <KanbanSquare className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Notes Status Board</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
