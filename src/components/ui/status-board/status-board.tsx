@@ -484,6 +484,7 @@ export function StatusBoard({
               <StatusColumn
                 id={column.id}
                 items={column.items}
+                color={column.color}
                 selectedItem={selectedItem}
                 onNewItem={() => handleNewItem(column.id)}
                 onEditItem={itemId => handleEditItem(itemId)}

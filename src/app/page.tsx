@@ -30,6 +30,7 @@ import { HeroSection } from "@/components/landing/hero-section";
 import Header from "@/components/landing/header";
 import OtherSolutions from "@/components/landing/other-solutions";
 import Pricing from "@/components/landing/pricing-section";
+import { ThemeProvider } from "@/app/providers/ThemeProvider";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
 
@@ -144,11 +145,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <Header />
-      <HeroSection />
+      <ThemeProvider forcedTheme="light">
+        <Header />
+        <HeroSection />
 
-      {/* Social Proof Banner */}
-      {/* <motion.section
+        {/* Social Proof Banner */}
+        {/* <motion.section
         className="py-6 bg-primary/10"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -184,122 +186,123 @@ function App() {
         </div>
       </motion.section> */}
 
-      <OtherSolutions />
+        <OtherSolutions />
 
-      {/* Features Section */}
-      <FeaturesSection />
+        {/* Features Section */}
+        <FeaturesSection />
 
-      {/* Testimonials Section */}
-      <motion.section
-        className="py-20 bg-muted"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 1.2, ease: "easeOut" }}
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
-            Writers Love {appName}—Here&apos;s Why
-          </h2>
-          <p className="text-xl text-center text-muted-foreground mb-16 max-w-3xl mx-auto">
-            Join successful Substack writers who are growing their audience and
-            income with {appName}
-          </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-card p-6 rounded-lg shadow-sm">
-                <div className="flex items-center mb-4">
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <svg
-                      key={i}
-                      className="w-5 h-5 text-yellow-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-muted-foreground mb-4">
-                  &ldquo;{testimonial.quote}&rdquo;
-                </p>
-                <div>
-                  <div className="font-semibold">{testimonial.author}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {testimonial.title}
+        {/* Testimonials Section */}
+        <motion.section
+          className="py-20 bg-muted"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          viewport={{ once: true }}
+        >
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
+              Writers Love {appName}—Here&apos;s Why
+            </h2>
+            <p className="text-xl text-center text-muted-foreground mb-16 max-w-3xl mx-auto">
+              Join successful Substack writers who are growing their audience
+              and income with {appName}
+            </p>
+            <div className="grid md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <div key={index} className="bg-card p-6 rounded-lg shadow-sm">
+                  <div className="flex items-center mb-4">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <svg
+                        key={i}
+                        className="w-5 h-5 text-yellow-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    &ldquo;{testimonial.quote}&rdquo;
+                  </p>
+                  <div>
+                    <div className="font-semibold">{testimonial.author}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {testimonial.title}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </motion.section>
+        </motion.section>
 
-      {/* Pricing Section */}
-      <Pricing className="bg-background" />
+        {/* Pricing Section */}
+        <Pricing className="bg-background" />
 
-      {/* FAQ Section */}
-      <motion.section
-        id="faq"
-        className="py-20 bg-muted"
-        variants={gentleFadeIn}
-        {...gentleFadeInTransition}
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true }}
-      >
-        <div className="max-w-3xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl mb-4">
-              Frequently Asked Questions
+        {/* FAQ Section */}
+        <motion.section
+          id="faq"
+          className="py-20 bg-muted"
+          variants={gentleFadeIn}
+          {...gentleFadeInTransition}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+        >
+          <div className="max-w-3xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl mb-4">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-muted-foreground/80 text-center text-2xl font-normal">
+                (Based on actual users feedback)
+              </p>
+            </div>
+            <Accordion type="single" collapsible className="space-y-4">
+              {faq.map((item, index) => (
+                <AccordionItem key={index} value={`item-${index}`}>
+                  <AccordionTrigger>{item.question}</AccordionTrigger>
+                  <AccordionContent>{item.answer}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </motion.section>
+
+        {/* Final CTA */}
+        <section className="py-20 bg-gradient-to-r from-background to-muted-foreground/10">
+          <div className="max-w-5xl mx-auto px-4 text-center">
+            <h2 className="text-4xl font-bold mb-6">
+              Write Better Newsletters. Grow Your Audience.{" "}
+              <span className="text-primary">Increase Your Income.</span>
             </h2>
-            <p className="text-muted-foreground/80 text-center text-2xl font-normal">
-              (Based on actual users feedback)
+            <p className="text-xl mb-8 opacity-90">
+              Join 1,000+ Substack writers earning $1k+/month with {appName}
+              &apos;s fully-integrated AI assistant.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button variant="outline" size="lg" asChild>
+                <Link href="/login">Try It Free</Link>
+              </Button>
+              <Button size="lg" variant="default" asChild>
+                <Link href="#pricing">Upgrade to Pro</Link>
+              </Button>
+            </div>
+          </div>
+          <div className="text-center text-foreground text-sm mt-6">
+            <p>
+              Need help?{" "}
+              <a
+                href="mailto:orelsmail@gmail.com"
+                className="underline text-primary"
+              >
+                contact me
+              </a>
             </p>
           </div>
-          <Accordion type="single" collapsible className="space-y-4">
-            {faq.map((item, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger>{item.question}</AccordionTrigger>
-                <AccordionContent>{item.answer}</AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </motion.section>
-
-      {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-r from-background to-muted-foreground/10">
-        <div className="max-w-5xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">
-            Write Better Newsletters. Grow Your Audience.{" "}
-            <span className="text-primary">Increase Your Income.</span>
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Join 1,000+ Substack writers earning $1k+/month with {appName}
-            &apos;s fully-integrated AI assistant.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" size="lg" asChild>
-              <Link href="/login">Try It Free</Link>
-            </Button>
-            <Button size="lg" variant="default" asChild>
-              <Link href="#pricing">Upgrade to Pro</Link>
-            </Button>
-          </div>
-        </div>
-        <div className="text-center text-foreground text-sm mt-6">
-          <p>
-            Need help?{" "}
-            <a
-              href="mailto:orelsmail@gmail.com"
-              className="underline text-primary"
-            >
-              contact me
-            </a>
-          </p>
-        </div>
-      </section>
+        </section>
+      </ThemeProvider>
     </div>
   );
 }

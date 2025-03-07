@@ -1,3 +1,4 @@
+import { ThemeProvider } from "@/app/providers/ThemeProvider";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,5 +11,5 @@ export default function EditorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <ThemeProvider forcedTheme="light">{children}</ThemeProvider>;
 }

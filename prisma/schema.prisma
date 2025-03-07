@@ -176,6 +176,12 @@ model PublicationMetadata {
   privateLife          String?
   highlights           String?
 
+  // User-defined publication settings
+  preferredTopics      String[]  @default([])
+  personalDescription  String?
+  mainTopics           String[]  @default([])
+  userSettingsUpdatedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -45,13 +45,32 @@ export default function PersonalNotesGrid() {
   };
 
   const Loading = () => (
-    <div className="w-full h-full mx-auto py-12 bg-background">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <Skeleton
-            key={i}
-            className="h-64 w-full rounded-xl bg-background/80"
-          />
+    <div className="container mx-auto py-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {[...Array(9)].map((_, i) => (
+          <div key={i} className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <div className="space-y-1">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+              <Skeleton className="h-6 w-6 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-2/3" />
+            <div className="mt-2 flex items-center justify-between">
+              <Skeleton className="h-6 w-16 rounded-md" />
+              <div className="flex space-x-1">
+                <Skeleton className="h-6 w-6 rounded-full" />
+                <Skeleton className="h-6 w-6 rounded-full" />
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -100,7 +119,36 @@ export default function PersonalNotesGrid() {
           {userNotes.length > 0 ? (
             <div className="container mx-auto">
               <MasonryGrid cards={gridCards} />
-              {hasMoreUserNotes && (
+              {loadingMore && (
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                          <div className="space-y-1">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
+                        </div>
+                        <Skeleton className="h-6 w-6 rounded-full" />
+                      </div>
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-5/6" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <div className="mt-2 flex items-center justify-between">
+                        <Skeleton className="h-6 w-16 rounded-md" />
+                        <div className="flex space-x-1">
+                          <Skeleton className="h-6 w-6 rounded-full" />
+                          <Skeleton className="h-6 w-6 rounded-full" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {hasMoreUserNotes && !loadingMore && (
                 <div className="flex justify-center mt-8">
                   <Button
                     variant="ghost"

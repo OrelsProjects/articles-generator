@@ -89,16 +89,14 @@ export default function Layout({ children }: RootLayoutProps) {
             <Loading spinnerClassName="absolute top-1/2 left-1/2 h-16 w-16" />
           }
         >
-          <ThemeProvider>
-            <StoreProvider>
-              <SessionWrapper>
-                <TopLoaderProvider />
-                <ToastProvider />
-                <AnimationProvider>{children}</AnimationProvider>
-                <ClientTrackersProvider />
-              </SessionWrapper>
-            </StoreProvider>
-          </ThemeProvider>
+          <StoreProvider>
+            <SessionWrapper>
+              <TopLoaderProvider />
+              <ToastProvider />
+              <AnimationProvider>{children}</AnimationProvider>
+              <ClientTrackersProvider />
+            </SessionWrapper>
+          </StoreProvider>
         </Suspense>
       </body>
     </html>

@@ -12,7 +12,14 @@ import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Info, Edit, RefreshCw, Plus, ChevronDown, Loader2 } from "lucide-react";
+import {
+  Info,
+  Edit,
+  RefreshCw,
+  Plus,
+  ChevronDown,
+  Loader2,
+} from "lucide-react";
 
 export default function InspirationGrid() {
   const {
@@ -47,13 +54,32 @@ export default function InspirationGrid() {
   };
 
   const Loading = () => (
-    <div className="container mx-auto py-12 bg-background min-h-screen">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <Skeleton
-            key={i}
-            className="h-64 w-full rounded-xl bg-background/80"
-          />
+    <div className="container mx-auto py-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {[...Array(9)].map((_, i) => (
+          <div key={i} className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <div className="space-y-1">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+              <Skeleton className="h-6 w-6 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-2/3" />
+            <div className="mt-2 flex items-center justify-between">
+              <Skeleton className="h-6 w-16 rounded-md" />
+              <div className="flex space-x-1">
+                <Skeleton className="h-6 w-6 rounded-full" />
+                <Skeleton className="h-6 w-6 rounded-full" />
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -84,7 +110,7 @@ export default function InspirationGrid() {
   });
 
   return (
-    <div className="w-full min-h-screen bg-transparent py-8">
+    <div className="w-full min-h-screen bg-transparent py-16">
       <div className="mb-6 container mx-auto">
         <div className="flex items-center mb-1">
           <h1 className="text-xl font-semibold text-foreground">
@@ -93,7 +119,11 @@ export default function InspirationGrid() {
           <TooltipProvider>
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6 ml-1 mt-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 ml-1 mt-1"
+                >
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </TooltipTrigger>
@@ -110,30 +140,6 @@ export default function InspirationGrid() {
           Use these high-performing posts as inspirations for your next content!
           Our AI engine selected these for you.
         </p>
-        <div className="flex justify-between items-center mt-4">
-          <Button
-            variant="ghost"
-            className="text-sm flex items-center gap-2 px-0 font-black text-foreground underline underline-offset-2"
-          >
-            <Edit className="h-4 w-4" />
-            Edit my personalized feed
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fetchNotes()}
-            disabled={loading}
-            className="text-sm flex items-center gap-2 rounded-md bg-gradient-to-b from-primary via-primary/80 to-primary/60 text-primary-foreground shadow-md border-primary border px-4 py-2 transition-colors"
-          >
-            <RefreshCw
-              className={cn("h-4 w-4 hidden", {
-                "animate-spin block": loading,
-              })}
-            />
-            <Plus className={cn("h-4 w-4", { hidden: loading })} />
-            Find more
-          </Button>
-        </div>
       </div>
       {shouldShowLoading ? (
         <Loading />
@@ -144,7 +150,36 @@ export default function InspirationGrid() {
           {notes.length > 0 ? (
             <div className="container mx-auto">
               <MasonryGrid cards={gridCards} />
-              {hasMoreInspirationNotes && (
+              {loadingMore && (
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                          <div className="space-y-1">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
+                        </div>
+                        <Skeleton className="h-6 w-6 rounded-full" />
+                      </div>
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-5/6" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <div className="mt-2 flex items-center justify-between">
+                        <Skeleton className="h-6 w-16 rounded-md" />
+                        <div className="flex space-x-1">
+                          <Skeleton className="h-6 w-6 rounded-full" />
+                          <Skeleton className="h-6 w-6 rounded-full" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {hasMoreInspirationNotes && !loadingMore && (
                 <div className="flex justify-center mt-8">
                   <Button
                     variant="ghost"

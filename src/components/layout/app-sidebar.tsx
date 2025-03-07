@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,6 +19,9 @@ import {
   Sidebar,
   SidebarClose,
   SidebarOpen,
+  LayoutGrid,
+  BarChart2,
+  HelpCircle,
 } from "lucide-react";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
@@ -40,10 +43,17 @@ import Logo from "@/components/ui/logo";
 import { Separator } from "@radix-ui/react-separator";
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+  const [showOpenButton, setShowOpenButton] = useState(false);
   const pathname = usePathname();
   const { user } = useAppSelector(selectAuth);
   const { signOut } = useAuth();
+
+  useEffect(() => {
+    if (!collapsed) {
+      setShowOpenButton(false);
+    }
+  }, [collapsed]);
 
   const navItems = [
     {
@@ -79,27 +89,47 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
       <div
         className={cn(
-          "h-screen bg-background border-r border-border flex flex-col transition-all duration-300 relative",
+          "h-screen bg-background border-r border-border flex flex-col transition-all duration-300 relative z-50",
           collapsed ? "w-16" : "w-64",
         )}
       >
-        {/* Logo and collapse button */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <Logo withText={!collapsed} />
+        <div
+          className="flex items-center justify-between p-4 border-b border-border relative"
+          onMouseEnter={() => setShowOpenButton(collapsed && true)}
+          onMouseLeave={() => setShowOpenButton(false)}
+        >
+          <SidebarOpen
+            onClick={() => setCollapsed(false)}
+            size={18}
+            className={cn(
+              "absolute cursor-pointer left-1/2 -translate-x-1/2 z-20",
+              {
+                visible: showOpenButton,
+                invisible: !showOpenButton,
+              },
+            )}
+          />
+          <Logo
+            withText={!collapsed}
+            className={cn("z-10", {
+              "opacity-0": showOpenButton,
+            })}
+          />
         </div>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto absolute top-0 -right-10"
+          className={cn("ml-auto absolute top-2.5 right-0 hidden md:flex", {
+            "!hidden": collapsed,
+          })}
         >
-          {collapsed ? <SidebarOpen size={18} /> : <SidebarClose size={18} />}
+          <SidebarClose size={18} />
         </Button>
         <Separator orientation="vertical" />
-        {/* Navigation */}
+
         <nav className="flex-1 py-4 overflow-y-auto">
           <ul className="space-y-2 px-2">
             {navItems.map(item => (
@@ -112,7 +142,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                         className={cn(
                           "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                           isActive(item.href)
-                            ? "bg-primary text-primary-foreground"
+                            ? "text-primary"
                             : "hover:bg-muted",
                         )}
                       >

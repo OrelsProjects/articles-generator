@@ -15,7 +15,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="w-full h-full overflow-auto bg-muted/80">
+    <div className="w-full h-full overflow-auto bg-background">
       <div className="max-w-7xl mx-auto flex-1 relative">
         <InspirationGrid />
         <ImageModal />

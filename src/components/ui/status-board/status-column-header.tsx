@@ -19,11 +19,10 @@ export function StatusColumnHeader({
       <div className="flex items-center gap-2">
         <div
           className={cn(
-            "px-2 py-1 rounded-md text-sm font-medium",
+            "px-2 py-1 rounded-md text-sm font-medium bg-gray-100 text-gray-800",
             color === "amber" && "bg-amber-100 text-amber-800",
             color === "green" && "bg-green-100 text-green-800",
             color === "gray" && "bg-gray-100 text-gray-800",
-            !color && "bg-gray-100 text-gray-800",
           )}
         >
           {Icon && <Icon className="h-4 w-4 mr-1 inline" />}

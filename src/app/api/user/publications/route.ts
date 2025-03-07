@@ -63,6 +63,12 @@ export async function GET() {
         publication?.copyright ||
         "",
       description: userPublication?.publication?.description || null,
+      preferredTopics: userPublication?.publication?.preferredTopics || [],
+      personalDescription: userPublication?.publication?.personalDescription || null,
+      mainTopics: userPublication?.publication?.mainTopics || [],
+      userSettingsUpdatedAt: userPublication?.publication?.userSettingsUpdatedAt || null,
+      generatedDescription: userPublication?.publication?.generatedDescription || null,
+      generatedTopics: userPublication?.publication?.topics || null,
       ideas:
         ideas.map(idea => ({
           id: idea.id,

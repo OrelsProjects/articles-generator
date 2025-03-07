@@ -70,6 +70,7 @@ const notesSlice = createSlice({
       action: PayloadAction<{
         items: Note[];
         nextCursor: string | null;
+        hasMore: boolean;
         options?: { toStart: boolean };
       }>,
     ) => {
@@ -82,7 +83,7 @@ const notesSlice = createSlice({
         state.inspirationNotes.push(...action.payload.items);
       }
       state.inspirationNotesCursor = action.payload.nextCursor;
-      state.hasMoreInspirationNotes = !!action.payload.nextCursor;
+      state.hasMoreInspirationNotes = action.payload.hasMore;
     },
     addNotes: (
       state,

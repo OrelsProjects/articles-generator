@@ -10,16 +10,18 @@ import { Note } from "@/types/note";
 const filterNotes = (
   notes: NotesComments[],
   existingNotes: NotesComments[],
-  limit: number = 10
+  limit: number,
 ) => {
   const existingNotesBodys = existingNotes.map(note => note.body.slice(0, 100));
   let newNotes = [...notes];
   newNotes = newNotes.filter(
     (note, index, self) =>
-      index === self.findIndex(t => t.entityKey === note.entityKey),
+      index === self.findIndex(t => t.commentId === note.commentId),
   );
   newNotes = newNotes.sort((a, b) => b.reactionCount - a.reactionCount);
-  newNotes = newNotes.filter(note => !existingNotesBodys.includes(note.body.slice(0, 100)));
+  newNotes = newNotes.filter(
+    note => !existingNotesBodys.includes(note.body.slice(0, 100)),
+  );
 
   newNotes = newNotes.filter(
     note =>
@@ -98,14 +100,21 @@ export async function POST(req: NextRequest) {
 
     const existingNotes = await prismaArticles.notesComments.findMany({
       where: {
-        id: {
+        commentId: {
           in: existingNotesIds,
         },
       },
+      distinct: ["commentId"],
     });
 
-    const filteredNotes = filterNotes(inspirationNotes, existingNotes, limit);
+    const filteredNotes = filterNotes(
+      inspirationNotes,
+      existingNotes,
+      existingNotes.length + limit,
+    );
     let nextCursor: string | undefined = undefined;
+
+    const hasMore = filteredNotes.length > existingNotes.length + limit;
 
     if (filteredNotes.length > limit) {
       const nextItem = filteredNotes.pop(); // Remove the extra item
@@ -147,6 +156,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       items: notesResponse,
       nextCursor,
+      hasMore,
     });
   } catch (error: any) {
     loggerServer.error("Failed to fetch notes", error);

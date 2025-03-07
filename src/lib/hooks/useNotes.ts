@@ -54,6 +54,7 @@ export const useNotes = () => {
     try {
       loadingInspirationRef.current = true;
       dispatch(setLoadingInspiration(true));
+      debugger;
       const response = await axios.post("/api/notes/inspiration", {
         existingNotesIds: inspirationNotes.map(note => note.id),
         cursor: loadMore ? inspirationNotesCursor : null,
@@ -64,6 +65,8 @@ export const useNotes = () => {
           addInspirationNotes({
             items: response.data.items,
             nextCursor: response.data.nextCursor,
+            hasMore: response.data.hasMore,
+            options: { toStart: true },
           }),
         );
       } else {
@@ -71,6 +74,7 @@ export const useNotes = () => {
           addInspirationNotes({
             items: response.data.items,
             nextCursor: response.data.nextCursor,
+            hasMore: response.data.hasMore,
             options: { toStart: true },
           }),
         );
@@ -291,7 +295,7 @@ export const useNotes = () => {
     updateNoteFeedback,
     hasMoreUserNotes,
     hasMoreInspirationNotes,
-    loadMoreUserNotes: () => fetchNotes(true),
+    loadMoreUserNotes: () => fetchNotes(),
     loadMoreInspirationNotes: () => fetchInspirationNotes(true),
     editNoteBody,
     loadingEditNote,
