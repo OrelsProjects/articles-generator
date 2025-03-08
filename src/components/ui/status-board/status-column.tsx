@@ -73,7 +73,7 @@ export function StatusColumn({
         items={items.map(item => item.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="flex flex-col gap-2 flex-1">
+        <div className="flex flex-col gap-2 flex-1 overflow-auto">
           {items.map(item => (
             <StatusItem
               selected={selectedItem === item.id}

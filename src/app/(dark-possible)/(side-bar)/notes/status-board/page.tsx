@@ -29,9 +29,11 @@ export default function StatusBoardPage() {
   }
 
   return (
-    <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-8">Notes Status Board</h1>
-      <NotesStatusBoard notes={userNotes} />
+    <div className="w-full py-8 flex justify-center items-start">
+      <div className="w-full px-4 md:px-16 lg:px-24">
+        <h1 className="text-3xl font-bold mb-8">Notes Status Board</h1>
+        <NotesStatusBoard notes={userNotes} />
+      </div>
     </div>
   );
 }

@@ -17,14 +17,12 @@ export function PublicationPreferences() {
   const [personalDescription, setPersonalDescription] = useState("");
   const [newTopic, setNewTopic] = useState("");
   const [preferredTopics, setPreferredTopics] = useState<string[]>([]);
-  const [mainTopics, setMainTopics] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (settings) {
       setPersonalDescription(settings.personalDescription || "");
       setPreferredTopics(settings.preferredTopics || []);
-      setMainTopics(settings.mainTopics || []);
     }
   }, [settings]);
 
@@ -35,10 +33,6 @@ export function PublicationPreferences() {
       if (!preferredTopics.includes(newTopic)) {
         setPreferredTopics([...preferredTopics, newTopic]);
       }
-    } else {
-      if (!mainTopics.includes(newTopic)) {
-        setMainTopics([...mainTopics, newTopic]);
-      }
     }
     
     setNewTopic("");
@@ -47,8 +41,6 @@ export function PublicationPreferences() {
   const handleRemoveTopic = (topic: string, type: 'preferred' | 'main') => {
     if (type === 'preferred') {
       setPreferredTopics(preferredTopics.filter(t => t !== topic));
-    } else {
-      setMainTopics(mainTopics.filter(t => t !== topic));
     }
   };
 
@@ -58,7 +50,6 @@ export function PublicationPreferences() {
       await updateSettings({
         personalDescription,
         preferredTopics,
-        mainTopics
       });
     } finally {
       setIsSaving(false);

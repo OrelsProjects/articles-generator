@@ -65,7 +65,6 @@ export async function GET() {
       description: userPublication?.publication?.description || null,
       preferredTopics: userPublication?.publication?.preferredTopics || [],
       personalDescription: userPublication?.publication?.personalDescription || null,
-      mainTopics: userPublication?.publication?.mainTopics || [],
       userSettingsUpdatedAt: userPublication?.publication?.userSettingsUpdatedAt || null,
       generatedDescription: userPublication?.publication?.generatedDescription || null,
       generatedTopics: userPublication?.publication?.topics || null,

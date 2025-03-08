@@ -8,12 +8,11 @@ import { z } from "zod";
 const updatePublicationSettingsSchema = z.object({
   preferredTopics: z.array(z.string()).optional(),
   personalDescription: z.string().optional(),
-  mainTopics: z.array(z.string()).optional(),
 });
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  
+
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -33,7 +32,7 @@ export async function GET() {
     if (!userMetadata?.publicationId) {
       return NextResponse.json(
         { error: "No publication found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -41,12 +40,14 @@ export async function GET() {
     return NextResponse.json({
       settings: {
         preferredTopics: userMetadata.publication?.preferredTopics || [],
-        personalDescription: userMetadata.publication?.personalDescription || "",
-        mainTopics: userMetadata.publication?.mainTopics || [],
-        userSettingsUpdatedAt: userMetadata.publication?.userSettingsUpdatedAt || null,
-        
+        personalDescription:
+          userMetadata.publication?.personalDescription || "",
+        userSettingsUpdatedAt:
+          userMetadata.publication?.userSettingsUpdatedAt || null,
+
         // Include generated data for reference
-        generatedDescription: userMetadata.publication?.generatedDescription || "",
+        generatedDescription:
+          userMetadata.publication?.generatedDescription || "",
         generatedTopics: userMetadata.publication?.topics || "",
       },
     });
@@ -54,14 +55,14 @@ export async function GET() {
     console.error("Error fetching publication settings:", error);
     return NextResponse.json(
       { error: "Failed to fetch publication settings" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
     if (!userMetadata?.publicationId) {
       return NextResponse.json(
         { error: "No publication found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -92,9 +93,12 @@ export async function POST(req: NextRequest) {
         id: userMetadata.publicationId,
       },
       data: {
-        ...(validatedData.preferredTopics && { preferredTopics: validatedData.preferredTopics }),
-        ...(validatedData.personalDescription && { personalDescription: validatedData.personalDescription }),
-        ...(validatedData.mainTopics && { mainTopics: validatedData.mainTopics }),
+        ...(validatedData.preferredTopics && {
+          preferredTopics: validatedData.preferredTopics,
+        }),
+        ...(validatedData.personalDescription && {
+          personalDescription: validatedData.personalDescription,
+        }),
         userSettingsUpdatedAt: new Date(),
       },
     });
@@ -104,23 +108,22 @@ export async function POST(req: NextRequest) {
       settings: {
         preferredTopics: updatedPublication.preferredTopics,
         personalDescription: updatedPublication.personalDescription,
-        mainTopics: updatedPublication.mainTopics,
         userSettingsUpdatedAt: updatedPublication.userSettingsUpdatedAt,
       },
     });
   } catch (error) {
     console.error("Error updating publication settings:", error);
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid request data", details: error.errors },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     return NextResponse.json(
       { error: "Failed to update publication settings" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

@@ -8,7 +8,6 @@ export interface Publication {
   url: string;
   preferredTopics?: string[];
   personalDescription?: string | null;
-  mainTopics?: string[];
   userSettingsUpdatedAt?: Date | null;
 }
 
@@ -21,7 +20,6 @@ export interface PublicationResponse {
   url: string;
   preferredTopics?: string[];
   personalDescription?: string | null;
-  mainTopics?: string[];
   userSettingsUpdatedAt?: Date | null;
   generatedDescription?: string | null;
   generatedTopics?: string | null;

@@ -164,7 +164,6 @@ export async function POST(req: NextRequest) {
     const messages = generateNotesPrompt(
       userMetadata.publication,
       uniqueInspirations.map((note: NotesComments) => note.body),
-      // [],
       notesFromAuthor.map(note => note.body),
       userNotes,
       notesUserDisliked,

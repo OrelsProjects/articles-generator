@@ -177,9 +177,8 @@ model PublicationMetadata {
   highlights           String?
 
   // User-defined publication settings
-  preferredTopics      String[]  @default([])
-  personalDescription  String?
-  mainTopics           String[]  @default([])
+  preferredTopics       String[]  @default([])
+  personalDescription   String?
   userSettingsUpdatedAt DateTime?
 
   createdAt DateTime @default(now())

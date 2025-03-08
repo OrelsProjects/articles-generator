@@ -63,11 +63,11 @@ export default function SettingsPage() {
                 <span className="font-medium">
                   {credits.remaining} of {totalCredits} credits remaining
                 </span>
-                <span className="text-sm text-muted-foreground">
+                {/* <span className="text-sm text-muted-foreground">
                   {creditPercentage}% used
-                </span>
+                </span> */}
               </div>
-              <Progress value={creditPercentage} className="h-2" />
+              <Progress value={100 - creditPercentage} className="h-2" />
 
               <div className="mt-4 text-sm text-muted-foreground">
                 <p>Credits reset at the beginning of your billing cycle.</p>

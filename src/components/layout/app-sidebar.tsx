@@ -22,6 +22,7 @@ import {
   LayoutGrid,
   BarChart2,
   HelpCircle,
+  ExternalLink,
 } from "lucide-react";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
@@ -67,13 +68,14 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
       icon: FileText,
     },
     {
-      name: "Status Board",
+      name: "My drafts",
       href: "/notes/status-board",
       icon: KanbanSquare,
     },
     {
       name: "Editor",
       href: "/editor",
+      newTab: true,
       icon: PenTool,
     },
     {
@@ -139,6 +141,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                     <TooltipTrigger asChild>
                       <Link
                         href={item.href}
+                        target={item.newTab ? "_blank" : "_self"}
                         className={cn(
                           "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                           isActive(item.href)
@@ -151,7 +154,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                       </Link>
                     </TooltipTrigger>
                     {collapsed && (
-                      <TooltipContent side="right">{item.name}</TooltipContent>
+                      <TooltipContent side="right" className="flex items-center gap-2">
+                        {item.name}{" "}
+                        {item.newTab ? <ExternalLink size={12} /> : ""}
+                      </TooltipContent>
                     )}
                   </Tooltip>
                 </TooltipProvider>

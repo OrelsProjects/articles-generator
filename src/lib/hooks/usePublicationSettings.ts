@@ -6,7 +6,6 @@ import { useSettings } from './useSettings';
 export interface PublicationSettings {
   preferredTopics: string[];
   personalDescription: string;
-  mainTopics: string[];
   userSettingsUpdatedAt: Date | null;
   generatedDescription: string;
   generatedTopics: string;
