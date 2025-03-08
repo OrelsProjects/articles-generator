@@ -51,10 +51,11 @@ export async function GET() {
       ideas = userPublication.publication.ideas || [];
     }
 
-    const response: PublicationResponse = {
-      id: userPublication?.publication?.id,
-      image: userPublication?.publication?.image || null,
-      url:
+    const response: PublicationResponse | null = userPublication?.publication
+      ? {
+          id: userPublication?.publication?.id,
+          image: userPublication?.publication?.image || null,
+          url:
         buildSubstackUrl(publication?.subdomain, publication?.customDomain) ||
         "",
       title:
@@ -83,11 +84,12 @@ export async function GET() {
           search: idea.search,
           isFavorite: idea.isFavorite,
           modelUsedForIdeas: idea.modelUsedForIdeas,
-          modelUsedForOutline: idea.modelUsedForOutline,
-          updatedAt: idea.updatedAt,
-          bodyHistory: idea.bodyHistory,
-        })) || [],
-    };
+            modelUsedForOutline: idea.modelUsedForOutline,
+            updatedAt: idea.updatedAt,
+            bodyHistory: idea.bodyHistory,
+          })) || [],
+      }
+      : null;
 
     return NextResponse.json({ publication: response }, { status: 200 });
   } catch (error: any) {

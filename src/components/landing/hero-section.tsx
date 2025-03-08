@@ -53,13 +53,12 @@ export const HeroSection = () => (
     <div className="w-screen container flex items-center justify-center relative z-10">
       <div className="flex-1 space-y-8 w-full">
         <div className="flex flex-col gap-16 items-center text-center lg:text-left">
-          <h1 className="text-center font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] md:-mb-4">
-            Write the posts you need
+          <h1 className="text-center font-extrabold text-4xl sm:text-5xl tracking-tight !leading-[1.2] md:-mb-4">
+            The growth platform
             <br />
-            to grow on{" "}
-            <span className="text-primary bg-primary/20 rounded-md p-1 py-0">
-              Substack
-            </span>
+            {/* <span className="text-primary bg-primary/20 rounded-md p-1 py-0"> */}
+              for Substack leaders
+            {/* </span> */}
           </h1>
 
           {/* Feature list */}

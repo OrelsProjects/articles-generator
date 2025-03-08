@@ -31,7 +31,7 @@ export default function Header() {
           <Button
             size="lg"
             variant="default"
-            className="bg-primary hover:bg-primary/90 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
             asChild
           >
             <Link href="/login">Login</Link>

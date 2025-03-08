@@ -63,7 +63,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const query = `${publication.topics}.`;
+    const query = `
+    ${publication.preferredTopics ? `**Topics: ${publication.preferredTopics}**` : ""}
+    ${publication.topics ? `${publication.topics}` : ""}
+     `;
     console.log("query", query);
     const randomMinReaction = Math.floor(Math.random() * 200);
     const randomMaxReaction =
@@ -94,7 +97,7 @@ export async function POST(req: NextRequest) {
 
     const inspirationNotes = await searchSimilarNotes({
       query,
-      limit: 36,
+      limit: 40 + existingNotesIds.length,
       filters,
     });
 
@@ -114,7 +117,7 @@ export async function POST(req: NextRequest) {
     );
     let nextCursor: string | undefined = undefined;
 
-    const hasMore = filteredNotes.length > existingNotes.length + limit;
+    const hasMore = filteredNotes.length > 0;
 
     if (filteredNotes.length > limit) {
       const nextItem = filteredNotes.pop(); // Remove the extra item

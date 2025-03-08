@@ -2,13 +2,6 @@ import { setUsages } from "@/lib/features/settings/settingsSlice";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "../features/auth/authSlice";
-import {
-  maxIdeasPerPlan,
-  maxTitleAndSubtitleRefinementsPerPlan,
-  maxTextEnhancmentsPerPlan,
-  textEditorTypePerPlan,
-  canUseSearchPerPlan,
-} from "@/lib/plans-consts";
 import { useMemo } from "react";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import axios from "axios";
@@ -36,30 +29,7 @@ export const useSettings = () => {
     return !didExceedLimit && hasPublication;
   }, [didExceedLimit, hasPublication]);
 
-  const maxIdeas = useMemo(
-    () => maxIdeasPerPlan[user?.meta?.plan || "free"],
-    [user?.meta?.plan],
-  );
-
-  const canUseSearch = useMemo(
-    () => canUseSearchPerPlan[user?.meta?.plan || "free"],
-    [user?.meta?.plan],
-  );
-
-  const maxTitleAndSubtitleRefinements = useMemo(
-    () => maxTitleAndSubtitleRefinementsPerPlan[user?.meta?.plan || "free"],
-    [user?.meta?.plan],
-  );
-
-  const maxTextEnhancments = useMemo(
-    () => maxTextEnhancmentsPerPlan[user?.meta?.plan || "free"],
-    [user?.meta?.plan],
-  );
-
-  const textEditorType = useMemo(
-    () => textEditorTypePerPlan[user?.meta?.plan || "free"],
-    [user?.meta?.plan],
-  );
+  const plan = useMemo(() => user?.meta?.plan, [user?.meta?.plan]);
 
   const init = async () => {
     try {
@@ -69,15 +39,17 @@ export const useSettings = () => {
     } catch (error) {}
   };
 
+  // Check if user has enough credits for an operation
+  const hasEnoughCredits = (cost: number) => {
+    return credits.remaining >= cost;
+  };
+
   return {
     init,
-    maxIdeas,
-    canUseSearch,
     didExceedLimit,
-    maxTitleAndSubtitleRefinements,
-    maxTextEnhancments,
-    textEditorType,
     canGenerateIdeas,
     hasPublication,
+    hasEnoughCredits,
+    credits,
   };
 };

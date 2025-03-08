@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSidebar } from "@/app/(content)/editor/sidebar";
+import { AppSidebar } from "@/app/(content)/(only-light)/editor/sidebar";
 import AuthProvider from "@/app/providers/AuthProvider";
 import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
 import InitiatePlanFromLandingProvider from "@/app/providers/InitiatePlanFromLandingProvider";
@@ -15,10 +15,8 @@ export default function ContentLayout({
   return (
     <AppSidebar>
       <AuthProvider>
-        <InitiatePlanFromLandingProvider>
-          <NewSubscriptionProvider />
-          <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>
-        </InitiatePlanFromLandingProvider>
+        <NewSubscriptionProvider />
+        <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>
       </AuthProvider>
     </AppSidebar>
   );

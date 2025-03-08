@@ -129,6 +129,7 @@ export async function POST(req: NextRequest) {
 
     const descriptionObject: {
       about: string;
+      aboutGeneral: string;
       writingStyle: string;
       topics: string;
       personality: string;
@@ -144,6 +145,7 @@ export async function POST(req: NextRequest) {
         },
         data: {
           generatedDescription: descriptionObject.about,
+          generatedAboutGeneral: descriptionObject.aboutGeneral,
           writingStyle: descriptionObject.writingStyle,
           topics: descriptionObject.topics,
           personality: descriptionObject.personality,
@@ -162,11 +164,13 @@ export async function POST(req: NextRequest) {
           title,
           description,
           generatedDescription: descriptionObject.about,
+          generatedAboutGeneral: descriptionObject.aboutGeneral,
           writingStyle: descriptionObject.writingStyle,
           topics: descriptionObject.topics,
           personality: descriptionObject.personality,
           specialEvents: descriptionObject.specialEvents,
           privateLife: descriptionObject.privateLife,
+          highlights: descriptionObject.highlights,
           idInArticlesDb: Number(userPublication.id),
           authorId,
         },

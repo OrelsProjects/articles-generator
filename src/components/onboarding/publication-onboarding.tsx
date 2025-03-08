@@ -15,7 +15,7 @@ import { useSettings } from "@/lib/hooks/useSettings";
 import { Loader2 } from "lucide-react";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import Logo from "@/components/ui/logo";
-
+import Image from "next/image";
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteRoom";
 
 export function PublicationOnboarding() {
@@ -64,8 +64,21 @@ export function PublicationOnboarding() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="w-screen h-screen flex flex-col items-center justify-center min-h-screen bg-background p-4 relative">
+      <Image
+        src="/home-dark.png"
+        alt="Home"
+        fill
+        className="absolute inset-0 hidden dark:block z-10"
+      />
+      <Image
+        src="/home-light.png"
+        alt="Home"
+        fill
+        className="absolute inset-0 block dark:hidden z-10"
+      />
+      <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm  p-4 z-20" />
+      <Card className="w-full max-w-md z-50">
         <CardHeader>
           {/* <div className="w-full flex items-center justify-center"> */}
           <Logo className="w-10 h-10" />
@@ -82,7 +95,7 @@ export function PublicationOnboarding() {
             continue.
           </p>
           <div className="bg-muted p-4 rounded-md">
-            <p className="text-sm font-medium">What you'll need:</p>
+            <p className="text-sm font-medium">What you&apos;ll need:</p>
             <ul className="text-sm mt-2 space-y-1 list-disc list-inside">
               <li>Your publication URL (e.g., yourname.substack.com)</li>
               <li>

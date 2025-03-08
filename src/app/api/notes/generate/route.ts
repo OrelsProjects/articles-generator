@@ -11,8 +11,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { NotesComments } from "@/../prisma/generated/articles";
 import { runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
-import { Note, NoteStatus } from "@prisma/client";
+import { AIUsageType, Note, NoteStatus } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
+import { canUseAI, useCredits } from "@/lib/utils/credits";
 
 export async function POST(req: NextRequest) {
   console.time("generate notes");
@@ -71,6 +72,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Publication not found" },
         { status: 404 },
+      );
+    }
+
+
+    const isValid = await canUseAI(session.user.id, AIUsageType.generateNotes);
+    if (!isValid) {
+      return NextResponse.json(
+        { error: "Not enough credits" },
+        { status: 400 },
       );
     }
 
@@ -171,33 +181,8 @@ export async function POST(req: NextRequest) {
       count,
     );
 
-    // const response = await runPrompt(messages, "anthropic/claude-3.5-sonnet");
     const response = await runPrompt(messages, "anthropic/claude-3.5-sonnet");
     newNotes = await parseJson(response);
-
-    // // const humanizeTextPrompt = generateImproveNoteTextPrompt(
-    // //   newNotes.map((note, index) => ({
-    // //     index: index.toString(),
-    // //     text: note.body,
-    // //   })),
-    // // );
-    // // const humanizeTextsResponse = await runPrompt(
-    // //   humanizeTextPrompt.messages,
-    // //   humanizeTextPrompt.model,
-    // // );
-    // // const humanizeTexts: { index: string; text: string }[] = await parseJson(
-    // //   humanizeTextsResponse,
-    // // );
-
-    // newNotes = newNotes.map((note, index) => {
-    //   const newHumanizedNote = humanizeTexts.find(
-    //     text => text.index === index.toString(),
-    //   );
-    //   return {
-    //     ...note,
-    //     body: newHumanizedNote?.text || note.body,
-    //   };
-    // });
 
     const handle = notesFromAuthor[0]?.handle;
     const name = notesFromAuthor[0]?.name;
@@ -234,6 +219,8 @@ export async function POST(req: NextRequest) {
       status: note.status,
       thumbnail: note.thumbnail || undefined,
     }));
+
+    await useCredits(session.user.id, AIUsageType.generateNotes);
 
     return NextResponse.json(notesResponse);
   } catch (error: any) {

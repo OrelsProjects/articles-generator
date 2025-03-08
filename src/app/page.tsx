@@ -139,10 +139,6 @@ function App() {
       });
   }, [fetchingProducts, products, didFetchProducts]);
 
-  const handleGetStarted = (productId: string, priceId: string) => {
-    router.push(`/login?pri_id=${priceId}&pro_id=${productId}`);
-  };
-
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <ThemeProvider forcedTheme="light">

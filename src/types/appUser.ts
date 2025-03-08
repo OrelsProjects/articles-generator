@@ -1,7 +1,7 @@
 import { Plan } from "@prisma/client";
 
 export interface AppUserMeta {
-  plan: Plan;
+  plan: Plan | null;
   currentPeriodStart: Date | null;
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;

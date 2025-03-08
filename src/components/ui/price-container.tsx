@@ -27,8 +27,8 @@ export default function PriceContainer({
     <div className={cn(className)}>
       <div>
         <span
-          className={cn("text-4xl font-semibold tracking-tight", {
-            "text-gray-300 line-through": discountPrice,
+          className={cn("text-4xl font-medium tracking-tight", {
+            "text-gray-300 dark:text-gray-300/50 line-through": discountPrice,
           })}
         >
           {formattedOriginalPrice}
@@ -38,7 +38,7 @@ export default function PriceContainer({
       {discountPrice && (
         <div className="flex">
           <div className="mt-7 relative">
-            <span className="text-4xl font-semibold tracking-tight text-foreground">
+            <span className="text-4xl font-medium tracking-tight text-foreground">
               {formattedDiscountPrice || formattedOriginalPrice}
             </span>
             <span className="text-sm/6 font-semibold text-muted-foreground">
@@ -74,7 +74,9 @@ function PriceContainerSVG({
       xmlns="http://www.w3.org/2000/svg"
       className={cn(
         "absolute -top-1/2 -translate-y-2 -left-4 -right-4",
-        isPrimary ? "text-primary/30" : "text-gray-300/80",
+        isPrimary
+          ? "text-primary/30 dark:text-primary/50"
+          : "text-gray-300/80 dark:text-slate-300/30",
         {
           hidden: disabled,
         },

@@ -40,7 +40,7 @@ const LoadingRedirect = () => (
             transition={{ delay: 0.3, duration: 0.5 }}
             className="text-2xl font-bold mb-4 text-foreground"
           >
-            Preparing Your Secure Payment
+            Preparing your secure payment
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
@@ -73,24 +73,24 @@ export default function InitiatePlanFromLandingProvider({
   const [loadingRedirect, setLoadingRedirect] = useState(false);
   const loadingRedirectRef = useRef(false);
 
-  const productId = searchParams.get("pro_id");
-  const priceId = searchParams.get("pri_id");
+  const plan = searchParams.get("plan");
+  const interval = searchParams.get("interval");
   const discountApplied = searchParams.get("promo");
   const code = searchParams.get("code");
 
   useEffect(() => {
-    if (productId && priceId) {
+    if (plan && interval) {
       if (loadingRedirectRef.current) return;
 
       loadingRedirectRef.current = true;
       setLoadingRedirect(true);
 
-      goToCheckout(priceId, productId).finally(() => {
+      goToCheckout(interval as "month" | "year", plan).finally(() => {
         loadingRedirectRef.current = false;
         setLoadingRedirect(false);
       });
     }
-  }, [productId, priceId]);
+  }, [plan, interval]);
 
   if (code) {
     // Means it's a free subscriber, no payment needed

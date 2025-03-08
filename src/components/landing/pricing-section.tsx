@@ -17,9 +17,9 @@ const pricingPlans = [
   {
     name: "Standard",
     description:
-      "The essentials to start building your LinkedIn business today.",
-    monthlyPrice: 59.99,
-    yearlyPlanPrice: 47.99,
+      "The essentials to start building your Substack business today.",
+    monthlyPrice: 29.99,
+    yearlyPlanPrice: 23.99,
     features: [
       "50 Post Writing AI Credits",
       "Up to 20 Followed Accounts",
@@ -30,15 +30,15 @@ const pricingPlans = [
       "Content Analytics & Statistics",
       "Top Leads",
     ],
-    annualSavings: 143.98,
+    annualSavings: 71.98,
     popular: false,
   },
   {
     name: "Premium",
     description:
-      "Scale your LinkedIn presence and business. Ideal for accounts looking to grow.",
-    monthlyPrice: 99.99,
-    yearlyPlanPrice: 79.99,
+      "Scale your Substack presence and business. Ideal for accounts looking to grow.",
+    monthlyPrice: 49.99,
+    yearlyPlanPrice: 39.99,
     features: [
       "100 Post Writing AI Credits/Month",
       "Up to 40 Followed Accounts",
@@ -49,15 +49,15 @@ const pricingPlans = [
       "Content Analytics & Statistics",
       "Top Leads",
     ],
-    annualSavings: 239.98,
+    annualSavings: 119.98,
     popular: true,
   },
   {
     name: "Executive",
     description:
-      "Supercharge your LinkedIn activity. Ideal for large, active accounts.",
-    monthlyPrice: 149.99,
-    yearlyPlanPrice: 119.99,
+      "Supercharge your Substack activity. Ideal for large, active accounts.",
+    monthlyPrice: 99.99,
+    yearlyPlanPrice: 79.99,
     features: [
       "150 Post Writing AI Credits/Month",
       "Up to 60 Followed Accounts",
@@ -68,22 +68,26 @@ const pricingPlans = [
       "Content Analytics & Statistics",
       "Top Leads",
     ],
-    annualSavings: 359.98,
+    annualSavings: 239.98,
     popular: false,
   },
 ];
 
 export default function Pricing({ className }: { className?: string }) {
-  const [billingCycle, setBillingCycle] = useState<"month" | "year">("month");
+  const [billingCycle, setBillingCycle] = useState<"month" | "year">("year");
   const router = useCustomRouter();
   const { user } = useAppSelector(state => state.auth);
   const { upgradeSubscription } = usePayments();
 
   const handleGetStarted = (plan: string) => {
     if (!user) {
-      router.push(`/login?plan=${plan}`);
+      router.push(`/login?plan=${plan}&interval=${billingCycle}`);
     } else {
-      upgradeSubscription(user.userId);
+      if (!user.meta?.plan) {
+        router.push(`/pricing?plan=${plan}&interval=${billingCycle}`);
+      } else {
+        upgradeSubscription(user.userId);
+      }
     }
   };
 
@@ -95,7 +99,7 @@ export default function Pricing({ className }: { className?: string }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
     >
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-8">
         <div className="flex justify-center mb-8">
           <RadioGroup
             defaultValue="month"
@@ -169,14 +173,18 @@ export default function Pricing({ className }: { className?: string }) {
                           : plan.yearlyPlanPrice
                       }
                       isPrimary={plan.popular}
-                      annualSavings={plan.annualSavings}
+                      annualSavings={
+                        billingCycle === "month"
+                          ? undefined
+                          : plan.annualSavings
+                      }
                     />
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6 p-0">
                   <Button
                     className={cn(
-                      "w-full",
+                      "mt-8 w-full",
                       plan.popular
                         ? "bg-primary hover:bg-primary/90"
                         : "bg-background hover:bg-accent",

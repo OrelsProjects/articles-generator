@@ -33,9 +33,9 @@ enum IdeaStatus {
 }
 
 enum Plan {
-  free
-  pro
-  superPro
+  standard
+  premium
+  executive
 }
 
 enum PotentialClientStatus {
@@ -53,9 +53,9 @@ enum FreeUserStatus {
 }
 
 enum AIUsageType {
-  ideaGeneration
-  textEnhancement
-  titleOrSubtitleRefinement
+  generateArticles
+  generateNotes
+  improvementArticle
 }
 
 model User {
@@ -168,13 +168,14 @@ model PublicationMetadata {
   title          String?
   description    String?
 
-  generatedDescription String?
-  writingStyle         String?
-  topics               String?
-  personality          String?
-  specialEvents        String?
-  privateLife          String?
-  highlights           String?
+  generatedDescription  String
+  generatedAboutGeneral String
+  writingStyle          String
+  topics                String
+  personality           String
+  specialEvents         String
+  privateLife           String
+  highlights            String
 
   // User-defined publication settings
   preferredTopics       String[]  @default([])
@@ -283,7 +284,7 @@ model FreeUsers {
   email String? @unique
 
   code          String?        @unique
-  plan          Plan           @default(free)
+  plan          Plan           @default(standard)
   status        FreeUserStatus @default(new)
   name          String         @default("")
   codeExpiresAt DateTime?
@@ -372,7 +373,7 @@ model aiUsage {
 model Subscription {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
   userId      String    @db.ObjectId
-  plan        Plan // "free" | "pro" | "superPro"
+  plan        Plan
   stripeSubId String    @unique // The Stripe subscription ID
   status      String // "active", "canceled", etc.
   startDate   DateTime  @default(now())
@@ -382,9 +383,11 @@ model Subscription {
   trialEnd    DateTime?
 
   // Credits information
-  creditsPerPeriod Int      @default(0) // Credits allocated per billing period
-  creditsRemaining Int      @default(0) // Credits remaining in current period
-  lastCreditReset  DateTime @default(now()) // When credits were last reset
+  creditsPerPeriodArticle Int      @default(0) // Credits allocated per billing period for article generation
+  creditsPerPeriodRegular Int      @default(0) // Credits allocated per billing period for regular generation
+  creditsRemainingArticle Int      @default(0) // Credits remaining in current period for article generation
+  creditsRemainingRegular Int      @default(0) // Credits remaining in current period for regular generation
+  lastCreditReset        DateTime @default(now()) // When credits were last reset
 
   currentPeriodStart DateTime @default(now())
   currentPeriodEnd   DateTime

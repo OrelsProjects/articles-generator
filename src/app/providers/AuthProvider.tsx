@@ -22,7 +22,8 @@ import { Loader2 } from "lucide-react";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { RootState } from "@/lib/store";
-import { Publication } from "@/types/publication";
+import SubscriptionProvider from "@/app/providers/SubscriptionProvider";
+import InitiatePlanFromLandingProvider from "@/app/providers/InitiatePlanFromLandingProvider";
 
 export default function AuthProvider({
   children,
@@ -38,16 +39,13 @@ export default function AuthProvider({
   const [loading, setLoading] = useState(true);
   const { user: currentUser } = useSelector(selectAuth);
   const { data: session, status } = useSession();
-  const { publications } = useSelector(
-    (state: RootState) => state.publications,
-  );
 
   const setUser = async (session?: Session) => {
     let hasPublication = false;
     try {
-      const userPlan: Plan = session?.user?.meta
+      const userPlan: Plan | null = session?.user?.meta
         ? session.user.meta.plan
-        : "free";
+        : null;
 
       const appUser: AppUser = {
         displayName: session?.user?.name || null,
@@ -62,7 +60,7 @@ export default function AuthProvider({
         },
       };
       dispatch(setUserAction(appUser));
-
+      debugger;
       try {
         const publicationIdResponse = await axios.get("/api/user/publications");
         const { publication } = publicationIdResponse.data;
@@ -94,9 +92,11 @@ export default function AuthProvider({
       return;
     }
 
-    const shouldOnboard = !hasPublication && !pathname.includes("onboarding");
-
+    const shouldOnboard = !hasPublication;
     if (shouldOnboard) {
+      if (pathname.includes("onboarding")) {
+        return;
+      }
       router.push(`/onboarding`, {
         preserveQuery: true,
         paramsToAdd: {
@@ -123,6 +123,7 @@ export default function AuthProvider({
         setLoading(true);
         setUser(session)
           .then(response => {
+            debugger;
             hasPublication = response;
           })
           .finally(() => {
@@ -153,5 +154,9 @@ export default function AuthProvider({
       </div>
     );
   }
-  return children;
+  return (
+    <InitiatePlanFromLandingProvider>
+      <SubscriptionProvider>{children}</SubscriptionProvider>
+    </InitiatePlanFromLandingProvider>
+  );
 }

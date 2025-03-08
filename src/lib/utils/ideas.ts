@@ -266,7 +266,7 @@ export async function useAIItem(
   });
 
   switch (type) {
-    case AIUsageType.textEnhancement:
+    case AIUsageType.generateArticles:
       const maxEnhancements = maxTextEnhancmentsPerPlan[plan];
       if (usages.length >= maxEnhancements) {
         throw new MaxEnhancementsPerDayError(
@@ -274,7 +274,7 @@ export async function useAIItem(
         );
       }
       break;
-    case AIUsageType.titleOrSubtitleRefinement:
+    case AIUsageType.generateNotes:
       const maxRefinements = maxTitleAndSubtitleRefinementsPerPlan[plan];
       if (usages.length >= maxRefinements) {
         throw new MaxRefinementsPerDayError(

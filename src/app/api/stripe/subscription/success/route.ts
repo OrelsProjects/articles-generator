@@ -51,8 +51,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const plan: Plan =
-      price.recurring?.interval === "year" ? "superPro" : "pro";
+    const plan = product.metadata?.plan;
 
     await sendMail(
       session.customer_email || "",
@@ -62,10 +61,10 @@ export async function GET(req: NextRequest) {
     );
 
     return NextResponse.redirect(
-      req.nextUrl.origin + `/editor?success=true&plan=${plan}`,
+      req.nextUrl.origin + `/home?success=true&plan=${plan}`,
     );
   } catch (error: any) {
     loggerServer.error("Failed to complete subscription", error);
-    return NextResponse.redirect(req.nextUrl.origin + "/editor?error=true");
+    return NextResponse.redirect(req.nextUrl.origin + "/home?error=true");
   }
 }

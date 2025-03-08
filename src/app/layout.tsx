@@ -76,7 +76,7 @@ export default function Layout({ children }: RootLayoutProps) {
   initLogger();
 
   return (
-    <html lang="en" className={cn("antialiased", PlusJakartaSans.className)}>
+    <html lang="en" className={cn("antialiased")}>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

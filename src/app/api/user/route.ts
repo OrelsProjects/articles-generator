@@ -15,7 +15,18 @@ export async function GET(req: NextRequest): Promise<any> {
   try {
     // Check and reset credits if needed
     if (session.user?.id) {
-      await checkAndResetCredits(session.user.id);
+      const updatedCredits = await checkAndResetCredits(session.user.id);
+      
+      // If credits were updated, we should update the session user's metadata
+      if (updatedCredits.articleCredits > 0 || updatedCredits.regularCredits > 0) {
+        // We don't need to modify the session directly as it will be refreshed on next request
+        // But we could log that credits were reset
+        loggerServer.info("Credits were reset for user", { 
+          userId: session.user.id,
+          articleCredits: updatedCredits.articleCredits,
+          regularCredits: updatedCredits.regularCredits
+        });
+      }
     }
     
     // Return user data

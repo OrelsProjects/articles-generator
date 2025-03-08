@@ -185,11 +185,18 @@ export const generateIdeasPrompt = (
   {
     role: "user",
     content: `
+    ${
+      publication.personalDescription
+        ? `Here is my description: ${publication.personalDescription}. Ensure all generated ideas are aligned with my description.`
+        : ""
+    }
         ${
           options?.topic
             ? `The topic is: ${options.topic}. Ensure all generated ideas are strictly focused on this topic. No exceptions.`
-            : ` 
-    Below is your publication information:
+            : publication.preferredTopics
+              ? `Here are the topics I prefer to write about: ${publication.preferredTopics}. Ensure all generated ideas are related to these topics.`
+              : ` 
+    Below is my publication information:
     - Topics: ${publication.topics}
     - Writing Style: ${publication.writingStyle}
     `
@@ -197,13 +204,13 @@ export const generateIdeasPrompt = (
 
         ${
           options.ideasUsed && options.ideasUsed.length > 0
-            ? `Here are the ideas that the user already has and should not be repeated: ${options.ideasUsed.map(idea => `Title: ${idea.title}, Subtitle: ${idea.subtitle}, Description: ${idea.description}`).join("\n")}.`
+            ? `Here are the ideas that the I already has and should not be repeated: ${options.ideasUsed.map(idea => `Title: ${idea.title}, Subtitle: ${idea.subtitle}, Description: ${idea.description}`).join("\n")}.`
             : ""
         }
 
         ${
           options.ideasArchived && options.ideasArchived.length > 0
-            ? `Here are the ideas that the user has archived and should either be improved or not repeated at all: ${options.ideasArchived.map(idea => `Title: ${idea.title}, Subtitle: ${idea.subtitle}, Description: ${idea.description}`).join("\n")}.`
+            ? `Here are the ideas that the I has archived and should either be improved or not repeated at all: ${options.ideasArchived.map(idea => `Title: ${idea.title}, Subtitle: ${idea.subtitle}, Description: ${idea.description}`).join("\n")}.`
             : ""
         }
 
@@ -232,6 +239,11 @@ export const generateDescriptionPrompt = (
     and articles. Response should be concise, but cover the overall information and don't leave out
     important details. Response must be in the second-person point of view, **no they/them**. Only second person.  include only the following information:
 - About: who they are, what they do, what they like, projects they're working on (if any). Write like you're asking someone to mimic that person. Make it detailed and specific. Start with "You are...".  
+- About General: Rewrite the 'About' section in a more universal and general form, capturing key themes and actions without personal references or narrative elements. Keep it concise and impactful, focusing on key ideas.
+      Example: 
+      'This person is a solopreneur and software developer who left a stable job to pursue entrepreneurial ventures'
+      turns into:
+      'A solopreneur's journey of leaving stability to pursue entrepreneurship'
 - Topics: topics they write about. Must be a list of topics, separated by commas.
 - Writing style: Describe their writing style and tone. It's important to stress the writing characteristics like short and concise, or detailed, use of metaphors, technical depth, etc. Be very detailed.
 - Personality: Describe their personality, what they're like, what they're known for, what they're famous for.
@@ -244,6 +256,7 @@ export const generateDescriptionPrompt = (
 The response should always be structured in JSON format, with proper escape string for clarity and consistency. Here is an example of the JSON response expected:
 {
   "about": "<generated about them>",
+  "aboutGeneral": "<generated about them in general>",
   "topics": "<generated topics>",
   "writingStyle": "<generated writing style>",
   "personality": "<generated personality>",

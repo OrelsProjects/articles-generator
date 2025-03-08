@@ -467,13 +467,13 @@ export default function NoteComponent({ note }: NoteProps) {
                   <Button
                     variant="link"
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto z-10"
+                    className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto z-50"
                   >
                     {isExpanded ? "less" : "more"}
                   </Button>
                   {/* Hover Actions Bar */}
                   {!isUserNote && (
-                    <div className="absolute -bottom-2 left-0 right-0 bg-background/95 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-3 flex justify-between items-center z-50">
+                    <div className="absolute -bottom-2 left-0 right-0 bg-background/95 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-3 flex justify-between items-center z-40">
                       {entityKey && (
                         <Button variant="ghost" size="sm" asChild>
                           <Link

@@ -31,11 +31,11 @@ export default function usePayments() {
     }
   };
 
-  const goToCheckout = async (priceId: string, productId: string) => {
+  const goToCheckout = async (interval: "month" | "year", plan: string) => {
     try {
       const response = await axios.post<{ sessionId: string }>(
         "/api/stripe/checkout",
-        { priceId, productId },
+        { interval, plan },
       );
       const stripe = await stripePromise;
       const { error } = await stripe!.redirectToCheckout({

@@ -11,11 +11,7 @@ import NoteComponent from "@/components/ui/note-component";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import {
-  Info,
-  ChevronDown,
-  Loader2,
-} from "lucide-react";
+import { Info, ChevronDown, Loader2 } from "lucide-react";
 
 export default function InspirationGrid() {
   const {
@@ -181,7 +177,7 @@ export default function InspirationGrid() {
                   ))}
                 </div>
               )}
-              {hasMoreInspirationNotes && !loadingMore && (
+              {!loadingMore && hasMoreInspirationNotes ? (
                 <div className="flex justify-center mt-8">
                   <Button
                     variant="ghost"
@@ -197,6 +193,12 @@ export default function InspirationGrid() {
                     )}
                     More
                   </Button>
+                </div>
+              ) : (
+                <div className="flex justify-center mt-8">
+                  <span className="text-muted-foreground">
+                    You&apos;ve reached the end of the inspiration notes.
+                  </span>
                 </div>
               )}
             </div>

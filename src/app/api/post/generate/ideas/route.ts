@@ -19,6 +19,8 @@ import {
   handleUsageError,
   setUserGeneratingIdeas,
 } from "@/lib/utils/ideas";
+import { canUseAI, useCredits } from "@/lib/utils/credits";
+import { AIUsageType } from "@prisma/client";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -67,9 +69,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    console.timeEnd("Pre-query");
+    const isValid = await canUseAI(session.user.id, AIUsageType.generateArticles);
+    if (!isValid) {
+      return NextResponse.json({ error: "Not enough credits" }, { status: 400 },
+      );
+    }
 
-    usageId = await useAIItem(session.user.id, "ideaGeneration");
+    console.timeEnd("Pre-query");
 
     await setUserGeneratingIdeas(session.user.id, true);
 
@@ -180,6 +186,8 @@ export async function GET(req: NextRequest) {
     }
 
     console.timeEnd("Start generating ideas");
+
+    await useCredits(session.user.id, AIUsageType.generateArticles);
 
     return NextResponse.json(ideasWithOutlines);
   } catch (error: any) {

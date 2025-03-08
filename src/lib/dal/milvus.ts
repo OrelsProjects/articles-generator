@@ -227,11 +227,12 @@ async function searchSimilarNotes({
 
   const data = await response.json();
   const topNotes = data.data ? data.data.slice(0, limit) : [];
+  const relevantNotes = topNotes.filter((note: any) => note.distance > 0.3);
 
   const notesFromDb = await prismaArticles.notesComments.findMany({
     where: {
       id: {
-        in: topNotes.map((note: any) => note.id),
+        in: relevantNotes.map((note: any) => note.id),
       },
     },
   });

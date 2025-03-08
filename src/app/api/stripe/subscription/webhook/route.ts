@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { getStripeInstance } from "@/lib/stripe";
-import prisma from "@/app/api/_db/db";
 import loggerServer from "@/loggerServer";
-import { sendMail } from "@/lib/mail/mail";
-import { generateSubscriptionTrialEndingEmail } from "@/lib/mail/templates";
+import {
+  handleSubscriptionCreated,
+  handleSubscriptionUpdated,
+  handleSubscriptionDeleted,
+  handleSubscriptionTrialEnding,
+  handleSubscriptionResumed,
+  handleSubscriptionPaused,
+} from "@/lib/utils/webhook";
 
 const relevantEvents = new Set([
   "customer.subscription.updated",
@@ -35,123 +40,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true }, { status: 200 });
   }
 
+  console.log("Webhook event:", event.type);
+
   try {
-    if (event.type === "customer.subscription.updated") {
-      const subscription = event.data.object as any;
-
-      const localSub = await prisma.subscription.findUnique({
-        where: { stripeSubId: subscription.id },
-      });
-
-      if (!localSub) {
-        return NextResponse.json({ received: true }, { status: 200 });
-      }
-
-      // Handle cancellation while keeping subscription active until period end
-      if (subscription.cancel_at_period_end) {
-        await prisma.subscription.update({
-          where: { id: localSub.id },
-          data: {
-            cancelAtPeriodEnd: true,
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            currentPeriodStart: new Date(
-              subscription.current_period_start * 1000,
-            ),
-            status: "active", // Keep status active until period ends
-          },
-        });
-      } else if (subscription.status === "active") {
-        // Handle plan changes or renewal
-        const plan =
-          subscription.items.data[0].price.recurring.interval === "year"
-            ? "superPro"
-            : "pro";
-
-        await prisma.subscription.update({
-          where: { id: localSub.id },
-          data: {
-            status: "active",
-            plan,
-            cancelAtPeriodEnd: false,
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            currentPeriodStart: new Date(
-              subscription.current_period_start * 1000,
-            ),
-          },
-        });
-      }
+    switch (event.type) {
+      case "customer.subscription.created":
+        await handleSubscriptionCreated(event);
+        break;
+      case "customer.subscription.updated":
+        await handleSubscriptionUpdated(event);
+        break;
+      case "customer.subscription.deleted":
+        await handleSubscriptionDeleted(event);
+        break;
+      case "customer.subscription.paused":
+        await handleSubscriptionPaused(event);
+        break;
+      case "customer.subscription.resumed":
+        await handleSubscriptionResumed(event);
+        break;
+      case "customer.subscription.trial_will_end":
+        await handleSubscriptionTrialEnding(event);
+        break;
     }
-
-    if (event.type === "customer.subscription.deleted") {
-      const subscription = event.data.object as any;
-      await prisma.subscription.updateMany({
-        where: { stripeSubId: subscription.id },
-        data: {
-          status: "canceled",
-          endDate: new Date(),
-          cancelAtPeriodEnd: false,
-        },
-      });
-    }
-
-    if (event.type === "customer.subscription.created") {
-      const subscription = event.data.object as any;
-      const localSub = await prisma.subscription.findUnique({
-        where: { stripeSubId: subscription.id },
-      });
-
-      if (!localSub) {
-        const plan =
-          subscription.items.data[0].price.recurring.interval === "year"
-            ? "superPro"
-            : "pro";
-
-        const customerId = subscription.customer;
-        const customer = await stripe.customers.retrieve(customerId);
-        const userEmail = (customer as any).email;
-
-        const isTrialing = subscription.status === 'trialing';
-        
-        await prisma.subscription.create({
-          data: {
-            stripeSubId: subscription.id,
-            status: "active",
-            plan,
-            currentPeriodStart: new Date(
-              subscription.current_period_start * 1000,
-            ),
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            cancelAtPeriodEnd: false,
-            isTrialing: isTrialing,
-            trialStart: isTrialing ? new Date(subscription.trial_start * 1000) : null,
-            trialEnd: isTrialing ? new Date(subscription.trial_end * 1000) : null,
-            user: {
-              connect: {
-                email: userEmail,
-              },
-            },
-          },
-        });
-      }
-    }
-
-    if (event.type === "customer.subscription.trial_will_end") {
-      const subscription = event.data.object as any;
-      const customer = await stripe.customers.retrieve(subscription.customer);
-      const userEmail = (customer as any).email;
-
-      // Send email notification about trial ending
-      await sendMail(
-        userEmail,
-        process.env.NEXT_PUBLIC_APP_NAME as string,
-        "Your Trial is Ending Soon",
-        generateSubscriptionTrialEndingEmail(
-          subscription.id,
-          new Date(subscription.trial_end * 1000)
-        )
-      );
-    }
-
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error: any) {
     loggerServer.error("Webhook processing failed", error);

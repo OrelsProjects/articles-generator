@@ -190,3 +190,14 @@ export function generateSubscriptionTrialEndingEmail(
   `;
   return baseEmailTemplate(content);
 }
+
+export function generateSubscriptionDeletedEmail(subscriptionId: string) {
+  const content = `
+    <h2>I'm sorry to see you go :(</h2>
+    <p>Your subscription <strong>${subscriptionId}</strong> for WriteRoom has been cancelled.</p>
+    <p>If you didn't enjoy using WriteRoom, I'd love to hear from you and improve.</p>
+    <p>Should you change your mind and tell me how I can improve, I'll give you a substantial discount for your next subscription :)</p>
+    <a href=${process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL} class="button">Manage Subscription</a>
+  `;
+  return baseEmailTemplate(content);
+}

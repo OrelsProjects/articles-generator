@@ -61,25 +61,14 @@ export const useNotes = () => {
         cursor: loadMore ? inspirationNotesCursor : null,
       });
       dispatch(setError(null));
-      if (loadMore) {
-        dispatch(
-          addInspirationNotes({
-            items: response.data.items,
-            nextCursor: response.data.nextCursor,
-            hasMore: response.data.hasMore,
-            options: { toStart: true },
-          }),
-        );
-      } else {
-        dispatch(
-          addInspirationNotes({
-            items: response.data.items,
-            nextCursor: response.data.nextCursor,
-            hasMore: response.data.hasMore,
-            options: { toStart: true },
-          }),
-        );
-      }
+      dispatch(
+        addInspirationNotes({
+          items: response.data.items,
+          nextCursor: response.data.nextCursor,
+          hasMore: response.data.hasMore,
+          options: { toStart: false },
+        }),
+      );
     } catch (error) {
       dispatch(
         setError(
