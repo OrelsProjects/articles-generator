@@ -3,8 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 import { getUsages, trackAIUsage } from "@/lib/dal/usage";
 import { AIUsageType, Plan } from "@prisma/client";
-import { creditsPerPlan } from "@/lib/plans-consts";
-import prisma from "@/app/api/_db/db";
+import { checkAndResetCredits } from "@/lib/services/creditService";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -73,45 +72,16 @@ export async function PUT(req: NextRequest) {
   }
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        Subscription: true,
-        userMetadata: true,
-      },
-    });
-
-    if (!user) {
+    if (!session.user.id) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Get the plan for the user
-    const activeSubscription = user.Subscription?.[0];
-    const planName = activeSubscription?.plan || "free";
-    const planKey = planName.toLowerCase() as keyof typeof creditsPerPlan;
-    const creditsForPlan = creditsPerPlan[planKey] || creditsPerPlan.free;
-
-    // Update the user's credits
-    await prisma.userMetadata.update({
-      where: { userId: user.id },
-      data: { credits: creditsForPlan },
-    });
-
-    // Update the subscription's credit information
-    if (activeSubscription) {
-      await prisma.subscription.update({
-        where: { id: activeSubscription.id },
-        data: {
-          creditsRemaining: creditsForPlan,
-          creditsPerPeriod: creditsForPlan,
-          lastCreditReset: new Date(),
-        },
-      });
-    }
+    // Use the credit service to check and reset credits
+    const updatedCredits = await checkAndResetCredits(session.user.id);
 
     return NextResponse.json({ 
       success: true,
-      credits: creditsForPlan
+      credits: updatedCredits
     });
   } catch (error) {
     console.error("Error resetting credits:", error);

@@ -4,11 +4,27 @@ import { authOptions } from "@/auth/authOptions";
 import AppUser from "@/types/appUser";
 import prisma from "@/app/api/_db/db";
 import loggerServer from "@/loggerServer";
+import { checkAndResetCredits } from "@/lib/services/creditService";
 
 export async function GET(req: NextRequest): Promise<any> {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  try {
+    // Check and reset credits if needed
+    if (session.user?.id) {
+      await checkAndResetCredits(session.user.id);
+    }
+    
+    // Return user data
+    return NextResponse.json({ 
+      user: session.user 
+    }, { status: 200 });
+  } catch (error: any) {
+    loggerServer.error("Error fetching user data", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 

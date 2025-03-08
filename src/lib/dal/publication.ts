@@ -126,3 +126,13 @@ export const getHandleDetails = async (
 
   return { ...notesFromAuthor[0] };
 };
+
+export const getPublicationArticles = async (publicationId: string) => {
+  const articles = await prismaArticles.post.findMany({
+    where: {
+      publicationId,
+    },
+  });
+
+  return articles;
+};

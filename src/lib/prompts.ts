@@ -231,7 +231,7 @@ export const generateDescriptionPrompt = (
     Help user generate a summary of a writer's profile based on their description
     and articles. Response should be concise, but cover the overall information and don't leave out
     important details. Response must be in the second-person point of view, **no they/them**. Only second person.  include only the following information:
-- About: who they are, what they do, what they like, projects they're working on (if any). Write like you're asking someone to mimic that person. Make it detailed and specific.  
+- About: who they are, what they do, what they like, projects they're working on (if any). Write like you're asking someone to mimic that person. Make it detailed and specific. Start with "You are...".  
 - Topics: topics they write about. Must be a list of topics, separated by commas.
 - Writing style: Describe their writing style and tone. It's important to stress the writing characteristics like short and concise, or detailed, use of metaphors, technical depth, etc. Be very detailed.
 - Personality: Describe their personality, what they're like, what they're known for, what they're famous for.

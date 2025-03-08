@@ -43,8 +43,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Logger } from "@/logger";
 import { getSelectedContentAsMarkdown } from "@/lib/utils/text-editor";
 
-const MotionCheck = motion(Check);
-const MotionCopy = motion(Copy);
+const MotionCheck = motion.create(Check);
+const MotionCopy = motion.create(Copy);
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -59,7 +59,6 @@ export const MenuBar = ({
   selectedIdea,
   onCopy,
 }: MenuBarProps) => {
-  const dispatch = useAppDispatch();
   const { state } = useAppSelector(selectUi);
   const { createNewIdea } = useIdea();
   const [didCopy, setDidCopy] = useState(false);

@@ -278,9 +278,9 @@ export default function NoteComponent({ note }: NoteProps) {
       <PopoverContent className="w-60 p-3" side="bottom" align="start">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-full overflow-hidden">
-            {note.thumbnail ? (
+            {thumbnail ? (
               <Image
-                src={note.thumbnail}
+                src={thumbnail}
                 alt={note.authorName || "Author"}
                 width={40}
                 height={40}

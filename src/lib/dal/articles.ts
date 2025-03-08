@@ -5,7 +5,7 @@ import { ArticleContent } from "@/lib/dal/milvus";
 import { getSubstackArticleData } from "@/lib/utils/article";
 
 export interface GetArticlesOptionsOrder {
-  by: "reactionCount" | "publishedAt";
+  by: "reactionCount" | "publishedAt" | "audience";
   direction: "asc" | "desc";
 }
 

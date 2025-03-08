@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Logo from "@/components/ui/logo";
 import { Separator } from "@radix-ui/react-separator";
+import { navItems } from "@/types/navbar";
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(true);
@@ -56,34 +57,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     }
   }, [collapsed]);
 
-  const navItems = [
-    {
-      name: "Home",
-      href: "/home",
-      icon: Home,
-    },
-    {
-      name: "Notes",
-      href: "/notes",
-      icon: FileText,
-    },
-    {
-      name: "My drafts",
-      href: "/notes/status-board",
-      icon: KanbanSquare,
-    },
-    {
-      name: "Editor",
-      href: "/editor",
-      newTab: true,
-      icon: PenTool,
-    },
-    {
-      name: "Settings",
-      href: "/settings",
-      icon: Settings,
-    },
-  ];
 
   const isActive = (path: string) => {
     return pathname === path;
