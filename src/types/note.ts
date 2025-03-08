@@ -170,21 +170,24 @@ export function convertJsonToHtml(json: any): string {
   return processNode(json);
 }
 
-export function noteToNoteDraft(
-  note: Note | NoteDraft | null,
-): NoteDraft | null {
+export function isNoteDraft(note: Note | NoteDraft | null): NoteDraft | null {
+  return !note?.hasOwnProperty("reactionCount") ? (note as NoteDraft) : null;
+}
+
+export function noteToNoteDraft(note: Note | null): NoteDraft | null {
   if (!note) {
     return null;
   }
+
   return {
-    id: note.id,
-    thumbnail: note.thumbnail,
+    id: "",
+    thumbnail: "",
     body: note.body,
     jsonBody: note.jsonBody,
-    timestamp: note.timestamp,
-    authorId: note.authorId,
+    timestamp: new Date(),
+    authorId: null,
     status: "draft",
-    authorName: note.authorName,
+    authorName: "",
     attachments: note.attachments ? note.attachments : [],
   };
 }

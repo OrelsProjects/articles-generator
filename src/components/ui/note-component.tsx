@@ -222,7 +222,7 @@ export default function NoteComponent({ note }: NoteProps) {
 
   const Reactions = () =>
     noteReactions && (
-      <div className="flex justify-between items-center mt-3">
+      <div className="flex justify-between items-center pl-2">
         <div className="flex space-x-3">
           <span className="text-xs text-muted-foreground flex items-center text-red-500">
             <Heart className="h-4 w-4 mr-1 text-red-500 fill-red-500" />
@@ -376,7 +376,6 @@ export default function NoteComponent({ note }: NoteProps) {
           isLoading={loadingFeedback === "dislike"}
           feedback={feedback}
         />
-        {/* Delete */}
         <TooltipButton
           tooltipContent={
             "Archive note" +
@@ -472,6 +471,31 @@ export default function NoteComponent({ note }: NoteProps) {
                   >
                     {isExpanded ? "less" : "more"}
                   </Button>
+                  {/* Hover Actions Bar */}
+                  {!isUserNote && (
+                    <div className="absolute -bottom-2 left-0 right-0 bg-background/95 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-3 flex justify-between items-center z-50">
+                      {entityKey && (
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link
+                            href={`https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`}
+                            target="_blank"
+                            className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                          >
+                            View on Substack
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-primary hover:text-primary/80"
+                        onClick={() => selectNote(note)}
+                      >
+                        <span className="text-xs">Edit & post</span>
+                      </Button>
+                    </div>
+                  )}
                   <div
                     className={cn(
                       "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent z-0",
@@ -503,15 +527,19 @@ export default function NoteComponent({ note }: NoteProps) {
           </div>
         </div>
         <div className="w-full flex items-center justify-between border-t border-border/60 py-2">
-          <div className="w-full flex items-center gap-2">
+          <div className="w-full flex items-center justify-between gap-2">
             <Reactions />
-            <div className="w-full flex items-center justify-between gap-2 px-2">
+            <div
+              className={cn("flex items-center justify-between gap-2 px-2", {
+                "w-full pr-4": isUserNote,
+              })}
+            >
               <NotesActions />
               <Button
                 onClick={() => selectNote(note, { forceShowEditor: true })}
-                variant="ghost"
+                variant="link"
                 size="sm"
-                className="text-xs"
+                className="text-xs p-0 text-foreground"
               >
                 Edit & post
               </Button>
@@ -519,32 +547,6 @@ export default function NoteComponent({ note }: NoteProps) {
           </div>
         </div>
       </div>
-
-      {/* Hover Actions Bar */}
-      {!isUserNote && (
-        <div className="absolute -bottom-2 left-0 right-0 bg-background/95 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-3 flex justify-between items-center z-50">
-          {entityKey && (
-            <Button variant="ghost" size="sm" asChild>
-              <Link
-                href={`https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`}
-                target="_blank"
-                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-              >
-                View on Substack
-                <ExternalLink className="h-3 w-3" />
-              </Link>
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-primary hover:text-primary/80"
-            onClick={() => selectNote(note)}
-          >
-            <span className="text-xs">Edit & post</span>
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

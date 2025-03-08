@@ -11,12 +11,8 @@ import NoteComponent from "@/components/ui/note-component";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   Info,
-  Edit,
-  RefreshCw,
-  Plus,
   ChevronDown,
   Loader2,
 } from "lucide-react";
@@ -57,7 +53,10 @@ export default function InspirationGrid() {
     <div className="container mx-auto py-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {[...Array(9)].map((_, i) => (
-          <div key={i} className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm">
+          <div
+            key={i}
+            className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Skeleton className="h-8 w-8 rounded-full" />
@@ -73,11 +72,11 @@ export default function InspirationGrid() {
             <Skeleton className="h-4 w-5/6" />
             <Skeleton className="h-4 w-2/3" />
             <div className="mt-2 flex items-center justify-between">
-              <Skeleton className="h-6 w-16 rounded-md" />
               <div className="flex space-x-1">
                 <Skeleton className="h-6 w-6 rounded-full" />
                 <Skeleton className="h-6 w-6 rounded-full" />
               </div>
+              <Skeleton className="h-6 w-16 rounded-md" />
             </div>
           </div>
         ))}
@@ -153,7 +152,10 @@ export default function InspirationGrid() {
               {loadingMore && (
                 <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm">
+                    <div
+                      key={i}
+                      className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm"
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <Skeleton className="h-8 w-8 rounded-full" />

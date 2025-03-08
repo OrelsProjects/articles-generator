@@ -15,6 +15,7 @@ import {
   addNote,
 } from "@/lib/features/notes/notesSlice";
 import {
+  isNoteDraft,
   Note,
   NoteDraft,
   NoteFeedback,
@@ -54,7 +55,7 @@ export const useNotes = () => {
     try {
       loadingInspirationRef.current = true;
       dispatch(setLoadingInspiration(true));
-      debugger;
+
       const response = await axios.post("/api/notes/inspiration", {
         existingNotesIds: inspirationNotes.map(note => note.id),
         cursor: loadMore ? inspirationNotesCursor : null,
@@ -140,7 +141,10 @@ export const useNotes = () => {
       } else {
         noteToUpdate = note;
       }
-      const noteDraft = noteToNoteDraft(noteToUpdate);
+      let noteDraft = isNoteDraft(noteToUpdate);
+      if (!noteDraft) {
+        noteDraft = noteToNoteDraft(noteToUpdate as Note);
+      }
       if (options?.forceShowEditor) {
         updateShowGenerateNotesSidebar(true);
       }
@@ -239,6 +243,7 @@ export const useNotes = () => {
   const editNoteBody = async (noteId: string | null, body: string) => {
     setLoadingEditNote(true);
     try {
+      debugger;
       if (!noteId) {
         await createDraftNote({ body });
         return;

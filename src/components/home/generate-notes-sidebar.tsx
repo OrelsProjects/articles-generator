@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { cn } from "@/lib/utils";
 import {
   ChevronRight,
@@ -49,7 +55,6 @@ export default function GenerateNotesSidebar() {
     selectNote,
     loadingCreateDraftNote,
   } = useNotes();
-  const [content, setContent] = useState("");
   const [open, setOpen] = useState(false);
   const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
   const [previousSelectedNote, setPreviousSelectedNote] =
@@ -85,10 +90,18 @@ export default function GenerateNotesSidebar() {
 
   const editor = useEditor(
     notesTextEditorOptions(html => {
-      setContent(html);
       onEditNoteBody(selectedNote?.id || null, html);
     }),
   );
+
+  const contentRaw = useMemo(() => {
+    const html = editor?.getHTML() || "";
+    return unformatText(html);
+  }, [editor?.getHTML()]);
+
+  const content = useMemo(() => {
+    return editor?.getHTML() || "";
+  }, [editor?.getHTML()]);
 
   const handleCopy = async () => {
     const html = editor?.getHTML();
@@ -134,7 +147,6 @@ export default function GenerateNotesSidebar() {
 
   useEffect(() => {
     if (!selectedNote) {
-      setContent("");
       editor?.commands.setContent("");
       return;
     }
@@ -171,6 +183,10 @@ export default function GenerateNotesSidebar() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
+  }, [selectedNote, content]);
+
+  const hasContent = useMemo(() => {
+    return selectedNote || contentRaw.length > 0;
   }, [selectedNote, content]);
 
   if (!editor) {
@@ -229,7 +245,7 @@ export default function GenerateNotesSidebar() {
                 size="sm"
                 className="text-primary text-sm hover:text-primary"
                 onClick={handleCreateDraftNote}
-                disabled={loadingCreateDraftNote || !selectedNote}
+                disabled={loadingCreateDraftNote || !hasContent}
               >
                 {loadingCreateDraftNote ? (
                   <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
@@ -379,13 +395,27 @@ export default function GenerateNotesSidebar() {
                 </Button>
               </div>
             </div>
-
-            <div className="mt-2 text-xs text-muted-foreground">
-              {loadingEditNote
-                ? "saving..."
-                : selectedNote?.id
-                  ? "saved"
-                  : "Start writing"}
+            <div
+              className={cn("w-full flex justify-between gap-2 mt-4", {
+                hidden: !hasContent,
+              })}
+            >
+              <div className="mt-2 text-xs text-muted-foreground">
+                {loadingEditNote
+                  ? "saving..."
+                  : selectedNote?.id
+                    ? "saved"
+                    : "Start writing"}
+              </div>
+              <Button
+                className="w-fit"
+                disabled={loadingEditNote}
+                onClick={() => {
+                  handleEditNoteBody(selectedNote?.id || null, content);
+                }}
+              >
+                Save
+              </Button>
             </div>
           </div>
 
