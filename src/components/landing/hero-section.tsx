@@ -70,10 +70,10 @@ export const HeroSection = () => (
             ].map((feature, index) => (
               <li
                 key={index}
-                className="w-fit flex items-center space-x-3 bg-primary/10 rounded-full p-1 border border-primary/60 shadow-md shadow-primary/20"
+                className="w-fit flex items-center space-x-3 bg-primary/5 rounded-full p-2 px-4 border border-primary/60 shadow-md shadow-primary/20"
               >
                 <div className="bg-primary rounded-full p-1">
-                  <Check className="h-2 w-2 flex-none text-background" />
+                  <Check className="h-2.5 w-2.5 flex-none text-background" />
                 </div>
                 <span className="text-sm font-black text-primary leading-tight md:leading-relaxed text-left">
                   {feature}

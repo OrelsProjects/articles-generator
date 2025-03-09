@@ -140,7 +140,7 @@ function App() {
   }, [fetchingProducts, products, didFetchProducts]);
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen w-screen bg-background overflow-x-hidden">
       <ThemeProvider forcedTheme="light">
         <Header />
         <HeroSection />
@@ -189,7 +189,7 @@ function App() {
 
         {/* Testimonials Section */}
         <motion.section
-          className="py-20 bg-muted"
+          className="landing-section-container bg-muted p-24"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
@@ -218,9 +218,12 @@ function App() {
                       </svg>
                     ))}
                   </div>
-                  <p className="text-muted-foreground mb-4">
-                    &ldquo;{testimonial.quote}&rdquo;
-                  </p>
+                  <p
+                    className="text-muted-foreground mb-4"
+                    dangerouslySetInnerHTML={{
+                      __html: testimonial.quote,
+                    }}
+                  />
                   <div>
                     <div className="font-semibold">{testimonial.author}</div>
                     <div className="text-sm text-muted-foreground">
@@ -358,9 +361,16 @@ const steps = [
 
 const testimonials = [
   {
-    quote: `${appName} helps me plan Substack newsletters faster than ever, growing my subscriber base by 32% in just 3 months.`,
-    author: "Jessica L.",
-    title: "8K subscribers, $2.3K/month",
+    // quote: `${appName} helps me plan Substack newsletters faster than ever, growing my subscriber base by 32% in just 3 months.`,
+    quote: `Writing a newsletter outline used to take me hours. Now I do it in minutes.
+  ${appName} makes that possible for me.
+<br/><br/>
+I can generate new article outlines in minutes,
+and the exciting part is the AI assistant that helps me using my exact writing style.
+<br/><br/>
+And what I like about it is just how easy it is to copy and paste the results into my substack writer tool.`,
+    author: "MacDaniel Chimedza",
+    title: "Substack writer",
   },
   {
     quote:

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -18,6 +18,15 @@ import Image from "next/image";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { useSearchParams } from "next/navigation";
 import usePayments from "@/lib/hooks/usePayments";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteRoom";
 
@@ -27,13 +36,15 @@ export function PublicationOnboarding() {
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan");
   const interval = searchParams.get("interval");
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const { hasPublication } = useSettings();
   const { goToCheckout } = usePayments();
 
   useEffect(() => {
     if (hasPublication) {
       if (plan && interval) {
-        goToCheckout(interval as "month" | "year", plan);
+        // goToCheckout(interval as "month" | "year", plan);
+        setShowPaymentDialog(true);
       } else {
         router.push("/pricing?onboarding=true");
       }
@@ -52,6 +63,18 @@ export function PublicationOnboarding() {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasPublication]);
+
+  const handlePaymentDialogChange = (open: boolean) => {
+    if (!open) {
+      if (plan && interval) {
+        goToCheckout(interval as "month" | "year", plan);
+      } else {
+        router.push("/pricing?onboarding=true");
+      }
+    } else {
+      setShowPaymentDialog(true);
+    }
+  };
 
   return (
     <div className="w-screen h-screen flex flex-col items-center justify-center min-h-screen bg-background p-4 relative">
@@ -99,6 +122,28 @@ export function PublicationOnboarding() {
           <AnalyzePublicationButton variant="default" className="w-full" />
         </CardFooter>
       </Card>
+      <Dialog open={showPaymentDialog} onOpenChange={handlePaymentDialogChange}>
+        <DialogContent closeOnOutsideClick={false}>
+          <DialogHeader>
+            <DialogTitle>Almost done!</DialogTitle>
+            <DialogDescription>
+              The last step is to{" "}
+              {plan && interval ? "confirm your payment" : "choose a plan"} and
+              start writing!
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                handlePaymentDialogChange(false);
+              }}
+              variant="default"
+            >
+              Confirm payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

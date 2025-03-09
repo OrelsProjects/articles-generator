@@ -6,13 +6,14 @@ import {
   Settings,
   BarChart,
   Calendar,
+  Lightbulb,
 } from "lucide-react";
 
 export const navItems = [
   {
-    name: "Home",
+    name: "Inspiration",
     href: "/home",
-    icon: Home,
+    icon: Lightbulb,
   },
   {
     name: "Notes",

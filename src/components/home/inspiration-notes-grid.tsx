@@ -110,9 +110,9 @@ export default function InspirationGrid() {
       <div className="container">
         <div className="mb-6 mx-auto">
           <div className="flex items-center mb-1">
-            <h1 className="text-xl font-semibold text-foreground">
-              Note inspirations
-            </h1>
+            <h2 className="text-xl md:text-3xl font-semibold text-foreground">
+              Inspirations
+            </h2>
             <TooltipProvider>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>

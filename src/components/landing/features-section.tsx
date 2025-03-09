@@ -185,8 +185,8 @@ function FeaturesSection() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
-    <section id="features" className="min-h-screen bg-background relative">
-      <div className="w-screen max-w-5xl mx-auto px-4 py-16 md:px-0 relative">
+    <section id="features" className="landing-section-container bg-background">
+      <div className="mx-auto px-4 py-16 md:px-0 relative">
         <p className="absolute w-full flex justify-center top-0 py-4 text-pink-400">
           The solution you&apos;ve been waiting for...
         </p>

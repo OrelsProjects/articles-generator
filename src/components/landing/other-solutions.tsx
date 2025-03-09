@@ -31,7 +31,7 @@ const solutionCards: SolutionCardProps[] = [
     icon: Copy,
     title: "Copy/paste workflow wastes time",
     description:
-      "You need a dedicated workspace that connects directly to Substack, not another tool that adds steps to your process.",
+      "Keeping all your articles and notes in Google Docs is a pain. The format doesn't work well with Substack and it becomes a mess.",
   },
   {
     icon: Shuffle,
@@ -63,15 +63,15 @@ const SolutionCard = ({
 
 export default function OtherSolutions() {
   return (
-    <div className="w-screen  bg-muted">
-      <div className="max-w-4xl pb-36 mx-auto px-6 md:px-0 py-32">
-        <div className="mb-16">
-          <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl">
-            Growing your Substack shouldn&apos;t be this{" "}
-            <span className="text-destructive">hard</span>
-          </h2>
-          <p className="mt-4 text-2xl text-muted-foreground text-center">
-            (Problems with current solutions)
+    <div className="landing-section-container bg-muted">
+      <div className="mx-auto px-6 md:px-0">
+        <div className="landing-section-top">
+          <h3>Post more, in less time</h3>
+          <h2>Building a community is hard enough already</h2>
+          <p>
+            Writing notes is often overlooked, yet it has one of the highest
+            ROIs to grow your community. WriteRoom helps you write it and manage
+            it efficiently, so you can focus on scaling your business.
           </p>
         </div>
 

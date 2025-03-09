@@ -24,7 +24,7 @@ export default function PriceContainer({
     : null;
 
   return (
-    <div className={cn(className)}>
+    <div className={cn("font-sans", className)}>
       <div>
         <span
           className={cn("text-4xl font-medium tracking-tight", {

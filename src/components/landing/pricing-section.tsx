@@ -110,7 +110,7 @@ export default function Pricing({
   return (
     <motion.section
       id="pricing"
-      className={cn("w-full h-full py-20 !relative", className)}
+      className={cn("w-full h-full py-20 relative", className)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}

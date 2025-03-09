@@ -16,7 +16,6 @@ import {
   ThumbsUp,
   ThumbsDown,
   X,
-  Trash,
   Archive,
 } from "lucide-react";
 import Image from "next/image";
@@ -56,7 +55,8 @@ const DislikeFeedbackPopover = ({
 
   if (feedback === "dislike") {
     return (
-      <Button
+      <TooltipButton
+        tooltipContent="Dislike - this helps our AI understand what you don't like"
         variant="ghost"
         size="sm"
         disabled={disabled}
@@ -74,14 +74,15 @@ const DislikeFeedbackPopover = ({
         ) : (
           <ThumbsDown className="h-4 w-4" />
         )}
-      </Button>
+      </TooltipButton>
     );
   }
 
   return (
     <Popover open={isOpen} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
-        <Button
+        <TooltipButton
+          tooltipContent="Dislike - this helps our AI understand what you don't like"
           disabled={disabled}
           variant="ghost"
           size="sm"
@@ -92,7 +93,7 @@ const DislikeFeedbackPopover = ({
           ) : (
             <ThumbsDown className="h-4 w-4" />
           )}
-        </Button>
+        </TooltipButton>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-4" side="top">
         <div className="space-y-4">
@@ -169,7 +170,7 @@ export default function NoteComponent({ note }: NoteProps) {
 
   const attachment = useMemo(() => {
     if ("attachment" in note) {
-      return note.attachments?.[0];
+      return note.attachment as string;
     }
     return null;
   }, [note]);
@@ -353,6 +354,7 @@ export default function NoteComponent({ note }: NoteProps) {
     isUserNote && (
       <div className={cn("w-full flex items-center gap-0")}>
         <TooltipButton
+          tooltipContent="Like - this helps our AI understand what you like"
           disabled={loadingFeedback === "like" || loadingArchive}
           variant="ghost"
           size="sm"

@@ -79,7 +79,7 @@
     --secondary: 60 4.8% 95.9%;
     --secondary-foreground: 24 9.8% 10%;
     --muted: 60 4.8% 95.9%;
-    --muted-foreground: 25 5.3% 44.7%;
+    --muted-foreground: 232 5.3% 40.7%;
     --accent: 60 4.8% 95.9%;
     --accent-foreground: 24 9.8% 10%;
     --destructive: 0 84.2% 60.2%;
@@ -495,4 +495,28 @@ p:empty::after {
 
 .note-component-content ol p {
   @apply !pt-0 !pb-0;
+}
+
+.landing-section-container {
+  @apply w-screen flex justify-center items-center py-12 md:py-24;
+}
+
+.landing-section-container > div {
+  @apply w-full max-w-7xl;
+}
+
+.landing-section-container h2 {
+  @apply mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl text-center;
+}
+
+.landing-section-container h3 {
+  @apply text-base font-medium leading-7 text-muted-foreground uppercase text-center;
+}
+
+.landing-section-top {
+  @apply mb-16;
+}
+
+.landing-section-top p {
+  @apply mt-6 text-base leading-6 text-muted-foreground mx-auto max-w-2xl text-center;
 }

@@ -64,6 +64,7 @@ export const useNotes = () => {
         cursor: loadMore ? inspirationNotesCursor : null,
       });
       dispatch(setError(null));
+      debugger;
       dispatch(
         addInspirationNotes({
           items: response.data.items,
@@ -273,7 +274,10 @@ export const useNotes = () => {
     if (loadingCreateNoteDraftRef.current) return;
     loadingCreateNoteDraftRef.current = true;
     try {
-      const response = await axios.post<NoteDraft>("/api/note", draft);
+      const response = await axios.post<NoteDraft>(
+        "/api/note",
+        draft || { body: "" },
+      );
       dispatch(
         addNotes({
           items: [response.data],

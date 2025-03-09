@@ -1,4 +1,3 @@
-import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { createNote, CreateNote } from "@/lib/dal/note";
 import { getAuthorId, getHandleDetails } from "@/lib/dal/publication";
@@ -32,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     const createNoteBody: CreateNote = {
       userId,
-      body: "",
+      body: newNoteDraft?.body || "",
       authorId,
       status: newNoteDraft?.status || NoteStatus.draft,
       name: name,

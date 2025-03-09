@@ -44,6 +44,15 @@ import { toast } from "react-toastify";
 import { useUi } from "@/lib/hooks/useUi";
 import { debounce } from "lodash";
 import { TooltipButton } from "@/components/ui/tooltip-button";
+import { ToastStepper } from "@/components/ui/toast-stepper";
+
+// Define loading states for generating ideas
+const ideaLoadingStates = [
+  { text: "Finding relevant notes..." },
+  { text: "Gathering inspiration from top notes..." },
+  { text: "Crafting unique notes..." },
+  { text: "Finalizing the best notes..." },
+];
 
 export default function GenerateNotesSidebar() {
   const { updateShowGenerateNotesSidebar, showGenerateNotesSidebar } = useUi();
@@ -404,18 +413,15 @@ export default function GenerateNotesSidebar() {
               </Button>
             </div>
           </div>
-
-          {/* Footer */}
-          {/* <div className="border-t border-border p-4">
-            <div className="flex justify-between items-center">
-              <Button variant="secondary">Post now</Button>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                Add to Queue
-              </Button>
-            </div>
-          </div> */}
         </div>
       </div>
+      <ToastStepper
+        loadingStates={ideaLoadingStates}
+        loading={loadingGenerateNewIdea}
+        duration={7000}
+        loop={false}
+        position="bottom-left"
+      />
     </div>
   );
 }
