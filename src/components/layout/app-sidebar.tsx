@@ -2,26 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Home,
-  FileText,
-  KanbanSquare,
   Settings,
-  PenTool,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   User,
-  Sidebar,
   SidebarClose,
   SidebarOpen,
-  LayoutGrid,
-  BarChart2,
-  HelpCircle,
   ExternalLink,
 } from "lucide-react";
 import { useAppSelector } from "@/lib/hooks/redux";
@@ -57,13 +47,12 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     }
   }, [collapsed]);
 
-
   const isActive = (path: string) => {
     return pathname === path;
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="w-screen h-screen flex">
       <div
         className={cn(
           "h-screen bg-background border-r border-border flex flex-col transition-all duration-300 relative z-50",
@@ -111,15 +100,18 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               <li key={item.name}>
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
-                    <TooltipTrigger asChild>
+                    <TooltipTrigger
+                     asChild>
                       <Link
-                        href={item.href}
+                        key={item.name}
+                        href={item.disabled ? "" : item.href}
                         target={item.newTab ? "_blank" : "_self"}
                         className={cn(
                           "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                           isActive(item.href)
                             ? "text-primary"
                             : "hover:bg-muted",
+                          item.disabled && "cursor-not-allowed opacity-50",
                         )}
                       >
                         <item.icon size={20} />
@@ -127,7 +119,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                       </Link>
                     </TooltipTrigger>
                     {collapsed && (
-                      <TooltipContent side="right" className="flex items-center gap-2">
+                      <TooltipContent
+                        side="right"
+                        className="flex items-center gap-2"
+                      >
                         {item.name}{" "}
                         {item.newTab ? <ExternalLink size={12} /> : ""}
                       </TooltipContent>

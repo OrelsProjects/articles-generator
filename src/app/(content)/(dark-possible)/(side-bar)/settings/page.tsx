@@ -22,23 +22,32 @@ import { creditsPerPlan } from "@/lib/plans-consts";
 import { Progress } from "@/components/ui/progress";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { useTheme } from "next-themes";
+import { Link } from "lucide-react";
+import usePayments from "@/lib/hooks/usePayments";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
   const { user } = useAppSelector(selectAuth);
   const { hasPublication } = useSettings();
+  const { cancelSubscription } = usePayments();
   const { credits } = useAppSelector(selectSettings);
 
-  const handleSaveSettings = () => {
-    toast.success("Settings saved successfully");
-  };
-
   // Calculate credit usage
-  const planType = user?.meta?.plan || "free";
-  const totalCredits = creditsPerPlan[planType];
-  const usedCredits = totalCredits - credits.remaining;
-  const creditPercentage = Math.min(
-    Math.round((usedCredits / totalCredits) * 100),
+  const planType = user?.meta?.plan || null;
+  const totalCredits = planType
+    ? creditsPerPlan[planType]
+    : {
+        article: 0,
+        regular: 0,
+      };
+  const usedCreditsArticle = totalCredits.article - credits.remaining;
+  const usedCreditsRegular = totalCredits.regular - credits.remaining;
+  const creditPercentageArticle = Math.min(
+    Math.round((usedCreditsArticle / totalCredits.article) * 100),
+    100,
+  );
+  const creditPercentageRegular = Math.min(
+    Math.round((usedCreditsRegular / totalCredits.regular) * 100),
     100,
   );
 
@@ -61,23 +70,28 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="font-medium">
-                  {credits.remaining} of {totalCredits} credits remaining
+                  {credits.remaining} of{" "}
+                  {totalCredits.article + totalCredits.regular} credits
+                  remaining
                 </span>
                 {/* <span className="text-sm text-muted-foreground">
                   {creditPercentage}% used
                 </span> */}
               </div>
-              <Progress value={100 - creditPercentage} className="h-2" />
+              <Progress value={100 - creditPercentageArticle} className="h-2" />
+              <Progress value={100 - creditPercentageRegular} className="h-2" />
 
               <div className="mt-4 text-sm text-muted-foreground">
                 <p>Credits reset at the beginning of your billing cycle.</p>
-                {planType === "free" && (
-                  <div className="mt-2">
-                    <Button variant="outline" size="sm">
-                      Upgrade to get more credits
-                    </Button>
-                  </div>
-                )}
+                {/* {planType !== "executive" &&
+                  (credits.articleCredits.remaining < 10 ||
+                    credits.regularCredits.remaining < 10) && (
+                    <div className="mt-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/pricing">Upgrade to get more credits</Link>
+                      </Button>
+                    </div>
+                  )} */}
               </div>
             </CardContent>
           </Card>
@@ -115,20 +129,21 @@ export default function SettingsPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="subscription">Subscription Plan</Label>
-                <div className="text-sm font-medium">
-                  {planType === "free"
-                    ? "Free Plan"
-                    : planType === "pro"
-                      ? "Pro Plan"
-                      : "Super Pro Plan"}
-                </div>
-                {planType === "free" ||
-                  (planType === "pro" && (
+                <div className="text-sm font-medium">{user?.meta?.plan}</div>
+                {user?.meta?.plan === "standard" ||
+                  (user?.meta?.plan === "premium" && (
                     <Button variant="outline" className="mt-2">
                       Upgrade to Premium
                     </Button>
                   ))}
               </div>
+              <Button
+                variant="outline"
+                className="mt-2"
+                onClick={() => cancelSubscription()}
+              >
+                Cancel Subscription
+              </Button>
             </CardContent>
           </Card>
         </section>

@@ -76,7 +76,7 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
       // Credits information
       creditsPerPeriodArticle: creditsPerPlan[plan].article,
       creditsPerPeriodRegular: creditsPerPlan[plan].regular,
-      creditsRemainingArticle: creditsPerPlan[plan].article,
+      creditsRemainingArticle: creditsPerPlan[plan].articl  e,
       creditsRemainingRegular: creditsPerPlan[plan].regular,
       lastCreditReset: new Date(),
 

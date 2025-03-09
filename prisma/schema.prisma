@@ -53,9 +53,9 @@ enum FreeUserStatus {
 }
 
 enum AIUsageType {
-  generateArticles
-  generateNotes
-  improvementArticle
+  ideaGeneration
+  textEnhancement
+  titleOrSubtitleRefinement
 }
 
 model User {
@@ -168,14 +168,14 @@ model PublicationMetadata {
   title          String?
   description    String?
 
-  generatedDescription  String
-  generatedAboutGeneral String
-  writingStyle          String
-  topics                String
-  personality           String
-  specialEvents         String
-  privateLife           String
-  highlights            String
+  generatedDescription  String?
+  generatedAboutGeneral String?
+  writingStyle          String?
+  topics                String?
+  personality           String?
+  specialEvents         String?
+  privateLife           String?
+  highlights            String?
 
   // User-defined publication settings
   preferredTopics       String[]  @default([])

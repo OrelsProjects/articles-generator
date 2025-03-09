@@ -13,11 +13,9 @@ export default function ContentLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AppSidebar>
-      <AuthProvider>
-        <NewSubscriptionProvider />
-        <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>
-      </AuthProvider>
-    </AppSidebar>
+    <AuthProvider>
+      <NewSubscriptionProvider />
+      <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>
+    </AuthProvider>
   );
 }

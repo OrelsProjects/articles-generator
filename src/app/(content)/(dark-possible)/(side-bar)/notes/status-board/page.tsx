@@ -4,11 +4,15 @@ import { useEffect } from "react";
 import { NotesStatusBoard } from "@/components/notes/notes-status-board";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAppDispatch } from "@/lib/hooks/redux";
+import { resetNotification } from "@/lib/features/notes/notesSlice";
 
 export default function StatusBoardPage() {
+  const dispatch = useAppDispatch();
   const { fetchNotes, userNotes, loadingNotes } = useNotes();
 
   useEffect(() => {
+    dispatch(resetNotification());
     fetchNotes(30);
   }, []);
 

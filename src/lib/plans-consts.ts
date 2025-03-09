@@ -18,6 +18,12 @@ type CreditsCost = {
 
 export const INFINITY = 999999;
 
+export const usageTypeToCreditType: Record<AIUsageType, CreditType> = {
+  generateArticles: "article",
+  generateNotes: "regular",
+  improvementArticle: "regular",
+};
+
 // Credits allocated per plan per billing period
 export const creditsPerPlan: PlanCredits = {
   standard: {

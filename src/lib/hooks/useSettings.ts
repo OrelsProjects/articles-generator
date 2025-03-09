@@ -2,10 +2,12 @@ import { setUsages } from "@/lib/features/settings/settingsSlice";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "../features/auth/authSlice";
+import { creditsPerPlan } from "@/lib/plans-consts";
 import { useMemo } from "react";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import axios from "axios";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
+import { AIUsageType } from "@prisma/client";
 
 export const useSettings = () => {
   const dispatch = useAppDispatch();
@@ -14,7 +16,11 @@ export const useSettings = () => {
   const { credits } = useAppSelector(selectSettings);
 
   const didExceedLimit = useMemo(() => {
-    return credits.remaining <= 0;
+    // Check if both article and regular credits are depleted
+    return (
+      credits.articleCredits.remaining <= 0 &&
+      credits.regularCredits.remaining <= 0
+    );
   }, [credits]);
 
   const hasPublication = useMemo(() => {
@@ -29,8 +35,6 @@ export const useSettings = () => {
     return !didExceedLimit && hasPublication;
   }, [didExceedLimit, hasPublication]);
 
-  const plan = useMemo(() => user?.meta?.plan, [user?.meta?.plan]);
-
   const init = async () => {
     try {
       const response = await axios.get("/api/user/settings");
@@ -40,8 +44,18 @@ export const useSettings = () => {
   };
 
   // Check if user has enough credits for an operation
-  const hasEnoughCredits = (cost: number) => {
-    return credits.remaining >= cost;
+  const hasEnoughCredits = (
+    creditType: AIUsageType,
+  ) => {
+    if (!user?.meta?.plan) {
+      return false;
+    }
+    const cost = creditsPerPlan[user?.meta?.plan][creditType];
+    if (creditType === "article") {
+      return credits.articleCredits.remaining >= cost;
+    } else {
+      return credits.regularCredits.remaining >= cost;
+    }
   };
 
   return {

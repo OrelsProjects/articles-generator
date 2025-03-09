@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
     }
 
     const query = `
-    ${publication.preferredTopics ? `**Topics: ${publication.preferredTopics}**` : ""}
-    ${publication.topics ? `${publication.topics}` : ""}
+    ${publication.personalDescription ? `\n${publication.personalDescription}` : ""}.
+     ${publication.generatedAboutGeneral}.
      `;
     console.log("query", query);
     const randomMinReaction = Math.floor(Math.random() * 200);

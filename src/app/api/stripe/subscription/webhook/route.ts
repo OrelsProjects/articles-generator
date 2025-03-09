@@ -1,21 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { getStripeInstance } from "@/lib/stripe";
+import prisma from "@/app/api/_db/db";
 import loggerServer from "@/loggerServer";
-import {
-  handleSubscriptionCreated,
-  handleSubscriptionUpdated,
-  handleSubscriptionDeleted,
-  handleSubscriptionTrialEnding,
-  handleSubscriptionResumed,
-  handleSubscriptionPaused,
-} from "@/lib/utils/webhook";
+import { sendMail } from "@/lib/mail/mail";
+import { generateSubscriptionTrialEndingEmail } from "@/lib/mail/templates";
+import { Plan } from "@prisma/client";
+import { creditsPerPlan } from "@/lib/plans-consts";
+import { handleSubscriptionCreated, handleSubscriptionDeleted, handleSubscriptionPaused, handleSubscriptionResumed, handleSubscriptionTrialEnding, handleSubscriptionUpdated } from "@/lib/utils/webhook";
 
 const relevantEvents = new Set([
   "customer.subscription.updated",
   "customer.subscription.deleted",
   "customer.subscription.created",
+  "customer.subscription.paused",
+  "customer.subscription.resumed",
   "customer.subscription.trial_will_end",
+  
 ]);
 
 export async function POST(req: NextRequest) {
@@ -40,8 +41,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true }, { status: 200 });
   }
 
-  console.log("Webhook event:", event.type);
-
   try {
     switch (event.type) {
       case "customer.subscription.created":
@@ -53,16 +52,18 @@ export async function POST(req: NextRequest) {
       case "customer.subscription.deleted":
         await handleSubscriptionDeleted(event);
         break;
+      case "customer.subscription.trial_will_end":
+        await handleSubscriptionTrialEnding(event);
+        break;
       case "customer.subscription.paused":
         await handleSubscriptionPaused(event);
         break;
       case "customer.subscription.resumed":
         await handleSubscriptionResumed(event);
         break;
-      case "customer.subscription.trial_will_end":
-        await handleSubscriptionTrialEnding(event);
-        break;
+      default:
     }
+
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error: any) {
     loggerServer.error("Webhook processing failed", error);

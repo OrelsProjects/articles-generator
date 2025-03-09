@@ -12,6 +12,7 @@ import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Info, ChevronDown, Loader2 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function InspirationGrid() {
   const {
@@ -105,7 +106,7 @@ export default function InspirationGrid() {
   });
 
   return (
-    <div className="w-full min-h-screen bg-transparent py-16">
+    <div className="w-container min-h-screen bg-transparent py-16">
       <div className="mb-6 container mx-auto">
         <div className="flex items-center mb-1">
           <h1 className="text-xl font-semibold text-foreground">
@@ -141,7 +142,7 @@ export default function InspirationGrid() {
       ) : shouldShowError ? (
         <Error />
       ) : (
-        <div className="mx-auto py-6">
+        <ScrollArea className="mx-auto py-6">
           {notes.length > 0 ? (
             <div className="container mx-auto">
               <MasonryGrid cards={gridCards} />
@@ -218,7 +219,7 @@ export default function InspirationGrid() {
               </Link>
             </div>
           )}
-        </div>
+        </ScrollArea>
       )}
     </div>
   );

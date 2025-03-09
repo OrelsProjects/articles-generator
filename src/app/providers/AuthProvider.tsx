@@ -23,7 +23,6 @@ import { useIdea } from "@/lib/hooks/useIdea";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { RootState } from "@/lib/store";
 import SubscriptionProvider from "@/app/providers/SubscriptionProvider";
-import InitiatePlanFromLandingProvider from "@/app/providers/InitiatePlanFromLandingProvider";
 
 export default function AuthProvider({
   children,
@@ -46,7 +45,6 @@ export default function AuthProvider({
       const userPlan: Plan | null = session?.user?.meta
         ? session.user.meta.plan
         : null;
-
       const appUser: AppUser = {
         displayName: session?.user?.name || null,
         email: session?.user?.email || "",
@@ -60,7 +58,7 @@ export default function AuthProvider({
         },
       };
       dispatch(setUserAction(appUser));
-      debugger;
+
       try {
         const publicationIdResponse = await axios.get("/api/user/publications");
         const { publication } = publicationIdResponse.data;
@@ -92,11 +90,9 @@ export default function AuthProvider({
       return;
     }
 
-    const shouldOnboard = !hasPublication;
+    const shouldOnboard = !hasPublication && !pathname.includes("onboarding");
+
     if (shouldOnboard) {
-      if (pathname.includes("onboarding")) {
-        return;
-      }
       router.push(`/onboarding`, {
         preserveQuery: true,
         paramsToAdd: {
@@ -123,7 +119,6 @@ export default function AuthProvider({
         setLoading(true);
         setUser(session)
           .then(response => {
-            debugger;
             hasPublication = response;
           })
           .finally(() => {
@@ -154,9 +149,5 @@ export default function AuthProvider({
       </div>
     );
   }
-  return (
-    <InitiatePlanFromLandingProvider>
-      <SubscriptionProvider>{children}</SubscriptionProvider>
-    </InitiatePlanFromLandingProvider>
-  );
+    return <SubscriptionProvider>{children}</SubscriptionProvider>;
 }

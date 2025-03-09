@@ -1,4 +1,12 @@
-import { Home, FileText, KanbanSquare, PenTool, Settings } from "lucide-react";
+import {
+  Home,
+  FileText,
+  KanbanSquare,
+  PenTool,
+  Settings,
+  BarChart,
+  Calendar,
+} from "lucide-react";
 
 export const navItems = [
   {
@@ -26,6 +34,18 @@ export const navItems = [
     name: "Settings",
     href: "/settings",
     icon: Settings,
+  },
+  {
+    name: "Statistics (coming soon)",
+    href: "/statistics",
+    icon: BarChart, // Need chrome extension to get this data. Navigate to user substack and scrape the hell out of it.
+    disabled: true,
+  },
+  {
+    name: "Schedule (coming soon)",
+    href: "/schedule",
+    icon: Calendar,
+    disabled: true,
   },
 ];
 

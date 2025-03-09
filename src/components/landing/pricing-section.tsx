@@ -83,11 +83,7 @@ export default function Pricing({ className }: { className?: string }) {
     if (!user) {
       router.push(`/login?plan=${plan}&interval=${billingCycle}`);
     } else {
-      if (!user.meta?.plan) {
-        router.push(`/pricing?plan=${plan}&interval=${billingCycle}`);
-      } else {
-        upgradeSubscription(user.userId);
-      }
+      upgradeSubscription(user.userId);
     }
   };
 

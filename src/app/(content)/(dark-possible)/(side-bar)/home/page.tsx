@@ -15,11 +15,9 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="w-full h-full overflow-auto bg-background">
-      <div className="max-w-7xl mx-auto flex-1 relative">
-        <InspirationGrid />
-        <ImageModal />
-      </div>
+    <div className="w-full h-full bg-background flex justify-center items-start relative">
+      <InspirationGrid />
+      <ImageModal />
     </div>
   );
 }

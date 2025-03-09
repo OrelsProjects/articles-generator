@@ -57,6 +57,7 @@ export const getAuthorId = async (
     include: {
       publication: {
         select: {
+          id: true,
           idInArticlesDb: true,
           authorId: true,
         },
@@ -89,7 +90,7 @@ export const getAuthorId = async (
 
   if (options.updateIfNotFound) {
     await prisma.publicationMetadata.update({
-      where: { id: `${publication.id}` },
+      where: { id: userPublication.publication.id },
       data: { authorId },
     });
   }

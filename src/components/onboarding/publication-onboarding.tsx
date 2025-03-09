@@ -16,26 +16,18 @@ import { Loader2 } from "lucide-react";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import Logo from "@/components/ui/logo";
 import Image from "next/image";
+
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteRoom";
 
 export function PublicationOnboarding() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { hasPublication } = useSettings();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Short delay to ensure settings are loaded
-    const timer = setTimeout(() => {
-      setLoading(false);
-
-      // If user already has a publication, redirect to home
-      if (hasPublication) {
-        router.push("/home");
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    if (hasPublication) {
+      router.push("/home");
+    }
   }, [hasPublication, router, dispatch]);
 
   // Prevent navigation if user doesn't have a publication
@@ -51,34 +43,22 @@ export function PublicationOnboarding() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasPublication]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (hasPublication) {
-    return null; // Will redirect in useEffect
-  }
-
   return (
     <div className="w-screen h-screen flex flex-col items-center justify-center min-h-screen bg-background p-4 relative">
       <Image
         src="/home-dark.png"
         alt="Home"
         fill
-        className="absolute inset-0 hidden dark:block z-10"
+        className="absolute inset-0 object-fill hidden dark:block z-10"
       />
       <Image
         src="/home-light.png"
         alt="Home"
         fill
-        className="absolute inset-0 block dark:hidden z-10"
+        className="absolute inset-0 object-fill block dark:hidden z-10"
       />
-      <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm  p-4 z-20" />
-      <Card className="w-full max-w-md z-50">
+      <div className="absolute inset-0 bg-foreground/50 dark:bg-background/50 backdrop-blur-sm z-20" />
+      <Card className="w-full max-w-md z-30">
         <CardHeader>
           {/* <div className="w-full flex items-center justify-center"> */}
           <Logo className="w-10 h-10" />

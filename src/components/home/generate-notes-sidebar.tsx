@@ -225,15 +225,6 @@ export default function GenerateNotesSidebar() {
             <button className="px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary">
               Compose
             </button>
-            {/* <button className="px-4 py-2 text-sm font-medium text-muted-foreground">
-              Drafts
-            </button>
-            <button className="px-4 py-2 text-sm font-medium text-muted-foreground">
-              Scheduled
-            </button>
-            <button className="px-4 py-2 text-sm font-medium text-muted-foreground">
-              Sent
-            </button> */}
           </div>
 
           {/* Content Area */}

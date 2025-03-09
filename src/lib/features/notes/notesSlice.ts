@@ -14,6 +14,7 @@ export interface NotesState {
   hasMoreInspirationNotes: boolean;
   userNotesCursor: string | null;
   inspirationNotesCursor: string | null;
+  hasNewNotes: boolean;
 }
 
 export const initialState: NotesState = {
@@ -28,6 +29,7 @@ export const initialState: NotesState = {
   hasMoreInspirationNotes: true,
   userNotesCursor: null,
   inspirationNotesCursor: null,
+  hasNewNotes: false,
 };
 
 const notesSlice = createSlice({
@@ -71,10 +73,10 @@ const notesSlice = createSlice({
         items: Note[];
         nextCursor: string | null;
         hasMore: boolean;
-        options?: { toStart: boolean };
+        options?: { toStart: boolean, notification?: boolean };
       }>,
     ) => {
-      if (action.payload.options?.toStart) {
+        if (action.payload.options?.toStart) {
         state.inspirationNotes = [
           ...action.payload.items,
           ...state.inspirationNotes,
@@ -84,6 +86,12 @@ const notesSlice = createSlice({
       }
       state.inspirationNotesCursor = action.payload.nextCursor;
       state.hasMoreInspirationNotes = action.payload.hasMore;
+      if (action.payload.options?.notification) {
+        state.hasNewNotes = true;
+      }
+    },
+    resetNotification: state => {
+      state.hasNewNotes = false;
     },
     addNotes: (
       state,
@@ -136,6 +144,7 @@ export const {
   setInspirationNotes,
   addInspirationNotes,
   removeNote,
+  resetNotification,
 } = notesSlice.actions;
 
 export const selectNotes = (state: RootState) => state.notes;
