@@ -16,7 +16,7 @@ const useAuth = () => {
 
   const signInWithGoogle = useCallback(async () => {
     try {
-      const redirect = new URL(`${window.location.origin}/editor`);
+      const redirect = new URL(`${window.location.origin}/home`);
 
       // preserve query params
       searchParams.forEach((val, key) => {
