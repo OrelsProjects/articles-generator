@@ -15,7 +15,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="w-full h-full bg-background flex justify-center items-start relative">
+    <div className="w-full h-full bg-background flex justify-center items-start relative z-20">
       <InspirationGrid />
       <ImageModal />
     </div>

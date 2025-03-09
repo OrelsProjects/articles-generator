@@ -47,7 +47,7 @@ export default function InspirationGrid() {
   };
 
   const Loading = () => (
-    <div className="w-full mx-auto py-6">
+    <div className="w-full mx-auto py-6 z-10">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {[...Array(9)].map((_, i) => (
           <div

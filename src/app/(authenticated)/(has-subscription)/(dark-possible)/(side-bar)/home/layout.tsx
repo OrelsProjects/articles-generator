@@ -6,7 +6,7 @@ export default function NotesLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-screen relative">
       <GenerateNotesSidebar />
       {children}
     </div>

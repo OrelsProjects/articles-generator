@@ -467,7 +467,7 @@ export default function NoteComponent({ note }: NoteProps) {
                   <Button
                     variant="link"
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto z-50"
+                    className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto z-30"
                   >
                     {isExpanded ? "less" : "more"}
                   </Button>
