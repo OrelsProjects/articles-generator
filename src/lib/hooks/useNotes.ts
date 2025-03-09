@@ -25,6 +25,8 @@ import {
 import axios from "axios";
 import { Logger } from "@/logger";
 import { useUi } from "@/lib/hooks/useUi";
+import { AIUsageResponse } from "@/types/aiUsageResponse";
+import { useCredits } from "@/lib/hooks/useCredits";
 
 export const useNotes = () => {
   const { updateShowGenerateNotesSidebar } = useUi();
@@ -43,7 +45,8 @@ export const useNotes = () => {
     inspirationNotesCursor,
   } = useAppSelector(selectNotes);
 
-  const [loadingCreateDraftNote, setLoadingCreateDraftNote] = useState(false);
+  const { consumeCredits } = useCredits();
+
   const [loadingEditNote, setLoadingEditNote] = useState(false);
 
   const loadingInspirationRef = useRef(false);
@@ -144,17 +147,33 @@ export const useNotes = () => {
 
   const generateNewNotes = useCallback(async () => {
     try {
-      const response = await axios.post<NoteDraft[]>("/api/notes/generate", {
-        existingNotesIds: userNotes.map(note => note.id),
-      });
+      const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
+        "/api/notes/generate",
+        {
+          existingNotesIds: userNotes.map(note => note.id),
+        },
+      );
+      const { responseBody } = response.data;
+      if (!responseBody) {
+        throw new Error("No notes generated");
+      }
+
+      const { body, creditsUsed } = responseBody;
+      if (!body) {
+        throw new Error("No notes generated");
+      }
+
+      consumeCredits(creditsUsed);
+
       dispatch(
         addNotes({
-          items: response.data,
+          items: body,
           nextCursor: null,
           options: { toStart: true },
         }),
       );
-      selectNote(response.data[0]);
+
+      selectNote(body[0]);
     } catch (error) {
       console.error("Error generating new note:", error);
     }
@@ -282,7 +301,7 @@ export const useNotes = () => {
     fetchNotes,
     fetchInspirationNotes,
     selectNote,
-    generateNewNote: generateNewNotes,
+    generateNewNotes,
     selectedImage,
     selectImage,
     updateNoteStatus,
@@ -294,6 +313,5 @@ export const useNotes = () => {
     editNoteBody,
     loadingEditNote,
     createDraftNote,
-    loadingCreateDraftNote,
   };
 };

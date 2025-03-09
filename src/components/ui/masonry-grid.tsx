@@ -39,7 +39,7 @@ export const MasonryGrid = ({
   }, [cards, columns]);
 
   return (
-    <div className={cn("w-full max-w-7xl mx-auto", className)}>
+    <div className={cn("w-full mx-auto", className)}>
       <div
         className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3", {
           "lg:grid-cols-2": columns === 2,

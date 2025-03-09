@@ -74,10 +74,8 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
       trialEnd: isTrialing ? new Date(subscription.trial_end! * 1000) : null,
 
       // Credits information
-      creditsPerPeriodArticle: creditsPerPlan[plan].article,
-      creditsPerPeriodRegular: creditsPerPlan[plan].regular,
-      creditsRemainingArticle: creditsPerPlan[plan].article,
-      creditsRemainingRegular: creditsPerPlan[plan].regular,
+      creditsPerPeriod: creditsPerPlan[plan],
+      creditsRemaining: creditsPerPlan[plan],
       lastCreditReset: new Date(),
 
       currentPeriodStart: new Date(subscription.current_period_start * 1000),
@@ -87,6 +85,11 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
   });
 }
 
+// Cases when Update is called:
+// - Subscription is updated (e.g. trial ends)
+// - Subscription is paused
+// - Subscription is resumed
+// - Subscription is deleted
 export async function handleSubscriptionUpdated(event: any) {
   const subscription = event.data.object as Stripe.Subscription;
   const subscriptionId = subscription.id;
@@ -97,7 +100,15 @@ export async function handleSubscriptionUpdated(event: any) {
     });
     return;
   }
-  debugger;
+
+  // await prisma.subscription.update({
+  //   where: {
+  //     id: subscriptionId,
+  //   },
+  //   data: {
+  //     endDate: new Date(subscription.current_period_end * 1000),
+  //   },
+  // });
 }
 
 export async function handleSubscriptionPaused(event: Stripe.Event) {

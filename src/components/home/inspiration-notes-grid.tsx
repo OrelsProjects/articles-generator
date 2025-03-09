@@ -47,7 +47,7 @@ export default function InspirationGrid() {
   };
 
   const Loading = () => (
-    <div className="container mx-auto py-6">
+    <div className="w-full mx-auto py-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {[...Array(9)].map((_, i) => (
           <div
@@ -106,121 +106,123 @@ export default function InspirationGrid() {
   });
 
   return (
-    <div className="w-container min-h-screen bg-transparent py-16">
-      <div className="mb-6 container mx-auto">
-        <div className="flex items-center mb-1">
-          <h1 className="text-xl font-semibold text-foreground">
-            Note inspirations
-          </h1>
-          <TooltipProvider>
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 ml-1 mt-1"
-                >
-                  <Info className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-sm">
-                  These notes were selected by our AI engine based on your
-                  publications and notes.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Use these high-performing posts as inspirations for your next content!
-          Our AI engine selected these for you.
-        </p>
-      </div>
-      {shouldShowLoading ? (
-        <Loading />
-      ) : shouldShowError ? (
-        <Error />
-      ) : (
-        <ScrollArea className="mx-auto py-6">
-          {notes.length > 0 ? (
-            <div className="container mx-auto">
-              <MasonryGrid cards={gridCards} />
-              {loadingMore && (
-                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {[...Array(3)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Skeleton className="h-8 w-8 rounded-full" />
-                          <div className="space-y-1">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                        </div>
-                        <Skeleton className="h-6 w-6 rounded-full" />
-                      </div>
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-4 w-5/6" />
-                      <Skeleton className="h-4 w-2/3" />
-                      <div className="mt-2 flex items-center justify-between">
-                        <Skeleton className="h-6 w-16 rounded-md" />
-                        <div className="flex space-x-1">
-                          <Skeleton className="h-6 w-6 rounded-full" />
-                          <Skeleton className="h-6 w-6 rounded-full" />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {!loadingMore && hasMoreInspirationNotes ? (
-                <div className="flex justify-center mt-8">
+    <div className="w-full min-h-screen bg-transparent py-16 flex justify-center items-start">
+      <div className="container">
+        <div className="mb-6 mx-auto">
+          <div className="flex items-center mb-1">
+            <h1 className="text-xl font-semibold text-foreground">
+              Note inspirations
+            </h1>
+            <TooltipProvider>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="sm"
-                    onClick={handleLoadMore}
-                    disabled={loadingMore}
-                    className="text-primary hover:text-primary/80"
+                    size="icon"
+                    className="h-6 w-6 ml-1 mt-1"
                   >
-                    {loadingMore ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 mr-2" />
-                    )}
-                    More
+                    <Info className="h-4 w-4 text-muted-foreground" />
                   </Button>
-                </div>
-              ) : (
-                <div className="flex justify-center mt-8">
-                  <span className="text-muted-foreground">
-                    You&apos;ve reached the end of the inspiration notes.
-                  </span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <h3 className="text-2xl font-medium mb-4 text-foreground">
-                No notes found
-              </h3>
-              <p className="text-muted-foreground mb-8">
-                Be the first to create a note and share your thoughts!
-              </p>
-              <Link
-                href="/notes/new"
-                className="px-6 py-3 bg-primary text-foreground rounded-md hover:bg-primary/90 transition-colors"
-              >
-                Create Note
-              </Link>
-            </div>
-          )}
-        </ScrollArea>
-      )}
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm">
+                    These notes were selected by our AI engine based on your
+                    publications and notes.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Use these high-performing posts as inspirations for your next
+            content! Our AI engine selected these for you.
+          </p>
+        </div>
+        {shouldShowLoading ? (
+          <Loading />
+        ) : shouldShowError ? (
+          <Error />
+        ) : (
+          <ScrollArea className="mx-auto py-6">
+            {notes.length > 0 ? (
+              <div className="w-full">
+                <MasonryGrid cards={gridCards} />
+                {loadingMore && (
+                  <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Skeleton className="h-8 w-8 rounded-full" />
+                            <div className="space-y-1">
+                              <Skeleton className="h-4 w-24" />
+                              <Skeleton className="h-3 w-16" />
+                            </div>
+                          </div>
+                          <Skeleton className="h-6 w-6 rounded-full" />
+                        </div>
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-5/6" />
+                        <Skeleton className="h-4 w-2/3" />
+                        <div className="mt-2 flex items-center justify-between">
+                          <Skeleton className="h-6 w-16 rounded-md" />
+                          <div className="flex space-x-1">
+                            <Skeleton className="h-6 w-6 rounded-full" />
+                            <Skeleton className="h-6 w-6 rounded-full" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {!loadingMore && hasMoreInspirationNotes ? (
+                  <div className="flex justify-center mt-8">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                      className="text-primary hover:text-primary/80"
+                    >
+                      {loadingMore ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 mr-2" />
+                      )}
+                      More
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex justify-center mt-8">
+                    <span className="text-muted-foreground">
+                      You&apos;ve reached the end of the inspiration notes.
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-20">
+                <h3 className="text-2xl font-medium mb-4 text-foreground">
+                  No notes found
+                </h3>
+                <p className="text-muted-foreground mb-8">
+                  Be the first to create a note and share your thoughts!
+                </p>
+                <Link
+                  href="/notes/new"
+                  className="px-6 py-3 bg-primary text-foreground rounded-md hover:bg-primary/90 transition-colors"
+                >
+                  Create Note
+                </Link>
+              </div>
+            )}
+          </ScrollArea>
+        )}
+      </div>
     </div>
   );
 }

@@ -21,8 +21,6 @@ import { Session } from "next-auth";
 import { Loader2 } from "lucide-react";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { useSettings } from "@/lib/hooks/useSettings";
-import { RootState } from "@/lib/store";
-import SubscriptionProvider from "@/app/providers/SubscriptionProvider";
 
 export default function AuthProvider({
   children,
@@ -90,15 +88,17 @@ export default function AuthProvider({
       return;
     }
 
-    const shouldOnboard = !hasPublication && !pathname.includes("onboarding");
+    const shouldOnboard = !hasPublication;
 
     if (shouldOnboard) {
-      router.push(`/onboarding`, {
-        preserveQuery: true,
-        paramsToAdd: {
-          redirect: pathname,
-        },
-      });
+      if (!pathname.includes("onboarding")) {
+        router.push(`/onboarding`, {
+          preserveQuery: true,
+          paramsToAdd: {
+            redirect: pathname,
+          },
+        });
+      }
     } else {
       const redirect = searchParams.get("redirect");
       if (redirect) {
@@ -149,5 +149,5 @@ export default function AuthProvider({
       </div>
     );
   }
-    return <SubscriptionProvider>{children}</SubscriptionProvider>;
+  return children;
 }

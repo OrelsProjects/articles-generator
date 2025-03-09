@@ -24,6 +24,7 @@ const Auth = () => {
   }, [code, router]);
 
   useEffect(() => {
+    debugger;
     if (status === "authenticated") {
       router.push("/home", { preserveQuery: true });
     }

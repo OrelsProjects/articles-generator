@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
@@ -12,6 +12,8 @@ import usePayments from "@/lib/hooks/usePayments";
 import PriceContainer from "@/components/ui/price-container";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
+import { toast } from "react-toastify";
 
 const pricingPlans = [
   {
@@ -73,30 +75,71 @@ const pricingPlans = [
   },
 ];
 
-export default function Pricing({ className }: { className?: string }) {
+export default function Pricing({
+  className,
+  onboarding,
+}: {
+  className?: string;
+  onboarding?: boolean;
+}) {
   const [billingCycle, setBillingCycle] = useState<"month" | "year">("year");
   const router = useCustomRouter();
   const { user } = useAppSelector(state => state.auth);
-  const { upgradeSubscription } = usePayments();
+  const { upgradeSubscription, goToCheckout } = usePayments();
+  const [loading, setLoading] = useState(false);
 
   const handleGetStarted = (plan: string) => {
-    if (!user) {
-      router.push(`/login?plan=${plan}&interval=${billingCycle}`);
+    if (onboarding) {
+      setLoading(true);
+      goToCheckout(billingCycle, plan)
+        .catch(() => {
+          toast.error("Something went wrong. Please try again.");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     } else {
-      upgradeSubscription(user.userId);
+      if (!user) {
+        router.push(`/login?plan=${plan}&interval=${billingCycle}`);
+      } else {
+        upgradeSubscription(user.userId);
+      }
     }
   };
 
   return (
     <motion.section
       id="pricing"
-      className={cn("py-20", className)}
+      className={cn("w-full h-full py-20 !relative", className)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
     >
-      <div className="max-w-6xl mx-auto px-8">
-        <div className="flex justify-center mb-8">
+      <div className="max-w-6xl mx-auto px-8 relative z-50">
+        {onboarding && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex justify-center mb-16"
+          >
+            <h3 className="text-center text-4xl sm:text-5xl font-semibold">
+              One more step before you can start
+              <br />
+              growing your Substack
+            </h3>
+          </motion.div>
+        )}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            delay: onboarding ? 0.5 : 0,
+            duration: 0.8,
+            ease: "easeOut",
+          }}
+          className="flex justify-center mb-8"
+        >
           <RadioGroup
             defaultValue="month"
             value={billingCycle}
@@ -126,14 +169,17 @@ export default function Pricing({ className }: { className?: string }) {
               </Label>
             </div>
           </RadioGroup>
-        </div>
+        </motion.div>
         <div className="isolate mx-auto mt-10 grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
           {pricingPlans.map((plan, index) => (
             <motion.div
               key={plan.name}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.8 }}
+              transition={{
+                delay: index * 0.1 + (onboarding ? 0.6 : 0.1),
+                duration: 0.8,
+              }}
             >
               <Card
                 className={cn(
@@ -186,8 +232,12 @@ export default function Pricing({ className }: { className?: string }) {
                         : "bg-background hover:bg-accent",
                     )}
                     variant={plan.popular ? "default" : "outline-primary"}
+                    disabled={loading}
                     onClick={() => handleGetStarted(plan.name.toLowerCase())}
                   >
+                    {loading && (
+                      <RefreshCw className="mr-2 w-4 h-4 animate-spin" />
+                    )}
                     Start free trial
                   </Button>
                   <ul className="space-y-3">
@@ -204,6 +254,23 @@ export default function Pricing({ className }: { className?: string }) {
           ))}
         </div>
       </div>
+      {/* {onboarding && (
+        <div className="absolute inset-0 z-10" id="onboarding-background">
+          <Image
+            src="/home-dark.png"
+            alt="Home"
+            fill
+            className="absolute inset-0 object-contain hidden dark:block z-10"
+          />
+          <Image
+            src="/home-light.png"
+            alt="Home"
+            fill
+            className="absolute inset-0 object-contain block dark:hidden z-10"
+          />
+          <div className="absolute inset-0 bg-foreground/50 dark:bg-background/50 backdrop-blur-sm z-20" />
+        </div>
+      )} */}
     </motion.section>
   );
 }

@@ -19,6 +19,9 @@ export function useCustomRouter() {
     routerOptions: CustomRouterOptions = { preserveQuery: true },
     options?: NavigateOptions,
   ) => {
+    if (href.includes("editor")) {
+      debugger;
+    }
     // If relative URL, prepend the current origin
     const baseUrl = href.startsWith("http")
       ? href

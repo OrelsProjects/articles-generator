@@ -56,6 +56,7 @@ enum AIUsageType {
   ideaGeneration
   textEnhancement
   titleOrSubtitleRefinement
+  notesGeneration
 }
 
 model User {
@@ -150,7 +151,6 @@ model UserMetadata {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   plan      Plan?
-  credits   Int      @default(0) // Available credits for the user
 
   publication PublicationMetadata? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -383,11 +383,10 @@ model Subscription {
   trialEnd    DateTime?
 
   // Credits information
-  creditsPerPeriodArticle Int      @default(0) // Credits allocated per billing period for article generation
-  creditsPerPeriodRegular Int      @default(0) // Credits allocated per billing period for regular generation
-  creditsRemainingArticle Int      @default(0) // Credits remaining in current period for article generation
-  creditsRemainingRegular Int      @default(0) // Credits remaining in current period for regular generation
-  lastCreditReset        DateTime @default(now()) // When credits were last reset
+  creditsPerPeriod Int @default(0)
+  creditsRemaining Int @default(0)
+
+  lastCreditReset DateTime @default(now()) // When credits were last reset
 
   currentPeriodStart DateTime @default(now())
   currentPeriodEnd   DateTime

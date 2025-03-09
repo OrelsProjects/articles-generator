@@ -11,15 +11,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { NotesComments } from "@/../prisma/generated/articles";
 import { runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
-import { AIUsageType, Note, NoteStatus } from "@prisma/client";
+import { Note, NoteStatus } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
 import { canUseAI, useCredits } from "@/lib/utils/credits";
+import { AIUsageResponse } from "@/types/aiUsageResponse";
 
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest,
+): Promise<NextResponse<AIUsageResponse<NoteDraft[]>>> {
   console.time("generate notes");
   const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 },
+    );
   }
   let newNotes: {
     body: string;
@@ -50,7 +56,7 @@ export async function POST(req: NextRequest) {
         userMetadata,
       });
       return NextResponse.json(
-        { error: "Publication not found" },
+        { success: false, error: "Publication not found" },
         { status: 404 },
       );
     }
@@ -70,16 +76,15 @@ export async function POST(req: NextRequest) {
         publication,
       });
       return NextResponse.json(
-        { error: "Publication not found" },
+        { success: false, error: "Publication not found" },
         { status: 404 },
       );
     }
 
-
-    const isValid = await canUseAI(session.user.id, AIUsageType.generateNotes);
+    const isValid = await canUseAI(session.user.id, "notesGeneration");
     if (!isValid) {
       return NextResponse.json(
-        { error: "Not enough credits" },
+        { success: false, error: "Not enough credits" },
         { status: 400 },
       );
     }
@@ -161,7 +166,7 @@ export async function POST(req: NextRequest) {
     const inspirations = await searchSimilarNotes({
       query,
       limit: 20,
-      // filters,
+      filters,
     });
 
     const uniqueInspirations = inspirations
@@ -181,8 +186,11 @@ export async function POST(req: NextRequest) {
       count,
     );
 
-    const response = await runPrompt(messages, "anthropic/claude-3.5-sonnet");
-    newNotes = await parseJson(response);
+    const promptResponse = await runPrompt(
+      messages,
+      "anthropic/claude-3.5-sonnet",
+    );
+    newNotes = await parseJson(promptResponse);
 
     const handle = notesFromAuthor[0]?.handle;
     const name = notesFromAuthor[0]?.name;
@@ -200,7 +208,7 @@ export async function POST(req: NextRequest) {
           handle,
           thumbnail,
           type: note.type,
-          // authorId: parseInt(authorId.toString()),
+          authorId: parseInt(authorId.toString()),
           name,
           inspiration: note.inspiration,
         },
@@ -220,13 +228,23 @@ export async function POST(req: NextRequest) {
       thumbnail: note.thumbnail || undefined,
     }));
 
-    await useCredits(session.user.id, AIUsageType.generateNotes);
-
-    return NextResponse.json(notesResponse);
+    const { creditsUsed, creditsRemaining } = await useCredits(
+      session.user.id,
+      "notesGeneration",
+    );
+    const response: AIUsageResponse<NoteDraft[]> = {
+      responseBody: {
+        body: notesResponse,
+        creditsUsed,
+        creditsRemaining,
+        type: "notesGeneration",
+      },
+    };
+    return NextResponse.json(response);
   } catch (error: any) {
     loggerServer.error("Failed to fetch notes", error);
     return NextResponse.json(
-      { error: "Failed to fetch notes" },
+      { success: false, error: "Failed to fetch notes" },
       { status: 500 },
     );
   } finally {

@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
         userId: session.user.id,
         status: "active",
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     if (!subscription) {

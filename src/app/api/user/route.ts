@@ -11,28 +11,30 @@ export async function GET(req: NextRequest): Promise<any> {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  
+
   try {
     // Check and reset credits if needed
     if (session.user?.id) {
       const updatedCredits = await checkAndResetCredits(session.user.id);
-      
+
       // If credits were updated, we should update the session user's metadata
-      if (updatedCredits.articleCredits > 0 || updatedCredits.regularCredits > 0) {
+      if (updatedCredits.credits > 0) {
         // We don't need to modify the session directly as it will be refreshed on next request
         // But we could log that credits were reset
-        loggerServer.info("Credits were reset for user", { 
+        loggerServer.info("Credits were reset for user", {
           userId: session.user.id,
-          articleCredits: updatedCredits.articleCredits,
-          regularCredits: updatedCredits.regularCredits
+          credits: updatedCredits.credits,
         });
       }
     }
-    
+
     // Return user data
-    return NextResponse.json({ 
-      user: session.user 
-    }, { status: 200 });
+    return NextResponse.json(
+      {
+        user: session.user,
+      },
+      { status: 200 },
+    );
   } catch (error: any) {
     loggerServer.error("Error fetching user data", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

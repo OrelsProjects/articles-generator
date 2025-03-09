@@ -35,7 +35,7 @@ export default function SubscriptionProvider({
   }
 
   if (!hasSubscription) {
-    redirect("/pricing");
+    redirect("/pricing?onboarding=true");
   }
 
   return <>{children}</>;

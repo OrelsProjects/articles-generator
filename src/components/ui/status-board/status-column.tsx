@@ -51,7 +51,7 @@ export function StatusColumn({
       ref={setNodeRef}
       className={cn(
         "flex flex-col flex-1 bg-muted/30 rounded-lg p-2 min-h-[300px]",
-        color === "gray" && "bg-gray-100/20 dark:bg-gray-500/20",
+        color === "gray" && "bg-gray-200/15 dark:bg-gray-500/20",
         color === "amber" && "bg-amber-100/20 dark:bg-amber-500/20",
         color === "green" && "bg-green-100/20 dark:bg-green-500/20",
       )}

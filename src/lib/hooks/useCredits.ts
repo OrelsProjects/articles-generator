@@ -1,20 +1,31 @@
-import { useAppSelector } from "./redux";
-import { selectSettings } from "@/lib/features/settings/settingsSlice";
+import { AIUsageType } from "@prisma/client";
+import { useAppDispatch, useAppSelector } from "./redux";
+import {
+  decrementUsage,
+  selectSettings,
+} from "@/lib/features/settings/settingsSlice";
 
 export function useCredits() {
+  const dispatch = useAppDispatch();
   const { credits } = useAppSelector(selectSettings);
 
   // Check if user has enough credits for an operation
-  const hasEnoughCredits = (cost: number, creditType: 'article' | 'regular' = 'regular') => {
-    if (creditType === 'article') {
-      return credits.articleCredits.remaining >= cost;
-    } else {
-      return credits.regularCredits.remaining >= cost;
+  const hasEnoughCredits = (cost: number) => {
+    return credits.remaining >= cost;
+  };
+
+  const consumeCredits = async (cost: number) => {
+    // if cost is negative, make it positive
+    if (cost < 0) {
+      cost = -cost;
     }
+
+    dispatch(decrementUsage({ amount: cost }));
   };
 
   return {
     credits,
+    consumeCredits,
     hasEnoughCredits,
   };
 }

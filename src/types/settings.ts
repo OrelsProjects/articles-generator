@@ -9,22 +9,10 @@ export interface CreditInfo {
   remaining: number;
   total: number;
   used: number;
-  
-  articleCredits: {
-    remaining: number;
-    total: number;
-    used: number;
-  };
-  regularCredits: {
-    remaining: number;
-    total: number;
-    used: number;
-  };
 }
 
 export interface AllUsages {
-  ideaGeneration: Usage;
-  textEnhancement: Usage;
-  titleOrSubtitleRefinement: Usage;
   credits: CreditInfo;
 }
+
+export type CreditType = "article" | "regular";

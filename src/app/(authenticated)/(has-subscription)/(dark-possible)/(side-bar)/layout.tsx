@@ -1,21 +1,22 @@
 "use client";
 
-import { AppSidebar } from "@/app/(content)/(only-light)/editor/sidebar";
 import AuthProvider from "@/app/providers/AuthProvider";
 import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
 import InitiatePlanFromLandingProvider from "@/app/providers/InitiatePlanFromLandingProvider";
 import NewSubscriptionProvider from "@/app/providers/NewSubscriptionProvider";
-import GenerateNotesSidebar from "@/components/home/generate-notes-sidebar";
+import { AppSidebar } from "@/components/layout/app-sidebar";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
 
-export default function ContentLayout({
+import { Suspense } from "react";
+
+export default function SideBarLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
-      <NewSubscriptionProvider />
-      <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>
-    </AuthProvider>
+    <AppSidebar>
+      <Suspense fallback={<LoadingOverlay />}>{children}</Suspense>
+    </AppSidebar>
   );
 }

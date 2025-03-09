@@ -14,6 +14,9 @@ export async function POST(req: NextRequest) {
     // 1. Find user's active subscription
     const subscription = await prisma.subscription.findFirst({
       where: { userId, status: "active" },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
     if (!subscription) {
       return NextResponse.json({ error: "No active subscription found" }, { status: 404 });

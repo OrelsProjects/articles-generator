@@ -7,7 +7,7 @@ import { Note, PublicationMetadata } from "@prisma/client";
 export type ImprovementType = keyof typeof improvementPromptTemplates;
 
 export type OutlineLLMResponse = {
-  outlines: { id: number; outline: string }[];
+  outlines: { id: number; outline: string; title: string; subtitle: string }[];
 };
 
 export type IdeaLLM = {
@@ -85,6 +85,9 @@ export const generateOutlinePrompt = (
       - VERY IMPORTANT: The outline should rely MAINLY on the writing style and the structure of the user's articles.
       - If the user has a specific opening/closing for the article, use it in the outline.
       - If the idea is a list of items (Ex: Top 10 productivity tips, 7 ways to improve your writing, etc.), make sure the outline has a list of suggestions for those items.
+      - The title and subtitle should be improved with a better hook. It should engage the reader, while keeping it concise and relevant to the article's content.
+      - The title must not have all the words in capital letters. Only if it adds value to the title.
+      - Subtitle should expand on the title and provide more context.
       ${shouldSearch ? `- Search the web for data and use it to improve the outline of the article.` : ""}
       ** The response should be in Markdown (.md) format. **
 
@@ -93,6 +96,8 @@ export const generateOutlinePrompt = (
         "outlines": [
           {
             "id": <idea id>,
+            "title": "<generated title>",
+            "subtitle": "<generated subtitle>",
             "outline": "<generated outline in Markdown format>"
           }
         ]

@@ -51,43 +51,50 @@ export async function GET() {
       ideas = userPublication.publication.ideas || [];
     }
 
-    const response: PublicationResponse = {
-      id: userPublication?.publication?.id,
-      image: userPublication?.publication?.image || null,
-      url:
-        buildSubstackUrl(publication?.subdomain, publication?.customDomain) ||
-        "",
-      title:
-        userPublication?.publication?.title ||
-        publication?.name ||
-        publication?.copyright ||
-        "",
-      description: userPublication?.publication?.description || null,
-      preferredTopics: userPublication?.publication?.preferredTopics || [],
-      personalDescription: userPublication?.publication?.personalDescription || null,
-      userSettingsUpdatedAt: userPublication?.publication?.userSettingsUpdatedAt || null,
-      generatedDescription: userPublication?.publication?.generatedDescription || null,
-      generatedTopics: userPublication?.publication?.topics || null,
-      ideas:
-        ideas.map(idea => ({
-          id: idea.id,
-          topic: idea.topic,
-          title: idea.title,
-          subtitle: idea.subtitle,
-          outline: idea.outline,
-          description: idea.description,
-          inspiration: idea.inspiration,
-          body: idea.body,
-          status: idea.status,
-          image: idea.image,
-          search: idea.search,
-          isFavorite: idea.isFavorite,
-          modelUsedForIdeas: idea.modelUsedForIdeas,
-          modelUsedForOutline: idea.modelUsedForOutline,
-          updatedAt: idea.updatedAt,
-          bodyHistory: idea.bodyHistory,
-        })) || [],
-    };
+    const response: PublicationResponse | null = publication
+      ? {
+          id: userPublication?.publication?.id,
+          image: userPublication?.publication?.image || null,
+          url:
+            buildSubstackUrl(
+              publication?.subdomain,
+              publication?.customDomain,
+            ) || "",
+          title:
+            userPublication?.publication?.title ||
+            publication?.name ||
+            publication?.copyright ||
+            "",
+          description: userPublication?.publication?.description || null,
+          preferredTopics: userPublication?.publication?.preferredTopics || [],
+          personalDescription:
+            userPublication?.publication?.personalDescription || null,
+          userSettingsUpdatedAt:
+            userPublication?.publication?.userSettingsUpdatedAt || null,
+          generatedDescription:
+            userPublication?.publication?.generatedDescription || null,
+          generatedTopics: userPublication?.publication?.topics || null,
+          ideas:
+            ideas.map(idea => ({
+              id: idea.id,
+              topic: idea.topic,
+              title: idea.title,
+              subtitle: idea.subtitle,
+              outline: idea.outline,
+              description: idea.description,
+              inspiration: idea.inspiration,
+              body: idea.body,
+              status: idea.status,
+              image: idea.image,
+              search: idea.search,
+              isFavorite: idea.isFavorite,
+              modelUsedForIdeas: idea.modelUsedForIdeas,
+              modelUsedForOutline: idea.modelUsedForOutline,
+              updatedAt: idea.updatedAt,
+              bodyHistory: idea.bodyHistory,
+            })) || [],
+        }
+      : null;
 
     return NextResponse.json({ publication: response }, { status: 200 });
   } catch (error: any) {

@@ -48,12 +48,11 @@ import { TooltipButton } from "@/components/ui/tooltip-button";
 export default function GenerateNotesSidebar() {
   const { updateShowGenerateNotesSidebar, showGenerateNotesSidebar } = useUi();
   const {
-    generateNewNote,
+    generateNewNotes,
     selectedNote,
     editNoteBody,
     loadingEditNote,
     selectNote,
-    loadingCreateDraftNote,
   } = useNotes();
   const [open, setOpen] = useState(false);
   const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
@@ -137,7 +136,7 @@ export default function GenerateNotesSidebar() {
     }
     setLoadingGenerateNewIdea(true);
     try {
-      await generateNewNote();
+      await generateNewNotes();
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -236,13 +235,9 @@ export default function GenerateNotesSidebar() {
                 size="sm"
                 className="text-primary text-sm hover:text-primary"
                 onClick={handleCreateDraftNote}
-                disabled={loadingCreateDraftNote || !hasContent}
+                disabled={!hasContent}
               >
-                {loadingCreateDraftNote ? (
-                  <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
-                ) : (
-                  <Plus className="h-5 w-5 text-primary" />
-                )}
+                <Plus className="h-5 w-5 text-primary" />
                 New draft
               </Button>
             </div>

@@ -14,13 +14,13 @@ import loggerServer from "@/loggerServer";
 import { cleanArticleBody } from "@/lib/utils/article";
 import { runWithRetry } from "@/lib/utils/requests";
 import {
-  useAIItem,
   generateIdeas,
   handleUsageError,
   setUserGeneratingIdeas,
 } from "@/lib/utils/ideas";
 import { canUseAI, useCredits } from "@/lib/utils/credits";
 import { AIUsageType } from "@prisma/client";
+import { AIUsageResponse } from "@/types/aiUsageResponse";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -30,11 +30,16 @@ const modelUsedForOutline: Model = "anthropic/claude-3.5-sonnet";
 
 const MAX_IDEAS_COUNT = 3;
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+): Promise<NextResponse<AIUsageResponse<IdeaLLM[]>>> {
   console.time("Start generating ideas");
   const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 },
+    );
   }
 
   let usageId: string = "";
@@ -52,7 +57,6 @@ export async function GET(req: NextRequest) {
     });
 
     const topic = req.nextUrl.searchParams.get("topic") || "";
-    const count = req.nextUrl.searchParams.get("count") || "1";
     const shouldSearch =
       req.nextUrl.searchParams.get("shouldSearch") || "false";
 
@@ -64,14 +68,16 @@ export async function GET(req: NextRequest) {
       !publicationMetadata.idInArticlesDb
     ) {
       return NextResponse.json(
-        { error: "User was not initialized" },
+        { success: false, error: "User was not initialized" },
         { status: 403 },
       );
     }
 
-    const isValid = await canUseAI(session.user.id, AIUsageType.generateArticles);
+    const isValid = await canUseAI(session.user.id, "ideaGeneration");
     if (!isValid) {
-      return NextResponse.json({ error: "Not enough credits" }, { status: 400 },
+      return NextResponse.json(
+        { success: false, error: "Not enough credits" },
+        { status: 400 },
       );
     }
 
@@ -121,7 +127,12 @@ export async function GET(req: NextRequest) {
       shouldSearch === "true",
     );
 
-    let outlines: { id: number; outline: string }[] = [];
+    let outlines: {
+      id: number;
+      outline: string;
+      title: string;
+      subtitle: string;
+    }[] = [];
     const outlinesString = await runPrompt(
       messagesForOutline,
       modelUsedForOutline,
@@ -132,14 +143,21 @@ export async function GET(req: NextRequest) {
         const model =
           retryCount === 0
             ? "openai/gpt-4o-mini"
-            : retryCount === 2
-              ? "anthropic/claude-3.5-sonnet"
-              : "openai/gpt-4o";
+            : retryCount === 1
+              ? "openai/gpt-4o"
+              : "anthropic/claude-3.5-sonnet";
+
         const outlineResponse = await parseJson<OutlineLLMResponse>(
           outlinesString,
           model,
         );
         outlines = outlineResponse.outlines;
+      },
+      (error: string) => {
+        loggerServer.error(
+          "Error generating outlines for prompt: " +
+            JSON.stringify(messagesForOutline),
+        );
       },
       {
         retries: 3,
@@ -153,6 +171,11 @@ export async function GET(req: NextRequest) {
         ...idea,
         outline,
         body: outline,
+        title:
+          outlines.find(outline => outline.id === index)?.title || idea.title,
+        subtitle:
+          outlines.find(outline => outline.id === index)?.subtitle ||
+          idea.subtitle,
         status: "new",
         modelUsedForIdeas,
         modelUsedForOutline,
@@ -187,14 +210,24 @@ export async function GET(req: NextRequest) {
 
     console.timeEnd("Start generating ideas");
 
-    await useCredits(session.user.id, AIUsageType.generateArticles);
+    const { creditsUsed, creditsRemaining } = await useCredits(
+      session.user.id,
+      "ideaGeneration",
+    );
 
-    return NextResponse.json(ideasWithOutlines);
+    const response: AIUsageResponse<IdeaLLM[]> = {
+      responseBody: {
+        body: ideasWithOutlines,
+        creditsUsed,
+        creditsRemaining,
+        type: "ideaGeneration",
+      },
+    };
+    return NextResponse.json(response);
   } catch (error: any) {
     loggerServer.error("Error generating ideas:", error);
-
     const { message, status } = await handleUsageError(error, usageId);
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ success: false, error: message }, { status });
   } finally {
     console.timeEnd("Start generating ideas");
     await prisma.railGuards.update({

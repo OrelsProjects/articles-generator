@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -16,17 +15,18 @@ import { Loader2 } from "lucide-react";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import Logo from "@/components/ui/logo";
 import Image from "next/image";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteRoom";
 
 export function PublicationOnboarding() {
-  const router = useRouter();
+  const router = useCustomRouter();
   const dispatch = useAppDispatch();
   const { hasPublication } = useSettings();
 
   useEffect(() => {
     if (hasPublication) {
-      router.push("/home");
+      router.push("/pricing?onboarding=true");
     }
   }, [hasPublication, router, dispatch]);
 

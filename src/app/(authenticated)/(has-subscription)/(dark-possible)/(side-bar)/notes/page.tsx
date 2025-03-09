@@ -23,7 +23,10 @@ export default function NotesPage() {
       <div className="container py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">My Notes</h1>
-          <Button onClick={handleCreateNote} className="flex items-center gap-2">
+          <Button
+            onClick={handleCreateNote}
+            className="flex items-center gap-2"
+          >
             <Plus size={16} />
             New Note
           </Button>
@@ -38,32 +41,37 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="container py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">My Notes</h1>
-        <Button onClick={handleCreateNote} className="flex items-center gap-2">
-          <Plus size={16} />
-          New Note
-        </Button>
-      </div>
+    <div className="w-full min-h-screen bg-transparent py-16 flex justify-center items-start">
+      <div className="w-full container">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">My Notes</h1>
+          <Button
+            onClick={handleCreateNote}
+            className="flex items-center gap-2"
+          >
+            <Plus size={16} />
+            New Note
+          </Button>
+        </div>
 
-      {userNotes.length === 0 ? (
-        <div className="text-center py-20">
-          <h3 className="text-2xl font-medium mb-4 text-foreground">
-            No notes found
-          </h3>
+        {userNotes.length === 0 ? (
+          <div className="text-center py-20">
+            <h3 className="text-2xl font-medium mb-4 text-foreground">
+              No notes found
+            </h3>
           <p className="text-muted-foreground mb-8">
-            Create your first note to get started!
-          </p>
-          <Button onClick={handleCreateNote}>Create Note</Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {userNotes.map((note) => (
-            <NoteComponent key={note.id} note={note} />
-          ))}
-        </div>
-      )}
+              Create your first note to get started!
+            </p>
+            <Button onClick={handleCreateNote}>Create Note</Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {userNotes.map(note => (
+              <NoteComponent key={note.id} note={note} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
-} 
+}

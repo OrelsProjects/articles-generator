@@ -78,6 +78,7 @@ export async function fetchWithHeaders(
 
 export async function runWithRetry<T>(
   fn: (retryCount: number) => Promise<T>,
+  fnFailed: (error: string) => void,
   options: { retries: number; delayTime: number } = {
     retries: 3,
     delayTime: 2000,

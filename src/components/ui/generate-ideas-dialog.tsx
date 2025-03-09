@@ -23,13 +23,13 @@ import {
   setShowIdeasPanel,
 } from "@/lib/features/ui/uiSlice";
 import { toast } from "react-toastify";
+import { useCredits } from "@/lib/hooks/useCredits";
 
 export default function GenerateIdeasDialog() {
   const dispatch = useAppDispatch();
   const { showGenerateIdeasDialog } = useAppSelector(selectUi);
-  const { didExceedLimit, canUseSearch } = useSettings();
+  const { hasEnoughCredits } = useSettings();
   const { generateIdeas } = useIdea();
-  const { credits } = useAppSelector(selectSettings);
   const [topic, setTopic] = useState("");
   const [shouldSearch, setShouldSearch] = useState(false);
 
@@ -50,9 +50,7 @@ export default function GenerateIdeasDialog() {
     }
   };
 
-  const usageLabel = useMemo(() => {
-    return `${credits.remaining}/${credits.total}`;
-  }, [credits]);
+  const didExceedLimit = !hasEnoughCredits("ideaGeneration");
 
   return (
     <Dialog
@@ -85,31 +83,18 @@ export default function GenerateIdeasDialog() {
 
           <div className="flex flex-col items-start gap-0.5">
             <TooltipButton
-              tooltipContent={
-                canUseSearch
-                  ? "Search for ideas based on your topic"
-                  : "Upgrade to use smart search"
-              }
+              tooltipContent={"Search for ideas based on your topic"}
               variant={shouldSearch ? "default" : "outline"}
               onClick={() => {
-                if (!canUseSearch) return;
                 setShouldSearch(!shouldSearch);
               }}
-              // disabled={!canUseSearch}
-              className={cn(
-                "w-fit rounded-full shadow-none",
-                {
-                  "bg-primary/20 border border-primary/40 text-primary hover:bg-primary/10":
-                    shouldSearch,
-                },
-                {
-                  "opacity-40 cursor-default hover:cursor-default hover:bg-transparent":
-                    !canUseSearch,
-                },
-              )}
+              className={cn("w-fit rounded-full shadow-none", {
+                "bg-primary/20 border border-primary/40 text-primary hover:bg-primary/10":
+                  shouldSearch,
+              })}
             >
               <Globe className="w-4 h-4 mr-2" />
-              {canUseSearch ? "Smart Search" : "Upgrade to use Smart Search"}
+              Smart Search
             </TooltipButton>
             <motion.p
               initial={{ opacity: 0 }}
@@ -137,7 +122,7 @@ export default function GenerateIdeasDialog() {
                 "text-red-400": didExceedLimit,
               })}
             >
-              Usage: {usageLabel}
+              (3 credits)
             </p>
           </DialogFooter>
         </DialogContent>
