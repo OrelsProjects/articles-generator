@@ -8,15 +8,17 @@ import { EventTracker } from "@/eventTracker";
 import { Logger } from "@/logger";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
 const useAuth = () => {
   const searchParams = useSearchParams();
+  const router = useCustomRouter();
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
 
   const signInWithGoogle = useCallback(async () => {
     try {
-      const redirect = new URL(`${window.location.origin}/home`);
+      const redirect = new URL(`${window.location.origin}/onboarding`);
 
       // preserve query params
       searchParams.forEach((val, key) => {
@@ -25,6 +27,7 @@ const useAuth = () => {
         }
       });
       setLoading(true);
+      debugger;
       await signIn("google", {
         redirect: true,
         callbackUrl: redirect.toString(),
@@ -52,7 +55,7 @@ const useAuth = () => {
       dispatch(setError("Failed to sign out"));
       throw error;
     } finally {
-      window.location.href = "/";
+      router.push("/");
     }
   }, []);
 
@@ -68,7 +71,7 @@ const useAuth = () => {
       dispatch(setError("Failed to delete user"));
       throw error;
     } finally {
-      window.location.href = "/";
+      router.push("/");
     }
   }, []);
 
