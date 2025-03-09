@@ -9,10 +9,13 @@ import { FcGoogle } from "react-icons/fc";
 import { CheckCircle2 } from "lucide-react";
 import useAuth from "@/lib/hooks/useAuth";
 import { useSearchParams } from "next/navigation";
+import { useAppSelector } from "@/lib/hooks/redux";
+import { selectPublications } from "@/lib/features/publications/publicationSlice";
 
 const Auth = () => {
   const { signInWithGoogle } = useAuth();
   const { status } = useSession();
+  const { publications } = useAppSelector(selectPublications);
   const router = useCustomRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
@@ -24,11 +27,15 @@ const Auth = () => {
   }, [code, router]);
 
   useEffect(() => {
-    debugger;
+    const hasPublication = publications.length > 0;
     if (status === "authenticated") {
-      router.push("/home", { preserveQuery: true });
+      if (hasPublication) {
+        router.push("/home", { preserveQuery: true });
+      } else {
+        router.push("/onboarding", { preserveQuery: true });
+      }
     }
-  }, [status, router]);
+  }, [status, router, publications]);
 
   const handleGoogleSignIn = () => {
     signInWithGoogle();

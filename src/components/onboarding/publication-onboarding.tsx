@@ -16,19 +16,29 @@ import { useAppDispatch } from "@/lib/hooks/redux";
 import Logo from "@/components/ui/logo";
 import Image from "next/image";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { useSearchParams } from "next/navigation";
+import usePayments from "@/lib/hooks/usePayments";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteRoom";
 
 export function PublicationOnboarding() {
   const router = useCustomRouter();
   const dispatch = useAppDispatch();
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan");
+  const interval = searchParams.get("interval");
   const { hasPublication } = useSettings();
+  const { goToCheckout } = usePayments();
 
   useEffect(() => {
     if (hasPublication) {
-      router.push("/pricing?onboarding=true");
+      if (plan && interval) {
+        goToCheckout(interval as "month" | "year", plan);
+      } else {
+        router.push("/pricing?onboarding=true");
+      }
     }
-  }, [hasPublication, router, dispatch]);
+  }, [hasPublication, router, dispatch, plan, interval]);
 
   // Prevent navigation if user doesn't have a publication
   useEffect(() => {
