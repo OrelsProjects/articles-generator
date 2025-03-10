@@ -1,10 +1,27 @@
 "use client";
 
 import Pricing from "@/components/landing/pricing-section";
-import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Logo from "@/components/ui/logo";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+
 export default function PricingPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      <header className="sticky top-0 z-50 h-16">
+        <div className="max-w-6xl mx-auto px-8 py-4 rounded-full pt-4 shadow-md">
+          <div className="flex items-center justify-between bg-background/60 backdrop-blur-sm">
+            <Logo />
+            <Button variant="ghost" size="icon" className="w-fit px-2" asChild>
+              <Link href="/home">
+                Have an account?
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </header>
       <Pricing onboarding />
     </div>
   );

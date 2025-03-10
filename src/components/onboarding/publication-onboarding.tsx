@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/card";
 import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
 import { useSettings } from "@/lib/hooks/useSettings";
-import { Loader2 } from "lucide-react";
-import { useAppDispatch } from "@/lib/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import Logo from "@/components/ui/logo";
 import Image from "next/image";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
@@ -34,6 +33,7 @@ export function PublicationOnboarding() {
   const router = useCustomRouter();
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
+  const { user } = useAppSelector(state => state.auth);
   const plan = searchParams.get("plan");
   const interval = searchParams.get("interval");
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
@@ -42,9 +42,11 @@ export function PublicationOnboarding() {
 
   useEffect(() => {
     if (hasPublication) {
-      if (plan && interval) {
+      if (user?.meta?.plan) {
+        // router.push("/home");
+      } else if (plan && interval) {
         // goToCheckout(interval as "month" | "year", plan);
-        setShowPaymentDialog(true);
+        // setShowPaymentDialog(true);
       } else {
         router.push("/pricing?onboarding=true");
       }

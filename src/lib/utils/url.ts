@@ -32,6 +32,11 @@ const PUBLIC_SUFFIX_LIST = [
   "blog",
 ];
 
+interface UrlComponents {
+  validUrl: string;
+  mainComponentInUrl: string;
+}
+
 export const buildSubstackUrl = (
   subdomain?: string | null,
   customDomain?: string | null,
@@ -92,6 +97,16 @@ export const stripUrl = (
   },
 ) => {
   let strippedUrl = url.replace("https://", "").replace("http://", "");
+  // Check if there's something after the last occurence of ".". For example abc.substack.com/p/hello-world should be abc.substack.com.
+  // if so, remove everything after it.
+  // how? find last dot, then the next occurence of "/".
+  const lastDotIndex = strippedUrl.lastIndexOf(".");
+  if (lastDotIndex !== -1) {
+    const nextSlashIndex = strippedUrl.indexOf("/", lastDotIndex);
+    if (nextSlashIndex !== -1) {
+      strippedUrl = strippedUrl.slice(0, nextSlashIndex);
+    }
+  }
   if (strippedUrl.endsWith("/")) {
     strippedUrl = strippedUrl.slice(0, -1);
   }
@@ -157,4 +172,55 @@ export const validateSubstackUrl = (url: string) => {
       return true;
     }
   }
+};
+
+export const getUrlComponents = (url: string): UrlComponents => {
+  let validUrl = url;
+  let mainComponentInUrl = "";
+  if (validUrl.endsWith("/")) {
+    validUrl = validUrl.slice(0, -1);
+  }
+  if (!validUrl.includes("substack.com")) {
+    const startsWithHttps = validUrl.startsWith("https://");
+    const startsWithWWW = validUrl.startsWith("www.");
+    const startsWithHttpsAndWWW = validUrl.startsWith("https://www.");
+
+    if (!startsWithHttpsAndWWW) {
+      if (startsWithWWW) {
+        validUrl = `https://${validUrl}`;
+        // remove www. from the url
+        const urlWithoutWWW = validUrl.slice(4, validUrl.length);
+        mainComponentInUrl = urlWithoutWWW.split(".")[0];
+      } else if (startsWithHttps) {
+        // if has 3 components, for example read.abc.com, no need www.
+        if (validUrl.split(".").length >= 3) {
+          // the main is the second one
+          mainComponentInUrl = validUrl.split(".")[1];
+        } else {
+          validUrl =
+            validUrl.slice(0, 8) + "www." + validUrl.slice(8, validUrl.length);
+          // remove https://www. from the url
+          const urlWithoutWWW = validUrl.slice(12, validUrl.length);
+          mainComponentInUrl = urlWithoutWWW.split(".")[0];
+        }
+      } else {
+        // if has 3 components, for example read.abc.com, no need www.
+        if (validUrl.split(".").length >= 3) {
+          mainComponentInUrl = validUrl.split(".")[1];
+        } else {
+          validUrl = `https://www.${validUrl}`;
+          mainComponentInUrl = validUrl.slice(7, validUrl.length).split(".")[0];
+        }
+      }
+    }
+  } else {
+    const urlNoSubstack = validUrl.slice(0, validUrl.indexOf("substack.com"));
+    // remove https:// if there is
+    const urlWithoutHttps = urlNoSubstack.startsWith("https://")
+      ? urlNoSubstack.slice(8, urlNoSubstack.length)
+      : urlNoSubstack;
+    mainComponentInUrl = urlWithoutHttps.split(".")[0];
+  }
+  
+  return { validUrl, mainComponentInUrl };
 };

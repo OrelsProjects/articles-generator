@@ -1,7 +1,42 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { Publication } from "../../../prisma/generated/articles";
-import { stripUrl } from "@/lib/utils/url";
+import { getUrlComponents, stripUrl } from "@/lib/utils/url";
 import { extractContent } from "@/app/api/user/analyze/_utils";
+
+interface BylineResponse {
+  publicationUsers: {
+    publication: PublicationDB;
+  }[];
+}
+
+interface PublicationDB {
+  id: number;
+  name: string;
+  subdomain: string;
+  custom_domain: string;
+  custom_domain_optional: boolean;
+  hero_text: string;
+  logo_url: string;
+  email_from_name: string | null;
+  copyright: string;
+  author_id: number;
+  created_at: string;
+  language: string;
+  explicit: boolean;
+}
+
+interface PublicationDataResponse {
+  newPosts: {
+    id: number;
+    publication_id: number;
+    title: string;
+    social_title: string;
+    search_engine_title: string;
+    search_engine_description: string;
+    slug: string;
+    publishedBylines: BylineResponse[];
+  }[];
+}
 
 export const getPublicationByUrl = async (
   url: string,
@@ -41,6 +76,14 @@ export const getPublicationByUrl = async (
         ],
       },
     });
+    if (publications.length === 0) {
+      const publicationId = await createPublication(url);
+      if (publicationId) {
+        publications = await prismaArticles.publication.findMany({
+          where: { id: publicationId },
+        });
+      }
+    }
   }
 
   return publications as Publication[];
@@ -137,3 +180,64 @@ export const getPublicationArticles = async (publicationId: string) => {
 
   return articles;
 };
+
+export async function createPublication(url: string): Promise<number | null> {
+  const { validUrl } = getUrlComponents(url);
+  const endpoint = `${validUrl}/api/v1/homepage_data`;
+  const response = await fetch(endpoint);
+  const data = (await response.json()) as PublicationDataResponse;
+  if (data.newPosts.length === 0) {
+    throw new Error("No new posts found for publication: " + validUrl);
+  }
+  const { image, title, description } = await extractContent(url);
+
+  let publication: PublicationDB | null = null;
+  for (const post of data.newPosts) {
+    if (publication) {
+      break;
+    }
+    post.publishedBylines.forEach(byline => {
+      if (publication) {
+        return;
+      }
+      byline.publicationUsers.forEach(user => {
+        if (publication) {
+          return;
+        }
+        const pub = user.publication;
+        if (pub.id === data.newPosts[0].publication_id) {
+          publication = pub;
+          return;
+        }
+      });
+    });
+  }
+
+  if (!publication) {
+    throw new Error("Publication not found for: " + validUrl);
+  }
+
+  const pub = publication as PublicationDB;
+
+  const userPublication: PublicationDB = {
+    id: pub.id,
+    name: pub.name,
+    subdomain: pub.subdomain,
+    custom_domain: pub.custom_domain,
+    logo_url: pub.logo_url || image,
+    author_id: pub.author_id,
+    created_at: pub.created_at,
+    language: "en",
+    custom_domain_optional: false,
+    hero_text: pub.hero_text || description,
+    email_from_name: pub.email_from_name || null,
+    copyright: pub.copyright || title || "",
+    explicit: pub.explicit || false,
+  };
+
+  await prismaArticles.publication.create({
+    data: userPublication,
+  });
+
+  return userPublication.id;
+}
