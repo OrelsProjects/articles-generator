@@ -268,7 +268,7 @@ export default function Pricing({
             fill
             className="absolute inset-0 object-contain block dark:hidden z-10"
           />
-          <div className="absolute inset-0 bg-foreground/50 dark:bg-background/50 backdrop-blur-sm z-20" />
+          <div className="absolute inset-0 bg-foreground/50 dark:bg-background/70 backdrop-blur-sm z-20" />
         </div>
       )} */}
     </motion.section>

@@ -90,7 +90,7 @@ export function PublicationOnboarding() {
         fill
         className="absolute inset-0 object-fill block dark:hidden z-10"
       />
-      <div className="absolute inset-0 bg-foreground/50 dark:bg-background/50 backdrop-blur-sm z-20" />
+      <div className="absolute inset-0 bg-foreground/70 dark:bg-background/50 backdrop-blur-sm z-20" />
       <Card className="w-full max-w-md z-30">
         <CardHeader>
           {/* <div className="w-full flex items-center justify-center"> */}
