@@ -43,10 +43,10 @@ export function PublicationOnboarding() {
   useEffect(() => {
     if (hasPublication) {
       if (user?.meta?.plan) {
-        // router.push("/home");
+        router.push("/home");
       } else if (plan && interval) {
         // goToCheckout(interval as "month" | "year", plan);
-        // setShowPaymentDialog(true);
+        setShowPaymentDialog(true);
       } else {
         router.push("/pricing?onboarding=true");
       }

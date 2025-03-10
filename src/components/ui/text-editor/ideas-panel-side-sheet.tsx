@@ -12,6 +12,7 @@ import { MotionButton } from "@/components/ui/motion-components";
 import { useSelector } from "react-redux";
 import { selectUi, setShowIdeasPanel } from "@/lib/features/ui/uiSlice";
 import { useAppDispatch } from "@/lib/hooks/redux";
+import { EventTracker } from "@/eventTracker";
 export interface IdeasSideSheetProps {
   publication: Publication | null;
   selectedIdea: Idea | null;
@@ -48,6 +49,7 @@ export const IdeasSideSheet = ({
   const didPressIdeas = features.ideasPress;
 
   const handleOpenIdeas = (open: boolean) => {
+    EventTracker.track("ideas_panel_open", { open });
     setFeatures({ ...features, ideasPress: true });
     setIsOpen(open);
   };

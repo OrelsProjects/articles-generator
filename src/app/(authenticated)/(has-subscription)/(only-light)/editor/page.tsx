@@ -4,7 +4,7 @@ import { IdeasPanel } from "@/components/ui/text-editor/ideas-panel";
 import TextEditor from "@/components/ui/text-editor/text-editor";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { Idea } from "@/types/idea";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
