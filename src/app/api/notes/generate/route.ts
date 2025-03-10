@@ -3,7 +3,6 @@ import { authOptions } from "@/auth/authOptions";
 import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
 import {
   generateNotesPrompt,
-  generateImproveNoteTextPrompt,
 } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
@@ -15,6 +14,9 @@ import { Note, NoteStatus } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
 import { canUseAI, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
+
+export const maxDuration = 120; // This function can run for a maximum of 2 minutes
+
 
 export async function POST(
   req: NextRequest,
