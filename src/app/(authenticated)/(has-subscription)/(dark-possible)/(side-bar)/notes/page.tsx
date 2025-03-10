@@ -9,14 +9,14 @@ import { Plus, RefreshCw } from "lucide-react";
 import { toast } from "react-toastify";
 
 export default function NotesPage() {
-  const { fetchNotes, userNotes, loadingNotes, createDraftNote } = useNotes();
+  const { fetchNotes, userNotes, loadingNotes, generateNewNotes } = useNotes();
   const [loadingCreateNote, setLoadingCreateNote] = useState(false);
 
   const handleCreateNote = async () => {
     if (loadingCreateNote) return;
     setLoadingCreateNote(true);
     try {
-      await createDraftNote();
+      await generateNewNotes();
     } catch (error) {
       toast.error("Failed to create note");
     } finally {
@@ -67,7 +67,7 @@ export default function NotesPage() {
             ) : (
               <Plus size={16} />
             )}
-            New Note
+            New Note (3 credits)
           </Button>
         </div>
 
