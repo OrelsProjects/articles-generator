@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { getStripeInstance } from "@/lib/stripe";
-import prisma from "@/app/api/_db/db";
 import loggerServer from "@/loggerServer";
-import { sendMail } from "@/lib/mail/mail";
-import { generateSubscriptionTrialEndingEmail } from "@/lib/mail/templates";
-import { Plan } from "@prisma/client";
-import { creditsPerPlan } from "@/lib/plans-consts";
-import { handleSubscriptionCreated, handleSubscriptionDeleted, handleSubscriptionPaused, handleSubscriptionResumed, handleSubscriptionTrialEnding, handleSubscriptionUpdated } from "@/lib/utils/webhook";
+import {
+  handleSubscriptionCreated,
+  handleSubscriptionDeleted,
+  handleSubscriptionPaused,
+  handleSubscriptionResumed,
+  handleSubscriptionTrialEnding,
+  handleSubscriptionUpdated,
+} from "@/lib/utils/webhook";
 
 const relevantEvents = new Set([
   "customer.subscription.updated",
@@ -16,10 +18,10 @@ const relevantEvents = new Set([
   "customer.subscription.paused",
   "customer.subscription.resumed",
   "customer.subscription.trial_will_end",
-  
 ]);
 
 export async function POST(req: NextRequest) {
+  console.log("Stripe webhook received");
   const stripe = getStripeInstance();
   const sig = headers().get("stripe-signature") || "";
   const rawBody = await req.text();
@@ -35,7 +37,7 @@ export async function POST(req: NextRequest) {
     loggerServer.error("⚠️ Webhook signature verification failed.", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
-
+  console.log("Stripe webhook event:", event);
   if (!relevantEvents.has(event.type)) {
     loggerServer.info("Ignoring irrelevant event type:", { type: event.type });
     return NextResponse.json({ received: true }, { status: 200 });
@@ -67,6 +69,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error: any) {
     loggerServer.error("Webhook processing failed", error);
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
