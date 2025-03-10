@@ -147,7 +147,7 @@ export default function GenerateNotesSidebar() {
     try {
       await generateNewNotes();
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || "Something went wrong.. Try again.");
     } finally {
       setLoadingGenerateNewIdea(false);
     }

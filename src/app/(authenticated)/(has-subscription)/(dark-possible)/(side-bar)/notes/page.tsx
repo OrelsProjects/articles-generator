@@ -19,6 +19,10 @@ export default function NotesPage() {
   } = useNotes();
   const [loadingCreateNote, setLoadingCreateNote] = useState(false);
 
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
   const handleCreateNote = async () => {
     if (loadingCreateNote) return;
     setLoadingCreateNote(true);
