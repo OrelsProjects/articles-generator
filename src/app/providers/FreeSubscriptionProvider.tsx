@@ -1,12 +1,8 @@
 "use client";
 
-import {
-  selectAuth,
-  updateUserPlan as updateUserPlanAction,
-} from "@/lib/features/auth/authSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
+import { selectAuth } from "@/lib/features/auth/authSlice";
+import { useAppSelector } from "@/lib/hooks/redux";
 import { Logger } from "@/logger";
-import { Plan } from "@prisma/client";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
