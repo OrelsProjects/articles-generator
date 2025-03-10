@@ -1,3 +1,4 @@
+import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,5 +11,5 @@ export default function PricingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>;
 }

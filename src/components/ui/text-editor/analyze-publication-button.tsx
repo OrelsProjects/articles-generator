@@ -11,8 +11,8 @@ const loadingStatesConst = [
   { text: "Validating publication in our databases..." },
   { text: "Checking Substack availability..." },
   { text: "Extracting publications...", delay: 20000 },
-  { text: "Analyzing writing style...", delay: 10000 },
-  { text: "Generating content insights...", delay: 4000 },
+  { text: "Analyzing writing style...", delay: 20000 },
+  { text: "Generating content insights...", delay: 1000 },
   { text: "Setting up your preferences..." },
   { text: "Almost done..." },
 ];

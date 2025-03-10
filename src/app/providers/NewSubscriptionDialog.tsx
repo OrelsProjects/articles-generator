@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
-export default function NewTokensProvider() {
+  export default function NewSubscriptionDialog() {
   const router = useCustomRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

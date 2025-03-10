@@ -1,21 +1,27 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoteComponent from "@/components/ui/note-component";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function NotesPage() {
   const { fetchNotes, userNotes, loadingNotes, createDraftNote } = useNotes();
-
-  useEffect(() => {
-    fetchNotes();
-  }, []);
+  const [loadingCreateNote, setLoadingCreateNote] = useState(false);
 
   const handleCreateNote = async () => {
-    await createDraftNote();
+    if (loadingCreateNote) return;
+    setLoadingCreateNote(true);
+    try {
+      await createDraftNote();
+    } catch (error) {
+      toast.error("Failed to create note");
+    } finally {
+      setLoadingCreateNote(false);
+    }
   };
 
   if (loadingNotes && userNotes.length === 0) {
@@ -25,9 +31,14 @@ export default function NotesPage() {
           <h1 className="text-3xl font-bold">My Notes</h1>
           <Button
             onClick={handleCreateNote}
+            disabled={loadingCreateNote}
             className="flex items-center gap-2"
           >
-            <Plus size={16} />
+            {loadingCreateNote ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus size={16} />
+            )}
             New Note
           </Button>
         </div>
@@ -46,10 +57,16 @@ export default function NotesPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">My Notes</h1>
           <Button
+            variant="neumorphic-primary"
             onClick={handleCreateNote}
+            disabled={loadingCreateNote}
             className="flex items-center gap-2"
           >
-            <Plus size={16} />
+            {loadingCreateNote ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus size={16} />
+            )}
             New Note
           </Button>
         </div>
@@ -59,7 +76,7 @@ export default function NotesPage() {
             <h3 className="text-2xl font-medium mb-4 text-foreground">
               No notes found
             </h3>
-          <p className="text-muted-foreground mb-8">
+            <p className="text-muted-foreground mb-8">
               Create your first note to get started!
             </p>
             <Button onClick={handleCreateNote}>Create Note</Button>

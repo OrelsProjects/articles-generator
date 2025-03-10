@@ -1,7 +1,7 @@
 "use client";
 
 import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
-import NewSubscriptionProvider from "@/app/providers/NewSubscriptionProvider";
+import NewSubscriptionDialog from "@/app/providers/NewSubscriptionDialog";
 import SubscriptionProvider from "@/app/providers/SubscriptionProvider";
 
 export default function ContentLayout({
@@ -10,9 +10,11 @@ export default function ContentLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SubscriptionProvider>
-      <NewSubscriptionProvider />
-      <FreeSubscriptionProvider>{children}</FreeSubscriptionProvider>
-    </SubscriptionProvider>
+    <FreeSubscriptionProvider>
+      <SubscriptionProvider>
+        <NewSubscriptionDialog />
+        {children}
+      </SubscriptionProvider>
+    </FreeSubscriptionProvider>
   );
 }

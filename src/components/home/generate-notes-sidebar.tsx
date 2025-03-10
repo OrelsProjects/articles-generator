@@ -50,7 +50,7 @@ import { ToastStepper } from "@/components/ui/toast-stepper";
 const ideaLoadingStates = [
   { text: "Finding relevant notes..." },
   { text: "Gathering inspiration from top notes..." },
-  { text: "Crafting unique notes..." },
+  { text: "Putting together unique ideas..." },
   { text: "Finalizing the best notes..." },
 ];
 
@@ -418,7 +418,7 @@ export default function GenerateNotesSidebar() {
       <ToastStepper
         loadingStates={ideaLoadingStates}
         loading={loadingGenerateNewIdea}
-        duration={7000}
+        duration={5000}
         loop={false}
         position="bottom-left"
       />

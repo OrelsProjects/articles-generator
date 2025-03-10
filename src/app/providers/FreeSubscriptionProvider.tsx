@@ -10,32 +10,53 @@ import { Plan } from "@prisma/client";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { toast } from "react-toastify";
 
 export default function FreeSubscriptionProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const dispatch = useAppDispatch();
+  const searchParams = useSearchParams();
   const { user } = useAppSelector(selectAuth);
   const [loading, setLoading] = useState(false);
 
-  const updateUserPlan = async () => {
-    const code = localStorage.getItem("code");
+  let code = searchParams.get("code");
+
+  const handleFreeSubscription = async () => {
+    debugger;
+    code = code || localStorage.getItem("code");
     if (code) {
       try {
         setLoading(true);
-        const response = await axios.post<{ plan: Plan }>(
-          "/api/user/free-sub",
-          { code },
-        );
-        Logger.info("User plan updated:", response.data);
-        localStorage.removeItem("code");
-        if (user) {
-          dispatch(updateUserPlanAction(response.data.plan));
+        const response = await axios.post<{
+          success: boolean;
+          sessionId: string;
+          url: string;
+        }>("/api/user/free-sub", { code });
+
+        Logger.info("Free subscription checkout created:", response.data);
+
+        // If we have a checkout URL, redirect the user to complete the process
+        if (response.data.url) {
+          // Remove the code from localStorage before redirecting
+          localStorage.removeItem("code");
+          // Redirect to the Stripe Checkout page using window.location for a full page navigation
+          window.location.href = response.data.url;
+          return;
         }
+
+        // If no URL is returned (shouldn't happen with new implementation)
+        localStorage.removeItem("code");
       } catch (error: any) {
-        Logger.error("Error updating user plan:", error);
+        debugger;
+        if (error.response.status === 400) {
+          toast.error("Invalid code - " + error.response.data.error);
+        }
+        Logger.error("Error creating free subscription:", error);
+        // Keep the code in localStorage if there was an error
+        // so we can try again later
       } finally {
         setLoading(false);
       }
@@ -43,8 +64,10 @@ export default function FreeSubscriptionProvider({
   };
 
   useEffect(() => {
-    updateUserPlan();
-  }, []);
+    if (user || code) {
+      handleFreeSubscription();
+    }
+  }, [user, code]);
 
   if (loading) {
     return (
