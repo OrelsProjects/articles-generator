@@ -10,7 +10,7 @@ import { Plan } from "@prisma/client";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 
 export default function FreeSubscriptionProvider({
@@ -19,6 +19,7 @@ export default function FreeSubscriptionProvider({
   children: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const { user } = useAppSelector(selectAuth);
   const [loading, setLoading] = useState(false);
 
@@ -51,9 +52,10 @@ export default function FreeSubscriptionProvider({
 
         // If no URL is returned (shouldn't happen with new implementation)
       } catch (error: any) {
-        debugger;
         if (error.response.status === 400) {
-          toast.error("Invalid code - " + error.response.data.error);
+          if (pathname === "/login") {
+            toast.error("Invalid code - " + error.response.data.error);
+          }
         }
         Logger.error("Error creating free subscription:", error);
         // Keep the code in localStorage if there was an error
