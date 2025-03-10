@@ -27,6 +27,7 @@ import { Logger } from "@/logger";
 import { useUi } from "@/lib/hooks/useUi";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
 import { useCredits } from "@/lib/hooks/useCredits";
+import { EventTracker } from "@/eventTracker";
 
 export const useNotes = () => {
   const { updateShowGenerateNotesSidebar } = useUi();
@@ -56,6 +57,9 @@ export const useNotes = () => {
   const fetchInspirationNotes = async (loadMore = false) => {
     if (loadingInspirationRef.current) return;
     try {
+      if (inspirationNotes.length > 0) {
+        EventTracker.track("notes_inspiration_load_more");
+      }
       loadingInspirationRef.current = true;
       dispatch(setLoadingInspiration(true));
 
@@ -64,7 +68,6 @@ export const useNotes = () => {
         cursor: loadMore ? inspirationNotesCursor : null,
       });
       dispatch(setError(null));
-      debugger;
       dispatch(
         addInspirationNotes({
           items: response.data.items,
@@ -89,6 +92,9 @@ export const useNotes = () => {
   const fetchNotes = async (limit?: number, loadMore = false) => {
     if (loadingNotesRef.current) return;
     try {
+      if (userNotes.length > 0) {
+        EventTracker.track("notes_user_load_more");
+      }
       loadingNotesRef.current = true;
       dispatch(setLoadingNotes(true));
       const queryParams = new URLSearchParams();
@@ -128,6 +134,7 @@ export const useNotes = () => {
       note: Note | NoteDraft | string | null,
       options?: { forceShowEditor?: boolean },
     ) => {
+      EventTracker.track("notes_select_note");
       let noteToUpdate: NoteDraft | Note | null = null;
       if (typeof note === "string") {
         noteToUpdate = userNotes.find(userNote => userNote.id === note) || null;
@@ -148,6 +155,7 @@ export const useNotes = () => {
 
   const generateNewNotes = useCallback(async () => {
     try {
+      EventTracker.track("notes_generate_new_notes");
       const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
         "/api/notes/generate",
         {
@@ -189,6 +197,7 @@ export const useNotes = () => {
 
   const updateNoteStatus = useCallback(
     async (noteId: string, status: NoteStatus) => {
+      EventTracker.track("notes_update_note_status_" + status);
       const previousStatus = userNotes.find(note => note.id === noteId)?.status;
       if (!previousStatus) {
         Logger.error("Note not found");
@@ -221,6 +230,7 @@ export const useNotes = () => {
       feedback: NoteFeedback,
       feedbackComment?: string,
     ) => {
+      EventTracker.track("notes_update_note_feedback");
       let newFeedback: NoteFeedback | undefined = feedback;
       const note = userNotes.find(note => note.id === noteId);
       if (!note) return;
@@ -250,9 +260,9 @@ export const useNotes = () => {
   );
 
   const editNoteBody = async (noteId: string | null, body: string) => {
+    EventTracker.track("notes_edit_note_body");
     setLoadingEditNote(true);
     try {
-      debugger;
       if (!noteId) {
         await createDraftNote({ body });
         return;
@@ -271,6 +281,7 @@ export const useNotes = () => {
   const createDraftNote = async (
     draft?: Partial<NoteDraft>,
   ): Promise<string | undefined> => {
+    EventTracker.track("notes_create_draft_note");
     if (loadingCreateNoteDraftRef.current) return;
     loadingCreateNoteDraftRef.current = true;
     try {

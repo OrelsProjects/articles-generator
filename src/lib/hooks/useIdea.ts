@@ -7,7 +7,7 @@ import {
   addIdeas as addIdeasAction,
 } from "@/lib/features/publications/publicationSlice";
 import axios from "axios";
-import { AIUsageType, IdeaStatus } from "@prisma/client";
+import { IdeaStatus } from "@prisma/client";
 import { Idea } from "@/types/idea";
 import { ImprovementType } from "@/lib/prompts";
 import { Logger } from "@/logger";
@@ -15,6 +15,7 @@ import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { decrementUsage } from "@/lib/features/settings/settingsSlice";
 import { setShowIdeasPanel } from "@/lib/features/ui/uiSlice";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
+import { EventTracker } from "@/eventTracker";
 
 export const useIdea = () => {
   const { ideas, selectedIdea } = useAppSelector(state => state.publications);
@@ -28,6 +29,7 @@ export const useIdea = () => {
     ideaId: string,
     status: IdeaStatus | "favorite",
   ) => {
+    EventTracker.track("idea_update_status_" + status);
     let newStatus = status;
     let didReplaceSelectedIdea = false;
     const idea = ideas.find(idea => idea.id === ideaId);
@@ -77,6 +79,7 @@ export const useIdea = () => {
     title: string,
     subtitle: string,
   ) => {
+    EventTracker.track("idea_update_idea");
     const idea = ideas.find(idea => idea.id === ideaId);
     if (!idea) {
       throw new Error("Idea not found");
@@ -105,6 +108,7 @@ export const useIdea = () => {
       shouldSearch: false,
     },
   ): Promise<Idea[]> => {
+    EventTracker.track("idea_generate_ideas");
     try {
       const res = await axios.get<AIUsageResponse<Idea[]>>(
         `api/post/generate/ideas?topic=${options.topic}&ideasCount=${options.ideasCount || 3}&shouldSearch=${options.shouldSearch}`,
@@ -142,6 +146,9 @@ export const useIdea = () => {
     textTo: number,
     ideaId: string,
   ): Promise<{ text: string; textFrom: number; textTo: number } | null> => {
+    EventTracker.track("idea_improve_text_" + type, {
+      length: text.length,
+    });
     const res = await axios.post<AIUsageResponse<string>>("/api/post/improve", {
       text,
       type,
@@ -170,6 +177,11 @@ export const useIdea = () => {
     ideaId: string,
     value: string,
   ): Promise<{ title: string; subtitle: string }> => {
+    EventTracker.track("idea_improve_title_" + menuType, {
+      improveType,
+      ideaId,
+      value,
+    });
     const res = await axios.post<
       AIUsageResponse<{ title: string; subtitle: string }>
     >("/api/post/improve/title", {
@@ -189,6 +201,7 @@ export const useIdea = () => {
   };
 
   const createNewIdea = async (options?: { showIdeasAfterCreate: boolean }) => {
+    EventTracker.track("idea_create_new_idea");
     try {
       const res = await axios.post("/api/idea");
       addIdeas([res.data]);
