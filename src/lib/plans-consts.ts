@@ -9,8 +9,8 @@ export const INFINITY = 999999;
 // Credits allocated per plan per billing period
 export const creditsPerPlan: PlanCredits = {
   standard: 50,
-  premium: 250,
-  executive: 1000,
+  premium: 100,
+  executive: 250,
 };
 
 // Cost in credits for each AI operation
