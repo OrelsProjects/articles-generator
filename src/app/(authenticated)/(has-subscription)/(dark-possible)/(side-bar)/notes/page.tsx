@@ -79,7 +79,9 @@ export default function NotesPage() {
             <p className="text-muted-foreground mb-8">
               Create your first note to get started!
             </p>
-            <Button onClick={handleCreateNote}>Create Note</Button>
+            <Button variant="neumorphic-primary" onClick={handleCreateNote}>
+              Create Note
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
