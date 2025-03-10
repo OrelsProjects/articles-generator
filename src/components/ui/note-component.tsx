@@ -324,7 +324,7 @@ export default function NoteComponent({ note }: NoteProps) {
       console.log("Feedback text:", feedbackText);
     }
 
-    toast.info("Thank you. We'll adjust future notes accordingly.");
+    toast.info("We'll adjust future notes accordingly.");
     setLoadingFeedback(null);
     setIsDislikePopoverOpen(false);
   };
