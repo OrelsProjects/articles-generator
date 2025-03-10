@@ -11,16 +11,10 @@ import { IdeasBeingGeneratedError } from "@/types/errors/IdeasBeingGeneratedErro
 import { MaxIdeasPerDayError } from "@/types/errors/MaxIdeasPerDayError";
 import {
   AIUsageType,
-  Idea,
   IdeaStatus,
   Plan,
   PublicationMetadata,
 } from "@prisma/client";
-import {
-  maxIdeasPerPlan as maxIdeasByPlan,
-  maxTextEnhancmentsPerPlan,
-  maxTitleAndSubtitleRefinementsPerPlan,
-} from "@/lib/plans-consts";
 import { MaxRefinementsPerDayError } from "@/types/errors/MaxRefinementsPerDayError";
 import { MaxEnhancementsPerDayError } from "@/types/errors/MaxEnhancementsPerDayError";
 import loggerServer from "@/loggerServer";
@@ -135,6 +129,15 @@ export async function generateIdeas(
         const ideasResponse = await parseJson<IdeasLLMResponse>(ideasString);
         ideas = ideasResponse.ideas;
       },
+      (error: string) => {
+        loggerServer.error(
+          "Error generating ideas for prompt: " + JSON.stringify(messages),
+          {
+            error,
+          },
+        );
+        throw new Error("Error generating ideas");
+      },
       {
         retries: 2,
         delayTime: 0,
@@ -228,80 +231,6 @@ export async function setUserGeneratingIdeas(
       isGeneratingIdeas,
     },
   });
-}
-
-export async function useAIItem(
-  userId: string,
-  type: AIUsageType,
-  userPlan?: Plan,
-) {
-  let plan = userPlan;
-  if (!plan) {
-    const subscription = await prisma.subscription.findFirst({
-      where: {
-        userId,
-      },
-      select: {
-        plan: true,
-      },
-    });
-
-    if (!subscription?.plan) {
-      throw new GenerateIdeasNoPlanError();
-    }
-    plan = subscription.plan;
-  }
-
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-
-  const usages = await prisma.aiUsage.findMany({
-    where: {
-      userId,
-      createdAt: {
-        gte: startOfDay,
-      },
-      type,
-    },
-  });
-
-  switch (type) {
-    case AIUsageType.textEnhancement:
-      const maxEnhancements = maxTextEnhancmentsPerPlan[plan];
-      if (usages.length >= maxEnhancements) {
-        throw new MaxEnhancementsPerDayError(
-          `You have reached the maximum number of text enhancements per day (${maxEnhancements})`,
-        );
-      }
-      break;
-    case AIUsageType.titleOrSubtitleRefinement:
-      const maxRefinements = maxTitleAndSubtitleRefinementsPerPlan[plan];
-      if (usages.length >= maxRefinements) {
-        throw new MaxRefinementsPerDayError(
-          `You have reached the maximum number of title or subtitle refinements per day (${maxRefinements})`,
-        );
-      }
-      break;
-    case AIUsageType.ideaGeneration:
-      const maxIdeas = maxIdeasByPlan[plan];
-      if (usages.length >= maxIdeas) {
-        throw new MaxIdeasPerDayError(
-          `You have reached the maximum number of ideas per day (${maxIdeas})`,
-        );
-      }
-      break;
-  }
-
-  const usage = await prisma.aiUsage.create({
-    data: {
-      userId,
-      type,
-      usageName: type,
-      plan,
-    },
-  });
-
-  return usage.id;
 }
 
 export async function handleUsageError(

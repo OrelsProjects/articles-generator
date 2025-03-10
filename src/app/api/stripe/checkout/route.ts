@@ -4,6 +4,13 @@ import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { generateSessionId } from "@/lib/stripe";
+import { z } from "zod";
+
+const checkoutSchema = z.object({
+  plan: z.enum(["standard", "premium", "executive"]),
+  interval: z.enum(["month", "year"]),
+});
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -11,11 +18,43 @@ export async function POST(req: NextRequest) {
   }
   try {
     const nextUrl = req.nextUrl;
-    const { priceId, productId } = await req.json();
+    const { plan, interval } = checkoutSchema.parse(await req.json());
+
+    const productId =
+      plan === "standard"
+        ? process.env.STRIPE_PRICING_ID_STANDARD
+        : plan === "premium"
+          ? process.env.STRIPE_PRICING_ID_PREMIUM
+          : process.env.STRIPE_PRICING_ID_EXECUTIVE;
+
+    if (!productId) {
+      loggerServer.error("Invalid pricing plan", { plan });
+      return NextResponse.json({ error: "Invalid pricing plan" }, { status: 400 });
+    }
+
+    const stripe = getStripeInstance();
+
+    const product = await stripe.products.retrieve(productId);
+    if (!product) {
+      loggerServer.error("Product not found", { productId });
+      return NextResponse.json({ error: "Product not found" }, { status: 400 });
+    }
+
+    const prices = await stripe.prices.list({
+      product: productId,
+    });
+
+    const price = prices.data.find(
+      price => price.recurring?.interval === interval,
+    );
+    if (!price) {
+      loggerServer.error("Price not found", { productId, interval });
+      return NextResponse.json({ error: "Price not found" }, { status: 400 });
+    }
 
     const sessionId = await generateSessionId({
-      priceId,
-      productId,
+      priceId: price.id,
+      productId: productId,
       urlOrigin: nextUrl.origin,
       userId: session.user.id,
       email: session.user.email || null,

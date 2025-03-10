@@ -1,11 +1,18 @@
-import { AIUsageType } from "@prisma/client";
-
-export type Usage = {
+export interface Usage {
   count: number;
   max: number;
   didExceed: boolean;
-};
+  creditCost?: number;
+}
 
-export type AllUsages = {
-  [key in AIUsageType]: Usage;
-};
+export interface CreditInfo {
+  remaining: number;
+  total: number;
+  used: number;
+}
+
+export interface AllUsages {
+  credits: CreditInfo;
+}
+
+export type CreditType = "article" | "regular";

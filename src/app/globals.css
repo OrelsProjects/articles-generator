@@ -69,20 +69,20 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 180, 1%, 21%;
+    --foreground: 20 14.3% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 20 14.3% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
     --primary: 24.6 95% 53.1%;
     --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 270 100% 70%;
-    --secondary-foreground: 255 100% 97.4%;
+    --secondary: 60 4.8% 95.9%;
+    --secondary-foreground: 24 9.8% 10%;
     --muted: 60 4.8% 95.9%;
-    --muted-foreground: 180 0% 52%;
+    --muted-foreground: 232 5.3% 40.7%;
     --accent: 60 4.8% 95.9%;
     --accent-foreground: 24 9.8% 10%;
-    --destructive: 0 100% 71%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 60 9.1% 97.8%;
     --border: 20 5.9% 90%;
     --input: 20 5.9% 90%;
@@ -94,26 +94,26 @@
     --chart-4: 60 4.8% 105.9%;
     --chart-5: 24.6 95% 63.1%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 24.6 95% 53.1%;
-    --sidebar-primary-foreground: 60 9.1% 97.8%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 20 14% 37%;
+    --sidebar-primary: 25 95% 50%;
+    --sidebar-primary-foreground: 60 9% 0%;
+    --sidebar-accent: 60 5% 75%;
+    --sidebar-accent-foreground: 24 9.8% 10%;
+    --sidebar-border: 20 6% 87%;
+    --sidebar-ring: 25 95% 50%;
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
+    --background: 210 4% 9%;
     --foreground: 60 9.1% 97.8%;
-    --card: 20 14.3% 4.1%;
+    --card: 210 4% 11%;
     --card-foreground: 60 9.1% 97.8%;
     --popover: 20 14.3% 4.1%;
     --popover-foreground: 60 9.1% 97.8%;
     --primary: 24.6 95% 53.1%;
     --primary-foreground: 26 83.3% 14.1%;
-    --secondary: 270 90% 55%;
+    --secondary: 12 6.5% 15.1%;
     --secondary-foreground: 60 9.1% 97.8%;
     --muted: 12 6.5% 15.1%;
     --muted-foreground: 24 5.4% 63.9%;
@@ -131,18 +131,14 @@
     --chart-4: 12 6.5% 25.1%;
     --chart-5: 47.9 95.8% 63.1%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 24.6 95% 53.1%;
-    --sidebar-primary-foreground: 60 9.1% 97.8%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  html {
-    font-family: "SF Pro Display", system-ui, sans-serif;
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 60 9% 50%;
+    --sidebar-primary: 25 95% 25%;
+    --sidebar-primary-foreground: 26 83% 100%;
+    --sidebar-accent: 12 7% 7%;
+    --sidebar-accent-foreground: 60 9.1% 97.8%;
+    --sidebar-border: 12 7% 7%;
+    --sidebar-ring: 36 92% 25%;
   }
 }
 
@@ -302,71 +298,106 @@
   content: counter(level4) ".";
 }
 
-/* 
-    switch (node.attrs.level) {
-      case 1:
-        return [
-          "h1",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[2em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 2:
-        return [
-          "h2",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[1.625em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 3:
-        return [
-          "h3",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[1.375em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 4:
-        return [
-          "h4",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[1.125em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 5:
-        return [
-          "h5",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[0.83em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      case 6:
-        return [
-          "h6",
-          {
-            ...HTMLAttributes,
-            class:
-              "text-[0.67em] leading-[1.16em] mt-[1em] mb-[0.625em] font-bold",
-          },
-          0,
-        ];
-      default:
-        return ["h" + node.attrs.level, HTMLAttributes, 0];
-    } */
+.note-component-content li {
+  position: relative;
+  padding-left: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.5;
+}
+
+/* Apply dots only to unordered lists */
+.note-component-content ul li::before {
+  content: "";
+  position: absolute;
+  left: 0.5em;
+  top: 0.75em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.7;
+}
+
+/* Nested dots for unordered lists */
+.note-component-content ul ul li::before {
+  left: 0.25em;
+  width: 5px;
+  height: 5px;
+  opacity: 0.5;
+}
+
+.note-component-content ul ul ul li::before {
+  left: 0.25em;
+  width: 4px;
+  height: 4px;
+  opacity: 0.4;
+}
+
+/* Ensure proper list indentation */
+.note-component-content ul {
+  padding-left: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+/* Ordered list styling */
+.note-component-content ol {
+  counter-reset: level1;
+  list-style: none;
+  padding-left: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+.note-component-content ol > li {
+  counter-increment: level1;
+}
+
+.note-component-content ol > li::before {
+  content: counter(level1) ".";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 500;
+}
+
+/* Second level: a, b, c... */
+.note-component-content ol ol {
+  counter-reset: level2;
+  padding-left: 0.75em;
+}
+
+.note-component-content ol ol > li {
+  counter-increment: level2;
+}
+
+.note-component-content ol ol > li::before {
+  content: counter(level2, lower-alpha) ".";
+}
+
+/* Third level: i, ii, iii... */
+.note-component-content ol ol ol {
+  counter-reset: level3;
+}
+
+.note-component-content ol ol ol > li {
+  counter-increment: level3;
+}
+
+.note-component-content ol ol ol > li::before {
+  content: counter(level3, lower-roman) ".";
+}
+
+/* Fourth level: back to numbers */
+.note-component-content ol ol ol ol {
+  counter-reset: level4;
+}
+
+.note-component-content ol ol ol ol > li {
+  counter-increment: level4;
+}
+
+.note-component-content ol ol ol ol > li::before {
+  content: counter(level4) ".";
+}
 
 .text-editor-h1 {
   font-size: 2em;
@@ -455,4 +486,37 @@ p:empty::after {
 
 .ProseMirror-selectednode {
   @apply flex justify-center;
+}
+
+/* <p> tags in note-component-content should have padding top 4px and bottom 4px */
+.note-component-content p {
+  @apply pt-1.5 pb-1.5;
+}
+
+.note-component-content ol p {
+  @apply !pt-0 !pb-0;
+}
+
+.landing-section-container {
+  @apply w-screen flex justify-center items-center py-12 md:py-24;
+}
+
+.landing-section-container > div {
+  @apply w-full max-w-7xl;
+}
+
+.landing-section-container h2 {
+  @apply mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl text-center;
+}
+
+.landing-section-container h3 {
+  @apply text-base font-medium leading-7 text-muted-foreground uppercase text-center;
+}
+
+.landing-section-top {
+  @apply mb-16;
+}
+
+.landing-section-top p {
+  @apply mt-6 text-base leading-6 text-muted-foreground mx-auto max-w-2xl text-center;
 }

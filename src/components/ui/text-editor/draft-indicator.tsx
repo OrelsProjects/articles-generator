@@ -1,17 +1,20 @@
 import type React from "react";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 export interface DraftIndicatorProps {
   saving: boolean;
   error: boolean;
   hasIdea: boolean;
+  className?: string;
 }
 
 const DraftIndicator: React.FC<DraftIndicatorProps> = ({
   saving,
   error,
   hasIdea,
+  className,
 }) => {
   const [showSaved, setShowSaved] = useState(false);
 
@@ -25,7 +28,12 @@ const DraftIndicator: React.FC<DraftIndicatorProps> = ({
     }
   }, [saving, error, hasIdea]);
 
-  const state = useMemo((): "no-idea" | "saving" | "error" | "saved" | "draft" => {
+  const state = useMemo(():
+    | "no-idea"
+    | "saving"
+    | "error"
+    | "saved"
+    | "draft" => {
     if (!hasIdea) return "no-idea";
     if (saving) return "saving";
     if (error) return "error";
@@ -34,7 +42,7 @@ const DraftIndicator: React.FC<DraftIndicatorProps> = ({
   }, [saving, error, hasIdea, showSaved]);
 
   return (
-    <div className="absolute top-4 left-8 flex items-center gap-2 text-sm text-muted-foreground">
+    <div className={cn("flex items-center gap-2 text-sm text-muted-foreground", className)}>
       {state === "no-idea" ? (
         <>
           <AlertCircle className="w-5 h-5 text-yellow-500" />
@@ -49,8 +57,8 @@ const DraftIndicator: React.FC<DraftIndicatorProps> = ({
         </>
       ) : state === "saving" ? (
         <>
-          <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
-          <span className="text-blue-500">Saving draft...</span>
+          <Loader2 className="w-4 h-4 text-foreground animate-spin" />
+          <span className="text-foreground">Saving draft...</span>
         </>
       ) : state === "saved" ? (
         <>
@@ -59,8 +67,9 @@ const DraftIndicator: React.FC<DraftIndicatorProps> = ({
         </>
       ) : (
         <>
-          <CheckCircle className="w-5 h-5 text-blue-500" />
-          <span className="text-blue-500">Draft</span>
+          {/* green circle */}
+          <div className="w-2 h-2 bg-green-500 rounded-full" />
+          <span className="text-foreground">Draft</span>
         </>
       )}
     </div>

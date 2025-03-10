@@ -32,8 +32,8 @@ import MainActionButton from "@/components/ui/main-action-button";
 import SendToDraftButton from "@/components/ui/send-to-draft-button";
 import { Editor } from "@tiptap/react";
 import { Level } from "@tiptap/extension-heading";
-import { selectUi, setShowIdeasPanel } from "@/lib/features/ui/uiSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
+import { selectUi } from "@/lib/features/ui/uiSlice";
+import {  useAppSelector } from "@/lib/hooks/redux";
 import { Idea } from "@/types/idea";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { useEffect, useState } from "react";
@@ -43,8 +43,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Logger } from "@/logger";
 import { getSelectedContentAsMarkdown } from "@/lib/utils/text-editor";
 
-const MotionCheck = motion(Check);
-const MotionCopy = motion(Copy);
+const MotionCheck = motion.create(Check);
+const MotionCopy = motion.create(Copy);
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -59,7 +59,6 @@ export const MenuBar = ({
   selectedIdea,
   onCopy,
 }: MenuBarProps) => {
-  const dispatch = useAppDispatch();
   const { state } = useAppSelector(selectUi);
   const { createNewIdea } = useIdea();
   const [didCopy, setDidCopy] = useState(false);

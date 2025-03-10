@@ -147,6 +147,59 @@ model Publication {
     @@map("publications")
 }
 
+/**
+ * id
+ * comment_id
+ * type
+ * user_id
+ * body
+ * body_json
+ * date
+ * handle
+ * name
+ * photo_url
+ * reaction_count
+ * restacks
+ * restacked
+ * timestamp
+ * context_type
+ * entity_key
+ * note_is_restacked
+ */
+model NotesComments {
+    id              String   @id
+    commentId       String   @map("comment_id")
+    type            String   @map("type")
+    authorId        Int      @map("user_id")
+    body            String   @map("body")
+    bodyJson        Json     @map("body_json")
+    date            DateTime @map("date")
+    handle          String   @map("handle")
+    name            String   @map("name")
+    photoUrl        String   @map("photo_url")
+    reactionCount   Int      @map("reaction_count")
+    reactions       Json?    @map("reactions")
+    commentsCount   Int?      @map("children_count")
+    restacks        Int      @map("restacks")
+    restacked       Boolean  @map("restacked")
+    timestamp       DateTime @map("timestamp")
+    contextType     String   @map("context_type")
+    entityKey       String   @map("entity_key")
+    noteIsRestacked Boolean  @map("note_is_restacked")
+
+    @@map("notes_comments")
+}
+
+model NotesAttachments {
+    id           String @id
+    noteId       Int    @map("comment_id")
+    attachmentId String? @map("attachment_id")
+    type         String? @map("type")
+    imageUrl     String? @map("image_url")
+
+    @@map("comment_attachments")
+}
+
 model knex_migrations_lock {
     index     Int  @id @default(autoincrement())
     is_locked Int?

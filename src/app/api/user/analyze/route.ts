@@ -6,10 +6,14 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { runPrompt } from "@/lib/open-router";
 import { Publication } from "@/types/publication";
-import { getPublicationByUrl } from "@/lib/dal/publication";
+import {
+  getAuthorId,
+  getPublicationArticles,
+  getPublicationByUrl,
+} from "@/lib/dal/publication";
 import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
-import { Article } from "@/types/article";
+import { Article, ArticleWithBody } from "@/types/article";
 import loggerServer from "@/loggerServer";
 import { setPublications } from "@/lib/utils/publication";
 import { parseJson } from "@/lib/utils/json";
@@ -61,7 +65,7 @@ export async function POST(req: NextRequest) {
       { publicationId: Number(userPublication.id) },
       {
         limit: 150,
-        freeOnly: true,
+        freeOnly: false,
       },
     );
     console.timeEnd("Getting user articles with body");
@@ -69,7 +73,7 @@ export async function POST(req: NextRequest) {
     // Check if the articles have a bodyText
     // If less than 50%, get their body as well.
     let articlesWithBody = userArticles.filter(article => article.bodyText);
-    if (articlesWithBody.length < userArticles.length * 0.5) {
+    if (articlesWithBody.length <= userArticles.length * 0.5) {
       const freeArticles = userArticles.filter(
         article => article.audience === "everyone",
       );
@@ -77,14 +81,16 @@ export async function POST(req: NextRequest) {
         article => article.audience !== "everyone",
       );
 
-      const articlesToGetBody = [...freeArticles, ...paidArticles];
+      const articlesToGetBody = [...freeArticles, ...paidArticles].slice(
+        0,
+        MAX_ARTICLES_TO_GET_BODY,
+      );
       articlesWithBody = await getUserArticlesBody(articlesToGetBody);
-
       try {
         // Insert one by one, batches of 10
         const batchSize = 10;
-        for (let i = 0; i < userArticles.length; i += batchSize) {
-          const batch = userArticles.slice(i, i + batchSize);
+        for (let i = 0; i < articlesWithBody.length; i += batchSize) {
+          const batch = articlesWithBody.slice(i, i + batchSize);
           const promises = batch.map(article =>
             prismaArticles.post.update({
               where: { id: article.id },
@@ -101,13 +107,20 @@ export async function POST(req: NextRequest) {
     const { image, title, description } = await extractContent(
       userPublication.customDomain || url,
     );
-    const top200Articles = userArticles.slice(0, 200).map(article => ({
-      ...article,
-      canonicalUrl: article.canonicalUrl || "",
-      bodyText: article.bodyText || "",
-    }));
+
+    const top100Articles = (await getUserArticles(
+      { publicationId: Number(userPublication.id) },
+      {
+        limit: 100,
+        freeOnly: false,
+        order: {
+          by: "audience",
+          direction: "asc",
+        },
+      },
+    )) as ArticleWithBody[];
     // TODO limit by wordcount, so you dont have too many articles and the api request doesnt fail
-    const messages = generateDescriptionPrompt(description, top200Articles);
+    const messages = generateDescriptionPrompt(description, top100Articles);
 
     const generatedDescription = await runPrompt(
       messages,
@@ -116,6 +129,7 @@ export async function POST(req: NextRequest) {
 
     const descriptionObject: {
       about: string;
+      aboutGeneral: string;
       writingStyle: string;
       topics: string;
       personality: string;
@@ -131,6 +145,7 @@ export async function POST(req: NextRequest) {
         },
         data: {
           generatedDescription: descriptionObject.about,
+          generatedAboutGeneral: descriptionObject.aboutGeneral,
           writingStyle: descriptionObject.writingStyle,
           topics: descriptionObject.topics,
           personality: descriptionObject.personality,
@@ -141,6 +156,7 @@ export async function POST(req: NextRequest) {
         },
       });
     } else {
+      const authorId = await getAuthorId(session.user.id);
       publicationMetadata = await prisma.publicationMetadata.create({
         data: {
           publicationUrl: url,
@@ -148,12 +164,15 @@ export async function POST(req: NextRequest) {
           title,
           description,
           generatedDescription: descriptionObject.about,
+          generatedAboutGeneral: descriptionObject.aboutGeneral,
           writingStyle: descriptionObject.writingStyle,
           topics: descriptionObject.topics,
           personality: descriptionObject.personality,
           specialEvents: descriptionObject.specialEvents,
           privateLife: descriptionObject.privateLife,
+          highlights: descriptionObject.highlights,
           idInArticlesDb: Number(userPublication.id),
+          authorId,
         },
       });
     }
@@ -185,7 +204,7 @@ export async function POST(req: NextRequest) {
     if (scrapeAllArticlesUrl) {
       // Run the lambda to scrape all articles and forget about it
       void fetch(scrapeAllArticlesUrl, {
-        method: "GET",
+        method: "POST",
         body: JSON.stringify({
           lambdaName: "substack-scraper",
           body: {

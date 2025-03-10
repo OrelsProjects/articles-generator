@@ -2,9 +2,10 @@ import axios from "axios";
 import { Logger } from "@/logger";
 import { Product } from "@/types/payment";
 import { loadStripe } from "@stripe/stripe-js";
-import { useAppDispatch } from "@/lib/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { setProducts } from "@/lib/features/products/productsSlice";
 import { useRef } from "react";
+import { selectAuth } from "@/lib/features/auth/authSlice";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -13,7 +14,7 @@ const stripePromise = loadStripe(
 export default function usePayments() {
   const dispatch = useAppDispatch();
   const loadingProducts = useRef(false);
-
+  const { user } = useAppSelector(selectAuth);
   const getProducts = async () => {
     try {
       if (loadingProducts.current) {
@@ -31,11 +32,11 @@ export default function usePayments() {
     }
   };
 
-  const goToCheckout = async (priceId: string, productId: string) => {
+  const goToCheckout = async (interval: "month" | "year", plan: string) => {
     try {
       const response = await axios.post<{ sessionId: string }>(
         "/api/stripe/checkout",
-        { priceId, productId },
+        { interval, plan },
       );
       const stripe = await stripePromise;
       const { error } = await stripe!.redirectToCheckout({
@@ -54,9 +55,14 @@ export default function usePayments() {
   /**
    * Cancel user subscription in your backend
    */
-  const cancelSubscription = async (userId: string) => {
+  const cancelSubscription = async () => {
+    if (!user) {
+      return;
+    }
     try {
-      await axios.post("/api/stripe/subscription/cancel", { userId });
+      await axios.post("/api/stripe/subscription/cancel", {
+        userId: user.userId,
+      });
       Logger.info("Subscription canceled successfully");
       window.location.reload();
     } catch (error: any) {

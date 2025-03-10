@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Logger } from "@/logger";
 import { setShowAnalyzePublicationDialog } from "@/lib/features/ui/uiSlice";
+import { MotionAlert } from "@/components/ui/motion-components";
 
 const loadingStatesConst = [
   { text: "Validating publication in our databases..." },
@@ -62,8 +63,6 @@ const ERRORS = {
   },
 };
 
-const MotionAlert = motion(Alert);
-
 interface ErrorState {
   value: string;
   type: "error" | "warn";
@@ -88,6 +87,7 @@ export function AnalyzePublicationDialog({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
   const [loadingStates, setLoadingStates] = useState(loadingStatesConst);
+
 
   useEffect(() => {
     if (open !== undefined) {

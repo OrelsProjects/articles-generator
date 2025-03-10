@@ -9,6 +9,8 @@ import {
   Dice2,
   Dices,
   DollarSign,
+  Copy,
+  Shuffle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -21,27 +23,27 @@ interface SolutionCardProps {
 const solutionCards: SolutionCardProps[] = [
   {
     icon: Bot,
-    title: "ChatGPT hijacks your voice",
+    title: "ChatGPT doesn't understand Substack",
     description:
-      "Your unique style and personality disappears into AI, making you sound like a robot.",
+      "Generic AI tools don't integrate with Substack, forcing you to constantly copy/paste and switch between platforms.",
   },
   {
-    icon: Bell,
-    title: "Too many distractions",
+    icon: Copy,
+    title: "Copy/paste workflow wastes time",
     description:
-      "You want a steralized place to write, but once you see those Substack notifications, you can't resist them.",
+      "Keeping all your articles and notes in Google Docs is a pain. The format doesn't work well with Substack and it becomes a mess.",
   },
   {
-    icon: Dices,
-    title: "Random, boring topics",
+    icon: Shuffle,
+    title: "Inconsistent newsletter quality",
     description:
-      "Generic, repeated ideas that don’t resonate with your audience or match your brand.",
+      "Without a specialized tool for newsletter writers, your content quality varies wildly from issue to issue.",
   },
   {
     icon: Clock,
     title: "Hours lost finding inspiration",
     description:
-      "Endless hours of reading and sifting through articles to spark a single article idea.",
+      "Successful Substack writers earning $1k+/month can't afford to waste time searching for their next great newsletter idea.",
   },
 ];
 
@@ -50,7 +52,7 @@ const SolutionCard = ({
   title,
   description,
 }: SolutionCardProps) => (
-  <div className="p-6 bg-muted/50 rounded-lg shadow-sm border">
+  <div className="p-6 bg-background rounded-lg shadow-sm border">
     <div className="text-2xl mb-2 flex items-center gap-2">
       <Icon className="w-6 h-6 text-destructive" />
       <h3 className="font-medium">{title}</h3>
@@ -61,21 +63,23 @@ const SolutionCard = ({
 
 export default function OtherSolutions() {
   return (
-    <div className="max-w-4xl pb-36 mx-auto px-6 md:px-0">
-      <div className="mb-16">
-        <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl">
-          Writing articles shouldn&apos;t be this{" "}
-          <span className="text-destructive">hard</span>
-        </h2>
-        <p className="mt-4 text-2xl text-muted-foreground text-center">
-          (Other solutions and tools)
-        </p>
-      </div>
+    <div className="landing-section-container bg-muted">
+      <div className="mx-auto px-6 md:px-0">
+        <div className="landing-section-top">
+          <h3>Post more, in less time</h3>
+          <h2>Building a community is hard enough already</h2>
+          <p>
+            Writing notes is often overlooked, yet it has one of the highest
+            ROIs to grow your community. WriteRoom helps you write it and manage
+            it efficiently, so you can focus on scaling your business.
+          </p>
+        </div>
 
-      <div className="grid gap-8 mt-12 md:grid-cols-2">
-        {solutionCards.map((card, index) => (
-          <SolutionCard key={index} {...card} />
-        ))}
+        <div className="grid gap-8 mt-12 md:grid-cols-2">
+          {solutionCards.map((card, index) => (
+            <SolutionCard key={index} {...card} />
+          ))}
+        </div>
       </div>
     </div>
   );

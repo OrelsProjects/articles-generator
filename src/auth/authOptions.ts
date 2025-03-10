@@ -31,6 +31,9 @@ export const authOptions: AuthOptions = {
             userId: token.sub as string,
             status: "active",
           },
+          orderBy: {
+            createdAt: "desc",
+          },
           select: {
             plan: true,
             currentPeriodStart: true,

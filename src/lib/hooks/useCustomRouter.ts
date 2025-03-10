@@ -17,7 +17,7 @@ export function useCustomRouter() {
   const push = (
     href: string,
     routerOptions: CustomRouterOptions = { preserveQuery: true },
-    options?: NavigateOptions,
+    options?: NavigateOptions
   ) => {
     // If relative URL, prepend the current origin
     const baseUrl = href.startsWith("http")

@@ -4,7 +4,7 @@ import loggerServer from "@/loggerServer";
 import { Plan } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { getPlanPriceId, getStripeInstance } from "@/lib/stripe";
+import { getStripeInstance } from "@/lib/stripe";
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -24,7 +24,10 @@ export async function POST(request: Request) {
     });
 
     if (!freeUser) {
-      return NextResponse.json({ error: "Invalid code" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Code doesn't exist" },
+        { status: 400 },
+      );
     }
 
     const now = new Date();
@@ -34,75 +37,106 @@ export async function POST(request: Request) {
       freeUser.status === "new";
 
     if (!canUseCode) {
-      return NextResponse.json({ error: "Code is expired" }, { status: 400 });
+      return NextResponse.json(
+        { error: "The code has expired" },
+        { status: 400 },
+      );
     }
 
+    // Get the Stripe instance
     const stripe = getStripeInstance();
 
-    let potentialCustomers = await stripe.customers.list({
-      email: session.user.email as string,
-    });
-
-    let customer = potentialCustomers.data[0];
-
-    if (potentialCustomers.data.length === 0) {
-      customer = await stripe.customers.create({
-        email: session.user.email as string,
-      });
+    // Get the premium product ID
+    const productId = process.env.STRIPE_PRICING_ID_PREMIUM;
+    if (!productId) {
+      loggerServer.error("Premium product ID not found");
+      return NextResponse.json({ error: "Product not found" }, { status: 400 });
     }
-    // Calculate subscription end date (e.g., 1 year from now)
-    const endDate = new Date();
-    endDate.setFullYear(endDate.getFullYear() + 1);
 
-    const priceId = await getPlanPriceId(stripe, "year");
-
-    // Create a free subscription in Stripe
-    const stripeSubscription = await stripe.subscriptions.create({
-      customer: customer.id,
-      items: [{ price: priceId }], // Your free tier price ID
-      trial_end: Math.floor(endDate.getTime() / 1000), // Convert to Unix timestamp
-      metadata: {
-        isFreeTier: "true",
-        promoCode: code,
-      },
+    // Get the prices for the premium product
+    const prices = await stripe.prices.list({
+      product: productId,
     });
 
-    // Create subscription record in your database
-    await prisma.subscription.create({
-      data: {
-        stripeSubId: stripeSubscription.id,
-        plan: freeUser.plan,
-        status: "active",
-        currentPeriodStart: new Date(
-          stripeSubscription.current_period_start * 1000,
-        ),
-        currentPeriodEnd: new Date(
-          stripeSubscription.current_period_end * 1000,
-        ),
-        cancelAtPeriodEnd: true, // Will not auto-renew
-        user: {
-          connect: {
-            id: session.user.id,
-          },
-        },
-      },
-    });
+    // Find the monthly price
+    const price = prices.data.find(
+      price => price.recurring?.interval === "month",
+    );
 
-    // Mark code as used
+    if (!price) {
+      loggerServer.error("Price not found", { productId, interval: "month" });
+      return NextResponse.json({ error: "Price not found" }, { status: 400 });
+    }
+
+    // Mark the free user code as used
     await prisma.freeUsers.update({
-      where: {
-        id: freeUser.id,
-      },
-      data: {
-        email: session.user.email as string,
-        status: "used",
+      where: { id: freeUser.id },
+      data: { status: "used" },
+    });
+
+    // Calculate the end date (30 days from now)
+    const trialEndDate = new Date();
+    trialEndDate.setDate(trialEndDate.getDate() + 30);
+
+    // Create a customer first
+    const customer = await stripe.customers.create({
+      email: session.user.email || undefined,
+      metadata: {
+        userId: session.user.id,
+        freeTrialCode: code,
       },
     });
 
-    return NextResponse.json({
-      plan: freeUser.plan,
-      stripeSubscriptionId: stripeSubscription.id,
+    // Create a subscription with trial_end and cancel_at set to the same date
+    const subscription = await stripe.subscriptions.create({
+      customer: customer.id,
+      items: [{ price: price.id }],
+      trial_period_days: 30,
+      cancel_at_period_end: true,
+      metadata: {
+        freeTrialCode: code,
+        isFreeSubscription: "true",
+        userId: session.user.id,
+        productId,
+      },
     });
+
+    // Create a checkout session just for the success redirect
+    const checkoutSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "setup",
+      customer: customer.id,
+      success_url: `${request.headers.get("origin") || process.env.NEXTAUTH_URL}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}&subscription_id=${subscription.id}`,
+      cancel_url: `${request.headers.get("origin") || process.env.NEXTAUTH_URL}/cancel`,
+      client_reference_id: session.user.id,
+      metadata: {
+        freeTrialCode: code,
+        isFreeSubscription: "true",
+        productId,
+        priceId: price.id,
+        subscriptionId: subscription.id,
+      },
+    });
+
+    loggerServer.info("Free premium subscription created", {
+      userId: session.user.id,
+      customerId: customer.id,
+      subscriptionId: subscription.id,
+      sessionId: checkoutSession.id,
+      plan: "premium",
+      duration: "1 month",
+      trialEndDate: trialEndDate.toISOString(),
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        subscriptionId: subscription.id,
+        sessionId: checkoutSession.id,
+        url: checkoutSession.url,
+      },
+      { status: 200 },
+    );
   } catch (error: any) {
     loggerServer.error("Error in free-sub route:", error);
     return NextResponse.json(

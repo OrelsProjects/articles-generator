@@ -2,13 +2,15 @@ import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { getUserArticles } from "@/lib/dal/articles";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
-import { getUserPlan } from "@/lib/dal/user";
 import { runPrompt } from "@/lib/open-router";
 import { generateTitleSubtitleImprovementPrompt as generateTitleImprovementPrompt } from "@/lib/prompts";
-import { handleUsageError, useAIItem } from "@/lib/utils/ideas";
+import { canUseAI, useCredits } from "@/lib/utils/credits";
+import { handleUsageError } from "@/lib/utils/ideas";
 import { parseJson } from "@/lib/utils/json";
 import loggerServer from "@/loggerServer";
+import { AIUsageResponse } from "@/types/aiUsageResponse";
 import { ArticleWithBody } from "@/types/article";
+import { AIUsageType } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -29,10 +31,15 @@ const getRelatedArticles = async (query: string) => {
   })) as ArticleWithBody[];
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<AIUsageResponse<{ title: string; subtitle: string }>>> {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 },
+    );
   }
 
   let usageId: string = "";
@@ -47,10 +54,22 @@ export async function POST(request: NextRequest) {
     });
 
     if (!idea) {
-      return NextResponse.json({ error: "Idea not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Idea not found" },
+        { status: 404 },
+      );
     }
-    
-    usageId = await useAIItem(session.user.id, "titleOrSubtitleRefinement");
+
+    const isValid = await canUseAI(
+      session.user.id,
+      "titleOrSubtitleRefinement",
+    );
+    if (!isValid) {
+      return NextResponse.json(
+        { success: false, error: "Not enough credits" },
+        { status: 400 },
+      );
+    }
 
     const relatedArticles = await getRelatedArticles(
       `title: ${idea?.title}\nsubtitle: ${idea?.subtitle}`,
@@ -86,16 +105,31 @@ export async function POST(request: NextRequest) {
       })),
     );
 
-    const response = await runPrompt(messages, model);
+    const promptResponse = await runPrompt(messages, model);
     const { title, subtitle } = await parseJson<{
       title: string;
       subtitle: string;
-    }>(response);
-    return NextResponse.json({ title, subtitle });
+    }>(promptResponse);
+
+    const { creditsUsed, creditsRemaining } = await useCredits(
+      session.user.id,
+      "titleOrSubtitleRefinement",
+    );
+
+    const response: AIUsageResponse<{ title: string; subtitle: string }> = {
+      responseBody: {
+        body: { title, subtitle },
+        creditsUsed,
+        creditsRemaining,
+        type: "titleOrSubtitleRefinement",
+      },
+    };
+
+    return NextResponse.json(response);
   } catch (error: any) {
     loggerServer.error("Error improving article:", error);
 
     const { message, status } = await handleUsageError(error, usageId);
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ success: false, error: message }, { status });
   }
 }

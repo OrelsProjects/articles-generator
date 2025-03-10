@@ -2,7 +2,7 @@ import axios from "axios";
 import { Tiktoken } from "js-tiktoken/lite";
 import o200k_base from "js-tiktoken/ranks/o200k_base";
 
-// const models = ["anthropic/claude-3.7-sonnet", "openai/gpt-4o-mini"];
+// const models = ["anthropic/claude-3.5-sonnet", "openai/gpt-4o-mini"];
 export type Model =
   | "openai/gpt-4o"
   | "openai/gpt-4o-mini"
@@ -45,6 +45,8 @@ export async function runPrompt(
   console.timeEnd("runPrompt");
 
   let llmResponse = response.data.choices[0].message.content;
+
+  console.log("Prompt output token count:", getTokenCount(llmResponse));
 
   if (!model.includes("anthropic")) {
     llmResponse = llmResponse.replace(/```json|```/g, "").trim();

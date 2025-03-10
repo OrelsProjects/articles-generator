@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const freeUser = await prisma.freeUsers.create({
       data: {
         code,
-        plan: "superPro" as Plan,
+        plan: "premium",
         codeExpiresAt: getNewExpiresAt(),
         url,
         name,

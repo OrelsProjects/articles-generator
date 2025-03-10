@@ -1,31 +1,22 @@
+import { AIUsageType, Plan } from "@prisma/client";
+
+type PlanCredits = Record<Plan, number>;
+
+type CreditsCost = Record<AIUsageType, number>;
+
 export const INFINITY = 999999;
 
-export const maxIdeasPerPlan = {
-  free: 3,
-  pro: 15,
-  superPro: 30,
+// Credits allocated per plan per billing period
+export const creditsPerPlan: PlanCredits = {
+  standard: 50,
+  premium: 250,
+  executive: 1000,
 };
 
-export const maxTitleAndSubtitleRefinementsPerPlan = {
-  free: 10,
-  pro: INFINITY,
-  superPro: INFINITY,
-};
-
-export const maxTextEnhancmentsPerPlan = {
-  free: 10,
-  pro: INFINITY,
-  superPro: INFINITY,
-};
-
-export const textEditorTypePerPlan = {
-  free: "AI-Powered",
-  pro: "AI-Powered",
-  superPro: "AI-Powered",
-};
-
-export const canUseSearchPerPlan = {
-  free: false,
-  pro: true,
-  superPro: true,
+// Cost in credits for each AI operation
+export const creditCosts: CreditsCost = {
+  [AIUsageType.ideaGeneration]: 3,
+  [AIUsageType.textEnhancement]: 1,
+  [AIUsageType.titleOrSubtitleRefinement]: 1,
+  [AIUsageType.notesGeneration]: 3,
 };

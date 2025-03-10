@@ -1,10 +1,11 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { Article, ArticleWithBody } from "@/types/article";
 import { Post } from "../../../prisma/generated/articles";
-import { getSubstackArticleData } from "@/lib/dal/milvus";
+import { ArticleContent } from "@/lib/dal/milvus";
+import { getSubstackArticleData } from "@/lib/utils/article";
 
 export interface GetArticlesOptionsOrder {
-  by: "reactionCount" | "publishedAt";
+  by: "reactionCount" | "publishedAt" | "audience";
   direction: "asc" | "desc";
 }
 
@@ -143,6 +144,7 @@ export const getUserArticlesBody = async <T extends { canonicalUrl: string }>(
   return posts.map(post => ({
     ...post,
     bodyText:
-      content.find(item => item.url === post.canonicalUrl)?.content || "",
+      content.find((item: ArticleContent) => item.url === post.canonicalUrl)
+        ?.content || "",
   }));
 };

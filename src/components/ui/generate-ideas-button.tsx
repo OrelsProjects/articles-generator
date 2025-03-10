@@ -40,7 +40,9 @@ export default function GenerateIdeasButton({
 }: GenerateIdeasButtonProps) {
   const dispatch = useAppDispatch();
   const { loadingNewIdeas } = useAppSelector(selectPublications);
-  const { didExceedLimit, canGenerateIdeas, hasPublication } = useSettings();
+  const { didExceedLimit, hasEnoughCredits, hasPublication } = useSettings();
+
+  const canGenerateIdeas = hasEnoughCredits("ideaGeneration");
 
   const text = useMemo(() => {
     if (!hasPublication) {

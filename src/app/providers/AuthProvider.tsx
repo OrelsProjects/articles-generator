@@ -7,7 +7,7 @@ import {
   selectAuth,
   setUser as setUserAction,
 } from "@/lib/features/auth/authSlice";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { setUserEventTracker } from "@/eventTracker";
 import { Logger, setUserLogger } from "@/logger";
 import { useSession } from "next-auth/react";
@@ -30,6 +30,7 @@ export default function AuthProvider({
   const router = useCustomRouter();
   const pathname = usePathname();
   const dispatch = useAppDispatch();
+  const searchParams = useSearchParams();
   const { setIdeas } = useIdea();
   const { init } = useSettings();
   const [loading, setLoading] = useState(true);
@@ -37,11 +38,11 @@ export default function AuthProvider({
   const { data: session, status } = useSession();
 
   const setUser = async (session?: Session) => {
+    let hasPublication = false;
     try {
-      const userPlan: Plan = session?.user?.meta
+      const userPlan: Plan | null = session?.user?.meta
         ? session.user.meta.plan
-        : "free";
-
+        : null;
       const appUser: AppUser = {
         displayName: session?.user?.name || null,
         email: session?.user?.email || "",
@@ -60,6 +61,7 @@ export default function AuthProvider({
         const publicationIdResponse = await axios.get("/api/user/publications");
         const { publication } = publicationIdResponse.data;
         if (publication) {
+          hasPublication = true;
           dispatch(addPublication(publication));
           setIdeas(publication.ideas);
         }
@@ -70,21 +72,65 @@ export default function AuthProvider({
     } catch (error: any) {
       Logger.error("Error setting user:", error);
       dispatch(setUserAction(null));
+    } finally {
+      return hasPublication;
+    }
+  };
+
+  const handleNavigation = (
+    state: "authenticated" | "unauthenticated",
+    hasPublication: boolean,
+  ) => {
+    if (state === "unauthenticated") {
+      if (!pathname.includes("login")) {
+        router.push("/", { preserveQuery: true });
+      }
+      return;
+    }
+
+    const shouldOnboard = !hasPublication;
+
+    if (shouldOnboard) {
+      if (!pathname.includes("onboarding")) {
+        router.push(`/onboarding`, {
+          preserveQuery: true,
+          paramsToAdd: {
+            redirect: pathname,
+          },
+        });
+      }
+    } else {
+      const redirect = searchParams.get("redirect");
+      if (redirect) {
+        router.push(redirect, {
+          preserveQuery: true,
+          paramsToRemove: ["redirect"],
+        });
+      } else if (pathname.includes("login")) {
+        router.push("/home", { preserveQuery: true });
+      }
     }
   };
 
   useEffect(() => {
+    let hasPublication = false;
     switch (status) {
       case "authenticated":
         setLoading(true);
-        setUser(session).finally(() => {
-          setLoading(false);
-        });
+        setUser(session)
+          .then(response => {
+            hasPublication = response;
+          })
+          .finally(() => {
+            setLoading(false);
+            handleNavigation("authenticated", hasPublication);
+          });
         break;
       case "loading":
         break;
       case "unauthenticated":
         setUser(undefined);
+        handleNavigation("unauthenticated", false);
         break;
       default:
         break;
@@ -95,23 +141,6 @@ export default function AuthProvider({
     setUserEventTracker(currentUser);
     setUserLogger(currentUser);
   }, [currentUser]);
-
-  useEffect(() => {
-    if (status === "loading") return;
-    if (status === "authenticated") {
-      if (
-        pathname.includes("login") ||
-        pathname.includes("register") ||
-        pathname === "/"
-      ) {
-        router.push("/editor", { preserveQuery: true });
-      }
-    } else {
-      if (!pathname.includes("login") && !pathname.includes("register")) {
-        router.push("/", { preserveQuery: true });
-      }
-    }
-  }, [status]);
 
   if (loading) {
     return (

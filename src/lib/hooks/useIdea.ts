@@ -12,8 +12,9 @@ import { Idea } from "@/types/idea";
 import { ImprovementType } from "@/lib/prompts";
 import { Logger } from "@/logger";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
-import { incrementUsage } from "@/lib/features/settings/settingsSlice";
+import { decrementUsage } from "@/lib/features/settings/settingsSlice";
 import { setShowIdeasPanel } from "@/lib/features/ui/uiSlice";
+import { AIUsageResponse } from "@/types/aiUsageResponse";
 
 export const useIdea = () => {
   const { ideas, selectedIdea } = useAppSelector(state => state.publications);
@@ -81,24 +82,15 @@ export const useIdea = () => {
       throw new Error("Idea not found");
     }
     // optimistic update
-    dispatch(updateIdeaAction({ ideaId, body, title, subtitle }));
     try {
       await axios.patch(`/api/idea/${idea.id}`, {
         body,
         title,
         subtitle,
       });
+      dispatch(updateIdeaAction({ ideaId, body, title, subtitle }));
     } catch (error: any) {
       Logger.error("Error updating idea:", error);
-      // revert optimistic update
-      // dispatch(
-      //   updateIdeaAction({
-      //     ideaId,
-      //     title: idea.title,
-      //     body: idea.body,
-      //     subtitle: idea.subtitle,
-      //   }),
-      // );
       throw error;
     }
   };
@@ -114,12 +106,18 @@ export const useIdea = () => {
     },
   ): Promise<Idea[]> => {
     try {
-      const res = await axios.get<Idea[]>(
+      const res = await axios.get<AIUsageResponse<Idea[]>>(
         `api/post/generate/ideas?topic=${options.topic}&ideasCount=${options.ideasCount || 3}&shouldSearch=${options.shouldSearch}`,
       );
-      addIdeas(res.data);
-      dispatch(incrementUsage(AIUsageType.ideaGeneration));
-      return res.data;
+      const { responseBody } = res.data;
+      if (!responseBody) {
+        throw new Error("No ideas generated");
+      }
+      const { body, creditsUsed } = responseBody;
+      addIdeas(body);
+
+      dispatch(decrementUsage({ amount: creditsUsed }));
+      return body;
     } catch (error: any) {
       throw error;
     }
@@ -144,17 +142,22 @@ export const useIdea = () => {
     textTo: number,
     ideaId: string,
   ): Promise<{ text: string; textFrom: number; textTo: number } | null> => {
-    const res = await axios.post("/api/post/improve", {
+    const res = await axios.post<AIUsageResponse<string>>("/api/post/improve", {
       text,
       type,
       ideaId,
     });
+    const { responseBody } = res.data;
+    if (!responseBody) {
+      throw new Error("No text improved");
+    }
+    const { body, creditsUsed } = responseBody;
 
-    dispatch(incrementUsage(AIUsageType.textEnhancement));
+    dispatch(decrementUsage({ amount: creditsUsed }));
 
-    return res.data
+    return body
       ? {
-          text: res.data,
+          text: body,
           textFrom,
           textTo,
         }
@@ -167,17 +170,22 @@ export const useIdea = () => {
     ideaId: string,
     value: string,
   ): Promise<{ title: string; subtitle: string }> => {
-    const res = await axios.post("/api/post/improve/title", {
+    const res = await axios.post<
+      AIUsageResponse<{ title: string; subtitle: string }>
+    >("/api/post/improve/title", {
       menuType,
       improveType,
       ideaId,
       value,
     });
-    if (!res.data || (!res.data.title && !res.data.subtitle)) {
+    const { responseBody } = res.data;
+    if (!responseBody) {
       throw new Error("Improvement service failed.");
     }
-    dispatch(incrementUsage(AIUsageType.titleOrSubtitleRefinement));
-    return res.data;
+    const { body, creditsUsed } = responseBody;
+
+    dispatch(decrementUsage({ amount: creditsUsed }));
+    return body;
   };
 
   const createNewIdea = async (options?: { showIdeasAfterCreate: boolean }) => {

@@ -1,5 +1,6 @@
 import prisma from "@/app/api/_db/db";
-import { ArticleContent, getSubstackArticleData } from "@/lib/dal/milvus";
+import { ArticleContent } from "@/lib/dal/milvus";
+import { getSubstackArticleData } from "@/lib/utils/article";
 import { runPrompt } from "@/lib/open-router";
 import { generateFirstMessagePrompt } from "@/lib/prompts";
 import { parseJson } from "@/lib/utils/json";
@@ -34,7 +35,7 @@ export async function GET(req: Request) {
 
   const prompt = generateFirstMessagePrompt(content, authorName);
 
-  const response = await runPrompt(prompt, "anthropic/claude-3.7-sonnet");
+  const response = await runPrompt(prompt, "anthropic/claude-3.5-sonnet");
 
   const { message } = await parseJson<{ message: string }>(response);
   if (canonicalUrl) {

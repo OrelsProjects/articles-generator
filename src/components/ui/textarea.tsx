@@ -31,7 +31,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       );
       const minHeight = lineHeight / 2; // only 1 line tall by default
       const maxHeight = lineHeight * maxLines;
-      debugger;
+
       // Clamp the scrollHeight between minHeight and maxHeight
       const newHeight = Math.min(
         Math.max(textarea.scrollHeight, minHeight),

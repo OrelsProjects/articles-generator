@@ -6,6 +6,9 @@ export interface Publication {
   title: string | null;
   description: string | null;
   url: string;
+  preferredTopics?: string[];
+  personalDescription?: string | null;
+  userSettingsUpdatedAt?: Date | null;
 }
 
 export interface PublicationResponse {
@@ -15,4 +18,9 @@ export interface PublicationResponse {
   description: string | null;
   ideas: Omit<Idea, "didUserSee">[];
   url: string;
+  preferredTopics?: string[];
+  personalDescription?: string | null;
+  userSettingsUpdatedAt?: Date | null;
+  generatedDescription?: string | null;
+  generatedTopics?: string | null;
 }

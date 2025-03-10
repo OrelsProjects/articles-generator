@@ -9,6 +9,7 @@ import { MotionButton } from "@/components/ui/motion-components";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { INFINITY } from "@/lib/plans-consts";
+import { useSettings } from "@/lib/hooks/useSettings";
 
 // React node with onClick
 type Trigger = React.ReactElement & { onClick?: () => void };
@@ -46,7 +47,8 @@ export function FormatDropdown({
   onMouseLeave,
   type,
 }: FormatDropdownProps) {
-  const { usage } = useAppSelector(selectSettings);
+  const { credits } = useAppSelector(selectSettings);
+  const { didExceedLimit } = useSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,26 +86,13 @@ export function FormatDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const didExceedLimit = useMemo(() => {
-    if (type === "title-subtitle") {
-      return usage.titleOrSubtitleRefinement.didExceed;
-    }
-    return usage.textEnhancement.didExceed;
-  }, [usage, type]);
-
   const usedCount = useMemo(() => {
-    if (type === "title-subtitle") {
-      return usage.titleOrSubtitleRefinement.count;
-    }
-    return usage.textEnhancement.count;
-  }, [usage, type]);
+    return credits.remaining;
+  }, [credits]);
 
   const maxCount = useMemo(() => {
-    if (type === "title-subtitle") {
-      return usage.titleOrSubtitleRefinement.max;
-    }
-    return usage.textEnhancement.max;
-  }, [usage, type]);
+    return credits.total;
+  }, [credits]);
 
   const usageLabel = useMemo(() => {
     if (maxCount === INFINITY) {
