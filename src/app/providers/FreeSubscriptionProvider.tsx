@@ -37,6 +37,7 @@ export default function FreeSubscriptionProvider({
         }>("/api/user/free-sub", { code });
 
         Logger.info("Free subscription checkout created:", response.data);
+        localStorage.removeItem("code");
 
         // If we have a checkout URL, redirect the user to complete the process
         if (response.data.url) {
@@ -45,10 +46,11 @@ export default function FreeSubscriptionProvider({
           // Redirect to the Stripe Checkout page using window.location for a full page navigation
           window.location.href = response.data.url;
           return;
+        } else {
+          window.location.href = "/home";
         }
 
         // If no URL is returned (shouldn't happen with new implementation)
-        localStorage.removeItem("code");
       } catch (error: any) {
         debugger;
         if (error.response.status === 400) {

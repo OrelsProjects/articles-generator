@@ -102,27 +102,27 @@ export async function POST(request: Request) {
     });
 
     // Create a checkout session just for the success redirect
-    const checkoutSession = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "setup",
-      customer: customer.id,
-      success_url: `${request.headers.get("origin") || process.env.NEXTAUTH_URL}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}&subscription_id=${subscription.id}`,
-      cancel_url: `${request.headers.get("origin") || process.env.NEXTAUTH_URL}/cancel`,
-      client_reference_id: session.user.id,
-      metadata: {
-        freeTrialCode: code,
-        isFreeSubscription: "true",
-        productId,
-        priceId: price.id,
-        subscriptionId: subscription.id,
-      },
-    });
+    // const checkoutSession = await stripe.checkout.sessions.create({
+    //   payment_method_types: ["card"],
+    //   mode: "setup",
+    //   customer: customer.id,
+    //   success_url: `${request.headers.get("origin") || process.env.NEXTAUTH_URL}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}&subscription_id=${subscription.id}`,
+    //   cancel_url: `${request.headers.get("origin") || process.env.NEXTAUTH_URL}/cancel`,
+    //   client_reference_id: session.user.id,
+    //   metadata: {
+    //     freeTrialCode: code,
+    //     isFreeSubscription: "true",
+    //     productId,
+    //     priceId: price.id,
+    //     subscriptionId: subscription.id,
+    //   },
+    // });
 
     loggerServer.info("Free premium subscription created", {
       userId: session.user.id,
       customerId: customer.id,
       subscriptionId: subscription.id,
-      sessionId: checkoutSession.id,
+      // sessionId: checkoutSession.id,
       plan: "premium",
       duration: "1 month",
       trialEndDate: trialEndDate.toISOString(),
@@ -132,8 +132,8 @@ export async function POST(request: Request) {
       {
         success: true,
         subscriptionId: subscription.id,
-        sessionId: checkoutSession.id,
-        url: checkoutSession.url,
+        // sessionId: checkoutSession.id,
+        // url: checkoutSession.url,
       },
       { status: 200 },
     );
