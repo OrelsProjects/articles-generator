@@ -25,7 +25,6 @@ export default function FreeSubscriptionProvider({
   let code = searchParams.get("code");
 
   const handleFreeSubscription = async () => {
-    debugger;
     code = code || localStorage.getItem("code");
     if (code) {
       try {
