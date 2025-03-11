@@ -28,6 +28,8 @@ import { useUi } from "@/lib/hooks/useUi";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
 import { useCredits } from "@/lib/hooks/useCredits";
 import { EventTracker } from "@/eventTracker";
+import { decrementUsage } from "@/lib/features/settings/settingsSlice";
+import { ImprovementType } from "@/lib/prompts";
 
 export const useNotes = () => {
   const { updateShowGenerateNotesSidebar } = useUi();
@@ -132,7 +134,7 @@ export const useNotes = () => {
   const selectNote = useCallback(
     (
       note: Note | NoteDraft | string | null,
-      options?: { forceShowEditor?: boolean },
+      options?: { forceShowEditor?: boolean; isFromInspiration?: boolean },
     ) => {
       EventTracker.track("notes_select_note");
       let noteToUpdate: NoteDraft | Note | null = null;
@@ -148,7 +150,12 @@ export const useNotes = () => {
       if (options?.forceShowEditor) {
         updateShowGenerateNotesSidebar(true);
       }
-      dispatch(setSelectedNote(noteDraft));
+      dispatch(
+        setSelectedNote({
+          note: noteDraft,
+          isFromInspiration: options?.isFromInspiration,
+        }),
+      );
     },
     [dispatch],
   );
@@ -181,8 +188,9 @@ export const useNotes = () => {
           options: { toStart: true },
         }),
       );
-
-      selectNote(body[0]);
+      if (!selectedNote) {
+        selectNote(body[0]);
+      }
     } catch (error) {
       console.error("Error generating new note:", error);
     }
@@ -306,6 +314,36 @@ export const useNotes = () => {
     }
   };
 
+  const improveText = async (
+    text: string,
+    type: ImprovementType,
+    noteId: string | null,
+  ): Promise<{ text: string } | null> => {
+    EventTracker.track("idea_improve_text_" + type, {
+      length: text.length,
+    });
+    const res = await axios.post<AIUsageResponse<string>>("/api/note/improve", {
+      text,
+      type,
+      noteId,
+    });
+    const { responseBody } = res.data;
+    if (!responseBody) {
+      throw new Error("No text improved");
+    }
+    const { body, creditsUsed } = responseBody;
+
+    dispatch(decrementUsage({ amount: creditsUsed }));
+    if (noteId) {
+      dispatch(updateNote({ id: noteId, note: { body } }));
+    }
+    return body
+      ? {
+          text: body,
+        }
+      : null;
+  };
+
   return {
     inspirationNotes,
     userNotes,
@@ -328,5 +366,6 @@ export const useNotes = () => {
     editNoteBody,
     loadingEditNote,
     createDraftNote,
+    improveText,
   };
 };

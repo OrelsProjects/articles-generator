@@ -153,12 +153,6 @@ export function FormatDropdown({
               {error?.text && (
                 <p className="p-1.5 text-xs text-red-500">{error.text}</p>
               )}
-              {
-                // Show limit (used/max)
-                <p className="p-1.5 text-xs text-muted-foreground">
-                  {usageLabel}
-                </p>
-              }
               {options.map(option => (
                 <div key={option.label}>
                   {option.subLabel && (

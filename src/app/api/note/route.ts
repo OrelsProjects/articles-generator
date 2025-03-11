@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
     const createNoteBody: CreateNote = {
       userId,
       body: newNoteDraft?.body || "",
-      authorId,
       status: newNoteDraft?.status || NoteStatus.draft,
       name: name,
       bodyJson: null,
@@ -45,6 +44,7 @@ export async function POST(request: NextRequest) {
       inspiration: null,
       handle: handle,
       ...newNoteDraft,
+      authorId: newNoteDraft?.authorId || authorId || 0,
     };
     const note = await createNote(createNoteBody);
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       body: note.body,
       status: note.status,
       timestamp: note.createdAt,
-      authorId: authorId || null,
+      authorId: authorId || 0,
       authorName: name,
       handle,
       thumbnail: photoUrl,

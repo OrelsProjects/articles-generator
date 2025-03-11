@@ -280,28 +280,20 @@ The response should always be structured in JSON format, with proper escape stri
   },
 ];
 
-export const generateImprovementPrompt = (
-  type: ImprovementType,
+const improvementPromptSystemPost = (
   text: string,
-  idea?: Idea | null,
-  extras?: string,
-): {
-  messages: {
-    role: string;
-    content: string;
-  }[];
-  model: Model;
-} => {
+  type: ImprovementType,
+  options?: {
+    maxLength?: number;
+  },
+) => {
   const improvementPrompt = improvementPromptTemplates[type];
-  const { prompt, task } = improvementPrompt;
   const model = improvementPrompt.model || "anthropic/claude-3.5-sonnet";
-
-  const maxLength = type === "elaborate" ? text.length * 2 : text.length;
-
-  const messages = [
-    {
-      role: "system",
-      content: `${prompt}
+  const { prompt, task } = improvementPrompt;
+  const maxLength =
+    options?.maxLength || type === "elaborate" ? text.length * 2 : text.length;
+  const systemMessage = `
+  ${prompt}
 
         Your task is to ${task}.
 
@@ -325,6 +317,108 @@ export const generateImprovementPrompt = (
         - Return only the improved text, with no explanations or comments.
         - The writing must feel completely human: Avoid robotic patterns or excessive formalism.
         - If you keep the same title text, keep the capitalization like the original text.
+  `;
+  return {
+    systemMessage,
+    model,
+  };
+};
+
+const improvementPromptSystemNote = (
+  type: ImprovementType,
+  options: {
+    maxLength: number;
+  },
+) => {
+  const improvementPrompt = improvementPromptTemplates[type];
+  const model = improvementPrompt.model || "anthropic/claude-3.5-sonnet";
+  const { prompt, task } = improvementPrompt;
+
+  // For notes, we want to be more strict about length constraints
+  // Most social media platforms have character limits
+  const maxLength = options?.maxLength || 280; // Twitter-like character limit
+
+  const systemMessage = `
+  ${prompt}
+
+        Your task is to ${task} for a social media note (similar to a tweet).
+
+        Response must follow these strict rules:
+        - Preserve the original voice, tone, and personality of the note
+        - Maintain any hashtags, mentions, or emojis that were in the original text
+        - Keep the note concise and impactful - optimize for engagement
+        - Ensure the response is no longer than ${maxLength} characters (this is critical)
+        - Focus on making the note more shareable, likeable, and reply-worthy
+        - No hashtags or mentions in the response.
+        - Add emojis *only* if they appear in the user's original text.
+        - Use formatting to make the note as clear as possible.
+        - The final result has to pass the Flesch-Kincaid readability test with a score of 70 or higher.
+        - If you create a list of items, make sure to add a line break between each item and add -> at the beginning of each item.
+
+        ${
+          type === "elaborate"
+            ? `
+            - When elaborating, prioritize adding value rather than length
+            - Focus on strengthening the main point rather than adding tangential information
+            ${maxLength ? `- If elaborating would make the note exceed ${maxLength} characters, focus on improving clarity and impact instead` : ""}
+            `
+            : ""
+        }
+        ${
+          type === "engaging"
+            ? `
+            - Add a hook or question that encourages reader interaction
+            - Consider adding a call to action if appropriate
+            - Make the note more conversational and relatable
+            `
+            : ""
+        }
+        ${
+          type === "humorous"
+            ? `
+            - Add wit or clever wordplay that fits the original tone
+            - Don't force humor if it doesn't fit naturally with the content
+            - Ensure the humor is appropriate for a broad audience
+            `
+            : ""
+        }
+        ${
+          type === "fact-check"
+            ? `
+            - If the note contains factual errors, correct them concisely
+            - If the note is factually accurate, focus on making it more precise or clear
+            - Don't add unnecessary qualifiers that weaken the message
+            `
+            : ""
+        }
+        - The writing must feel completely human and authentic
+        - Return only the improved note text, with no explanations or comments
+        - The note should read as if written by the original author, just improved
+  `;
+
+  return {
+    systemMessage,
+    model,
+  };
+};
+
+export const generateImprovementPromptPost = (
+  text: string,
+  type: ImprovementType,
+  idea?: Idea | null,
+  extras?: string,
+): {
+  messages: {
+    role: string;
+    content: string;
+  }[];
+  model: Model;
+} => {
+  const { systemMessage, model } = improvementPromptSystemPost(text, type);
+  const messages = [
+    {
+      role: "system",
+      content: `${systemMessage}
         ${idea ? `- Make sure the response is relevant and related to the rest of the article provided.` : ""}
         ${extras ? extras : ""}
       `,
@@ -349,6 +443,61 @@ export const generateImprovementPrompt = (
   };
 };
 
+export const generateImprovementPromptNote = (
+  text: string,
+  publication: PublicationMetadata,
+  type: ImprovementType,
+  options: {
+    note?: Note | null;
+    userNotes?: string[];
+    maxLength?: number;
+  } = {},
+): {
+  messages: {
+    role: string;
+    content: string;
+  }[];
+  model: Model;
+} => {
+  const { note, userNotes, maxLength } = options;
+  const shouldShowNotePrompt = note && note.body !== text;
+  let validMaxLength = maxLength || 280;
+  if (type === "elaborate") {
+    validMaxLength =
+      validMaxLength >= text.length ? validMaxLength * 2 : validMaxLength;
+  }
+  const { systemMessage, model } = improvementPromptSystemNote(type, {
+    maxLength: validMaxLength,
+  });
+  const messages = [
+    {
+      role: "system",
+      content: `
+      ${publication.generatedDescription || ""}
+      ${publication.writingStyle || ""}
+      ${systemMessage}
+      `,
+    },
+    {
+      role: "user",
+      content: `
+      Here's the note I want to improve: ${text}
+      \n
+      ${shouldShowNotePrompt ? `Here's the entire note for context: ${note.body}` : ""}
+      ${
+        userNotes && userNotes.length > 0
+          ? `Here are some notes I wrote as examples: ${userNotes.join("\n")}`
+          : ""
+      }
+      `,
+    },
+  ];
+
+  return {
+    messages,
+    model,
+  };
+};
 export const generateTitleSubtitleImprovementPrompt = (
   menuType: "title" | "subtitle",
   improveType: TitleImprovementType,
@@ -385,11 +534,11 @@ ${relatedTitles
   )
   .join("\n")}
 
-Additionally, note that the user’s other ${isTitle ? "titles" : "subtitles"} **must be treated as the strict style and format you have to replicate**. Observe carefully how they are structured, including:
+Additionally, note that the user's other ${isTitle ? "titles" : "subtitles"} **must be treated as the strict style and format you have to replicate**. Observe carefully how they are structured, including:
 - Punctuation (periods, commas, question marks, colons, parentheses, exclamation points),
 - Capitalization,
 - Emoji usage (if any),
-- Word choice (e.g. first-person statements like “I did something...”, direct instructions like “Read this before...”, or numeric references like “11 mistakes...”),
+- Word choice (e.g. first-person statements like "I did something...", direct instructions like "Read this before...", or numeric references like "11 mistakes..."),
 - And any other noticeable stylistic elements.
 
 Here are the user's reference ${isTitle ? "titles" : "subtitles"}:
@@ -400,15 +549,15 @@ ${userTopArticlesTitles
   )
   .join("\n")}
 
-**You must produce a final ${menuType} that strictly follows the same style and format** as the user’s reference examples. If a current ${menuType} is provided, use it as a reference, but feel free to improve or rework it as needed.
+**You must produce a final ${menuType} that strictly follows the same style and format** as the user's reference examples. If a current ${menuType} is provided, use it as a reference, but feel free to improve or rework it as needed.
 
 Your task is to ${improvementPromptTemplate.task} for the article provided. The new ${menuType} must:
 1. Be highly relevant to the article's content and context.
 2. Exactly match the style and formatting of the user's other ${menuType === "title" ? "titles" : "subtitles"}.
-3. Remain compelling, concise, and reflective of the article’s main theme.
-4. Use the same approach to punctuation, capitalization, potential emojis, or numeric references that you see in the user’s reference ${menuType === "title" ? "titles" : "subtitles"}.
+3. Remain compelling, concise, and reflective of the article's main theme.
+4. Use the same approach to punctuation, capitalization, potential emojis, or numeric references that you see in the user's reference ${menuType === "title" ? "titles" : "subtitles"}.
 5. If numbers or emojis are not present in the user's reference ${menuType === "title" ? "titles" : "subtitles"}, do not add them unless they add a lot of value to the ${menuType}.
-6. Do not add extra text or deviate from the user’s established style.
+6. Do not add extra text or deviate from the user's established style.
 
 Return only the result in the following JSON format, without additional commentary:
 ${
@@ -469,6 +618,7 @@ export const generateImproveNoteTextPrompt = (
     model: humanizePrompt.model || "anthropic/claude-3.5-sonnet",
   };
 };
+
 export const generateNotesPrompt = (
   publication: PublicationMetadata,
   inspirationNotes: string[],
@@ -693,6 +843,10 @@ const improvementPromptTemplates: {
   "spell-check": {
     task: "spell-check the user's text",
     prompt: `Check the user's text for spelling and grammar errors. If you find any errors, correct them. If you don't find any errors, fix the errors in the text.`,
+  },
+  "fit-user-style": {
+    task: "fit the user's style",
+    prompt: `Fit the user's writing style in the text. If the user provides examples, use them to fit the style as well.`,
   },
 };
 

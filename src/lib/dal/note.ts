@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { NoteDraft } from "@/types/note";
 import { Note } from "@prisma/client";
 
@@ -23,6 +23,40 @@ export async function isOwnerOfNote(noteId: string, userId: string) {
 
   return note?.userId === userId;
 }
+
+export const getUserNotes = async (
+  userId: string,
+  options: { limit: number } = { limit: 20 },
+) => {
+  const { limit } = options;
+  const userMetadata = await prisma.userMetadata.findUnique({
+    where: {
+      userId,
+    },
+    select: {
+      publication: {
+        select: {
+          authorId: true,
+        },
+      },
+    },
+  });
+  if (!userMetadata) {
+    return [];
+  }
+
+  const notes = await prismaArticles.notesComments.findMany({
+    where: {
+      authorId: userMetadata.publication?.authorId || 0,
+    },
+    orderBy: {
+      date: "desc",
+    },
+    take: limit,
+  });
+
+  return notes;
+};
 
 export const updateNote = async (id: string, newNote: Partial<NoteDraft>) => {
   try {

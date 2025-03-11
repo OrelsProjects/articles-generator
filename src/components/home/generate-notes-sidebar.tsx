@@ -29,8 +29,8 @@ import {
   Wand2,
   Zap,
   FileText,
-  ChevronDown,
   Save,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
@@ -54,25 +54,9 @@ import { useUi } from "@/lib/hooks/useUi";
 import { debounce } from "lodash";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { ToastStepper } from "@/components/ui/toast-stepper";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { EventTracker } from "@/eventTracker";
-
-// Define improvement types
-type ImprovementType =
-  | "fact-check"
-  | "elaborate"
-  | "engaging"
-  | "humorous"
-  | "positive"
-  | "creative"
-  | "sarcastic"
-  | "inspirational"
-  | "concise";
+import { FormatDropdown } from "@/components/ui/text-editor/dropdowns/format-dropdown";
+import { ImprovementType } from "@/lib/prompts";
 
 // Define format options for the dropdown
 const formatOptions: {
@@ -82,17 +66,23 @@ const formatOptions: {
   subLabel?: string;
   type: ImprovementType;
 }[] = [
+  // {
+  //   type: "fact-check",
+  //   label: "Fact-check",
+  //   subLabel: "Check the text for accuracy",
+  //   icon: Check,
+  //   divider: false,
+  // },
   {
-    type: "fact-check",
-    label: "Fact-check",
-    subLabel: "Check the text for accuracy",
-    icon: Check,
+    type: "fit-user-style",
+    label: "Fit my style",
+    subLabel: "Fill in the blanks",
+    icon: User,
     divider: false,
   },
   {
     type: "elaborate",
-    label: "Elaborate",
-    subLabel: "Make it more",
+    label: "Keep writing",
     icon: Sparkles,
     divider: false,
   },
@@ -157,6 +147,7 @@ export default function GenerateNotesSidebar() {
     editNoteBody,
     loadingEditNote,
     selectNote,
+    improveText,
   } = useNotes();
   const [open, setOpen] = useState(false);
   const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
@@ -197,6 +188,11 @@ export default function GenerateNotesSidebar() {
 
   const editor = useEditor(
     notesTextEditorOptions(html => {
+      const isInspirationNotSaved =
+        selectedNote?.isFromInspiration && !selectedNote;
+      if (isInspirationNotSaved) {
+        return;
+      }
       onEditNoteBody(selectedNote?.id || null, html);
     }),
   );
@@ -256,25 +252,26 @@ export default function GenerateNotesSidebar() {
     if (loadingImprovement) return;
     EventTracker.track("generate_notes_sidebar_improve_text_" + type);
 
-    const selectedText =
+    let selectedText =
       editor?.state.selection.content().content.firstChild?.textContent;
 
     if (!selectedText || selectedText.trim().length === 0) {
-      toast.error("Please select some text to improve");
-      return;
+      selectedText = unformatText(editor?.getHTML() || "");
     }
 
     setLoadingImprovement(true);
     try {
-      // Here you would call your API to improve the text
-      toast.info(`Improving text with ${type} style...`);
-      // Placeholder for actual implementation
-      setTimeout(() => {
-        toast.success(`Text improved with ${type} style`);
-        setLoadingImprovement(false);
-      }, 1500);
+      const improvedText = await improveText(
+        selectedText,
+        type,
+        selectedNote?.id || null,
+      );
+      if (improvedText) {
+        editor?.chain().focus().setContent(improvedText.text).run();
+      }
     } catch (e: any) {
       toast.error(e.message || "Failed to improve text");
+    } finally {
       setLoadingImprovement(false);
     }
   };
@@ -322,6 +319,14 @@ export default function GenerateNotesSidebar() {
   const hasContent = useMemo(() => {
     return selectedNote || contentRaw.length > 0;
   }, [selectedNote, content]);
+
+  const canSave = useMemo(() => {
+    return (selectedNote || contentRaw.length > 0) && !loadingEditNote;
+  }, [selectedNote, content, loadingEditNote]);
+
+  const improveDropdownOptions = useMemo(() => {
+    return formatOptions;
+  }, [selectedNote]);
 
   if (!editor) {
     return null;
@@ -456,45 +461,30 @@ export default function GenerateNotesSidebar() {
                     accept="image/*"
                     className="hidden"
                   />
-                  {/* Dropdown for text improvements */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                  <FormatDropdown
+                    options={improveDropdownOptions}
+                    loading={loadingImprovement ? "loading" : null}
+                    onSelect={type => {
+                      handleImproveText(type as ImprovementType);
+                    }}
+                    type="text"
+                    disabled={loadingImprovement}
+                    trigger={
                       <TooltipButton
-                        tooltipContent="Improve selected text (1)"
+                        disabled={!hasContent || loadingImprovement}
+                        tooltipContent="Improve selected text (1 credit)"
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0"
-                        disabled={loadingImprovement || !hasContent}
                       >
                         {loadingImprovement ? (
                           <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
                         ) : (
-                          <div className="flex items-center">
-                            <Sparkles className="h-5 w-5 text-muted-foreground" />
-                          </div>
+                          <Sparkles className="h-5 w-5 text-muted-foreground" />
                         )}
                       </TooltipButton>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56">
-                      {formatOptions.map(option => (
-                        <DropdownMenuItem
-                          key={option.type}
-                          onClick={() => handleImproveText(option.type)}
-                          className="flex items-center gap-2 cursor-pointer"
-                        >
-                          <option.icon className="h-4 w-4" />
-                          <div className="flex flex-col">
-                            <span>{option.label}</span>
-                            {option.subLabel && (
-                              <span className="text-xs text-muted-foreground">
-                                {option.subLabel}
-                              </span>
-                            )}
-                          </div>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    }
+                  />
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -517,10 +507,11 @@ export default function GenerateNotesSidebar() {
                   </Popover>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
+                  <TooltipButton
+                    tooltipContent="Save"
                     variant="ghost"
                     className="w-8 h-8 p-0"
-                    disabled={loadingEditNote || !hasContent}
+                    disabled={loadingEditNote || !canSave}
                     onClick={() => {
                       handleEditNoteBody(selectedNote?.id || null, content);
                     }}
@@ -530,8 +521,9 @@ export default function GenerateNotesSidebar() {
                     ) : (
                       <Save className="h-5 w-5 text-muted-foreground" />
                     )}
-                  </Button>
-                  <Button
+                  </TooltipButton>
+                  <TooltipButton
+                    tooltipContent="Copy"
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0"
@@ -539,7 +531,7 @@ export default function GenerateNotesSidebar() {
                     onClick={handleCopy}
                   >
                     <Copy className="h-5 w-5 text-muted-foreground" />
-                  </Button>
+                  </TooltipButton>
                 </div>
               </div>
             </div>

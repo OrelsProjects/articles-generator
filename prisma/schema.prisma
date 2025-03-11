@@ -161,7 +161,7 @@ model UserMetadata {
 model PublicationMetadata {
   id             String @id @default(auto()) @map("_id") @db.ObjectId
   idInArticlesDb Int?
-  authorId       Int?
+  authorId       Int
 
   publicationUrl String  @unique
   image          String?
@@ -245,7 +245,7 @@ model Note {
 
   inspiration String?
 
-  authorId Int?
+  authorId Int
   handle   String?
   name     String?
 

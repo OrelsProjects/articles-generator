@@ -14,7 +14,7 @@ interface SearchOptions {
   limit?: number;
   includeBody?: boolean;
   filters?: Filter[];
-  minMatch: number;
+  minMatch?: number;
 }
 
 export interface ArticleContent {
@@ -39,6 +39,7 @@ async function searchSimilarArticles({
   limit = 20,
   includeBody = false,
   filters = [],
+  minMatch = 0.3,
 }: SearchOptions) {
   const MILVUS_API_KEY = process.env.MILVUS_API_KEY;
   const MILVUS_ENDPOINT = process.env.MILVUS_ENDPOINT;
@@ -95,7 +96,11 @@ async function searchSimilarArticles({
   }
 
   const data = await response.json();
-  const topArticles = data.data ? data.data.slice(0, limit) : [];
+  const topArticles = data.data
+    ? data.data
+        .filter((article: any) => article.distance >= minMatch)
+        .slice(0, limit)
+    : [];
 
   // Fetch articles from database
   console.time("Search db");

@@ -17,7 +17,7 @@ export async function GET() {
     process.env.DATABASE_URL?.includes("production")
   ) {
     // Avoid messing with production database
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 407 });
   }
   try {
     const userPublication = await prisma.userMetadata.findFirst({

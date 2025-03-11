@@ -8,6 +8,7 @@ import { Node } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import BubbleMenu from "@tiptap/extension-bubble-menu";
 import Heading from "@tiptap/extension-heading";
+import { HardBreak } from "@tiptap/extension-hard-break";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -310,7 +311,8 @@ export const notesTextEditorOptions = (
   } = {},
 ): UseEditorOptions => ({
   onUpdate: ({ editor }) => {
-    const html = editor.getHTML();
+    let html = editor.getHTML();
+    html = html.replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br>");
     onUpdate?.(html);
   },
   editable: !options.disabled,
@@ -325,6 +327,9 @@ export const notesTextEditorOptions = (
     Document,
     CustomBlockquote,
     CodeBlock,
+    HardBreak.configure({
+      keepMarks: true, // Preserves formatting on new lines
+    }),
     Paragraph.configure({
       HTMLAttributes: { class: "my-3" },
     }),
@@ -354,7 +359,6 @@ export const notesTextEditorOptions = (
     },
   },
 });
-
 
 export const textEditorOptions = (
   onUpdate?: (html: string) => void,

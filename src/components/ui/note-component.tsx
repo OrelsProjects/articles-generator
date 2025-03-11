@@ -512,7 +512,7 @@ export default function NoteComponent({ note }: NoteProps) {
                 className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
                 onClick={() =>
                   selectImage({
-                    url: attachment[0],
+                    url: attachment,
                     alt: "Note attachment",
                   })
                 }
@@ -538,7 +538,12 @@ export default function NoteComponent({ note }: NoteProps) {
             >
               <NotesActions />
               <Button
-                onClick={() => selectNote(note, { forceShowEditor: true })}
+                onClick={() =>
+                  selectNote(note, {
+                    forceShowEditor: true,
+                    isFromInspiration: true,
+                  })
+                }
                 variant="link"
                 size="sm"
                 className="text-xs p-0 text-foreground"

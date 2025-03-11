@@ -5,7 +5,7 @@ import { Note, NoteDraft, NoteStatus } from "@/types/note";
 export interface NotesState {
   userNotes: NoteDraft[];
   inspirationNotes: Note[];
-  selectedNote: NoteDraft | null;
+  selectedNote: (NoteDraft & { isFromInspiration?: boolean }) | null;
   selectedImage: { url: string; alt: string } | null;
   loadingNotes: boolean;
   loadingInspiration: boolean;
@@ -36,7 +36,10 @@ const notesSlice = createSlice({
   name: "notes",
   initialState,
   reducers: {
-    setNotes: (state, action: PayloadAction<{ items: NoteDraft[]; nextCursor: string | null }>) => {
+    setNotes: (
+      state,
+      action: PayloadAction<{ items: NoteDraft[]; nextCursor: string | null }>,
+    ) => {
       state.userNotes = action.payload.items;
       state.userNotesCursor = action.payload.nextCursor;
       state.hasMoreUserNotes = !!action.payload.nextCursor;
@@ -46,7 +49,10 @@ const notesSlice = createSlice({
     addNote: (state, action: PayloadAction<NoteDraft>) => {
       state.userNotes.push(action.payload);
     },
-    updateNote: (state, action: PayloadAction<{id: string, note: Partial<NoteDraft>}>) => {
+    updateNote: (
+      state,
+      action: PayloadAction<{ id: string; note: Partial<NoteDraft> }>,
+    ) => {
       const { id, note } = action.payload;
       let newNote = state.userNotes.find(userNote => userNote.id === id);
       if (newNote) {
@@ -57,12 +63,20 @@ const notesSlice = createSlice({
         state.userNotes = state.userNotes.map(userNote =>
           userNote.id === id && newNote ? newNote : userNote,
         );
+        if (id === state.selectedNote?.id) {
+          state.selectedNote = newNote;
+        }
       }
     },
     removeNote: (state, action: PayloadAction<string>) => {
-      state.userNotes = state.userNotes.filter(userNote => userNote.id !== action.payload);
+      state.userNotes = state.userNotes.filter(
+        userNote => userNote.id !== action.payload,
+      );
     },
-    setInspirationNotes: (state, action: PayloadAction<{ items: Note[]; nextCursor: string | null }>) => {
+    setInspirationNotes: (
+      state,
+      action: PayloadAction<{ items: Note[]; nextCursor: string | null }>,
+    ) => {
       state.inspirationNotes = action.payload.items;
       state.inspirationNotesCursor = action.payload.nextCursor;
       state.hasMoreInspirationNotes = !!action.payload.nextCursor;
@@ -73,10 +87,10 @@ const notesSlice = createSlice({
         items: Note[];
         nextCursor: string | null;
         hasMore: boolean;
-        options?: { toStart: boolean, notification?: boolean };
+        options?: { toStart: boolean; notification?: boolean };
       }>,
     ) => {
-        if (action.payload.options?.toStart) {
+      if (action.payload.options?.toStart) {
         state.inspirationNotes = [
           ...action.payload.items,
           ...state.inspirationNotes,
@@ -109,8 +123,20 @@ const notesSlice = createSlice({
       state.userNotesCursor = action.payload.nextCursor;
       state.hasMoreUserNotes = !!action.payload.nextCursor;
     },
-    setSelectedNote: (state, action: PayloadAction<NoteDraft | null>) => {
-      state.selectedNote = action.payload;
+    setSelectedNote: (
+      state,
+      action: PayloadAction<{
+        note: NoteDraft | null;
+        isFromInspiration?: boolean;
+      }>,
+    ) => {
+      state.selectedNote = action.payload.note;
+      if (action.payload.isFromInspiration && state.selectedNote) {
+        state.selectedNote = {
+          ...state.selectedNote,
+          isFromInspiration: true,
+        };
+      }
     },
     setSelectedImage: (
       state,

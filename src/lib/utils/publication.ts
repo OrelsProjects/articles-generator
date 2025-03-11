@@ -2,11 +2,7 @@
 /* eslint-disable no-console */
 import * as cheerio from "cheerio";
 import { prismaArticles } from "@/app/api/_db/db";
-import {
-  Post,
-  Publication,
-  PublicationLink,
-} from "../../../prisma/generated/articles";
+import { Post, Publication, PublicationLink } from "../../../prisma/generated/articles";
 import { delay, fetchWithHeaders } from "./requests";
 import loggerServer from "@/loggerServer";
 import { getUserArticlesBody } from "@/lib/dal/articles";
@@ -21,24 +17,26 @@ export const getArticleEndpoint = (
 };
 
 interface SubstackPublication {
-  id: number;
+  id: string;
   name: string;
   subdomain: string;
   custom_domain: string;
   custom_domain_optional: boolean;
   hero_text: string;
   logo_url: string;
-  email_from_name: string;
-  copyright: string;
-  founding_plan_name: string;
+  author_id?: string;
+  theme_var_background_pop: string;
+  created_at?: string;
+  rss_website_url?: string;
+  email_from_name?: string;
+  copyright?: string;
+  founding_plan_name: string | null;
   community_enabled: boolean;
   invite_only: boolean;
   payments_state: string;
-  language: string;
+  language: string | null;
   explicit: boolean;
   is_personal_mode: boolean;
-  created_at: string;
-  rss_website_url: string;
 }
 
 /**
@@ -51,86 +49,92 @@ interface SubstackBylinePublicationUser {
   role: string;
   public: boolean;
   is_primary: boolean;
-  publication: SubstackPublication;
+  byline_id?: string;
+  publication?: SubstackPublication;
 }
 
-interface SubstackByline {
-  id: string; // or number if it changes
+interface Byline {
+  id: string;
   name: string;
   handle: string;
-  previous_name?: string | null;
-  photo_url?: string | null;
-  bio?: string | null;
-  profile_set_up_at?: string | null;
-  twitter_screen_name?: string | null;
-  is_guest: boolean;
-  bestseller_tier?: string | null;
+  previous_name?: string;
+  photo_url?: string;
+  bio?: string;
+  profile_set_up_at?: string;
+  twitter_screen_name?: string;
+  is_guest?: boolean;
+  bestseller_tier?: string;
   publicationUsers?: SubstackBylinePublicationUser[];
 }
-
-interface SubstackAudioItem {
-  post_id: number;
+interface AudioItem {
+  post_id: string;
   voice_id: string;
   audio_url: string;
   type: string;
   status: string;
 }
 
-interface SubstackPodcastFields {
-  post_id: number;
-  podcast_episode_number: number;
-  podcast_season_number: number;
-  podcast_episode_type: string;
+interface AudioItem {
+  post_id: string;
+  voice_id: string;
+  audio_url: string;
+  type: string;
+  status: string;
+}
+
+interface PodcastField {
+  post_id: string;
+  podcast_episode_number?: number;
+  podcast_season_number?: number;
+  podcast_episode_type?: string;
   should_syndicate_to_other_feed: boolean;
-  syndicate_to_section_id?: number | null;
-  hide_from_feed?: boolean;
-  free_podcast_url?: string | null;
-  free_podcast_duration?: number | null;
+  syndicate_to_section_id?: string;
+  hide_from_feed: boolean;
+  free_podcast_url?: string;
+  free_podcast_duration?: number;
 }
 
 interface SubstackPost {
   id: string;
-  publication_id: number;
-  title: string;
-  social_title?: string | null;
-  search_engine_title?: string | null;
-  search_engine_description?: string | null;
-  slug: string;
-  post_date?: string | null;
-  audience?: string | null;
-  canonical_url: string;
-  reactions?: any; // Replace with a more specific type if known
-  subtitle?: string | null;
-  cover_image?: string | null;
-  cover_image_is_square?: boolean | null;
-  cover_image_is_explicit?: boolean | null;
-  description?: string | null;
-  body_json?: any; // Replace with a more specific type if known
-  body_text?: string | null;
-  truncated_body_text?: string | null;
-  wordcount?: number | null;
-  postTags?: any; // Replace with a more specific type if known
-  reaction?: any; // Replace with a more specific type if known
-  reaction_count?: number | null;
-  comment_count?: number | null;
-  child_comment_count?: number | null;
-  hidden?: string | null;
-  explicit?: boolean | null;
-  email_from_name?: string | null;
-  is_guest?: boolean | null;
-  bestseller_tier?: string | null;
-  podcast_episode_image_info?: any; // Replace with a more specific type if known
-
-  // Additional arrays from the Substack response
-  publishedBylines?: SubstackByline[];
-  audio_items?: SubstackAudioItem[];
-  podcastFields?: SubstackPodcastFields;
+  publication_id: string;
+  title?: string;
+  social_title?: string;
+  search_engine_title?: string;
+  search_engine_description?: string;
+  slug?: string;
+  post_date?: string;
+  audience?: string;
+  canonical_url?: string;
+  reactions?: any;
+  subtitle?: string;
+  cover_image?: string;
+  cover_image_is_square?: boolean;
+  cover_image_is_explicit?: boolean;
+  description?: string;
+  body_json?: any;
+  body_text?: string;
+  truncated_body_text?: string;
+  wordcount?: number;
+  postTags?: any[];
+  reaction?: any;
+  reaction_count?: number;
+  comment_count?: number;
+  child_comment_count?: number;
+  hidden?: boolean;
+  explicit?: boolean;
+  email_from_name?: string;
+  is_guest?: boolean;
+  bestseller_tier?: string;
+  podcast_episode_image_info?: any;
+  publishedBylines?: Byline[];
+  audio_items?: AudioItem[];
+  podcastFields?: PodcastField;
+  [key: string]: any;
 }
-
 /**
  * Return object containing arrays ready to insert/upsert into your DB tables.
  */
-function convertPostsToDbRows(posts: SubstackPost): {
+function convertPostsToDbRows(post: SubstackPost): {
   post: Post;
   bylines: any;
   audioItems: any;
@@ -139,41 +143,41 @@ function convertPostsToDbRows(posts: SubstackPost): {
   // We'll map out only the data that matches your schema
   return {
     post: {
-      id: posts.id,
-      publicationId: posts.publication_id.toString(), // Potential mismatch if not numeric
-      title: posts.title,
-      socialTitle: posts.social_title || null,
-      searchEngineTitle: posts.search_engine_title || null,
-      searchEngineDescription: posts.search_engine_description || null,
-      slug: posts.slug,
-      postDate: posts.post_date ? new Date(posts.post_date) : null,
-      audience: posts.audience || null,
-      canonicalUrl: posts.canonical_url,
-      reactions: posts.reactions || null,
-      subtitle: posts.subtitle || null,
-      coverImage: posts.cover_image || null,
-      coverImageIsSquare: posts.cover_image_is_square || false,
-      coverImageIsExplicit: posts.cover_image_is_explicit || false,
-      description: posts.description || null,
-      bodyJson: posts.body_json || null,
-      bodyText: posts.body_text || null,
-      truncatedBodyText: posts.truncated_body_text || null,
-      wordcount: posts.wordcount || 0,
-      postTags: posts.postTags || null,
-      reaction: posts.reaction || null,
-      reactionCount: posts.reaction_count || 0,
-      commentCount: posts.comment_count || 0,
-      childCommentCount: posts.child_comment_count || 0,
-      hidden: posts.hidden || null,
-      explicit: posts.explicit || false,
-      emailFromName: posts.email_from_name || null,
-      isGuest: posts.is_guest || false,
-      bestsellerTier: posts.bestseller_tier || null,
-      podcastEpisodeImageInfo: posts.podcast_episode_image_info || null,
+      id: post.id,
+      publicationId: post.publication_id.toString(), // Potential mismatch if not numeric
+      title: post.title || "",
+      socialTitle: post.social_title || null,
+      searchEngineTitle: post.search_engine_title || null,
+      searchEngineDescription: post.search_engine_description || null,
+      slug: post.slug || null,
+      postDate: post.post_date ? new Date(post.post_date) : null,
+      audience: post.audience || null,
+      canonicalUrl: post.canonical_url || null,
+      reactions: post.reactions || null,
+      subtitle: post.subtitle || null,
+      coverImage: post.cover_image || null,
+      coverImageIsSquare: post.cover_image_is_square || false,
+      coverImageIsExplicit: post.cover_image_is_explicit || false,
+      description: post.description || null,
+      bodyJson: post.body_json || null,
+      bodyText: post.body_text || null,
+      truncatedBodyText: post.truncated_body_text || null,
+      wordcount: post.wordcount || 0,
+      postTags: post.postTags || null,
+      reaction: post.reaction || null,
+      reactionCount: post.reaction_count || 0,
+      commentCount: post.comment_count || 0,
+      childCommentCount: post.child_comment_count || 0,
+      hidden: "false",
+      explicit: post.explicit || false,
+      emailFromName: post.email_from_name || null,
+      isGuest: post.is_guest || false,
+      bestsellerTier: post.bestseller_tier || null,
+      podcastEpisodeImageInfo: post.podcast_episode_image_info || null,
     },
-    bylines: posts.publishedBylines ?? [],
-    audioItems: posts.audio_items ?? [],
-    podcastFields: posts.podcastFields ?? [],
+    bylines: post.publishedBylines ?? [],
+    audioItems: post.audio_items ?? [],
+    podcastFields: post.podcastFields ?? [],
   };
 }
 
@@ -208,7 +212,7 @@ function extractPublications(posts: SubstackPost[]) {
 
       publicationMap.set(pubId.toString(), {
         id: BigInt(pubId),
-        name: publication?.name || "Unknown",
+        name: publication?.name || "",
         subdomain: publication?.subdomain || "",
         customDomain:
           publication?.custom_domain ||
@@ -272,7 +276,7 @@ export async function populatePublications(
     for (const post of postsToGetBody) {
       const formattedPost = {
         ...post,
-        canonicalUrl: post.canonical_url,
+        canonicalUrl: post.canonical_url || "",
       };
       const body = await getUserArticlesBody([formattedPost]);
       const { canonicalUrl, ...restOfPost } = body[0];
@@ -315,6 +319,12 @@ export async function populatePublications(
 
     // 2) Insert ALL Publications Next
     for (const publication of publications) {
+      const existingPublication = await prismaArticles.publication.findUnique({
+        where: { id: publication.id },
+      });
+      if (existingPublication) {
+        continue;
+      }
       const countPublications = await prismaArticles.publication.upsert({
         where: { id: publication.id },
         update: { ...publication },

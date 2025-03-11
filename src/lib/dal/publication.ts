@@ -235,6 +235,12 @@ export async function createPublication(url: string): Promise<number | null> {
     explicit: pub.explicit || false,
   };
 
+  const existingPublication = await prismaArticles.publication.findUnique({
+    where: { id: userPublication.id },
+  });
+  if (existingPublication) {
+    return Number(existingPublication.id);
+  }
   await prismaArticles.publication.create({
     data: userPublication,
   });

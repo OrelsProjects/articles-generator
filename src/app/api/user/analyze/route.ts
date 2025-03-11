@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
           privateLife: descriptionObject.privateLife,
           highlights: descriptionObject.highlights,
           idInArticlesDb: Number(userPublication.id),
-          authorId,
+          authorId: authorId || 0,
         },
       });
     }

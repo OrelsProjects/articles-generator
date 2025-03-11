@@ -1,16 +1,18 @@
-import prisma from "@/app/api/_db/db";
+import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
+import { getUserNotes } from "@/lib/dal/note";
 import { runPrompt } from "@/lib/open-router";
-import { generateImprovementPromptPost } from "@/lib/prompts";
+import { generateImprovementPromptNote } from "@/lib/prompts";
 import { canUseAI, useCredits } from "@/lib/utils/credits";
 import { handleUsageError } from "@/lib/utils/ideas";
 import loggerServer from "@/loggerServer";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { NotesComments } from "../../../../../prisma/generated/articles";
 
-const MAX_CHARACTERS = 15000;
-export const maxDuration = 300; // This function can run for a maximum of 5 minutes
+const MAX_CHARACTERS = 1500;
+export const maxDuration = 120; // This function can run for a maximum of 2 minutes
 
 export async function POST(
   request: NextRequest,
@@ -26,7 +28,7 @@ export async function POST(
   let usageId: string = "";
 
   try {
-    const { text, type, ideaId } = await request.json();
+    const { text, type, noteId } = await request.json();
 
     const isValid = await canUseAI(session.user.id, "textEnhancement");
     if (!isValid) {
@@ -36,19 +38,53 @@ export async function POST(
       );
     }
 
-    const idea = await prisma.idea.findUnique({
+    const userPublication = await prisma.userMetadata.findUnique({
       where: {
-        id: ideaId,
+        userId: session.user.id,
+      },
+      select: {
+        publication: true,
       },
     });
 
+    const note = noteId
+      ? await prisma.note.findUnique({
+          where: {
+            id: noteId,
+          },
+        })
+      : null;
+
+    const publication = userPublication?.publication;
+
+    if (!publication) {
+      return NextResponse.json(
+        { success: false, error: "User publication not found" },
+        { status: 400 },
+      );
+    }
+
     const slicedText = text.slice(0, MAX_CHARACTERS);
 
-    const { messages, model } = generateImprovementPromptPost(
+    let userNotes: NotesComments[] = [];
+
+    if (type === "fit-user-style") {
+      userNotes = await getUserNotes(session.user.id);
+    }
+
+    const userNotesBody = userNotes.map(note => note.body);
+
+    const { messages, model } = generateImprovementPromptNote(
       slicedText,
+      publication,
       type,
-      idea,
+      {
+        note,
+        maxLength: 280,
+        userNotes: userNotesBody,
+      },
     );
+
     const response = await runPrompt(messages, model);
     const { creditsUsed, creditsRemaining } = await useCredits(
       session.user.id,
