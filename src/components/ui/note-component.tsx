@@ -1,13 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
-import {
-  convertMDToHtml,
-  Note,
-  NoteDraft,
-  NoteFeedback,
-  NoteStatus,
-} from "@/types/note";
+import { convertMDToHtml, Note, NoteDraft, NoteFeedback } from "@/types/note";
 import {
   ExternalLink,
   Heart,
@@ -352,32 +346,34 @@ export default function NoteComponent({ note }: NoteProps) {
 
   const NotesActions = () =>
     isUserNote && (
-      <div className={cn("w-full flex items-center gap-0")}>
-        <TooltipButton
-          tooltipContent="Like - this helps our AI understand what you like"
-          disabled={loadingFeedback === "like" || loadingArchive}
-          variant="ghost"
-          size="sm"
-          onClick={() => handleFeedbackChange("like")}
-          className={cn(
-            "hover:text-primary",
-            feedback === "like" && "text-primary",
-          )}
-        >
-          {loadingFeedback === "like" ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <ThumbsUp className="h-4 w-4" />
-          )}
-        </TooltipButton>
-        <DislikeFeedbackPopover
-          disabled={loadingFeedback === "dislike" || loadingArchive}
-          isOpen={isDislikePopoverOpen}
-          onOpenChange={setIsDislikePopoverOpen}
-          onSubmit={text => handleFeedbackChange("dislike", text)}
-          isLoading={loadingFeedback === "dislike"}
-          feedback={feedback}
-        />
+      <div className={cn("w-full flex items-center justify-between")}>
+        <div className={cn("w-full flex items-center gap-0")}>
+          <TooltipButton
+            tooltipContent="Like - this helps our AI understand what you like"
+            disabled={loadingFeedback === "like" || loadingArchive}
+            variant="ghost"
+            size="sm"
+            onClick={() => handleFeedbackChange("like")}
+            className={cn(
+              "hover:text-primary",
+              feedback === "like" && "text-primary",
+            )}
+          >
+            {loadingFeedback === "like" ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <ThumbsUp className="h-4 w-4" />
+            )}
+          </TooltipButton>
+          <DislikeFeedbackPopover
+            disabled={loadingFeedback === "dislike" || loadingArchive}
+            isOpen={isDislikePopoverOpen}
+            onOpenChange={setIsDislikePopoverOpen}
+            onSubmit={text => handleFeedbackChange("dislike", text)}
+            isLoading={loadingFeedback === "dislike"}
+            feedback={feedback}
+          />
+        </div>
         <TooltipButton
           tooltipContent={
             "Archive note" +
@@ -455,7 +451,9 @@ export default function NoteComponent({ note }: NoteProps) {
                 className={cn(
                   "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0",
                   isExpanded ? "max-h-none" : "max-h-[260px]",
+                  isUserNote && "cursor-pointer",
                 )}
+                onClick={() => selectNote(note)}
               >
                 <div
                   className="prose prose-sm max-w-none note-component-content"
@@ -546,7 +544,9 @@ export default function NoteComponent({ note }: NoteProps) {
                 }
                 variant="link"
                 size="sm"
-                className="text-xs p-0 text-foreground"
+                className={cn("text-xs p-0 text-foreground", {
+                  hidden: isUserNote,
+                })}
               >
                 Edit & post
               </Button>

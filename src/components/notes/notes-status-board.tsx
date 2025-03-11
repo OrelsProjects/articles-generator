@@ -94,15 +94,6 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
           return;
         }
 
-        console.log(
-          "Updating note status:",
-          note.id,
-          "from",
-          note.status,
-          "to",
-          newStatus,
-        );
-
         // Update the note status
         await updateNoteStatus(note.id, newStatus as NoteStatus);
       } catch (error) {

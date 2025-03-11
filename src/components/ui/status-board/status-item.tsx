@@ -34,7 +34,11 @@ export function StatusItem({ item, onEditItem, selected }: StatusItemProps) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={`${isDragging ? "z-10" : ""} cursor-grab active:cursor-grabbing ${selected ? "border-primary/60" : ""}`}
+      className={`${isDragging ? "z-10" : ""} cursor-pointer active:cursor-grabbing ${selected ? "border-primary/60" : ""}`}
+      onClick={e => {
+        e.stopPropagation();
+        onEditItem(item.id, item.content);
+      }}
       {...attributes}
       {...listeners}
     >
@@ -52,20 +56,6 @@ export function StatusItem({ item, onEditItem, selected }: StatusItemProps) {
               <div className="font-medium text-sm">{item.author}</div>
             )}
             <div className="text-sm break-words">{item.content}</div>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={e => {
-                e.stopPropagation();
-                onEditItem(item.id, item.content);
-              }}
-            >
-              <Pencil className="h-4 w-4 text-muted-foreground" />
-            </Button>
           </div>
         </div>
       </CardContent>
