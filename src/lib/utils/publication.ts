@@ -2,10 +2,17 @@
 /* eslint-disable no-console */
 import * as cheerio from "cheerio";
 import { prismaArticles } from "@/app/api/_db/db";
-import { Post, Publication, PublicationLink } from "../../../prisma/generated/articles";
+import {
+  Post,
+  Publication,
+  PublicationLink,
+} from "../../../prisma/generated/articles";
 import { delay, fetchWithHeaders } from "./requests";
 import loggerServer from "@/loggerServer";
-import { getUserArticlesBody } from "@/lib/dal/articles";
+import {
+  getUserArticles as getUserPosts,
+  getUserArticlesBody,
+} from "@/lib/dal/articles";
 import { toValidUrl } from "@/lib/utils/url";
 
 export const getArticleEndpoint = (
@@ -252,7 +259,12 @@ export async function populatePublications(
 ): Promise<Array<{ url: string; status: string }>> {
   const publicationsStatus: Array<{ url: string; status: string }> = [];
   const allPosts: SubstackPost[] = [];
-
+  const currentUserPosts = await getUserPosts(
+    { url },
+    {
+      scrapeIfNotFound: false,
+    },
+  );
   // STEP is 23, we attempt up to 1200 posts
   for (let i = 0; i < 1200; i += STEP) {
     // Rate limit: after every 600 (26 calls), wait 1 minute
@@ -267,7 +279,14 @@ export async function populatePublications(
       loggerServer.error(`No data for ${subUrl}`);
       break;
     }
-    allPosts.push(...data);
+    const postsNotInCurrentUserPosts = data.filter(
+      (post: SubstackPost) => !currentUserPosts.some(p => p.id === post.id),
+    );
+    if (postsNotInCurrentUserPosts.length > 0) {
+      allPosts.push(...postsNotInCurrentUserPosts);
+    } else {
+      break;
+    }
   }
 
   // Optionally scrape body text for each post

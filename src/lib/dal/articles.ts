@@ -3,6 +3,7 @@ import { Article, ArticleWithBody } from "@/types/article";
 import { Post } from "../../../prisma/generated/articles";
 import { ArticleContent } from "@/lib/dal/milvus";
 import { getSubstackArticleData } from "@/lib/utils/article";
+import { setPublications } from "@/lib/utils/publication";
 
 export interface GetArticlesOptionsOrder {
   by: "reactionCount" | "publishedAt" | "audience";
@@ -14,6 +15,7 @@ export interface GetUserArticlesOptions {
   freeOnly?: boolean;
   order?: GetArticlesOptionsOrder;
   select?: (keyof Post)[];
+  scrapeIfNotFound?: boolean;
 }
 
 export const getUserArticles = async (
@@ -30,10 +32,11 @@ export const getUserArticles = async (
   options: GetUserArticlesOptions = {
     limit: 10,
     freeOnly: true,
+    scrapeIfNotFound: false,
   },
 ): Promise<Article[]> => {
   let posts: Post[] = [];
-
+  let url = "";
   const postsWhere = {
     ...(options.freeOnly && {
       audience: "everyone",
@@ -60,12 +63,13 @@ export const getUserArticles = async (
     posts = await prismaArticles.post.findMany({
       where: {
         canonicalUrl: {
-          startsWith: startsWith,
+          startsWith,
         },
         ...postsWhere,
       },
       ...queryOptions,
     });
+    url = data.url;
   } else if ("publicationId" in data) {
     posts = await prismaArticles.post.findMany({
       where: {
@@ -73,6 +77,11 @@ export const getUserArticles = async (
         ...postsWhere,
       },
       ...queryOptions,
+    });
+    const publication = await prismaArticles.publication.findFirst({
+      where: {
+        id: data.publicationId,
+      },
     });
   } else if ("userId" in data) {
     const publication = await prisma.userMetadata.findMany({
@@ -97,6 +106,10 @@ export const getUserArticles = async (
       },
       ...queryOptions,
     });
+  }
+
+  if (posts.length === 0 && options.scrapeIfNotFound) {
+    const posts = await setPublications({ body: { url } }, true, 60);
   }
 
   return posts.map(post => ({

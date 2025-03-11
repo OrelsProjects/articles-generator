@@ -2,7 +2,8 @@
 
 import { getPublicationByUrl } from "@/lib/dal/publication";
 import { getArticleEndpoint } from "@/lib/utils/publication";
-import { toValidUrl } from "@/lib/utils/url";
+import { getUrlComponents, toValidUrl } from "@/lib/utils/url";
+import { Logger } from "@/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -10,10 +11,11 @@ export async function GET(request: NextRequest) {
     const url = request.nextUrl.searchParams.get("q");
 
     if (!url) {
+      Logger.error("URL is required");
       throw new Error("URL is required");
     }
 
-    const validUrl = toValidUrl(url);
+    const { validUrl, mainComponentInUrl } = getUrlComponents(url);
 
     const endpointToValidate = getArticleEndpoint(validUrl, 0, 1);
     const response = await fetch(endpointToValidate);
@@ -28,7 +30,8 @@ export async function GET(request: NextRequest) {
       valid: true,
       hasPublication: publicationInDB.length > 0,
     });
-  } catch (error) {
+  } catch (error: any) {
+    Logger.error(error);
     return NextResponse.json({ error: "URL is not valid" }, { status: 400 });
   }
 }

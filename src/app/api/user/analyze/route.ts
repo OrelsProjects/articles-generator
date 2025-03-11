@@ -6,16 +6,12 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { runPrompt } from "@/lib/open-router";
 import { Publication } from "@/types/publication";
-import {
-  getAuthorId,
-  getPublicationArticles,
-  getPublicationByUrl,
-} from "@/lib/dal/publication";
+import { getAuthorId, getPublicationByUrl } from "@/lib/dal/publication";
 import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 import { Article, ArticleWithBody } from "@/types/article";
 import loggerServer from "@/loggerServer";
-import { setPublications } from "@/lib/utils/publication";
+import { setPublications as scrapePosts } from "@/lib/utils/publication";
 import { parseJson } from "@/lib/utils/json";
 import { buildSubstackUrl } from "@/lib/utils/url";
 
@@ -40,15 +36,18 @@ export async function POST(req: NextRequest) {
 
     let publicationMetadata = userMetadata?.publication;
 
-    const { url } = await req.json();
+    const url = req.nextUrl.searchParams.get("url") as string;
 
-    let publications = await getPublicationByUrl(url);
+    let publications = await getPublicationByUrl(url, {
+      createIfNotFound: true,
+    });
     let userPublication = publications[0];
+
+    await scrapePosts({ body: { url } }, true, MAX_ARTICLES_TO_GET_BODY);
 
     if (!userPublication) {
       // Need to analyze it.
       console.time("Setting publications");
-      await setPublications({ body: { url } }, true, MAX_ARTICLES_TO_GET_BODY);
       console.timeEnd("Setting publications");
       publications = await getPublicationByUrl(url);
       userPublication = publications[0];
@@ -66,6 +65,7 @@ export async function POST(req: NextRequest) {
       {
         limit: 150,
         freeOnly: false,
+        scrapeIfNotFound: true,
       },
     );
     console.timeEnd("Getting user articles with body");

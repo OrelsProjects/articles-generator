@@ -40,6 +40,11 @@ interface PublicationDataResponse {
 
 export const getPublicationByUrl = async (
   url: string,
+  options: {
+    createIfNotFound: boolean;
+  } = {
+    createIfNotFound: false,
+  },
 ): Promise<Publication[]> => {
   const strippedUrl = stripUrl(url, { removeWww: true, removeDotCom: true });
 
@@ -77,11 +82,15 @@ export const getPublicationByUrl = async (
       },
     });
     if (publications.length === 0) {
-      const publicationId = await createPublication(url);
-      if (publicationId) {
-        publications = await prismaArticles.publication.findMany({
-          where: { id: publicationId },
-        });
+      if (options.createIfNotFound) {
+        const publicationId = await createPublication(url);
+        if (publicationId) {
+          publications = await prismaArticles.publication.findMany({
+            where: { id: publicationId },
+          });
+        }
+      } else {
+        return [];
       }
     }
   }
@@ -219,20 +228,27 @@ export async function createPublication(url: string): Promise<number | null> {
 
   const pub = publication as PublicationDB;
 
-  const userPublication: PublicationDB = {
-    id: pub.id,
+  const userPublication: Publication = {
+    id: BigInt(pub.id),
     name: pub.name,
     subdomain: pub.subdomain,
-    custom_domain: pub.custom_domain,
-    logo_url: pub.logo_url || image,
-    author_id: pub.author_id,
-    created_at: pub.created_at,
+    customDomain: pub.custom_domain,
+    logoUrl: pub.logo_url || image,
+    authorId: BigInt(pub.author_id),
+    createdAt: new Date(pub.created_at),
     language: "en",
-    custom_domain_optional: false,
-    hero_text: pub.hero_text || description,
-    email_from_name: pub.email_from_name || null,
+    customDomainOptional: false,
+    heroText: pub.hero_text || description,
+    emailFromName: pub.email_from_name || null,
     copyright: pub.copyright || title || "",
     explicit: pub.explicit || false,
+    themeVarBackgroundPop: null,
+    rssWebsiteUrl: null,
+    foundingPlanName: null,
+    communityEnabled: null,
+    inviteOnly: null,
+    paymentsState: null,
+    isPersonalMode: null,
   };
 
   const existingPublication = await prismaArticles.publication.findUnique({
@@ -245,5 +261,5 @@ export async function createPublication(url: string): Promise<number | null> {
     data: userPublication,
   });
 
-  return userPublication.id;
+  return Number(userPublication.id);
 }
