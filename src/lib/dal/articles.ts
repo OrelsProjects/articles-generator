@@ -78,11 +78,6 @@ export const getUserArticles = async (
       },
       ...queryOptions,
     });
-    const publication = await prismaArticles.publication.findFirst({
-      where: {
-        id: data.publicationId,
-      },
-    });
   } else if ("userId" in data) {
     const publication = await prisma.userMetadata.findMany({
       where: {

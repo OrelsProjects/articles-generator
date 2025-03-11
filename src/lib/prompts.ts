@@ -392,8 +392,9 @@ const improvementPromptSystemNote = (
             : ""
         }
         - The writing must feel completely human and authentic
-        - Return only the improved note text, with no explanations or comments
         - The note should read as if written by the original author, just improved
+        - Return only the improved note text, with no explanations or comments
+        - I can't stress this enough - Return only the improved note text, with no explanations or comments
   `;
 
   return {
@@ -847,6 +848,11 @@ const improvementPromptTemplates: {
   "fit-user-style": {
     task: "fit the user's style",
     prompt: `Fit the user's writing style in the text. If the user provides examples, use them to fit the style as well.`,
+  },
+  "human-like": {
+    task: "make it human-like",
+    prompt: `Act as if you were a human and not a machine, and write the text in a way that is natural and human-like, without any hint or sign of AI involvement.
+    `,
   },
 };
 

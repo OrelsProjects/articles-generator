@@ -221,6 +221,10 @@ export const getUrlComponents = (url: string): UrlComponents => {
       : urlNoSubstack;
     mainComponentInUrl = urlWithoutHttps.split(".")[0];
   }
-  
-  return { validUrl, mainComponentInUrl };
+
+  if (validUrl.startsWith("https://")) {
+    return { validUrl, mainComponentInUrl };
+  } else {
+    return { validUrl: `https://${validUrl}`, mainComponentInUrl };
+  }
 };

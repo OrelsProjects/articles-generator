@@ -87,10 +87,16 @@ const formatOptions: {
     divider: false,
   },
   {
+    type: "human-like",
+    label: "Human-like",
+    subLabel: "Make it more",
+    icon: User,
+    divider: false,
+  },
+  {
     type: "engaging",
     label: "Engaging",
     icon: MessageSquare,
-    subLabel: "Make it more",
     divider: false,
   },
   {

@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     let publicationMetadata = userMetadata?.publication;
 
-    const url = req.nextUrl.searchParams.get("url") as string;
+    const { url } = await req.json();
 
     let publications = await getPublicationByUrl(url, {
       createIfNotFound: true,

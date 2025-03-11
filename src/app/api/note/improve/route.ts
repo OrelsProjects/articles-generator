@@ -80,7 +80,7 @@ export async function POST(
       type,
       {
         note,
-        maxLength: 280,
+        maxLength: Math.max(280, userNotesBody.length),
         userNotes: userNotesBody,
       },
     );
