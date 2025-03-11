@@ -22,6 +22,15 @@ import {
   RefreshCw,
   Copy,
   Plus,
+  Check,
+  MessageSquare,
+  Smile,
+  ThumbsUp,
+  Wand2,
+  Zap,
+  FileText,
+  ChevronDown,
+  Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
@@ -45,6 +54,92 @@ import { useUi } from "@/lib/hooks/useUi";
 import { debounce } from "lodash";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { ToastStepper } from "@/components/ui/toast-stepper";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { EventTracker } from "@/eventTracker";
+
+// Define improvement types
+type ImprovementType =
+  | "fact-check"
+  | "elaborate"
+  | "engaging"
+  | "humorous"
+  | "positive"
+  | "creative"
+  | "sarcastic"
+  | "inspirational"
+  | "concise";
+
+// Define format options for the dropdown
+const formatOptions: {
+  label: string;
+  icon: React.ElementType;
+  divider?: boolean;
+  subLabel?: string;
+  type: ImprovementType;
+}[] = [
+  {
+    type: "fact-check",
+    label: "Fact-check",
+    subLabel: "Check the text for accuracy",
+    icon: Check,
+    divider: false,
+  },
+  {
+    type: "elaborate",
+    label: "Elaborate",
+    subLabel: "Make it more",
+    icon: Sparkles,
+    divider: false,
+  },
+  {
+    type: "engaging",
+    label: "Engaging",
+    icon: MessageSquare,
+    subLabel: "Make it more",
+    divider: false,
+  },
+  {
+    type: "humorous",
+    label: "Humorous",
+    icon: Smile,
+    divider: false,
+  },
+  {
+    type: "positive",
+    label: "Positive",
+    icon: ThumbsUp,
+    divider: false,
+  },
+  {
+    type: "creative",
+    label: "Creative",
+    icon: Wand2,
+    divider: false,
+  },
+  {
+    type: "sarcastic",
+    label: "Sarcastic",
+    icon: MessageSquare,
+    divider: false,
+  },
+  {
+    type: "inspirational",
+    label: "Inspirational",
+    icon: Zap,
+    divider: false,
+  },
+  {
+    type: "concise",
+    label: "Concise",
+    icon: FileText,
+    divider: false,
+  },
+];
 
 // Define loading states for generating ideas
 const ideaLoadingStates = [
@@ -65,6 +160,7 @@ export default function GenerateNotesSidebar() {
   } = useNotes();
   const [open, setOpen] = useState(false);
   const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
+  const [loadingImprovement, setLoadingImprovement] = useState(false);
   const [previousSelectedNote, setPreviousSelectedNote] =
     useState<NoteDraft | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,6 +178,9 @@ export default function GenerateNotesSidebar() {
   const handleEditNoteBody = async (noteId: string | null, html: string) => {
     if (loadingEditNote) return;
     const body = unformatText(html);
+    if (!selectedNote && !body) {
+      return;
+    }
     try {
       await editNoteBody(noteId, body);
     } catch (e: any) {
@@ -150,6 +249,33 @@ export default function GenerateNotesSidebar() {
       toast.error(e.message || "Something went wrong.. Try again.");
     } finally {
       setLoadingGenerateNewIdea(false);
+    }
+  };
+
+  const handleImproveText = async (type: ImprovementType) => {
+    if (loadingImprovement) return;
+    EventTracker.track("generate_notes_sidebar_improve_text_" + type);
+
+    const selectedText =
+      editor?.state.selection.content().content.firstChild?.textContent;
+
+    if (!selectedText || selectedText.trim().length === 0) {
+      toast.error("Please select some text to improve");
+      return;
+    }
+
+    setLoadingImprovement(true);
+    try {
+      // Here you would call your API to improve the text
+      toast.info(`Improving text with ${type} style...`);
+      // Placeholder for actual implementation
+      setTimeout(() => {
+        toast.success(`Text improved with ${type} style`);
+        setLoadingImprovement(false);
+      }, 1500);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to improve text");
+      setLoadingImprovement(false);
     }
   };
 
@@ -228,13 +354,6 @@ export default function GenerateNotesSidebar() {
         )}
       >
         <div className="flex flex-col h-full">
-          {/* Tabs */}
-          <div className="flex border-b border-border">
-            <button className="px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary">
-              Compose
-            </button>
-          </div>
-
           {/* Content Area */}
           <div className="flex-1 overflow-auto p-4">
             <div className="mb-2 flex items-center justify-between">
@@ -337,28 +456,45 @@ export default function GenerateNotesSidebar() {
                     accept="image/*"
                     className="hidden"
                   />
-                  {/* <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                  </Button> */}
-                  <TooltipButton
-                    tooltipContent="Generate new notes (3 credits)"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    disabled={loadingGenerateNewIdea}
-                    onClick={handleGenerateNewNote}
-                  >
-                    {loadingGenerateNewIdea ? (
-                      <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
-                    ) : (
-                      <Sparkles className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </TooltipButton>
+                  {/* Dropdown for text improvements */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <TooltipButton
+                        tooltipContent="Improve selected text (1)"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        disabled={loadingImprovement || !hasContent}
+                      >
+                        {loadingImprovement ? (
+                          <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
+                        ) : (
+                          <div className="flex items-center">
+                            <Sparkles className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        )}
+                      </TooltipButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      {formatOptions.map(option => (
+                        <DropdownMenuItem
+                          key={option.type}
+                          onClick={() => handleImproveText(option.type)}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <option.icon className="h-4 w-4" />
+                          <div className="flex flex-col">
+                            <span>{option.label}</span>
+                            {option.subLabel && (
+                              <span className="text-xs text-muted-foreground">
+                                {option.subLabel}
+                              </span>
+                            )}
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -380,38 +516,47 @@ export default function GenerateNotesSidebar() {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={handleCopy}
-                >
-                  <Copy className="h-5 w-5 text-muted-foreground" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    className="w-8 h-8 p-0"
+                    disabled={loadingEditNote || !hasContent}
+                    onClick={() => {
+                      handleEditNoteBody(selectedNote?.id || null, content);
+                    }}
+                  >
+                    {loadingEditNote ? (
+                      <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
+                    ) : (
+                      <Save className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    disabled={!hasContent}
+                    onClick={handleCopy}
+                  >
+                    <Copy className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                </div>
               </div>
             </div>
-            <div
-              className={cn("w-full flex justify-between gap-2 mt-4", {
-                hidden: !hasContent,
-              })}
+
+            {/* Generate Notes Button */}
+            <Button
+              className="w-full mt-8"
+              onClick={handleGenerateNewNote}
+              disabled={loadingGenerateNewIdea}
             >
-              <div className="mt-2 text-xs text-muted-foreground">
-                {loadingEditNote
-                  ? "saving..."
-                  : selectedNote?.id
-                    ? "saved"
-                    : "Start writing"}
-              </div>
-              <Button
-                className="w-fit"
-                disabled={loadingEditNote}
-                onClick={() => {
-                  handleEditNoteBody(selectedNote?.id || null, content);
-                }}
-              >
-                Save
-              </Button>
-            </div>
+              {loadingGenerateNewIdea ? (
+                <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+              ) : (
+                <Sparkles className="h-5 w-5 mr-2" />
+              )}
+              Generate notes (3)
+            </Button>
           </div>
         </div>
       </div>

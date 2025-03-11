@@ -408,7 +408,7 @@ export default function NoteComponent({ note }: NoteProps) {
   useEffect(() => {
     if (contentRef.current) {
       requestAnimationFrame(() => {
-        setShowExpandButton(contentRef.current!.scrollHeight > 260);
+        setShowExpandButton((contentRef.current?.scrollHeight || 999) > 260);
       });
     }
   }, [htmlContent]);

@@ -14,6 +14,7 @@ interface SearchOptions {
   limit?: number;
   includeBody?: boolean;
   filters?: Filter[];
+  minMatch: number;
 }
 
 export interface ArticleContent {
@@ -167,8 +168,9 @@ async function searchSimilarArticles({
 
 async function searchSimilarNotes({
   query,
-  limit = 20,
+  limit = 30,
   filters = [],
+  minMatch = 0.3,
 }: SearchOptions) {
   const MILVUS_API_KEY = process.env.MILVUS_API_KEY;
   const MILVUS_ENDPOINT = process.env.MILVUS_ENDPOINT;
@@ -226,7 +228,11 @@ async function searchSimilarNotes({
   }
 
   const data = await response.json();
-  const topNotes = data.data ? data.data.slice(0, limit) : [];
+
+  const topMatchNotes = data.data
+    ? data.data.filter((note: any) => note.distance >= minMatch)
+    : [];
+  const topNotes = topMatchNotes.slice(0, limit);
 
   const notesFromDb = await prismaArticles.notesComments.findMany({
     where: {

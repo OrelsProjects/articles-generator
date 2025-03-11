@@ -169,6 +169,7 @@ export async function POST(
       query,
       limit: 20,
       filters,
+      minMatch: 0.6,
     });
 
     const uniqueInspirations = inspirations
