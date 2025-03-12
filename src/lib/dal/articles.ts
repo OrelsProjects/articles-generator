@@ -32,11 +32,9 @@ export const getUserArticles = async (
   options: GetUserArticlesOptions = {
     limit: 10,
     freeOnly: true,
-    scrapeIfNotFound: false,
   },
 ): Promise<Article[]> => {
   let posts: Post[] = [];
-  let url = "";
   const postsWhere = {
     ...(options.freeOnly && {
       audience: "everyone",
@@ -69,7 +67,6 @@ export const getUserArticles = async (
       },
       ...queryOptions,
     });
-    url = data.url;
   } else if ("publicationId" in data) {
     posts = await prismaArticles.post.findMany({
       where: {
@@ -101,10 +98,6 @@ export const getUserArticles = async (
       },
       ...queryOptions,
     });
-  }
-
-  if (posts.length === 0 && options.scrapeIfNotFound) {
-    const posts = await setPublications({ body: { url } }, true, 60);
   }
 
   return posts.map(post => ({

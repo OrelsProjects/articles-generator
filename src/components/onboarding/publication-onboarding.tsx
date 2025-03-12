@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -10,74 +9,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
-import { useSettings } from "@/lib/hooks/useSettings";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import Logo from "@/components/ui/logo";
 import Image from "next/image";
-import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
-import { useSearchParams } from "next/navigation";
-import usePayments from "@/lib/hooks/usePayments";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteRoom";
 
 export function PublicationOnboarding() {
-  const router = useCustomRouter();
-  const dispatch = useAppDispatch();
-  const searchParams = useSearchParams();
-  const { user } = useAppSelector(state => state.auth);
-  const plan = searchParams.get("plan");
-  const interval = searchParams.get("interval");
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const { hasPublication } = useSettings();
-  const { goToCheckout } = usePayments();
-
-  useEffect(() => {
-    if (hasPublication) {
-      if (user?.meta?.plan) {
-        router.push("/home");
-      } else if (plan && interval) {
-        // goToCheckout(interval as "month" | "year", plan);
-        setShowPaymentDialog(true);
-      } else {
-        router.push("/pricing?onboarding=true");
-      }
-    }
-  }, [hasPublication, router, dispatch, plan, interval]);
-
-  // Prevent navigation if user doesn't have a publication
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!hasPublication) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasPublication]);
-
-  const handlePaymentDialogChange = (open: boolean) => {
-    if (!open) {
-      if (plan && interval) {
-        goToCheckout(interval as "month" | "year", plan);
-      } else {
-        router.push("/pricing?onboarding=true");
-      }
-    } else {
-      setShowPaymentDialog(true);
-    }
-  };
-
   return (
     <div className="w-screen h-screen flex flex-col items-center justify-center min-h-screen bg-background p-4 relative">
       <Image
@@ -124,28 +61,6 @@ export function PublicationOnboarding() {
           <AnalyzePublicationButton variant="default" className="w-full" />
         </CardFooter>
       </Card>
-      <Dialog open={showPaymentDialog} onOpenChange={handlePaymentDialogChange}>
-        <DialogContent closeOnOutsideClick={false}>
-          <DialogHeader>
-            <DialogTitle>Almost done!</DialogTitle>
-            <DialogDescription>
-              The last step is to{" "}
-              {plan && interval ? "confirm your payment" : "choose a plan"} and
-              start writing!
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                handlePaymentDialogChange(false);
-              }}
-              variant="default"
-            >
-              Confirm payment
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

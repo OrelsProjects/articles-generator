@@ -106,7 +106,14 @@ export default function NotesPage() {
             <p className="text-muted-foreground mb-8">
               Generate your first notes to get started!
             </p>
-            <Button variant="neumorphic-primary" onClick={handleCreateNote}>
+            <Button
+              variant="neumorphic-primary"
+              onClick={handleCreateNote}
+              disabled={loadingCreateNote}
+            >
+              {loadingCreateNote && (
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              )}
               Generate notes (3 credits)
             </Button>
           </div>

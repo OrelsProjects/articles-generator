@@ -1,9 +1,7 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
-import {
-  generateNotesPrompt,
-} from "@/lib/prompts";
+import { generateNotesPrompt } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -16,7 +14,6 @@ import { canUseAI, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
 
 export const maxDuration = 120; // This function can run for a maximum of 2 minutes
-
 
 export async function POST(
   req: NextRequest,
@@ -63,14 +60,17 @@ export async function POST(
       );
     }
 
-    const publication = await prismaArticles.publication.findFirst({
-      where: {
-        id: parseInt(publicationId.toString()),
-      },
-      select: {
-        authorId: true,
-      },
-    });
+    const [publication, isValid] = await Promise.all([
+      prismaArticles.publication.findFirst({
+        where: {
+          id: parseInt(publicationId.toString()),
+        },
+        select: {
+          authorId: true,
+        },
+      }),
+      canUseAI(session.user.id, "notesGeneration"),
+    ]);
 
     if (!publication || !publication.authorId) {
       loggerServer.error("Publication not found", {
@@ -83,7 +83,6 @@ export async function POST(
       );
     }
 
-    const isValid = await canUseAI(session.user.id, "notesGeneration");
     if (!isValid) {
       return NextResponse.json(
         { success: false, error: "Not enough credits" },
@@ -91,57 +90,9 @@ export async function POST(
       );
     }
 
-    const userNotes = await prisma.note.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      take: 15,
-      orderBy: {
-        updatedAt: "desc",
-      },
-    });
-
-    const notesUserDisliked = await prisma.note.findMany({
-      where: {
-        userId: session.user.id,
-        feedback: "dislike",
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: 15,
-    });
-
-    const notesUserLiked = await prisma.note.findMany({
-      where: {
-        userId: session.user.id,
-        feedback: "like",
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: 15,
-    });
-
     const authorId = publication.authorId;
 
-    const notesFromAuthor = await prismaArticles.notesComments.findMany({
-      where: {
-        authorId: parseInt(authorId.toString()),
-      },
-      orderBy: {
-        reactionCount: "desc",
-      },
-      select: {
-        handle: true,
-        name: true,
-        photoUrl: true,
-        body: true,
-      },
-      take: 20,
-    });
-
-    const query = `${userMetadata.publication.generatedDescription}.`;
+    const query = `${userMetadata.publication.preferredTopics || ""}, ${userMetadata.publication.topics}.`;
 
     const randomMinReaction = Math.floor(Math.random() * 300);
     const randomMaxReaction =
@@ -165,25 +116,80 @@ export async function POST(
       },
     ];
 
-    const inspirations = await searchSimilarNotes({
-      query,
-      limit: 20,
-      filters,
-      minMatch: 0.6,
-    });
-
+    console.log("About to run promises");
+    console.time("promises");
+    const [
+      userNotes,
+      notesUserDisliked,
+      notesUserLiked,
+      notesFromAuthor,
+      inspirations,
+    ] = await Promise.all([
+      prisma.note.findMany({
+        where: { userId: session.user.id },
+        take: 10,
+        orderBy: { updatedAt: "desc" },
+      }),
+      prisma.note.findMany({
+        where: { userId: session.user.id, feedback: "dislike" },
+        take: 10,
+        orderBy: { updatedAt: "desc" },
+      }),
+      prisma.note.findMany({
+        where: { userId: session.user.id, feedback: "like" },
+        take: 10,
+        orderBy: { updatedAt: "desc" },
+      }),
+      prismaArticles.notesComments.findMany({
+        where: {
+          authorId: parseInt(authorId.toString()),
+        },
+        orderBy: {
+          reactionCount: "desc",
+        },
+        select: {
+          handle: true,
+          name: true,
+          photoUrl: true,
+          body: true,
+        },
+        take: 10,
+      }),
+      searchSimilarNotes({
+        query,
+        limit: 20,
+        filters,
+        minMatch: 0.3,
+      }),
+    ]);
+    console.timeEnd("promises");
     const uniqueInspirations = inspirations
       .filter(
         (note, index, self) =>
           index === self.findIndex(t => t.body === note.body),
       )
+      .filter(
+        note =>
+          !notesUserDisliked.some(dislike => dislike.body === note.body) &&
+          !notesUserLiked.some(like => like.body === note.body),
+      )
       .slice(0, 10);
+
+    // remove all userNotes that are in uniqueInspirations and in like and dislike
+    const userNotesNoDuplicates = userNotes.filter(
+      note =>
+        !uniqueInspirations.some(
+          inspiration => inspiration.body === note.body,
+        ) &&
+        !notesUserDisliked.some(dislike => dislike.body === note.body) &&
+        !notesUserLiked.some(like => like.body === note.body),
+    );
 
     const messages = generateNotesPrompt(
       userMetadata.publication,
       uniqueInspirations.map((note: NotesComments) => note.body),
       notesFromAuthor.map(note => note.body),
-      userNotes,
+      userNotesNoDuplicates,
       notesUserDisliked,
       notesUserLiked,
       count,
@@ -252,5 +258,7 @@ export async function POST(
     );
   } finally {
     console.timeEnd("generate notes");
+    await prisma.$disconnect();
+    await prismaArticles.$disconnect();
   }
 }

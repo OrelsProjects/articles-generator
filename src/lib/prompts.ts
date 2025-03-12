@@ -655,36 +655,39 @@ export const generateNotesPrompt = (
     Help user write a note with your description, writing style and highlights.
     Think about unique ideas and use the user's provided notes as inspiration only. Be original.
 
-    Response must follow the following rules:
+    Very important:
+    Each note to have as little cliches as possible and have insightful information that is not obvious.
+    Make the note very non-obvious, so it's almost a clickbait.
+    **Don't come up with numbers and facts about the user. Stick to the facts they provide. Rely on the user's description and notes that they posted.**
+    The inspiration for new notes have to be from the user's notes and description, not from random things on the internet.
+    Avoid repeating the same notes as the user's previously written notes or inspiration notes,
+    or writing something that is the opposite of what the user wrote.
 
+    Response must follow the following rules:
   - Must use new lines when needed, avoid using hashtags
   - Write with human-writing style, natural language, and avoid sounding like AI generated note
-  - Must use a proper person point of view, depending on user request and your writing style
   - Reponse body must have less than 280 characters, unless the writing style demands more
-  - Add a concise summary of the note.
-  - Add the type of the note. Listicle, Opinion, Analysis, How-To, etc.
   - Body has to be in markdown format.
-  - Maintain the same tone and writing style as the user's past notes.
-  - 'topics': The topics of the note. Up to 3 topics.
-  - 'inspiration': Which notes inspired you to write this note and why.
-  - Include emojis ONLY if the user's past written notes include them. And only for 1-2 notes.
   - At least one note has to be clean from emojis.
-  - **Don't come up with random things about the user**. Stick to the facts and don't make up things about the user.
-  - Very important - Make sure it passes the flesch-kincaid test with a score of 70 or higher.
+  - Include emojis ONLY if the user's past written notes include them.
+  - Make sure it passes the flesch-kincaid test with a score of 70 or higher.
+  
+  
+  The response **must** be an array of notes in the following JSON format, without additional text:
+  [
+    {
+      "body": "<Generated Note 1>",
+      "summary": "<Generated Summary>",
+      "topics": ["<Generated Topic 1>", "<Generated Topic 2>", "<Generated Topic 3>"],
+      "inspiration": "<Generated Inspiration>",
+      "type": "<Generated type>"
+    },
+  ]
 
-    The response **must** be an array of notes in the following JSON format, without additional text:
-    [
-      {
-        "body": "<Generated Note 1>",
-        "summary": "<Generated Summary>",
-        "topics": ["<Generated Topic 1>", "<Generated Topic 2>", "<Generated Topic 3>"],
-        "inspiration": "<Generated Inspiration>",
-        "type": "<Generated type>"
-      },
-    ]
-
-    Avoid repeating the same notes as the user's previously written notes or inspiration notes.
-    
+  - 'type': The type of the note. Listicle, Opinion, Analysis, How-To, etc.
+  - 'summary': A concise summary of the note.
+  - 'inspiration': Which notes inspired you to write this note and why.
+  - 'topics': The topics of the note. Up to 3 topics.
     `,
     },
     {
@@ -702,13 +705,13 @@ export const generateNotesPrompt = (
           ${userNotes.length > 0 ? `Here are types of my posts. Please, do not repeat them or create very unique ones:` : ""}  
           ${userNotes.map((note, index) => `(${index + 1}) ${note.type}`).join("\\n")}
 
-          ${userNotes.length > 0 ? `Past notes summaries:` : ""}
-          ${userNotes.map((note, index) => `(${index + 1}) ${note.summary}`).join("\\n")}
+          ${userNotes.length > 0 ? `Past notes that I posted:` : ""}
+          ${userNotes.map((note, index) => `(${index + 1}) ${note.body}`).join("\\n")}
 
-          ${notesUserDisliked.length > 0 ? `Here are some notes I didn't like. Don't repeat them:` : ""}
+          ${notesUserDisliked.length > 0 ? `Here are some summaries of notes I didn't like. Don't repeat them:` : ""}
           ${notesUserDisliked.map((note, index) => `(${index + 1}) Summary: ${note.summary}, ${note.feedbackComment ? `Reason: ${note.feedbackComment}` : ""}`).join("\\n")}
 
-          ${notesUserLiked.length > 0 ? `Here are some notes I liked:` : ""}
+          ${notesUserLiked.length > 0 ? `Here are some summaries of notes I liked:` : ""}
           ${notesUserLiked.map((note, index) => `(${index + 1}) ${note.summary}`).join("\\n")}
 
           ${allTopics.length > 0 ? `Here are all the topics I've written about and their count:` : ""}
@@ -853,6 +856,10 @@ const improvementPromptTemplates: {
     task: "make it human-like",
     prompt: `Act as if you were a human and not a machine, and write the text in a way that is natural and human-like, without any hint or sign of AI involvement.
     `,
+  },
+  "new-version": {
+    task: "create a new version of the text",
+    prompt: `Use the text the user gives you as a base, and create a new note from it. It should be unique and deliver the same message.`,
   },
 };
 

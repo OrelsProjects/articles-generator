@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ImprovementType } from "@/lib/prompts";
-import { MotionButton } from "@/components/ui/motion-components";
+import { MotionTooltipButton } from "@/components/ui/motion-components";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { INFINITY } from "@/lib/plans-consts";
@@ -20,6 +20,7 @@ export type FormatOption = {
   divider?: boolean;
   subLabel?: string;
   type: string | ImprovementType;
+  tooltip?: string;
 };
 
 interface FormatDropdownProps {
@@ -161,8 +162,9 @@ export function FormatDropdown({
                     </p>
                   )}
 
-                  <MotionButton
+                  <MotionTooltipButton
                     variant={"ghost"}
+                    tooltipContent={option.tooltip}
                     onClick={() => onSelect(`${option.type}`)}
                     disabled={disabled || error?.disabled || didExceedLimit}
                     className={cn(
@@ -176,7 +178,7 @@ export function FormatDropdown({
                       <option.icon className="h-4 w-4" />
                     )}
                     <span>{option.label}</span>
-                  </MotionButton>
+                  </MotionTooltipButton>
 
                   {option.divider && <div className="h-px bg-border my-1" />}
                 </div>

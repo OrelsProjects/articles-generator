@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     });
     let userPublication = publications[0];
 
-    await scrapePosts({ body: { url } }, true, MAX_ARTICLES_TO_GET_BODY);
+    await scrapePosts(url, MAX_ARTICLES_TO_GET_BODY);
 
     if (!userPublication) {
       // Need to analyze it.

@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
       reactionCount: note.reactionCount,
       entityKey: note.entityKey,
       commentsCount: note.commentsCount || 0,
-      restacks: note.noteIsRestacked ? 1 : 0,
+      restacks: note.restacks,
       attachment: note.attachment || undefined,
     }));
 

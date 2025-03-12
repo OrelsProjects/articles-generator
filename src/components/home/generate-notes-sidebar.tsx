@@ -31,6 +31,7 @@ import {
   FileText,
   Save,
   User,
+  AudioLines,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
@@ -64,6 +65,7 @@ const formatOptions: {
   icon: React.ElementType;
   divider?: boolean;
   subLabel?: string;
+  tooltip?: string;
   type: ImprovementType;
 }[] = [
   // {
@@ -74,15 +76,25 @@ const formatOptions: {
   //   divider: false,
   // },
   {
+    type: "new-version",
+    label: "New version",
+    subLabel: "Same but new",
+    tooltip: "Keep the same topic, but change the note",
+    icon: AudioLines,
+    divider: false,
+  },
+  {
     type: "fit-user-style",
     label: "Fit my style",
     subLabel: "Fill in the blanks",
+    tooltip: "Make it sound like you",
     icon: User,
     divider: false,
   },
   {
     type: "elaborate",
     label: "Keep writing",
+    tooltip: "Complete to a full note",
     icon: Sparkles,
     divider: false,
   },
@@ -90,48 +102,56 @@ const formatOptions: {
     type: "human-like",
     label: "Human-like",
     subLabel: "Make it more",
+    tooltip: "Make it more human-like",
     icon: User,
     divider: false,
   },
   {
     type: "engaging",
     label: "Engaging",
+    tooltip: "Make it more engaging",
     icon: MessageSquare,
     divider: false,
   },
   {
     type: "humorous",
     label: "Humorous",
+    tooltip: "Make it more humorous",
     icon: Smile,
     divider: false,
   },
   {
     type: "positive",
     label: "Positive",
+    tooltip: "Make it more positive",
     icon: ThumbsUp,
     divider: false,
   },
   {
     type: "creative",
     label: "Creative",
+    tooltip: "Make it more creative",
     icon: Wand2,
     divider: false,
   },
   {
     type: "sarcastic",
     label: "Sarcastic",
+    tooltip: "Make it more sarcastic",
     icon: MessageSquare,
     divider: false,
   },
   {
     type: "inspirational",
     label: "Inspirational",
+    tooltip: "Make it more inspirational",
     icon: Zap,
     divider: false,
   },
   {
     type: "concise",
     label: "Concise",
+    tooltip: "Make it more concise",
     icon: FileText,
     divider: false,
   },

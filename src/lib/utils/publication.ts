@@ -254,7 +254,6 @@ function extractPublications(posts: SubstackPost[]) {
  */
 export async function populatePublications(
   url: string,
-  includeBody = false,
   maxArticlesToGetBody = 60,
 ): Promise<Array<{ url: string; status: string }>> {
   const publicationsStatus: Array<{ url: string; status: string }> = [];
@@ -265,14 +264,13 @@ export async function populatePublications(
       scrapeIfNotFound: false,
     },
   );
-  // STEP is 23, we attempt up to 1200 posts
-  for (let i = 0; i < 1200; i += STEP) {
-    // Rate limit: after every 600 (26 calls), wait 1 minute
-    if (i > 0 && i % 600 === 0) {
-      console.log(`Waiting 1 minute after scraping ${i} posts from: ${url}`);
-      await delay(60000);
-    }
 
+  const postsWithBody = currentUserPosts.filter(post => post.bodyText);
+  if (postsWithBody.length >= currentUserPosts.length * 0.5) {
+    return [{ url, status: "completed" }];
+  }
+
+  for (let i = 0; i < 300; i += STEP) {
     const subUrl = getArticleEndpoint(url, i, STEP);
     const data = await fetchWithHeaders(subUrl);
     if (!data || data.length === 0) {
@@ -289,18 +287,18 @@ export async function populatePublications(
     }
   }
 
-  // Optionally scrape body text for each post
-  if (includeBody) {
-    const postsToGetBody = allPosts.slice(0, maxArticlesToGetBody);
-    for (const post of postsToGetBody) {
-      const formattedPost = {
-        ...post,
-        canonicalUrl: post.canonical_url || "",
-      };
-      const body = await getUserArticlesBody([formattedPost]);
-      const { canonicalUrl, ...restOfPost } = body[0];
-      post.body_text = restOfPost.bodyText;
-    }
+  const postsToGetBody = [...allPosts]
+    .sort((a, b) => (b.reactionCount || 0) - (a.reactionCount || 0))
+    .slice(0, maxArticlesToGetBody);
+    
+  for (const post of postsToGetBody) {
+    const formattedPost = {
+      ...post,
+      canonicalUrl: post.canonical_url || "",
+    };
+    const body = await getUserArticlesBody([formattedPost]);
+    const { canonicalUrl, ...restOfPost } = body[0];
+    post.body_text = restOfPost.bodyText;
   }
 
   // Extract publications from allPosts
@@ -606,89 +604,9 @@ export async function scrapeLinks(): Promise<void> {
  *    set started_at, call populatePublications for each, then update DB.
  */
 export async function setPublications(
-  req?: { body?: { url?: string } },
-  includeBody = false,
+  url: string,
   maxArticlesToGetBody = 60,
 ): Promise<void> {
-  // If we have a request body with a url, just run on that
-  if (req && req.body && req.body.url) {
-    let { url } = req.body;
-    url = toValidUrl(url);
-    await populatePublications(url, includeBody, maxArticlesToGetBody);
-    return;
-  }
-
-  // Otherwise, process in a loop from the publication_links table
-  while (true) {
-    console.log("Getting publications to process (limit 500)");
-
-    // 1) Get up to 500 links with null status
-    const linksToProcess = await prismaArticles.publicationLink.findMany({
-      where: { status: null },
-      take: 500,
-    });
-
-    if (linksToProcess.length === 0) {
-      console.log("No more publications to process.");
-      break;
-    }
-
-    // 2) Mark them as started
-    await prismaArticles.publicationLink.updateMany({
-      where: {
-        id: { in: linksToProcess.map(link => link.id) },
-      },
-      data: { startedAt: new Date() },
-    });
-
-    let index = 0;
-    let runningTasks = 0;
-    const maxRunningTasks = 1;
-
-    const doProcessLink = async (link: PublicationLink, i: number) => {
-      try {
-        const statusArray = await populatePublications(link.url);
-        console.log(`Processed ${i + 1}/${linksToProcess.length}: ${link.url}`);
-
-        // Build updates for each publication in statusArray
-        for (const status of statusArray) {
-          await prismaArticles.publicationLink.update({
-            where: { id: link.id },
-            data: {
-              completedAt: status.status === "completed" ? new Date() : null,
-              status: status.status,
-            },
-          });
-        }
-      } catch (error: any) {
-        console.error(`Failed to process ${link.url}:`, error);
-        loggerServer.error(`Failed to process ${link.url}:`, error);
-      } finally {
-        runningTasks--;
-      }
-    };
-
-    // 3) Loop through each link
-    while (index < linksToProcess.length) {
-      // Wait if we've hit the max running tasks
-      if (runningTasks >= maxRunningTasks) {
-        await delay(500);
-        continue;
-      }
-      const link = linksToProcess[index];
-      index++;
-      runningTasks++;
-
-      // Fire & forget
-      void doProcessLink(link, index - 1);
-    }
-
-    // 4) Wait for all tasks to finish
-    while (runningTasks > 0) {
-      await delay(100);
-    }
-
-    // 5) Finally, mark them as completed_at if status updated
-    console.log("All publications processed in this batch.");
-  }
+  url = toValidUrl(url);
+  await populatePublications(url, maxArticlesToGetBody);
 }

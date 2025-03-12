@@ -44,10 +44,15 @@ export const authOptions: AuthOptions = {
       ];
       const [userMetadata, subscription] = (await Promise.all(promises)) as [
         { publicationId: string | null } | null,
-        { plan: string; currentPeriodStart: Date; currentPeriodEnd: Date; cancelAtPeriodEnd: boolean } | null,
+        {
+          plan: string;
+          currentPeriodStart: Date;
+          currentPeriodEnd: Date;
+          cancelAtPeriodEnd: boolean;
+        } | null,
       ];
       session.user.meta = {
-        plan: subscription?.plan as Plan || "free",
+        plan: subscription?.plan ? (subscription.plan as Plan) : null,
         currentPeriodStart: subscription?.currentPeriodStart || null,
         currentPeriodEnd: subscription?.currentPeriodEnd || null,
         cancelAtPeriodEnd: subscription?.cancelAtPeriodEnd || false,

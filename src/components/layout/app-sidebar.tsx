@@ -100,8 +100,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               <li key={item.name}>
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
-                    <TooltipTrigger
-                     asChild>
+                    <TooltipTrigger asChild>
                       <Link
                         key={item.name}
                         href={item.disabled ? "" : item.href}

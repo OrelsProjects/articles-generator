@@ -217,7 +217,11 @@ export default function NoteComponent({ note }: NoteProps) {
 
   const Reactions = () =>
     noteReactions && (
-      <div className="flex justify-between items-center pl-2">
+      <Link
+        className="flex justify-between items-center pl-2"
+        href={`https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`}
+        target="_blank"
+      >
         <div className="flex space-x-3">
           <span className="text-xs text-muted-foreground flex items-center text-red-500">
             <Heart className="h-4 w-4 mr-1 text-red-500 fill-red-500" />
@@ -232,7 +236,7 @@ export default function NoteComponent({ note }: NoteProps) {
             <p>{noteReactions.restacks}</p>
           </span>
         </div>
-      </div>
+      </Link>
     );
 
   const Author = () => (
@@ -445,11 +449,12 @@ export default function NoteComponent({ note }: NoteProps) {
               "opacity-60": feedback === "dislike",
             })}
           >
-            <div className="w-full relative">
+            <div className="w-full relative z-20">
+              {/* Content */}
               <div
                 ref={contentRef}
                 className={cn(
-                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0",
+                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 cursor-pointer z-10",
                   isExpanded ? "max-h-none" : "max-h-[260px]",
                   isUserNote && "cursor-pointer",
                 )}
@@ -462,48 +467,49 @@ export default function NoteComponent({ note }: NoteProps) {
                   }}
                 />
               </div>
+              {/* Expand Button */}
               {showExpandButton && (
-                <div className="relative h-4 w-full">
+                <div className="relative h-4 w-full z-20">
                   <Button
                     variant="link"
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto z-30"
+                    className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto"
                   >
                     {isExpanded ? "less" : "more"}
                   </Button>
-                  {/* Hover Actions Bar */}
-                  {!isUserNote && (
-                    <div className="absolute -bottom-2 left-0 right-0 bg-background/95 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-3 flex justify-between items-center z-40">
-                      {entityKey && (
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link
-                            href={`https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`}
-                            target="_blank"
-                            className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-                          >
-                            View on Substack
-                            <ExternalLink className="h-3 w-3" />
-                          </Link>
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-primary hover:text-primary/80"
-                        onClick={() => selectNote(note)}
-                      >
-                        <span className="text-xs">Edit & post</span>
-                      </Button>
-                    </div>
-                  )}
                   <div
                     className={cn(
-                      "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent z-0",
+                      "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent -z-10",
                       isExpanded ? "opacity-0" : "opacity-100",
                     )}
                   />
                 </div>
               )}
+              {/* Hover Actions Bar */}
+              {/* {!isUserNote && (
+                <div className="absolute -bottom-2 left-0 right-0 bg-background/95 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-3 flex justify-between items-center z-30">
+                  {entityKey && (
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link
+                        href={`https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`}
+                        target="_blank"
+                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 z-30"
+                      >
+                        View on Substack
+                        <ExternalLink className="h-3 w-3" />
+                      </Link>
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-primary hover:text-primary/80"
+                    onClick={() => selectNote(note)}
+                  >
+                    <span className="text-xs">Edit & post</span>
+                  </Button>
+                </div>
+              )} */}
             </div>
             {attachment && (
               <div
