@@ -29,7 +29,7 @@ export async function POST(
 
   const body = await req.json();
   const countString = body.count;
-  const { model: requestedModel } = body.model;
+  const requestedModel = body.model;
   const featureFlags = session.user.meta?.featureFlags || [];
   let model: Model = "anthropic/claude-3.5-sonnet";
   console.log("featureFlags", featureFlags);
