@@ -1,7 +1,7 @@
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { Plan, PrismaClient } from "@prisma/client";
+import { FeatureFlag, Plan, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -24,6 +24,7 @@ export const authOptions: AuthOptions = {
           },
           select: {
             publicationId: true,
+            featureFlags: true,
           },
         }),
         prisma.subscription.findFirst({
@@ -43,7 +44,7 @@ export const authOptions: AuthOptions = {
         }),
       ];
       const [userMetadata, subscription] = (await Promise.all(promises)) as [
-        { publicationId: string | null } | null,
+        { publicationId: string | null; featureFlags: FeatureFlag[] } | null,
         {
           plan: string;
           currentPeriodStart: Date;
@@ -56,6 +57,7 @@ export const authOptions: AuthOptions = {
         currentPeriodStart: subscription?.currentPeriodStart || null,
         currentPeriodEnd: subscription?.currentPeriodEnd || null,
         cancelAtPeriodEnd: subscription?.cancelAtPeriodEnd || false,
+        featureFlags: userMetadata?.featureFlags || [],
       };
       session.user.publicationId = userMetadata?.publicationId || "";
       return session;

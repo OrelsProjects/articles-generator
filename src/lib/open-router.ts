@@ -8,7 +8,8 @@ export type Model =
   | "openai/gpt-4o-mini"
   | "anthropic/claude-3.7-sonnet"
   | "anthropic/claude-3.5-sonnet"
-  | "google/gemini-2.0-flash-001";
+  | "google/gemini-2.0-flash-001"
+  | "openai/gpt-4.5-preview";
 
 function getTokenCount(text: string) {
   const encoding = new Tiktoken(o200k_base);

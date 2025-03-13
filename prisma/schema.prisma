@@ -59,12 +59,17 @@ enum AIUsageType {
   notesGeneration
 }
 
+enum FeatureFlag {
+  advancedGPT
+}
+
 model User {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
-  email         String?         @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
+
   accounts      Account[]
   sessions      Session[]
   // Optional for WebAuthn support
@@ -148,9 +153,10 @@ model UserMetadata {
   userId        String  @unique @db.ObjectId
   publicationId String? @unique @db.ObjectId
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  plan      Plan?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  plan         Plan?
+  featureFlags FeatureFlag[] @default([])
 
   publication PublicationMetadata? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -654,14 +654,15 @@ export const generateNotesPrompt = (
     Act as a brilliant social media influencer, very efficient at writing engaging Substack notes.
     Help user write a note with your description, writing style and highlights.
     Think about unique ideas and use the user's provided notes as inspiration only. Be original.
+    Notes are like tweets. They need to have one core idea, very impactful and engaging with an amazing hook.
 
-    Very important:
     Each note to have as little cliches as possible and have insightful information that is not obvious.
     Make the note very non-obvious, so it's almost a clickbait.
     **Don't come up with numbers and facts about the user. Stick to the facts they provide. Rely on the user's description and notes that they posted.**
     The inspiration for new notes have to be from the user's notes and description, not from random things on the internet.
     Avoid repeating the same notes as the user's previously written notes or inspiration notes,
     or writing something that is the opposite of what the user wrote.
+    Each note should have a great hook, that will entice the user to read it from the get-go.
 
     Response must follow the following rules:
   - Must use new lines when needed, avoid using hashtags
@@ -671,7 +672,7 @@ export const generateNotesPrompt = (
   - At least one note has to be clean from emojis.
   - Include emojis ONLY if the user's past written notes include them.
   - Make sure it passes the flesch-kincaid test with a score of 70 or higher.
-  
+  - Don't use the words: embrace
   
   The response **must** be an array of notes in the following JSON format, without additional text:
   [
@@ -708,11 +709,11 @@ export const generateNotesPrompt = (
           ${userNotes.length > 0 ? `Past notes that I posted:` : ""}
           ${userNotes.map((note, index) => `(${index + 1}) ${note.body}`).join("\\n")}
 
-          ${notesUserDisliked.length > 0 ? `Here are some summaries of notes I didn't like. Don't repeat them:` : ""}
-          ${notesUserDisliked.map((note, index) => `(${index + 1}) Summary: ${note.summary}, ${note.feedbackComment ? `Reason: ${note.feedbackComment}` : ""}`).join("\\n")}
+          ${notesUserDisliked.length > 0 ? `Here are some of the notes I didn't like. Don't repeat them:` : ""}
+          ${notesUserDisliked.map((note, index) => `(${index + 1}) Body: ${note.body}, ${note.feedbackComment ? `Reason: ${note.feedbackComment}` : ""}`).join("\\n")}
 
-          ${notesUserLiked.length > 0 ? `Here are some summaries of notes I liked:` : ""}
-          ${notesUserLiked.map((note, index) => `(${index + 1}) ${note.summary}`).join("\\n")}
+          ${notesUserLiked.length > 0 ? `Here are some of the notes I liked:` : ""}
+          ${notesUserLiked.map((note, index) => `(${index + 1}) Body: ${note.body}, ${note.feedbackComment ? `Reason: ${note.feedbackComment}` : ""}`).join("\\n")}
 
           ${allTopics.length > 0 ? `Here are all the topics I've written about and their count:` : ""}
           ${JSON.stringify(topicsCount)}

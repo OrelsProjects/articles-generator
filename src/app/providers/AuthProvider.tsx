@@ -53,6 +53,7 @@ export default function AuthProvider({
           currentPeriodStart: session?.user?.meta?.currentPeriodStart || null,
           currentPeriodEnd: session?.user?.meta?.currentPeriodEnd || null,
           cancelAtPeriodEnd: session?.user?.meta?.cancelAtPeriodEnd || false,
+          featureFlags: session?.user?.meta?.featureFlags || [],
         },
       };
       dispatch(setUserAction(appUser));

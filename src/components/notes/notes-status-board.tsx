@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { StatusBoard } from "@/components/ui/status-board/status-board";
 import { StatusColumn, StatusItem } from "@/components/ui/status-board/types";
 import { NoteDraft, NoteStatus } from "@/types/note";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { toast } from "react-toastify";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { FileText, Clock, CheckCircle, Archive, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FileText, Clock, CheckCircle, Archive } from "lucide-react";
 
 export interface NotesStatusBoardProps {
   notes: NoteDraft[];
@@ -112,7 +111,9 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
       initialColumns={columns}
       selectedItem={selectedNote?.id}
       onStatusChange={handleStatusChange}
-      onEditItem={(itemId: UniqueIdentifier) => selectNote(itemId.toString())}
+      onSelectItem={(itemId: UniqueIdentifier) => {
+        console.log("Selecting item: ", itemId);
+        selectNote(itemId.toString())}}
       onNewItem={async (status: UniqueIdentifier) => {
         await createDraftNote({ status: status as NoteStatus });
       }}

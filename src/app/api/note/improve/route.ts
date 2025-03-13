@@ -28,7 +28,7 @@ export async function POST(
   let usageId: string = "";
 
   try {
-    const { text, type, noteId } = await request.json();
+    const { text, type, noteId, model: requestModel } = await request.json();
 
     const isValid = await canUseAI(session.user.id, "textEnhancement");
     if (!isValid) {
@@ -74,7 +74,7 @@ export async function POST(
 
     const userNotesBody = userNotes.map(note => note.body);
 
-    const { messages, model } = generateImprovementPromptNote(
+    const { messages, model: defaultModel } = generateImprovementPromptNote(
       slicedText,
       publication,
       type,
@@ -84,6 +84,18 @@ export async function POST(
         userNotes: userNotesBody,
       },
     );
+
+    // Map frontend model names to API model names
+    let model = defaultModel;
+    if (requestModel) {
+      if (requestModel === "gpt-4.5") {
+        model = "openai/gpt-4o";
+      } else if (requestModel === "claude-3.5") {
+        model = "anthropic/claude-3.5-sonnet";
+      } else if (requestModel === "claude-3.7") {
+        model = "anthropic/claude-3.5-sonnet";
+      }
+    }
 
     const response = await runPrompt(messages, model);
     const { creditsUsed, creditsRemaining } = await useCredits(

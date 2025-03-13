@@ -4,17 +4,15 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MoreVertical, Pencil } from "lucide-react";
 import type { StatusItem as StatusItemType } from "./types";
-import { Button } from "@/components/ui/button";
 import { UniqueIdentifier } from "@dnd-kit/core";
 interface StatusItemProps {
   item: StatusItemType;
-  onEditItem: (itemId: UniqueIdentifier, content: string) => void;
+  onSelectItem: (itemId: UniqueIdentifier, content: string) => void;
   selected: boolean;
 }
 
-export function StatusItem({ item, onEditItem, selected }: StatusItemProps) {
+export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
   const {
     attributes,
     listeners,
@@ -37,7 +35,7 @@ export function StatusItem({ item, onEditItem, selected }: StatusItemProps) {
       className={`${isDragging ? "z-10" : ""} cursor-pointer active:cursor-grabbing ${selected ? "border-primary/60" : ""}`}
       onClick={e => {
         e.stopPropagation();
-        onEditItem(item.id, item.content);
+        onSelectItem(item.id, item.content);
       }}
       {...attributes}
       {...listeners}

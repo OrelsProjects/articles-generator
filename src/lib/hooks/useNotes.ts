@@ -136,7 +136,6 @@ export const useNotes = () => {
       note: Note | NoteDraft | string | null,
       options?: { forceShowEditor?: boolean; isFromInspiration?: boolean },
     ) => {
-      console.log("Selecting note: ", note);
       EventTracker.track("notes_select_note");
       let noteToUpdate: NoteDraft | Note | null = null;
       if (typeof note === "string") {
@@ -151,12 +150,6 @@ export const useNotes = () => {
       if (options?.forceShowEditor) {
         updateShowGenerateNotesSidebar(true);
       }
-      console.log(
-        "Setting selected note: ",
-        noteDraft,
-        "Note to update: ",
-        noteToUpdate,
-      );
       dispatch(
         setSelectedNote({
           note: noteDraft,
@@ -167,13 +160,14 @@ export const useNotes = () => {
     [userNotes],
   );
 
-  const generateNewNotes = useCallback(async () => {
+  const generateNewNotes = useCallback(async (model?: string) => {
     try {
-      EventTracker.track("notes_generate_new_notes");
+      EventTracker.track("notes_generate_new_notes", { model });
       const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
         "/api/notes/generate",
         {
           existingNotesIds: userNotes.map(note => note.id),
+          model,
         },
       );
       const { responseBody } = response.data;
@@ -325,14 +319,17 @@ export const useNotes = () => {
     text: string,
     type: ImprovementType,
     noteId: string | null,
+    model?: string,
   ): Promise<{ text: string } | null> => {
     EventTracker.track("idea_improve_text_" + type, {
       length: text.length,
+      model,
     });
     const res = await axios.post<AIUsageResponse<string>>("/api/note/improve", {
       text,
       type,
       noteId,
+      model,
     });
     const { responseBody } = res.data;
     if (!responseBody) {

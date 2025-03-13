@@ -6,9 +6,9 @@ import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { NotesComments } from "@/../prisma/generated/articles";
-import { runPrompt } from "@/lib/open-router";
+import { Model, runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
-import { Note, NoteStatus } from "@prisma/client";
+import { FeatureFlag, Note, NoteStatus } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
 import { canUseAI, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
@@ -26,15 +26,23 @@ export async function POST(
       { status: 401 },
     );
   }
-  let newNotes: {
-    body: string;
-    topics: string[];
-    summary: string;
-    inspiration: string;
-    type: string;
-  }[] = [];
+
   const body = await req.json();
   const countString = body.count;
+  const { model: requestedModel } = body.model;
+  const featureFlags = session.user.meta?.featureFlags || [];
+  let model: Model = "anthropic/claude-3.5-sonnet";
+  if (featureFlags.includes(FeatureFlag.advancedGPT)) {
+
+    if (requestedModel === "gpt-4.5") {
+      model = "openai/gpt-4.5-preview";
+    } else if (requestedModel === "claude-3.5") {
+      model = "anthropic/claude-3.5-sonnet";
+    } else if (requestedModel === "claude-3.7") {
+      model = "anthropic/claude-3.7-sonnet";
+    }
+  }
+
   const count = Math.min(parseInt(countString || "3"), 3);
   try {
     const userMetadata = await prisma.userMetadata.findUnique({
@@ -195,11 +203,16 @@ export async function POST(
       count,
     );
 
-    const promptResponse = await runPrompt(
-      messages,
-      "anthropic/claude-3.5-sonnet",
-    );
-    newNotes = await parseJson(promptResponse);
+    const [promptResponse] = await Promise.all([
+      runPrompt(messages, model),
+      // runPrompt(messages, "openai/gpt-4o"),
+      // runPrompt(messages, "anthropic/claude-3.5-sonnet"),
+    ]);
+
+    let newNotes: any[] = await parseJson(promptResponse);
+    // const newNotes2: any[] = await parseJson(promptResponse2);
+    // const newNotes3: any[] = await parseJson(promptResponse3);
+    // newNotes = [...newNotes, ...newNotes2, ...newNotes3];
 
     const handle = notesFromAuthor[0]?.handle;
     const name = notesFromAuthor[0]?.name;

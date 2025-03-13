@@ -32,6 +32,7 @@ import {
   Save,
   User,
   AudioLines,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
@@ -58,6 +59,16 @@ import { ToastStepper } from "@/components/ui/toast-stepper";
 import { EventTracker } from "@/eventTracker";
 import { FormatDropdown } from "@/components/ui/text-editor/dropdowns/format-dropdown";
 import { ImprovementType } from "@/lib/prompts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Define frontend model type
+type FrontendModel = "gpt-4.5" | "claude-3.5" | "claude-3.7";
 
 // Define format options for the dropdown
 const formatOptions: {
@@ -165,8 +176,19 @@ const ideaLoadingStates = [
   { text: "Finalizing the best notes..." },
 ];
 
+// Define AI models
+const AI_MODELS: { value: FrontendModel; label: string }[] = [
+  { value: "gpt-4.5", label: "GPT-4.5" },
+  { value: "claude-3.5", label: "Claude 3.5" },
+  { value: "claude-3.7", label: "Claude 3.7" },
+];
+
 export default function GenerateNotesSidebar() {
-  const { updateShowGenerateNotesSidebar, showGenerateNotesSidebar } = useUi();
+  const {
+    updateShowGenerateNotesSidebar,
+    showGenerateNotesSidebar,
+    hasAdvancedGPT,
+  } = useUi();
   const {
     generateNewNotes,
     selectedNote,
@@ -178,6 +200,7 @@ export default function GenerateNotesSidebar() {
   const [open, setOpen] = useState(false);
   const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
   const [loadingImprovement, setLoadingImprovement] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<FrontendModel>("gpt-4.5");
   const [previousSelectedNote, setPreviousSelectedNote] =
     useState<NoteDraft | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -266,7 +289,7 @@ export default function GenerateNotesSidebar() {
     }
     setLoadingGenerateNewIdea(true);
     try {
-      await generateNewNotes();
+      await generateNewNotes(selectedModel);
     } catch (e: any) {
       toast.error(e.message || "Something went wrong.. Try again.");
     } finally {
@@ -291,6 +314,7 @@ export default function GenerateNotesSidebar() {
         selectedText,
         type,
         selectedNote?.id || null,
+        selectedModel,
       );
       if (improvedText) {
         editor?.chain().focus().setContent(improvedText.text).run();
@@ -562,9 +586,56 @@ export default function GenerateNotesSidebar() {
               </div>
             </div>
 
+            {/* Model Selection Dropdown */}
+            {hasAdvancedGPT && (
+              <div className="mt-6 mb-2">
+                <label className="text-sm text-muted-foreground mb-1 flex items-center">
+                  AI Model
+                  <TooltipButton
+                    tooltipContent="Select which AI model to use for generating notes"
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0 ml-1"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4 text-muted-foreground"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 16v-4" />
+                      <path d="M12 8h.01" />
+                    </svg>
+                  </TooltipButton>
+                </label>
+                <Select
+                  value={selectedModel}
+                  onValueChange={(value: FrontendModel) =>
+                    setSelectedModel(value)
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select AI model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AI_MODELS.map(model => (
+                      <SelectItem key={model.value} value={model.value}>
+                        {model.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {/* Generate Notes Button */}
             <Button
-              className="w-full mt-8"
+              className="w-full mt-2"
               onClick={handleGenerateNewNote}
               disabled={loadingGenerateNewIdea}
             >

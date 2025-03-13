@@ -1,10 +1,11 @@
-import { Plan } from "@prisma/client";
+import { Plan, FeatureFlag } from "@prisma/client";
 
 export interface AppUserMeta {
   plan: Plan | null;
   currentPeriodStart: Date | null;
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
+  featureFlags: FeatureFlag[];
 }
 
 export default interface AppUser {

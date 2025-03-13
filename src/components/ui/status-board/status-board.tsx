@@ -32,7 +32,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export function StatusBoard({
   initialColumns,
   onStatusChange,
-  onEditItem,
+  onSelectItem,
   onNewItem,
   selectedItem,
   className = "",
@@ -452,9 +452,9 @@ export function StatusBoard({
     });
   }
 
-  function handleEditItem(itemId: UniqueIdentifier) {
-    if (onEditItem) {
-      onEditItem(itemId);
+  function handleSelectItem(itemId: UniqueIdentifier) {
+    if (onSelectItem) {
+      onSelectItem(itemId);
     }
   }
 
@@ -488,7 +488,7 @@ export function StatusBoard({
                 color={column.color}
                 selectedItem={selectedItem}
                 onNewItem={() => handleNewItem(column.id)}
-                onEditItem={itemId => handleEditItem(itemId)}
+                onSelectItem={itemId => handleSelectItem(itemId)}
               />
             </div>
           ))}

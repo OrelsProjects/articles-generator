@@ -17,7 +17,7 @@ interface StatusColumnProps {
   id: UniqueIdentifier;
   items: StatusItemType[];
   onNewItem: () => Promise<unknown>;
-  onEditItem: (itemId: UniqueIdentifier) => void;
+  onSelectItem: (itemId: UniqueIdentifier) => void;
   selectedItem?: UniqueIdentifier;
   color?: string;
 }
@@ -26,7 +26,7 @@ export function StatusColumn({
   id,
   items,
   onNewItem,
-  onEditItem,
+  onSelectItem,
   selectedItem,
   color,
 }: StatusColumnProps) {
@@ -79,7 +79,9 @@ export function StatusColumn({
               selected={selectedItem === item.id}
               key={item.id}
               item={item}
-              onEditItem={onEditItem}
+              onSelectItem={(itemId: UniqueIdentifier) => {
+                onSelectItem(itemId);
+              }}
             />
           ))}
         </div>
