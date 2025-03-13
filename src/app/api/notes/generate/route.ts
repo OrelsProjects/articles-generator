@@ -30,6 +30,7 @@ export async function POST(
   const body = await req.json();
   const countString = body.count;
   const requestedModel = body.model;
+  const useTopTypes = body.useTopTypes || false;
   const featureFlags = session.user.meta?.featureFlags || [];
   let model: Model = "anthropic/claude-3.5-sonnet";
   console.log("featureFlags", featureFlags);
@@ -201,7 +202,11 @@ export async function POST(
       userNotesNoDuplicates,
       notesUserDisliked,
       notesUserLiked,
-      count,
+      {
+        noteCount: count,
+        maxLength: 280,
+        useTopTypes,
+      },
     );
 
     const [promptResponse] = await Promise.all([

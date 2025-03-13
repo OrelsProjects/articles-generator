@@ -66,6 +66,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Define frontend model type
 type FrontendModel = "gpt-4.5" | "claude-3.5" | "claude-3.7";
@@ -201,6 +202,7 @@ export default function GenerateNotesSidebar() {
   const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
   const [loadingImprovement, setLoadingImprovement] = useState(false);
   const [selectedModel, setSelectedModel] = useState<FrontendModel>("gpt-4.5");
+  const [useTopTypes, setUseTopTypes] = useState(false);
   const [previousSelectedNote, setPreviousSelectedNote] =
     useState<NoteDraft | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -289,7 +291,9 @@ export default function GenerateNotesSidebar() {
     }
     setLoadingGenerateNewIdea(true);
     try {
-      await generateNewNotes(selectedModel);
+      await generateNewNotes(selectedModel, {
+        useTopTypes,
+      });
     } catch (e: any) {
       toast.error(e.message || "Something went wrong.. Try again.");
     } finally {
@@ -630,6 +634,18 @@ export default function GenerateNotesSidebar() {
                     ))}
                   </SelectContent>
                 </Select>
+                {/*   box for top types */}
+                <div className="flex items-center mt-2 mb-4 gap-2">
+                  <Checkbox
+                    checked={useTopTypes}
+                    onCheckedChange={(checked: boolean) =>
+                      setUseTopTypes(checked)
+                    }
+                  />
+                  <label className="text-sm text-muted-foreground">
+                    Use best types of notes
+                  </label>
+                </div>
               </div>
             )}
 

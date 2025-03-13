@@ -160,42 +160,46 @@ export const useNotes = () => {
     [userNotes],
   );
 
-  const generateNewNotes = useCallback(async (model?: string) => {
-    try {
-      EventTracker.track("notes_generate_new_notes", { model });
-      const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
-        "/api/notes/generate",
-        {
-          existingNotesIds: userNotes.map(note => note.id),
-          model,
-        },
-      );
-      const { responseBody } = response.data;
-      if (!responseBody) {
-        throw new Error("No notes generated");
-      }
+  const generateNewNotes = useCallback(
+    async (model?: string, options?: { useTopTypes?: boolean }) => {
+      try {
+        EventTracker.track("notes_generate_new_notes", { model });
+        const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
+          "/api/notes/generate",
+          {
+            existingNotesIds: userNotes.map(note => note.id),
+            model,
+            ...options,
+          },
+        );
+        const { responseBody } = response.data;
+        if (!responseBody) {
+          throw new Error("No notes generated");
+        }
 
-      const { body, creditsUsed } = responseBody;
-      if (!body) {
-        throw new Error("No notes generated");
-      }
+        const { body, creditsUsed } = responseBody;
+        if (!body) {
+          throw new Error("No notes generated");
+        }
 
-      consumeCredits(creditsUsed);
+        consumeCredits(creditsUsed);
 
-      dispatch(
-        addNotes({
-          items: body,
-          nextCursor: null,
-          options: { toStart: true },
-        }),
-      );
-      if (!selectedNote) {
-        selectNote(body[0]);
+        dispatch(
+          addNotes({
+            items: body,
+            nextCursor: null,
+            options: { toStart: true },
+          }),
+        );
+        if (!selectedNote) {
+          selectNote(body[0]);
+        }
+      } catch (error) {
+        console.error("Error generating new note:", error);
       }
-    } catch (error) {
-      console.error("Error generating new note:", error);
-    }
-  }, [dispatch]);
+    },
+    [dispatch],
+  );
 
   const selectImage = useCallback(
     (image: { url: string; alt: string } | null) => {
@@ -234,16 +238,12 @@ export const useNotes = () => {
   );
 
   const updateNoteFeedback = useCallback(
-    async (
-      noteId: string,
-      feedback: NoteFeedback,
-      feedbackReason?: string,
-    ) => {
+    async (noteId: string, feedback: NoteFeedback, feedbackReason?: string) => {
       EventTracker.track("notes_update_note_feedback", {
         feedback,
         feedbackReason,
       });
-      
+
       let newFeedback: NoteFeedback | undefined = feedback;
       const note = userNotes.find(note => note.id === noteId);
       if (!note) return;
