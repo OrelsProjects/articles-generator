@@ -136,6 +136,7 @@ export const useNotes = () => {
       note: Note | NoteDraft | string | null,
       options?: { forceShowEditor?: boolean; isFromInspiration?: boolean },
     ) => {
+      console.log("Selecting note: ", note);
       EventTracker.track("notes_select_note");
       let noteToUpdate: NoteDraft | Note | null = null;
       if (typeof note === "string") {
@@ -150,6 +151,12 @@ export const useNotes = () => {
       if (options?.forceShowEditor) {
         updateShowGenerateNotesSidebar(true);
       }
+      console.log(
+        "Setting selected note: ",
+        noteDraft,
+        "Note to update: ",
+        noteToUpdate,
+      );
       dispatch(
         setSelectedNote({
           note: noteDraft,
@@ -157,7 +164,7 @@ export const useNotes = () => {
         }),
       );
     },
-    [dispatch],
+    [userNotes],
   );
 
   const generateNewNotes = useCallback(async () => {
