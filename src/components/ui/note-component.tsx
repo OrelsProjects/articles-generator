@@ -11,6 +11,7 @@ import {
   ThumbsDown,
   X,
   Archive,
+  Check,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,6 +23,26 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "react-toastify";
 import { TooltipButton } from "@/components/ui/tooltip-button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Define feedback options
+const FEEDBACK_OPTIONS = [
+  {
+    value: "It has incorrect information about me",
+    label: "It has incorrect information about me",
+  },
+  {
+    value: "The note is irrelevant or false",
+    label: "The note is irrelevant or false",
+  },
+  { value: "The note is boring", label: "The note is boring" },
+];
 
 type DislikeFeedbackPopoverProps = {
   isOpen: boolean;
@@ -40,11 +61,11 @@ const DislikeFeedbackPopover = ({
   feedback,
   disabled,
 }: DislikeFeedbackPopoverProps) => {
-  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackReason, setFeedbackReason] = useState("");
 
   const handleSubmit = () => {
-    onSubmit(feedbackText);
-    setFeedbackText("");
+    onSubmit(feedbackReason);
+    setFeedbackReason("");
   };
 
   if (feedback === "dislike") {
@@ -104,12 +125,20 @@ const DislikeFeedbackPopover = ({
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <textarea
-            className="w-full h-20 px-3 py-2 text-sm border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Let us know so we can improve future notes for you :)"
-            value={feedbackText}
-            onChange={e => setFeedbackText(e.target.value)}
-          />
+
+          <Select value={feedbackReason} onValueChange={setFeedbackReason}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a reason" />
+            </SelectTrigger>
+            <SelectContent>
+              {FEEDBACK_OPTIONS.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <div className="flex justify-end gap-2">
             <Button
               variant="outline"
@@ -118,7 +147,12 @@ const DislikeFeedbackPopover = ({
             >
               Cancel
             </Button>
-            <Button variant="default" size="sm" onClick={handleSubmit}>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSubmit}
+              disabled={!feedbackReason}
+            >
               Submit
             </Button>
           </div>
@@ -312,17 +346,37 @@ export default function NoteComponent({ note }: NoteProps) {
 
   const handleFeedbackChange = (
     type: "like" | "dislike",
-    feedbackText?: string,
+    feedbackReason?: string,
   ) => {
     setLoadingFeedback(type);
-    updateNoteFeedback(note.id, type);
+    updateNoteFeedback(note.id, type, feedbackReason);
 
-    if (feedbackText && type === "dislike") {
-      // You might want to handle this feedback text in your backend
-      console.log("Feedback text:", feedbackText);
+    if (feedbackReason && type === "dislike") {
+      // Get the label for the selected reason
+      const selectedOption = FEEDBACK_OPTIONS.find(
+        option => option.value === feedbackReason,
+      );
+      const reasonLabel = selectedOption
+        ? selectedOption.label
+        : feedbackReason;
+
+      // Log the feedback reason
+      console.log("Feedback reason:", reasonLabel);
+
+      // Show a more specific toast message based on the feedback reason
+      toast.info(
+        `Thanks for your feedback. We'll avoid ${
+          feedbackReason === "incorrect-info"
+            ? "incorrect information"
+            : feedbackReason === "irrelevant"
+              ? "irrelevant content"
+              : "boring notes"
+        } in the future.`,
+      );
+    } else {
+      toast.info("We'll adjust future notes accordingly.");
     }
 
-    toast.info("We'll adjust future notes accordingly.");
     setLoadingFeedback(null);
     setIsDislikePopoverOpen(false);
   };

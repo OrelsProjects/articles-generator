@@ -237,9 +237,13 @@ export const useNotes = () => {
     async (
       noteId: string,
       feedback: NoteFeedback,
-      feedbackComment?: string,
+      feedbackReason?: string,
     ) => {
-      EventTracker.track("notes_update_note_feedback");
+      EventTracker.track("notes_update_note_feedback", {
+        feedback,
+        feedbackReason,
+      });
+      
       let newFeedback: NoteFeedback | undefined = feedback;
       const note = userNotes.find(note => note.id === noteId);
       if (!note) return;
@@ -254,7 +258,7 @@ export const useNotes = () => {
         await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, {
           ...note,
           feedback: newFeedback || null,
-          feedbackComment: feedbackComment || null,
+          feedbackComment: feedbackReason || null,
           status: note.status || null,
         });
       } catch (error: any) {

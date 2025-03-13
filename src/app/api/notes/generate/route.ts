@@ -34,7 +34,7 @@ export async function POST(
   let model: Model = "anthropic/claude-3.5-sonnet";
   console.log("featureFlags", featureFlags);
   console.log("requestedModel", requestedModel);
-  if (featureFlags.includes(FeatureFlag.advancedGPT)) {
+  if (requestedModel && featureFlags.includes(FeatureFlag.advancedGPT)) {
     if (requestedModel === "gpt-4.5") {
       model = "openai/gpt-4.5-preview";
     } else if (requestedModel === "claude-3.5") {
