@@ -30,7 +30,11 @@ const filterNotes = (
       !note.body.toLowerCase().includes("to connect"),
   );
 
-  return newNotes.slice(0, limit + 1); // Take one extra to know if there are more
+  const notesWithLessThan50Characters = newNotes.filter(
+    note => note.body.length < 50,
+  );
+
+  return [...notesWithLessThan50Characters, ...newNotes].slice(0, limit + 1); // Take one extra to know if there are more
 };
 
 export async function POST(req: NextRequest) {
@@ -97,7 +101,7 @@ export async function POST(req: NextRequest) {
 
     const inspirationNotes = await searchSimilarNotes({
       query,
-      limit: 40 + existingNotesIds.length,
+      limit: 60 + existingNotesIds.length,
       filters,
     });
 
