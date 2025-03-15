@@ -166,7 +166,7 @@ export function FormatDropdown({
                     variant={"ghost"}
                     tooltipContent={option.tooltip}
                     onClick={() => onSelect(`${option.type}`)}
-                    disabled={disabled || error?.disabled || didExceedLimit}
+                    disabled={disabled || error?.disabled}
                     className={cn(
                       "w-full flex items-center justify-start gap-2 px-2 py-1.5 rounded-sm text-sm",
                       "transition-colors hover:bg-accent hover:text-accent-foreground",
