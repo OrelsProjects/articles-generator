@@ -70,7 +70,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 
 // Define frontend model type
-type FrontendModel = "gpt-4.5" | "claude-3.5" | "claude-3.7";
+type FrontendModel = "gpt-4.5" | "claude-3.5" | "claude-3.7" | "claude-3.5-haiku";
 
 // Define format options for the dropdown
 const formatOptions: {
@@ -183,6 +183,7 @@ const AI_MODELS: { value: FrontendModel; label: string }[] = [
   { value: "gpt-4.5", label: "GPT-4.5" },
   { value: "claude-3.5", label: "Claude 3.5" },
   { value: "claude-3.7", label: "Claude 3.7" },
+  { value: "claude-3.5-haiku", label: "Claude 3.5 Haiku" },
 ];
 
 export default function GenerateNotesSidebar() {

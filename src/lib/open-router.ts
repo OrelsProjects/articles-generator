@@ -9,6 +9,7 @@ export type Model =
   | "openai/gpt-4o-mini"
   | "anthropic/claude-3.7-sonnet"
   | "anthropic/claude-3.5-sonnet"
+  | "anthropic/claude-3.5-haiku"
   | "google/gemini-2.0-flash-001"
   | "openai/gpt-4.5-preview";
 
@@ -26,6 +27,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
     "anthropic/claude-3.5-sonnet": 3,
     "google/gemini-2.0-flash-001": 0.15,
     "openai/gpt-4.5-preview": 75,
+    "anthropic/claude-3.5-haiku": 0.8,
   };
   const pricePerMillionTokensOutput = {
     "openai/gpt-4o": 10,
@@ -34,6 +36,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
     "anthropic/claude-3.5-sonnet": 15,
     "google/gemini-2.0-flash-001": 0.6,
     "openai/gpt-4.5-preview": 150,
+    "anthropic/claude-3.5-haiku": 4,
   };
   let price = (tokens / 1000000) * pricePerMillionTokensInput[model];
   if (outputTokens) {

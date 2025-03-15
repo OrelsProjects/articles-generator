@@ -32,7 +32,7 @@ export async function POST(
   const requestedModel = body.model;
   const useTopTypes = body.useTopTypes || false;
   const featureFlags = session.user.meta?.featureFlags || [];
-  let model: Model = "anthropic/claude-3.5-sonnet";
+  let model: Model = "anthropic/claude-3.5-haiku";
 
   if (requestedModel && featureFlags.includes(FeatureFlag.advancedGPT)) {
     if (requestedModel === "gpt-4.5") {
@@ -41,6 +41,8 @@ export async function POST(
       model = "anthropic/claude-3.5-sonnet";
     } else if (requestedModel === "claude-3.7") {
       model = "anthropic/claude-3.7-sonnet";
+    } else if (requestedModel === "claude-3.5-haiku") {
+      model = "anthropic/claude-3.5-haiku";
     }
   }
 
