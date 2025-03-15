@@ -1,3 +1,4 @@
+import loggerServer from "@/loggerServer";
 import axios from "axios";
 import { Tiktoken } from "js-tiktoken/lite";
 import o200k_base from "js-tiktoken/ranks/o200k_base";
@@ -17,6 +18,30 @@ function getTokenCount(text: string) {
   return tokens.length;
 }
 
+function getPrice(model: Model, tokens: number, outputTokens?: number) {
+  const pricePerMillionTokensInput = {
+    "openai/gpt-4o": 2.5,
+    "openai/gpt-4o-mini": 0.15,
+    "anthropic/claude-3.7-sonnet": 3,
+    "anthropic/claude-3.5-sonnet": 3,
+    "google/gemini-2.0-flash-001": 0.15,
+    "openai/gpt-4.5-preview": 75,
+  };
+  const pricePerMillionTokensOutput = {
+    "openai/gpt-4o": 10,
+    "openai/gpt-4o-mini": 0.6,
+    "anthropic/claude-3.7-sonnet": 15,
+    "anthropic/claude-3.5-sonnet": 15,
+    "google/gemini-2.0-flash-001": 0.6,
+    "openai/gpt-4.5-preview": 150,
+  };
+  let price = (tokens / 1000000) * pricePerMillionTokensInput[model];
+  if (outputTokens) {
+    price += (outputTokens / 1000000) * pricePerMillionTokensOutput[model];
+  }
+  return price;
+}
+
 export async function runPrompt(
   messages: { role: string; content: string }[],
   model: Model,
@@ -28,9 +53,11 @@ export async function runPrompt(
     model,
     "Estimated token count:",
     tokenCount,
+    "Estimated price:",
+    `$${getPrice(model, tokenCount).toFixed(2)}`,
   );
   console.time("runPrompt");
-  const response = await axios.post(
+  let response = await axios.post(
     "https://openrouter.ai/api/v1/chat/completions",
     {
       model: model,
@@ -45,6 +72,30 @@ export async function runPrompt(
   );
   console.timeEnd("runPrompt");
 
+  const error = response.data.error;
+  if (error) {
+    loggerServer.error(
+      `Error running prompt ${model}: ${JSON.stringify(response.data)}`,
+    );
+    // try with another. If it was openai, try claude
+    if (model.includes("openai")) {
+      model = "anthropic/claude-3.5-sonnet";
+      response = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          model: model,
+          messages,
+        },
+      );
+    }
+  }
+
+  if (response.data.error) {
+    throw new Error(
+      `Something went wrong with running the prompts. ${JSON.stringify(response.data)}`,
+    );
+  }
+
   let llmResponse = response.data.choices[0].message.content;
 
   console.log("Prompt output token count:", getTokenCount(llmResponse));
@@ -52,5 +103,11 @@ export async function runPrompt(
   if (!model.includes("anthropic")) {
     llmResponse = llmResponse.replace(/```json|```/g, "").trim();
   }
+  const outputTokens = getTokenCount(llmResponse);
+  console.log("Output tokens:", outputTokens);
+  console.log(
+    "Actual price:",
+    `$${getPrice(model, 0, outputTokens).toFixed(4)}`,
+  );
   return llmResponse;
 }

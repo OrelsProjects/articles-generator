@@ -2,7 +2,7 @@ import { TitleImprovementType } from "@/components/ui/text-editor/dropdowns/titl
 import { Model } from "@/lib/open-router";
 import { ArticleWithBody } from "@/types/article";
 import { Idea } from "@/types/idea";
-import { Note, PublicationMetadata } from "@prisma/client";
+import { Note, PublicationMetadata, UserMetadata } from "@prisma/client";
 
 export type ImprovementType = keyof typeof improvementPromptTemplates;
 
@@ -240,43 +240,106 @@ export const generateDescriptionPrompt = (
   {
     role: "system",
     content: `
-    Help user generate a summary of a writer's profile based on their description
-    and articles. Response should be concise, but cover the overall information and don't leave out
-    important details. Response must be in the second-person point of view, **no they/them**. Only second person.  include only the following information:
-- About: who they are, what they do, what they like, projects they're working on (if any). Write like you're asking someone to mimic that person. Make it detailed and specific. Start with "You are...".  
-- About General: Rewrite the 'About' section in a more universal and general form, capturing key themes and actions without personal references or narrative elements. Keep it concise and impactful, focusing on key ideas.
-      Example: 
-      'This person is a solopreneur and software developer who left a stable job to pursue entrepreneurial ventures'
-      turns into:
-      'A solopreneur's journey of leaving stability to pursue entrepreneurship'
-- Topics: topics they write about. Must be a list of topics, separated by commas.
-- Writing style: Describe their writing style and tone. It's important to stress the writing characteristics like short and concise, or detailed, use of metaphors, technical depth, etc. Be very detailed.
-- Personality: Describe their personality, what they're like, what they're known for, what they're famous for.
-- Sepcial events: Describe any special events they've been part of, awards they've won, or any other notable achievements.
-- Private life: Describe their private life, their family, their friends, their pets, their hobbies, their interests.
-- Highlights: Describe any highlights of their life, their career, their projects, their achievements, their failures, their successes.
-- Be direct and certain. Don't be afraid to say that they're the best or that they're the most talented.
-- Capture only the most important information.
+You are a skilled literary profiler. Your task is to construct a deep, second-person profile of this writer based on the provided description and articles. 
+You must always address the writer directly as "you," never using "they/them."
 
-The response should always be structured in JSON format, with proper escape string for clarity and consistency. Here is an example of the JSON response expected:
+**Goals & Tone**:
+1. Write in a second-person perspective: speak to the writer as “You are...” 
+2. Summarize who you are, what you do, your core interests, projects, and unique qualities. 
+3. Mimic the writer's overall style as gleaned from the content: 
+   - If the text suggests structured or chaotic thinking, emphasize it.
+   - If there are contradictions, highlight them.
+   - If it’s introspective, reflect that in your tone.
+   - Balance any abstract ideas with concrete examples.
+   - Make sure the voice feels authentic to the writer’s distinctive approach.
+
+**What to Include** (in your JSON response):
+1. **about**: Start with “You are...” and detail who you are, what you do, what you like, and any projects you’re working on.
+2. **aboutGeneral**: A universal, concise rephrasing of your ‘about’ section, removing personal references (e.g., “A solopreneur’s journey...”). Keep it short but impactful.
+3. **topics**: A comma-separated list of topics you typically write about or explore.
+4. **writingStyle**: A detailed explanation of your unique writing style. Capture nuances like structure vs. chaos, depth vs. simplicity, technical or poetic elements, etc.
+5. **personality**: A direct, confident portrayal of your character traits, what you’re famous for, or what sets you apart. Feel free to be bold (e.g., “You’re the most fearless innovator...”).
+6. **specialEvents**: Any significant events, awards, or notable achievements you’ve encountered or taken part in, as many as you can find, separated by commas.
+7. **privateLife**: Insights into personal aspects—family, friends, hobbies, or interests that might matter to your audience.
+8. **highlights**: Key milestones, achievements, or memorable failures—only the most important ones.
+
+**Response Format**:
+Return exactly one JSON object with the keys:
+\`about\`, \`aboutGeneral\`, \`topics\`, \`writingStyle\`, \`personality\`, \`specialEvents\`, \`privateLife\`, \`highlights\`.
+
+For example:
+
 {
-  "about": "<generated about them>",
-  "aboutGeneral": "<generated about them in general>",
+  "about": "<generated about>",
+  "aboutGeneral": "<generated aboutGeneral>",
   "topics": "<generated topics>",
-  "writingStyle": "<generated writing style>",
+  "writingStyle": "<generated writingStyle>",
   "personality": "<generated personality>",
-  "specialEvents": "<generated special events>",
-  "privateLife": "<generated private life>",
+  "specialEvents": "<generated specialEvents>",
+  "privateLife": "<generated privateLife>",
   "highlights": "<generated highlights>"
 }
+
+Make sure your final output is valid JSON. Avoid extra text outside the JSON. Always use second-person language (e.g., “You explore...”). Avoid “they/them.”
     `,
   },
   {
     role: "user",
     content: `
-      Description: ${description}
-      Top Articles: ${topArticles.map((article, i) => `Article ${i + 1}: Title: ${article.title} \n Subtitle: ${article.subtitle} \n Body: ${article.bodyText}`).join("\n")}
+Description: ${description}
+
+Top Articles:
+${topArticles
+  .map(
+    (article, i) => `Article ${i + 1}:
+Title: ${article.title}
+Subtitle: ${article.subtitle}
+Body: ${article.bodyText}`,
+  )
+  .join("\n")}
+`,
+  },
+];
+
+export const generateNotesDescriptionPrompt = (
+  topNotes: { body: string }[],
+) => [
+  {
+    role: "system",
+    content: `
+You are a skilled literary profiler. Your task is to construct a deep, second-person profile of this writer based on personal notes. 
+You must always address the writer directly as "you," never using "they/them."
+
+**Goals & Tone**:
+1. Write in second-person: speak to the writer as “You...” 
+2. Derive key traits from the content of the notes, reflecting the writer’s style and perspective.
+3. If the notes indicate a certain flow (structured, chaotic, introspective, direct, etc.), capture and describe it.
+4. Convey a sense of authenticity—be certain and confident, highlighting the writer’s talents or achievements without hesitation.
+
+**What to Include** (in your JSON response):
+1. **noteWritingStyle**: A thorough breakdown of how you (the writer) typically organize thoughts, the tone of your notes, and any distinct writing habits (e.g., concise bullet points, stream-of-consciousness, reflective questioning).
+2. **noteTopics**: A comma-separated list of the main themes or subjects found across these notes.
+
+**Response Format**:
+Return exactly one JSON object with the keys:
+\`noteWritingStyle\` and \`noteTopics\`.
+
+For example:
+
+{
+  "noteWritingStyle": "<generated noteWritingStyle>",
+  "noteTopics": "<generated noteTopics>"
+}
+
+Ensure the final output is valid JSON, with no extra text outside the JSON object. Always use second-person language, and avoid “they/them.”
     `,
+  },
+  {
+    role: "user",
+    content: `
+Top Notes:
+${topNotes.map((note, i) => `Note ${i + 1}: ${note.body}`).join("\n")}
+`,
   },
 ];
 
@@ -621,6 +684,7 @@ export const generateImproveNoteTextPrompt = (
 };
 
 export const generateNotesPrompt = (
+  userMetadata: UserMetadata,
   publication: PublicationMetadata,
   inspirationNotes: string[],
   userPastNotes: string[],
@@ -669,7 +733,6 @@ export const generateNotesPrompt = (
       content: `
       ${publication.generatedDescription}
       ${publication.writingStyle}
-      ${publication.highlights}
 
     Act as a brilliant social media influencer, very efficient at writing engaging Substack notes.
     Help user write a note with your description, writing style and highlights.
@@ -716,6 +779,7 @@ export const generateNotesPrompt = (
     {
       role: "user",
       content: `
+          Here are topics I write about: ${userMetadata.noteTopics}
           ${publication.personalDescription ? `Here's a description of me: ${publication.personalDescription}` : ""}
           ${publication.preferredTopics.length > 0 ? `Here are my preferred topics. Use them to generate notes about me: ${publication.preferredTopics.join(", ")}` : ""}
 

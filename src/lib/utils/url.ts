@@ -174,9 +174,18 @@ export const validateSubstackUrl = (url: string) => {
   }
 };
 
+const removeQueryParams = (url: string) => {
+  return url.split("?")[0];
+};
+
 export const getUrlComponents = (url: string): UrlComponents => {
+  if (!url) {
+    return { validUrl: "", mainComponentInUrl: "" };
+  }
   let validUrl = url;
   let mainComponentInUrl = "";
+  validUrl = removeQueryParams(validUrl);
+  console.log("validUrl", validUrl);
   if (validUrl.endsWith("/")) {
     validUrl = validUrl.slice(0, -1);
   }
@@ -187,9 +196,9 @@ export const getUrlComponents = (url: string): UrlComponents => {
 
     if (!startsWithHttpsAndWWW) {
       if (startsWithWWW) {
+        const urlWithoutWWW = validUrl.slice(4, validUrl.length);
         validUrl = `https://${validUrl}`;
         // remove www. from the url
-        const urlWithoutWWW = validUrl.slice(4, validUrl.length);
         mainComponentInUrl = urlWithoutWWW.split(".")[0];
       } else if (startsWithHttps) {
         // if has 3 components, for example read.abc.com, no need www.
@@ -204,14 +213,23 @@ export const getUrlComponents = (url: string): UrlComponents => {
           mainComponentInUrl = urlWithoutWWW.split(".")[0];
         }
       } else {
+        // Doesn't start with https://www.
         // if has 3 components, for example read.abc.com, no need www.
         if (validUrl.split(".").length >= 3) {
           mainComponentInUrl = validUrl.split(".")[1];
         } else {
+          mainComponentInUrl = validUrl.split(".")[0];
           validUrl = `https://www.${validUrl}`;
-          mainComponentInUrl = validUrl.slice(7, validUrl.length).split(".")[0];
         }
       }
+    } else {
+      console.log("validUrl", validUrl);
+      // Starts with https://www.. It's a vlaid url, just remove everything after the first '/' after the last occurence of '.'
+      // const urlNoSubstack = validUrl.slice(0, validUrl.indexOf("substack.com"));
+      // remove https://www.
+      const urlWithoutHttpsWWW = validUrl.slice(12, validUrl.length);
+      mainComponentInUrl = urlWithoutHttpsWWW.split(".")[0];
+      console.log("mainComponentInUrl", mainComponentInUrl);
     }
   } else {
     const urlNoSubstack = validUrl.slice(0, validUrl.indexOf("substack.com"));
@@ -220,6 +238,18 @@ export const getUrlComponents = (url: string): UrlComponents => {
       ? urlNoSubstack.slice(8, urlNoSubstack.length)
       : urlNoSubstack;
     mainComponentInUrl = urlWithoutHttps.split(".")[0];
+  }
+
+  console.log("Done. startingUrl: ", url, "values: ", {
+    validUrl,
+    mainComponentInUrl,
+  });
+
+  // remove everything after the first '/' after the last occurence of '.'
+  const lastDotIndex = validUrl.lastIndexOf(".");
+  const firstSlashAfterLastDot = validUrl.indexOf("/", lastDotIndex);
+  if (firstSlashAfterLastDot !== -1) {
+    validUrl = validUrl.slice(0, firstSlashAfterLastDot);
   }
 
   if (validUrl.startsWith("https://")) {

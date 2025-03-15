@@ -33,6 +33,7 @@ import {
   User,
   AudioLines,
   ChevronDown,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
@@ -388,12 +389,12 @@ export default function GenerateNotesSidebar() {
 
   return (
     <div className="relative z-50">
-      {/* Toggle Button */}
+      {/* Desktop Toggle Button */}
       <Button
         variant="neumorphic-primary"
         size="icon"
         className={cn(
-          "fixed h-12 w-12 bottom-0 right-4 -translate-y-1/2 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0",
+          "fixed h-12 w-12 bottom-0 right-4 -translate-y-1/2 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0 md:flex hidden",
           open ? "!right-[400px]" : "",
         )}
         onClick={handleToggleSidebar}
@@ -405,18 +406,51 @@ export default function GenerateNotesSidebar() {
         )}
       </Button>
 
-      {/* Sidebar */}
+      {/* Mobile Toggle Button - fixed above the bottom bar */}
+      <Button
+        variant="neumorphic-primary"
+        size="icon"
+        className={cn(
+          "md:hidden fixed h-12 w-12 bottom-20 right-4 z-50 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0",
+          open ? "opacity-0 pointer-events-none" : "opacity-100",
+        )}
+        onClick={handleToggleSidebar}
+      >
+        <Pencil className="h-6 w-6" />
+      </Button>
+
+      {/* Close button for mobile */}
+      <Button
+        variant="outline"
+        size="icon"
+        className={cn(
+          "md:hidden fixed top-4 right-4 z-[60] h-9 w-9",
+          !open && "hidden",
+        )}
+        onClick={handleToggleSidebar}
+      >
+        <X className="h-5 w-5" />
+      </Button>
+
+      {/* Sidebar - with mobile optimizations */}
       <div
         className={cn(
-          "fixed top-0 right-0 w-[400px] h-full bg-background border-l border-border transition-all duration-300 transform",
+          "fixed top-0 right-0 md:w-[400px] w-full h-[calc(100vh-64px)] md:h-screen bg-background border-l border-border transition-all duration-300 transform overflow-hidden z-50",
           open ? "translate-x-0" : "translate-x-full",
         )}
       >
         <div className="flex flex-col h-full">
+          {/* Content Area with header for mobile */}
+          <div className="md:hidden border-b border-border p-4 flex items-center">
+            <h2 className="text-lg font-semibold">Your content</h2>
+          </div>
+
           {/* Content Area */}
-          <div className="flex-1 overflow-auto p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm">Your content</h3>
+          <div className="flex-1 overflow-auto p-4 pb-20 md:pb-4">
+            <div className="mb-4 flex items-center justify-end md:justify-between">
+              <h3 className="hidden md:block text-base font-medium">
+                Your content
+              </h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -424,13 +458,13 @@ export default function GenerateNotesSidebar() {
                 onClick={handleCreateDraftNote}
                 disabled={!hasContent}
               >
-                <Plus className="h-5 w-5 text-primary" />
+                <Plus className="h-5 w-5 text-primary mr-1" />
                 New draft
               </Button>
             </div>
 
             {/* Editor */}
-            <div className="min-h-[200px] w-full border border-border rounded-md relative">
+            <div className="min-h-[180px] md:min-h-[200px] w-full border border-border rounded-md relative">
               {editor && (
                 <BubbleMenu
                   editor={editor}
@@ -502,12 +536,12 @@ export default function GenerateNotesSidebar() {
               <EditorContent
                 disabled={loadingGenerateNewIdea}
                 editor={editor}
-                className="min-h-[200px] max-h-[300px] px-3 prose prose-sm max-w-none focus:outline-none overflow-auto"
+                className="min-h-[180px] md:min-h-[200px] max-h-[200px] md:max-h-[300px] px-3 prose prose-sm max-w-none focus:outline-none overflow-auto"
               />
 
               {/* Toolbar */}
-              <div className="border-t border-border p-2 flex items-center justify-between gap-4 z-20">
-                <div className="flex items-center gap-2">
+              <div className="border-t border-border p-2 flex items-center justify-between gap-2 md:gap-4 z-20 flex-wrap md:flex-nowrap">
+                <div className="flex items-center gap-1 md:gap-2">
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -560,7 +594,7 @@ export default function GenerateNotesSidebar() {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 md:gap-2">
                   <TooltipButton
                     tooltipContent="Save"
                     variant="ghost"
@@ -651,7 +685,7 @@ export default function GenerateNotesSidebar() {
 
             {/* Generate Notes Button */}
             <Button
-              className="w-full mt-2"
+              className="w-full mt-2 mb-6 md:mb-0"
               onClick={handleGenerateNewNote}
               disabled={loadingGenerateNewIdea}
             >

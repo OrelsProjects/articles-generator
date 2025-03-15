@@ -62,7 +62,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="w-full min-h-screen bg-transparent py-16 flex justify-center items-start">
+    <div className="w-full min-h-screen bg-transparent py-8 pb-28 md:py-16 flex justify-center items-start">
       <div className="w-full container">
         <h1 className="text-3xl font-bold mb-8">Settings</h1>
 

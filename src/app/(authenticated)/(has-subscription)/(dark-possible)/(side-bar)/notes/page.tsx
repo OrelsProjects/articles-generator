@@ -49,7 +49,7 @@ export default function NotesPage() {
 
   if (loadingNotes && userNotes.length === 0) {
     return (
-      <div className="container py-8">
+      <div className="container py-2 md:py-6 pb-6">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">My Notes</h1>
           <Button
@@ -77,7 +77,7 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-transparent py-16 flex justify-center items-start">
+    <div className="w-full min-h-screen bg-transparent py-8 pb-28 md:py-16 flex justify-center items-start">
       <div className="container">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">My Notes</h1>

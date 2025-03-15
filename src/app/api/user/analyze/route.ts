@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
 
     const generatedDescription = await runPrompt(
       messages,
-      "google/gemini-2.0-flash-001",
+      "anthropic/claude-3.7-sonnet",
     );
 
     const descriptionObject: {

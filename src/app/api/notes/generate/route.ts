@@ -33,8 +33,7 @@ export async function POST(
   const useTopTypes = body.useTopTypes || false;
   const featureFlags = session.user.meta?.featureFlags || [];
   let model: Model = "anthropic/claude-3.5-sonnet";
-  console.log("featureFlags", featureFlags);
-  console.log("requestedModel", requestedModel);
+
   if (requestedModel && featureFlags.includes(FeatureFlag.advancedGPT)) {
     if (requestedModel === "gpt-4.5") {
       model = "openai/gpt-4.5-preview";
@@ -102,7 +101,7 @@ export async function POST(
 
     const authorId = publication.authorId;
 
-    const query = `${userMetadata.publication.preferredTopics || ""}, ${userMetadata.publication.topics}.`;
+    const query = `${userMetadata.publication.preferredTopics || ""}, ${userMetadata.noteTopics}.`;
 
     const randomMinReaction = Math.floor(Math.random() * 300);
     const randomMaxReaction =
@@ -196,6 +195,7 @@ export async function POST(
     );
 
     const messages = generateNotesPrompt(
+      userMetadata,
       userMetadata.publication,
       uniqueInspirations.map((note: NotesComments) => note.body),
       notesFromAuthor.map(note => note.body),
@@ -209,11 +209,7 @@ export async function POST(
       },
     );
 
-    const [promptResponse] = await Promise.all([
-      runPrompt(messages, model),
-      // runPrompt(messages, "openai/gpt-4o"),
-      // runPrompt(messages, "anthropic/claude-3.5-sonnet"),
-    ]);
+    const promptResponse = await runPrompt(messages, model);
 
     let newNotes: any[] = await parseJson(promptResponse);
     // const newNotes2: any[] = await parseJson(promptResponse2);
