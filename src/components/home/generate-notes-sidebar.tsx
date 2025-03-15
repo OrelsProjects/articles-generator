@@ -184,8 +184,8 @@ const ideaLoadingStates = [
 
 // Define AI models
 const AI_MODELS: { value: FrontendModel; label: string }[] = [
-  { value: "claude-3.5", label: "Claude 3.5" },
   { value: "gpt-4.5", label: "GPT-4.5" },
+  { value: "claude-3.5", label: "Claude 3.5" },
   { value: "claude-3.7", label: "Claude 3.7" },
   { value: "claude-3.5-haiku", label: "Claude 3.5 Haiku" },
 ];
@@ -207,9 +207,8 @@ export default function GenerateNotesSidebar() {
   const [open, setOpen] = useState(false);
   const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
   const [loadingImprovement, setLoadingImprovement] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<FrontendModel>(
-    AI_MODELS[0].value,
-  );
+  const [selectedModel, setSelectedModel] =
+    useState<FrontendModel>("claude-3.7");
   const [useTopTypes, setUseTopTypes] = useState(false);
   const [previousSelectedNote, setPreviousSelectedNote] =
     useState<NoteDraft | null>(null);
