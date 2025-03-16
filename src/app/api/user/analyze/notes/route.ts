@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   try {
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
-        userId: "67d6e75d3e3fb7cb47af7149",
+        userId: session.user.id,
       },
       include: {
         publication: {
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const authorId = await getAuthorId("67d6e75d3e3fb7cb47af7149");
+    const authorId = await getAuthorId(session.user.id);
     if (!authorId) {
       return NextResponse.json(
         { error: "Author ID not found" },
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
     } = await parseJson(generatedDescription);
 
     await prisma.userMetadata.update({
-      where: { userId: "67d6e75d3e3fb7cb47af7149" },
+      where: { userId: session.user.id },
       data: {
         noteWritingStyle: descriptionObject.noteWritingStyle,
         noteTopics: descriptionObject.noteTopics,
