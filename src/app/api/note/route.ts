@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
       feedbackComment: null,
       inspiration: null,
       handle: handle,
+      generatingModel: null,
       ...newNoteDraft,
       authorId: newNoteDraft?.authorId || authorId || 0,
     };
