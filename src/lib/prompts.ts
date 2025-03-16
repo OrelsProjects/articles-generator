@@ -779,8 +779,8 @@ export const generateNotesPrompt = (
     {
       role: "user",
       content: `
-          Here are topics I write about: ${userMetadata.noteTopics}
-          ${publication.personalDescription ? `Here's a description of me: ${publication.personalDescription}` : ""}
+          Here are topics I write about and I want you to write about them: ${userMetadata.noteTopics}
+          ${publication.personalDescription ? `Here's a description of me (Very important): ${publication.personalDescription}` : ""}
           ${publication.preferredTopics.length > 0 ? `Here are my preferred topics. Use them to generate notes about me: ${publication.preferredTopics.join(", ")}` : ""}
 
           ${userNotes.length > 0 ? `Here are my previously written notes:` : ""}
