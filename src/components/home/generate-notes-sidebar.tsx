@@ -34,6 +34,7 @@ import {
   AudioLines,
   ChevronDown,
   X,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
@@ -682,9 +683,20 @@ export default function GenerateNotesSidebar() {
                       setUseTopTypes(checked)
                     }
                   />
-                  <label className="text-sm text-muted-foreground">
-                    Use best types of notes
-                  </label>
+                  <div className="flex items-center gap-1">
+                    <label className="text-sm text-muted-foreground">
+                      Use best types of notes
+                    </label>
+                    <TooltipButton
+                      tooltipContent="Top type of notes (story-driven, contrarian etc.) based on an analysis of top performing notes"
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0"
+                      onClick={e => e.preventDefault()}
+                    >
+                      <Info className="h-3 w-3 text-muted-foreground mt-1" />
+                    </TooltipButton>
+                  </div>
                 </div>
               </div>
             )}
