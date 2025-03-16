@@ -32,7 +32,7 @@ export default function AuthProvider({
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const { setIdeas } = useIdea();
-  const { init } = useSettings();
+  const { init: initSettings } = useSettings();
   const [loading, setLoading] = useState(true);
   const { user: currentUser } = useSelector(selectAuth);
   const { data: session, status } = useSession();
@@ -66,7 +66,7 @@ export default function AuthProvider({
           dispatch(addPublication(publication));
           setIdeas(publication.ideas);
         }
-        init();
+        initSettings();
       } catch (error: any) {
         Logger.error("Error adding publication:", error);
       }

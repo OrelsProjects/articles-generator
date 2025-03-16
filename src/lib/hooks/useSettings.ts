@@ -28,7 +28,11 @@ export const useSettings = () => {
 
   const init = async () => {
     try {
-      await axios.post("/api/user/analyze/notes");
+      try {
+        await axios.post("/api/user/analyze/notes");
+      } catch (error) {
+        console.error(error);
+      }
       const response = await axios.get("/api/user/settings");
       const { usages } = response.data;
       dispatch(setUsages(usages));
