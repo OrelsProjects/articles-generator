@@ -101,6 +101,10 @@ const faq = [
     answer: `Yes! Create a new, empty draft, fill up your outline and ask the AI to elaborate on it.`,
   },
   {
+    question: `Can I train the model with my own description?`,
+    answer: `Yes! In the settings you can write your own description and even the topics you want to write about.`,
+  },
+  {
     question: `Does ${appName} write for me?`,
     answer: `No! ${appName} enhances your writing, but you are always in control. We provide tools and suggestions to improve your newsletter while maintaining your unique voice.`,
   },

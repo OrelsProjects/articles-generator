@@ -732,7 +732,7 @@ export const generateNotesPrompt = (
       role: "system",
       content: `
       ${publication.generatedDescription}
-      ${publication.writingStyle}
+      ${userMetadata.noteWritingStyle || publication.writingStyle}
 
     Act as a brilliant social media influencer, very efficient at writing engaging Substack notes.
     Help user write a note with your description, writing style and highlights.

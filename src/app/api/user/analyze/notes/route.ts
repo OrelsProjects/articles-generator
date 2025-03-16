@@ -1,5 +1,6 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
+import { getAuthorId } from "@/lib/dal/publication";
 import { runPrompt } from "@/lib/open-router";
 import { generateNotesDescriptionPrompt } from "@/lib/prompts";
 import { parseJson } from "@/lib/utils/json";
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
   try {
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
-        userId: session.user.id,
+        userId: "67d6e75d3e3fb7cb47af7149",
       },
       include: {
         publication: {
@@ -42,9 +43,17 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    const authorId = await getAuthorId("67d6e75d3e3fb7cb47af7149");
+    if (!authorId) {
+      return NextResponse.json(
+        { error: "Author ID not found" },
+        { status: 404 },
+      );
+    }
+
     const userNotes = await prismaArticles.notesComments.findMany({
       where: {
-        authorId: userMetadata.publication?.authorId,
+        authorId: authorId,
         body: {
           not: "",
         },
@@ -74,7 +83,7 @@ export async function GET(req: NextRequest) {
     } = await parseJson(generatedDescription);
 
     await prisma.userMetadata.update({
-      where: { userId: session.user.id },
+      where: { userId: "67d6e75d3e3fb7cb47af7149" },
       data: {
         noteWritingStyle: descriptionObject.noteWritingStyle,
         noteTopics: descriptionObject.noteTopics,
