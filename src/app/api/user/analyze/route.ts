@@ -24,10 +24,15 @@ export async function POST(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const userId = session.user.id;
+  const { url } = await req.json();
+  // const userId = "67d015d26230c417488f62ed";
+  // const url = "https://scrambleit.substack.com/";
+
   try {
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
-        userId: session.user.id,
+        userId,
       },
       include: {
         publication: true,
@@ -35,8 +40,6 @@ export async function POST(req: NextRequest) {
     });
 
     let publicationMetadata = userMetadata?.publication;
-
-    const { url } = await req.json();
 
     let publications = await getPublicationByUrl(url, {
       createIfNotFound: true,
@@ -156,7 +159,7 @@ export async function POST(req: NextRequest) {
         },
       });
     } else {
-      const authorId = await getAuthorId(session.user.id);
+      const authorId = await getAuthorId(userId);
       publicationMetadata = await prisma.publicationMetadata.create({
         data: {
           publicationUrl: url,
@@ -179,7 +182,7 @@ export async function POST(req: NextRequest) {
 
     await prisma.userMetadata.update({
       where: {
-        userId: session.user.id,
+        userId,
       },
       data: {
         publication: { connect: { id: publicationMetadata.id } },

@@ -63,6 +63,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    if (!userNotes) {
+      return NextResponse.json({ error: "No notes found" }, { status: 404 });
+    }
+
     const messages = generateNotesDescriptionPrompt(userNotes);
 
     const [
