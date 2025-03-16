@@ -235,6 +235,7 @@ export async function POST(
           thumbnail,
           type: note.type,
           authorId: parseInt(authorId.toString()),
+          generatingModel: model,
           name,
           inspiration: note.inspiration,
         },
