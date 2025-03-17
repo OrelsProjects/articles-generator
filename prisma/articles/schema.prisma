@@ -172,7 +172,7 @@ model NotesComments {
     type            String   @map("type")
     authorId        Int      @map("user_id")
     body            String   @map("body")
-    bodyJson        Json     @map("body_json")
+    bodyJson        Json?    @map("body_json")
     date            DateTime @map("date")
     handle          String   @map("handle")
     name            String   @map("name")
