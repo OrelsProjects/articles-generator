@@ -258,6 +258,7 @@ model Note {
   handle   String?
   name     String?
 
+  initialGeneratingModel String?
   generatingModel String?
 
   createdAt DateTime @default(now())

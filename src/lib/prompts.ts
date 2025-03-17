@@ -733,6 +733,7 @@ export const generateNotesPrompt = (
       content: `
       ${publication.generatedDescription}
       ${userMetadata.noteWritingStyle || publication.writingStyle}
+      ${publication.highlights}
 
     Act as a brilliant social media influencer, very efficient at writing engaging Substack notes.
     Help user write a note with your description, writing style and highlights.
@@ -806,6 +807,60 @@ export const generateNotesPrompt = (
           ${allTopics.length > 0 && notesUserLiked.length > 0 ? `Make sure not to repeat topics that are already in the list. If the list is too long and you need to repeat, repeat the ones with the highest count. from this list: ${Object.keys(likedTopicsCount).join("\\n")}` : ""}
       
           Generate ${noteCount} new notes in my writing style while drawing inspiration from these.`,
+    },
+  ];
+
+  return messages;
+};
+
+export const generateNotesWritingStylePrompt = (
+  userMetadata: UserMetadata,
+  publication: PublicationMetadata,
+  notesToImprove: { id: number; body: string }[],
+) => {
+  const messages = [
+    {
+      role: "system",
+      content: `
+      ${userMetadata.noteWritingStyle || publication.writingStyle}
+
+    Act as a brilliant social media influencer, very efficient at writing engaging Substack notes.
+    Help user improve his notes with your description and writing style.
+    Notes are like tweets. They need to have one core idea, very impactful and engaging with an amazing hook.
+
+    Your goal is the improve the writing style, the formatting and structure of the notes.
+    The notes should be engaging, easily readable and have a great hook.
+
+    Each note to have as little cliches as possible and have insightful information that is not obvious.
+    Make the note very non-obvious, so it's almost a clickbait.
+    ** You must not change the core idea of the note. Only improve it based on your writing style. **
+    Each note should have a great hook, that will entice the user to read it from the get-go.
+
+  - Must use new lines when needed, avoid using hashtags
+  - Write with human-writing style, natural language, and avoid sounding like AI generated note
+  - Body has to be in markdown format.
+  - Include emojis ONLY if the user's body includes them.
+  - Make sure it passes the flesch-kincaid test with a score of 70 or higher, prefer 80 or higher.
+  - Don't use the words: embrace.
+  - Don't use these signs: ;, --
+  
+  The response **must** be an array of notes in the following JSON format, without additional text:
+  [
+    {
+      "id": "<note id>",
+      "body": "<improved note>"
+    },
+  ]
+    `,
+    },
+    {
+      role: "user",
+      content: `
+          ${publication.personalDescription ? `Here's a description of me (Very important): ${publication.personalDescription}` : ""}
+          ${publication.preferredTopics.length > 0 ? `Here are my preferred topics. Use them to generate notes about me: ${publication.preferredTopics.join(", ")}` : ""}
+
+          Here are the notes I want you to improve:
+          ${notesToImprove.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}`,
     },
   ];
 

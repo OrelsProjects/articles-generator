@@ -51,13 +51,14 @@ export async function runPrompt(
 ): Promise<string> {
   let tokenCount = 0;
   tokenCount = getTokenCount(messages.map(m => m.content).join("\n"));
+  const priceInput = getPrice(model, tokenCount);
   console.log(
     "About to run prompt on model",
     model,
     "Estimated token count:",
     tokenCount,
     "Estimated price:",
-    `$${getPrice(model, tokenCount).toFixed(2)}`,
+    `$${priceInput.toFixed(2)}`,
   );
   console.time("runPrompt");
   let response = await axios.post(
@@ -107,10 +108,8 @@ export async function runPrompt(
     llmResponse = llmResponse.replace(/```json|```/g, "").trim();
   }
   const outputTokens = getTokenCount(llmResponse);
+  const priceOutput = getPrice(model, 0, outputTokens);
   console.log("Output tokens:", outputTokens);
-  console.log(
-    "Actual price:",
-    `$${getPrice(model, 0, outputTokens).toFixed(4)}`,
-  );
+  console.log("Actual price:", `$${(priceInput + priceOutput).toFixed(4)}`);
   return llmResponse;
 }

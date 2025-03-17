@@ -11,9 +11,9 @@ import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 import { Article, ArticleWithBody } from "@/types/article";
 import loggerServer from "@/loggerServer";
-import { setPublications as scrapePosts } from "@/lib/utils/publication";
 import { parseJson } from "@/lib/utils/json";
 import { buildSubstackUrl } from "@/lib/utils/url";
+import { setPublications as scrapePosts } from "@/lib/utils/publication";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 

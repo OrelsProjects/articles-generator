@@ -1,7 +1,10 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
-import { generateNotesPrompt } from "@/lib/prompts";
+import {
+  generateNotesPrompt,
+  generateNotesWritingStylePrompt,
+} from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -32,7 +35,8 @@ export async function POST(
   const requestedModel = body.model;
   const useTopTypes = body.useTopTypes || false;
   const featureFlags = session.user.meta?.featureFlags || [];
-  let model: Model = "anthropic/claude-3.5-haiku";
+  let initialGeneratingModel: Model = "anthropic/claude-3.7-sonnet";
+  let model: Model = "anthropic/claude-3.7-sonnet";
 
   if (requestedModel && featureFlags.includes(FeatureFlag.advancedGPT)) {
     if (requestedModel === "gpt-4.5") {
@@ -44,6 +48,10 @@ export async function POST(
     } else if (requestedModel === "claude-3.5-haiku") {
       model = "anthropic/claude-3.5-haiku";
     }
+  }
+
+  if (model !== "openai/gpt-4.5-preview") {
+    initialGeneratingModel = model;
   }
 
   const count = Math.min(parseInt(countString || "3"), 3);
@@ -196,7 +204,7 @@ export async function POST(
         !notesUserLiked.some(like => like.body === note.body),
     );
 
-    const messages = generateNotesPrompt(
+    const generateNotesMessages = generateNotesPrompt(
       userMetadata,
       userMetadata.publication,
       uniqueInspirations.map((note: NotesComments) => note.body),
@@ -211,10 +219,36 @@ export async function POST(
       },
     );
 
-    const promptResponse = await runPrompt(messages, model);
+    const promptResponse = await runPrompt(
+      generateNotesMessages,
+      initialGeneratingModel,
+    );
+    let newNotes: {
+      body: string;
+      summary: string;
+      topics: string[];
+      inspiration: string;
+      type: string;
+    }[] = await parseJson(promptResponse);
 
-    let newNotes: any[] = await parseJson(promptResponse);
-    // const newNotes2: any[] = await parseJson(promptResponse2);
+    const newNotesWithIds = newNotes.map((note, index) => ({
+      ...note,
+      id: index,
+    }));
+
+    const improveNotesMessages = generateNotesWritingStylePrompt(
+      userMetadata,
+      userMetadata.publication,
+      newNotesWithIds,
+    );
+    const improvedNotesResponse = await runPrompt(improveNotesMessages, model);
+    const improvedNotes: { id: number; body: string }[] = await parseJson(
+      improvedNotesResponse,
+    );
+    newNotes = newNotes.map((note, index) => {
+      const improvedNote = improvedNotes.find(n => n.id === index);
+      return improvedNote ? { ...note, body: improvedNote.body } : note;
+    });
     // const newNotes3: any[] = await parseJson(promptResponse3);
     // newNotes = [...newNotes, ...newNotes2, ...newNotes3];
 
@@ -236,6 +270,7 @@ export async function POST(
           type: note.type,
           authorId: parseInt(authorId.toString()),
           generatingModel: model,
+          initialGeneratingModel,
           name,
           inspiration: note.inspiration,
         },

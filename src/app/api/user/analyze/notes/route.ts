@@ -12,10 +12,12 @@ export async function POST(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  // const userId = "67d015d26230c417488f62ed";
+  const userId = session.user.id;
   try {
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
-        userId: session.user.id,
+        userId: userId,
       },
       include: {
         publication: {
@@ -43,7 +45,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const authorId = await getAuthorId(session.user.id);
+    const authorId = await getAuthorId(userId);
     if (!authorId) {
       return NextResponse.json(
         { error: "Author ID not found" },
@@ -54,16 +56,14 @@ export async function POST(req: NextRequest) {
     const userNotes = await prismaArticles.notesComments.findMany({
       where: {
         authorId: authorId,
-        body: {
-          not: "",
-        },
       },
       orderBy: {
-        reactionCount: "desc",
+        date: "desc",
       },
+      take: 150,
     });
 
-    if (!userNotes) {
+    if (userNotes.length === 0) {
       return NextResponse.json({ error: "No notes found" }, { status: 404 });
     }
 
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     } = await parseJson(generatedDescription);
 
     await prisma.userMetadata.update({
-      where: { userId: session.user.id },
+      where: { userId: userId },
       data: {
         noteWritingStyle: descriptionObject.noteWritingStyle,
         noteTopics: descriptionObject.noteTopics,
