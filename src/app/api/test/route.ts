@@ -1,5 +1,6 @@
 import prisma from "@/app/api/_db/db";
 import { getAuthorId } from "@/lib/dal/publication";
+import { addUserToList } from "@/lib/mail/mail";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -31,5 +32,29 @@ export async function GET() {
   //   }
   // }
 
-  return NextResponse.json({ message: "Updated" });
+  // const users = await prisma.user.findMany();
+  // const subscriptions = await prisma.subscription.findMany();
+  // const userSubscriptions = users
+  //   .map(user => {
+  //     const subscription = subscriptions.find(
+  //       subscription => subscription.userId === user.id,
+  //     );
+  //     return { ...user, subscription };
+  //   })
+  //   .filter(user => user.subscription && user.email && user.name);
+
+  // const emailsSeparatedByComma = userSubscriptions
+  //   .map(user => {
+  //     return user.email;
+  //   })
+  //   .join(",");
+
+  // for (const user of userSubscriptions) {
+  //   await addUserToList({
+  //     email: user.email!,
+  //     fullName: user.name!,
+  //   });
+  // }
+
+  return NextResponse.json({ message: "success" });
 }

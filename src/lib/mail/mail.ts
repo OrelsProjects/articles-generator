@@ -1,5 +1,20 @@
 import axios from "axios";
 
+export interface ListUser {
+  email: string;
+  fullName: string;
+}
+
+const requestExtras = {
+  auth: {
+    username: "api",
+    password: process.env.MAILGUN_API_KEY || "",
+  },
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded",
+  },
+};
+
 export const sendMail = async (
   to: string,
   from: string,
@@ -8,7 +23,7 @@ export const sendMail = async (
   cc: string[] = [],
 ) => {
   const formData = new FormData();
-  formData.append("from", from + " " + "<support@mail.write-room.co>");
+  formData.append("from", from + " " + "<support@writeroom.co>");
   formData.append("to", to);
   for (const c of cc) {
     formData.append("to", c);
@@ -20,19 +35,39 @@ export const sendMail = async (
     const response = await axios.post(
       `https://api.mailgun.net/v3/${process.env.MAILGUN_ORG}/messages`,
       formData,
-      {
-        auth: {
-          username: "api",
-          password: process.env.MAILGUN_API_KEY || "",
-        },
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      },
+      requestExtras,
     );
 
     console.log("Mail sent successfully:", response.data);
   } catch (error: any) {
     throw new Error(`Error sending mail: ${error.message}`);
   }
+};
+
+export const addUserToList = async (user: ListUser) => {
+  const form = new FormData();
+  const firstName = user.fullName.split(" ")[0];
+  const lastName = user.fullName.split(" ").slice(1).join(" ");
+  const listAddress = "orel@writeroom.co";
+  const apiKey = process.env.MAILGUN_API_KEY;
+  form.append("name", user.fullName);
+  form.append("address", user.email);
+  form.append("vars[first_name]", firstName);
+  form.append("vars[last_name]", lastName);
+  form.append("subscribed", "yes");
+  form.append("upsert", "yes");
+  const resp = await fetch(
+    `https://api.mailgun.net/v3/lists/${listAddress}/members`,
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          "Basic " + Buffer.from("api:" + apiKey).toString("base64"),
+      },
+      body: form,
+    },
+  );
+
+  const data = await resp.text();
+  console.log(data);
 };

@@ -28,7 +28,6 @@ export default function OnboardingPage() {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
   useEffect(() => {
-    debugger;
     if (hasPublication) {
       if (user?.meta?.plan) {
         router.push("/home", { paramsToRemove: ["plan", "interval"] });

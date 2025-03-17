@@ -27,7 +27,6 @@ const useAuth = () => {
         }
       });
       setLoading(true);
-      debugger;
       await signIn("google", {
         redirect: true,
         callbackUrl: redirect.toString(),

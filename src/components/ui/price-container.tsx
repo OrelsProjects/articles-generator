@@ -87,12 +87,12 @@ function PriceContainerSVG({
         stroke="none"
         strokeWidth="1"
         fill="none"
-        fill-rule="evenodd"
+        fillRule="evenodd"
       >
         <g
           transform="translate(-2199.776015, -1470.276955)"
           fill="currentColor"
-          fill-rule="nonzero"
+          fillRule="nonzero"
         >
           <g
             id="g10"

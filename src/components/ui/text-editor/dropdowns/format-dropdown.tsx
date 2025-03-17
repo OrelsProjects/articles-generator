@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Editor } from "@tiptap/react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Send, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { INFINITY } from "@/lib/plans-consts";
 import { useSettings } from "@/lib/hooks/useSettings";
+import { Textarea } from "@/components/ui/textarea";
 
 // React node with onClick
 type Trigger = React.ReactElement & { onClick?: () => void };
@@ -21,12 +22,13 @@ export type FormatOption = {
   subLabel?: string;
   type: string | ImprovementType;
   tooltip?: string;
+  action?: "text";
 };
 
 interface FormatDropdownProps {
   options: FormatOption[];
   loading?: string | null;
-  onSelect: (type: string) => void;
+  onSelect: (type: string, text?: string) => void;
   trigger?: Trigger;
   disabled?: boolean;
   className?: string;
@@ -49,9 +51,10 @@ export function FormatDropdown({
   type,
 }: FormatDropdownProps) {
   const { credits } = useAppSelector(selectSettings);
-  const { didExceedLimit } = useSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
+  const [expandedOption, setExpandedOption] = useState<string | null>(null);
+  const [textInput, setTextInput] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Toggle the dropdown & measure available space
@@ -80,12 +83,37 @@ export function FormatDropdown({
     const handleClickOutside = (e: MouseEvent) => {
       if (!containerRef.current?.contains(e.target as Node)) {
         setIsOpen(false);
+        setExpandedOption(null);
+        setTextInput("");
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
+
+  const handleOptionClick = (option: FormatOption) => {
+    if (option.action === "text") {
+      setExpandedOption(String(option.type));
+    } else {
+      onSelect(String(option.type));
+      setIsOpen(false);
+    }
+  };
+
+  const handleSend = () => {
+    if (expandedOption && textInput.trim()) {
+      onSelect(expandedOption, textInput.trim());
+      setTextInput("");
+      setExpandedOption(null);
+      setIsOpen(false);
+    }
+  };
+
+  const handleClose = () => {
+    setExpandedOption(null);
+    setTextInput("");
+  };
 
   const usedCount = useMemo(() => {
     return credits.remaining;
@@ -138,7 +166,8 @@ export function FormatDropdown({
             exit={{ opacity: 0, y: openUp ? 10 : -10 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              "absolute z-50 w-40 shadow-md",
+              "absolute z-50 w-40 shadow-md transition-none",
+              expandedOption ? "w-64" : "w-40",
               "bg-popover text-popover-foreground backdrop-blur-sm",
               openUp ? "bottom-full mb-2" : "top-full mt-2",
             )}
@@ -162,23 +191,60 @@ export function FormatDropdown({
                     </p>
                   )}
 
-                  <MotionTooltipButton
-                    variant={"ghost"}
-                    tooltipContent={option.tooltip}
-                    onClick={() => onSelect(`${option.type}`)}
-                    disabled={disabled || error?.disabled}
-                    className={cn(
-                      "w-full flex items-center justify-start gap-2 px-2 py-1.5 rounded-sm text-sm",
-                      "transition-colors hover:bg-accent hover:text-accent-foreground",
-                    )}
-                  >
-                    {loading === option.type ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <option.icon className="h-4 w-4" />
-                    )}
-                    <span>{option.label}</span>
-                  </MotionTooltipButton>
+                  {expandedOption === option.type ? (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="p-2 space-y-2"
+                    >
+                      <Textarea
+                        value={textInput}
+                        onChange={e => setTextInput(e.target.value)}
+                        placeholder="Enter your text..."
+                        className="min-h-[80px] max-h-[200px] resize-none"
+                        autoFocus
+                        maxLength={1000}
+                      />
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleClose}
+                          className="h-8 w-8 p-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleSend}
+                          disabled={!textInput.trim()}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <MotionTooltipButton
+                      variant={"ghost"}
+                      tooltipContent={option.tooltip}
+                      onClick={() => handleOptionClick(option)}
+                      disabled={disabled || error?.disabled}
+                      className={cn(
+                        "w-full flex items-center justify-start gap-2 px-2 py-1.5 rounded-sm text-sm",
+                        "transition-colors hover:bg-accent hover:text-accent-foreground",
+                      )}
+                    >
+                      {loading === option.type ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <option.icon className="h-4 w-4" />
+                      )}
+                      <span>{option.label}</span>
+                    </MotionTooltipButton>
+                  )}
 
                   {option.divider && <div className="h-px bg-border my-1" />}
                 </div>

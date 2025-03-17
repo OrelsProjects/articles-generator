@@ -520,3 +520,34 @@ p:empty::after {
 .landing-section-top p {
   @apply mt-6 text-base leading-6 text-muted-foreground mx-auto max-w-2xl text-center;
 }
+
+.text-loading {
+  @apply text-primary;
+}
+
+.loading-text {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.loading-text-wrapper {
+  position: relative;
+}
+
+.loading-text-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

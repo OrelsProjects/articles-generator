@@ -16,8 +16,7 @@ import {
   unformatText,
   textEditorOptions,
   loadContent,
-  htmlToRichText,
-  copyHTMLToClipboard,
+  skeletonPluginKey,
 } from "@/lib/utils/text-editor";
 import { Logger } from "@/logger";
 import cuid from "cuid";
@@ -29,12 +28,14 @@ import { TitleImprovementType } from "@/components/ui/text-editor/dropdowns/titl
 import BlankPage from "@/components/ui/text-editor/blank-page";
 
 // Import our new subcomponents
-import DraftIndicator from "./draft-indicator";
 import TitleSection from "./title-section";
 import SubtitleSection from "./subtitle-section";
 import EditorArea from "./editor-area";
 import PreviewModal from "./preview-modal";
 import LoadingIdeas from "@/components/ui/loading-ideas";
+import { copyHTMLToClipboard } from "@/lib/utils/copy";
+import { DOMSerializer } from "@tiptap/pm/model";
+import { Decoration, DecorationSet } from "prosemirror-view";
 
 type ImageName = string;
 
@@ -58,8 +59,10 @@ const TextEditor = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savingError, setSavingError] = useState(false);
-  const [loadingImprovement, setLoadingImprovement] =
-    useState<ImprovementType | null>(null);
+  const [loadingImprovement, setLoadingImprovement] = useState<{
+    type: ImprovementType;
+    text?: { from: number; to: number };
+  } | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const previewEditorRef = useRef<HTMLDivElement>(null);
 
@@ -84,6 +87,49 @@ const TextEditor = ({
   const [showSubtitleMenu, setShowSubtitleMenu] = useState(false);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const subtitleRef = useRef<HTMLTextAreaElement>(null);
+
+  const addSkeleton = () => {
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    if (from === to) {
+      alert("Selection is empty—select some text first!");
+      return;
+    }
+
+    // Create a widget decoration, same as before
+    const skeletonEl = document.createElement("div");
+    skeletonEl.className = "my-skeleton";
+    skeletonEl.textContent = "Loading...";
+
+    const widgetDeco = Decoration.widget(from, () => skeletonEl, { side: 0 });
+
+    const tr = editor.state.tr;
+    // Set meta so our plugin adds it to the DecorationSet
+    tr.setMeta(skeletonPluginKey, { add: [widgetDeco] });
+    editor.view.dispatch(tr);
+  };
+
+  useEffect(() => {
+    if (loadingImprovement?.text && editor) {
+      const { schema } = editor.state;
+      const skeletonNode = schema.nodes.paragraph.create({
+        class: "text-loading-skeleton",
+      });
+
+      const tr = editor.state.tr.replaceWith(
+        editor.state.selection.from,
+        editor.state.selection.to,
+        skeletonNode,
+      );
+      editor.view.dispatch(tr);
+    } else {
+      // remove all loading-text classes
+      const loadingTexts = document.querySelectorAll(".text-loading");
+      loadingTexts.forEach(text => {
+        text.classList.remove("text-loading");
+      });
+    }
+  }, [loadingImprovement]);
 
   useEffect(() => {
     onDraftStatusChange?.(savingError, saving);
@@ -206,16 +252,16 @@ const TextEditor = ({
     setHasChanges(didChange);
   }
 
-  async function handleImprovement(type: ImprovementType) {
+  async function handleImprovement(type: ImprovementType, customText?: string) {
     if (!editor) return;
     if (!selectedIdea) return;
     if (loadingImprovement) return;
 
-    setLoadingImprovement(type);
-
     let toastId: number | string = "";
     if (type === "fact-check") {
       toastId = toast.loading(`Fact-checking...`);
+    } else if (type === "custom") {
+      toastId = toast.loading(`Customizing...`);
     } else {
       toastId = toast.loading(`Making it more ${type}`);
     }
@@ -223,7 +269,7 @@ const TextEditor = ({
     try {
       const { state } = editor;
       const { from, to } = state.selection;
-      if (from === to) throw new Error("No text selected.");
+      // addSkeleton();
 
       const selectedMarkdown = getSelectedContentAsMarkdown(editor);
       if (!selectedMarkdown) throw new Error("Selected text is empty.");
@@ -234,6 +280,7 @@ const TextEditor = ({
         from,
         to,
         selectedIdea.id,
+        customText,
       );
       if (!response || !response.text) {
         throw new Error("Improvement service failed.");
@@ -257,7 +304,6 @@ const TextEditor = ({
       setImprovementRange({ from: response.textFrom, to: response.textTo });
 
       // set the content in the preview editor
-      // we use 'formatText()' to convert the raw markdown or plain text into HTML for TipTap
       previewEditor?.commands.setContent(formatText(response.text));
 
       // show the modal
@@ -273,7 +319,8 @@ const TextEditor = ({
         autoClose: 3000,
       });
     } finally {
-      setLoadingImprovement(null);
+      // Clear the loading decoration
+      editor.storage.loadingImprovement = null;
     }
   }
 
@@ -308,7 +355,7 @@ const TextEditor = ({
     if (!editor || !selectedIdea) return;
     if (loadingImprovement) return;
 
-    setLoadingImprovement(improveType);
+    setLoadingImprovement({ type: improveType });
 
     let toastId: number | string = "";
     if (improveType === "generate") {

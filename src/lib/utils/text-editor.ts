@@ -23,8 +23,10 @@ import Text from "@tiptap/extension-text";
 import { cn } from "@/lib/utils";
 import { Lora } from "@/lib/utils/fonts";
 import Blockquote from "@tiptap/extension-blockquote";
-import { Plugin } from "prosemirror-state";
+import { Plugin, PluginKey } from "prosemirror-state";
 import ResizableImageExtension from "@/components/ui/extenstions/ResizeImage";
+import { Decoration, DecorationSet } from "prosemirror-view";
+
 
 export function getSelectedContentAsMarkdown(editor: Editor): string {
   const selectedHTML = getSelectedContentAsHTML(editor);
@@ -300,6 +302,93 @@ const PullQuote = Node.create({
   },
 });
 
+// Add this before textEditorOptions
+const LoadingDecoration = Extension.create({
+  name: "loadingDecoration",
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        props: {
+          decorations: state => {
+            const { loadingImprovement } = this.editor.storage;
+            if (!loadingImprovement?.text) return DecorationSet.empty;
+
+            const { from, to } = loadingImprovement.text;
+            return DecorationSet.create(state.doc, [
+              Decoration.inline(
+                from,
+                to,
+                {
+                  class: "loading-text",
+                },
+                { class: "loading-text-wrapper" },
+              ),
+            ]);
+          },
+          handleDOMEvents: {
+            mouseover: (view, event) => {
+              const target = event.target as HTMLElement;
+              if (target.classList.contains("loading-text")) {
+                target.style.opacity = "0.5";
+                return true;
+              }
+              return false;
+            },
+            mouseout: (view, event) => {
+              const target = event.target as HTMLElement;
+              if (target.classList.contains("loading-text")) {
+                target.style.opacity = "1";
+                return true;
+              }
+              return false;
+            },
+          },
+        },
+      }),
+    ];
+  },
+  addStorage() {
+    return {
+      loadingImprovement: null,
+    };
+  },
+});
+
+export const skeletonPluginKey = new PluginKey("skeletonPlugin");
+
+// 2) Create the plugin that holds a DecorationSet
+const SkeletonPlugin = Extension.create({
+  name: "skeleton",
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: skeletonPluginKey,
+
+        state: {
+          init() {
+            return DecorationSet.empty;
+          },
+          apply(tr, oldDecoSet) {
+            let decoSet = oldDecoSet.map(tr.mapping, tr.doc);
+            const meta = tr.getMeta(skeletonPluginKey);
+            if (meta && meta.add) {
+              decoSet = decoSet.add(tr.doc, meta.add);
+            }
+            return decoSet;
+          },
+        },
+
+        props: {
+          decorations(state) {
+            return this.getState(state);
+          },
+        },
+      }),
+    ];
+  },
+});
+
 // Allow bold/italic/underline/strikethrough/code/list (numbers/dots)/blockquote
 // <p> has margin top-bottom of 6px.
 // images
@@ -322,6 +411,7 @@ export const notesTextEditorOptions = (
         HTMLAttributes: { class: cn("mb-5 leading-8", Lora.className) },
       },
     }),
+    SkeletonPlugin,
     BulletList,
     ListItem,
     Document,
@@ -362,11 +452,17 @@ export const notesTextEditorOptions = (
 
 export const textEditorOptions = (
   onUpdate?: (html: string) => void,
+  onSelectionUpdate?: (text: string) => void,
   disabled?: boolean,
 ): UseEditorOptions => ({
   onUpdate: ({ editor }) => {
     const html = editor.getHTML();
     onUpdate?.(html);
+  },
+  onSelectionUpdate: ({ editor }) => {
+    const selection = editor.state.selection;
+    const text = editor.state.doc.textBetween(selection.from, selection.to);
+    onSelectionUpdate?.(text);
   },
   editable: !disabled,
   extensions: [
@@ -406,6 +502,7 @@ export const textEditorOptions = (
     PullQuote,
     // make sure the image is always centered
     ResizableImageExtension,
+    LoadingDecoration,
   ],
   content: "",
   editorProps: {
@@ -452,17 +549,4 @@ export const loadContent = (markdownContent: string, editor: Editor | null) => {
   );
 
   editor?.commands.setContent(cleanedHtml);
-};
-
-export const htmlToRichText = (html: string) => {
-  const type = "text/html";
-  const blob = new Blob([html], { type });
-  const data = [new ClipboardItem({ [type]: blob })];
-
-  return data;
-};
-
-export const copyHTMLToClipboard = async (html: string) => {
-  const data = htmlToRichText(html);
-  await navigator.clipboard.write(data);
 };

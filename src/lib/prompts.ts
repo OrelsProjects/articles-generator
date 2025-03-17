@@ -22,6 +22,10 @@ export type IdeasLLMResponse = {
   ideas: IdeaLLM[];
 };
 
+const avoidWordsPrompt = `
+- Don't use the words or any form of them: embrace, emerge
+`;
+
 export const fixJsonPrompt = (json: string) => [
   {
     role: "system",
@@ -356,7 +360,7 @@ const improvementPromptSystemPost = (
   const maxLength =
     options?.maxLength || type === "elaborate" ? text.length * 2 : text.length;
   const systemMessage = `
-  ${prompt}
+        ${type === "custom" ? "" : prompt}
 
         Your task is to ${task}.
 
@@ -470,7 +474,7 @@ export const generateImprovementPromptPost = (
   text: string,
   type: ImprovementType,
   idea?: Idea | null,
-  extras?: string,
+  options: { extras?: string; customText?: string } = {},
 ): {
   messages: {
     role: string;
@@ -478,6 +482,7 @@ export const generateImprovementPromptPost = (
   }[];
   model: Model;
 } => {
+  const { extras, customText } = options;
   const { systemMessage, model } = improvementPromptSystemPost(text, type);
   const messages = [
     {
@@ -491,12 +496,15 @@ export const generateImprovementPromptPost = (
       role: "user",
       content: `
       Text: ${text}
-       ${
-         idea
-           ? `Article context:
+      \n\n
+      ${customText ? `My instructions: ${customText}` : ""}
+      \n\n
+      ${
+        idea
+          ? `Here's my article for context:
       ${idea?.body.slice(0, 3000)}`
-           : ""
-       }
+          : ""
+      }
       `,
     },
   ];
@@ -758,7 +766,7 @@ export const generateNotesPrompt = (
   - At least one note has to be clean from emojis.
   - Include emojis ONLY if the user's past written notes include them.
   - Make sure it passes the flesch-kincaid test with a score of 70 or higher.
-  - Don't use the words: embrace
+  - ${avoidWordsPrompt}
   
   The response **must** be an array of notes in the following JSON format, without additional text:
   [
@@ -914,6 +922,10 @@ const improvementPromptTemplates: {
     model?: Model;
   };
 } = {
+  custom: {
+    task: "follow the user's instructions",
+    prompt: `{{prompt}}`,
+  },
   elaborate: {
     task: "elaborate on the user's text",
     prompt: `You are an expert writer, expand on the user's text to make it more detailed and informative while not repeating the same message.

@@ -145,6 +145,7 @@ export const useIdea = () => {
     textFrom: number,
     textTo: number,
     ideaId: string,
+    customText?: string,
   ): Promise<{ text: string; textFrom: number; textTo: number } | null> => {
     EventTracker.track("idea_improve_text_" + type, {
       length: text.length,
@@ -153,6 +154,7 @@ export const useIdea = () => {
       text,
       type,
       ideaId,
+      customText,
     });
     const { responseBody } = res.data;
     if (!responseBody) {

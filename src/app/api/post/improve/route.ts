@@ -26,7 +26,7 @@ export async function POST(
   let usageId: string = "";
 
   try {
-    const { text, type, ideaId } = await request.json();
+    const { text, type, ideaId, customText } = await request.json();
 
     const isValid = await canUseAI(session.user.id, "textEnhancement");
     if (!isValid) {
@@ -48,6 +48,10 @@ export async function POST(
       slicedText,
       type,
       idea,
+      {
+        extras: customText,
+        customText: customText,
+      },
     );
     const response = await runPrompt(messages, model);
     const { creditsUsed, creditsRemaining } = await useCredits(

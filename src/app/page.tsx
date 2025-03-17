@@ -40,7 +40,7 @@ const EnhancmentDemo = () => {
   const [selectedTone, setSelectedTone] = useState<ImprovementTone | null>(
     null,
   );
-  const editor = useEditor(textEditorOptions(undefined, true));
+  const editor = useEditor(textEditorOptions(undefined, undefined, true));
 
   useEffect(() => {
     const formattedBody = formatText(text);

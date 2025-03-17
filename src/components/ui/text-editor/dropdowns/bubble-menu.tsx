@@ -11,6 +11,7 @@ import {
   Smile,
   Sparkles,
   ThumbsUp,
+  Type,
   Wand2,
   Zap,
 } from "lucide-react";
@@ -22,7 +23,16 @@ const formatOptions: {
   divider?: boolean;
   subLabel?: string;
   type: ImprovementType;
+  action?: "text";
 }[] = [
+  {
+    type: "custom",
+    label: "Custom",
+    icon: Type,
+    subLabel: "Write your own prompt",
+    divider: false,
+    action: "text",
+  },
   {
     type: "fact-check",
     label: "Fact-check",
@@ -85,7 +95,7 @@ const formatOptions: {
 export type BubbleMenuProps = {
   editor?: Editor | null;
   loading: string | null;
-  handleImprovement: (type: ImprovementType) => void;
+  handleImprovement: (type: ImprovementType, text?: string) => void;
   className?: string;
 };
 
@@ -99,7 +109,7 @@ export const BubbleMenuComponent = ({
   const error = useMemo(() => {
     if (!editor) return { text: "", disabled: false };
     const text = getSelectedContentAsMarkdown(editor);
-    if (text.length > 20) {
+    if (text.length > 2000) {
       return {
         text: "Text is too long",
         disabled: true,

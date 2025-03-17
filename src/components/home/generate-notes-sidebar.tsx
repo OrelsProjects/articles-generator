@@ -22,7 +22,6 @@ import {
   RefreshCw,
   Copy,
   Plus,
-  Check,
   MessageSquare,
   Smile,
   ThumbsUp,
@@ -32,17 +31,13 @@ import {
   Save,
   User,
   AudioLines,
-  ChevronDown,
   X,
   Info,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
-import {
-  copyHTMLToClipboard,
-  notesTextEditorOptions,
-  unformatText,
-} from "@/lib/utils/text-editor";
+import { notesTextEditorOptions, unformatText } from "@/lib/utils/text-editor";
 import { Toggle } from "@/components/ui/toggle";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
@@ -69,6 +64,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { copyHTMLToClipboard } from "@/lib/utils/copy";
 
 // Define frontend model type
 type FrontendModel =
@@ -626,6 +622,20 @@ export default function GenerateNotesSidebar() {
                     onClick={handleCopy}
                   >
                     <Copy className="h-5 w-5 text-muted-foreground" />
+                  </TooltipButton>
+                  <TooltipButton
+                    tooltipContent="Copy content and open Substack"
+                    variant="ghost"
+                    className="w-8 h-8 p-0"
+                    disabled={!hasContent}
+                    onClick={async () => {
+                      const html = editor?.getHTML();
+                      if (!html) return;
+                      await copyHTMLToClipboard(html);
+                      window.open("https://substack.com", "_blank");
+                    }}
+                  >
+                    <ExternalLink className="h-5 w-5 text-muted-foreground" />
                   </TooltipButton>
                 </div>
               </div>

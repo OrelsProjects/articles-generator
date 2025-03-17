@@ -1,5 +1,5 @@
 import prisma from "@/app/api/_db/db";
-import { sendMail } from "@/lib/mail/mail";
+import { addUserToList, sendMail } from "@/lib/mail/mail";
 import {
   generateSubscriptionDeletedEmail,
   generateSubscriptionTrialEndingEmail,
@@ -7,6 +7,7 @@ import {
 import { creditsPerPlan } from "@/lib/plans-consts";
 import { getStripeInstance } from "@/lib/stripe";
 import loggerServer from "@/loggerServer";
+import { Logger } from "@datadog/browser-logs";
 import { Plan } from "@prisma/client";
 import { Stripe } from "stripe";
 
@@ -83,6 +84,17 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   });
+
+  if (user.email && user.name) {
+    await addUserToList({
+      email: user.email!,
+      fullName: user.name!,
+    });
+  } else {
+    loggerServer.error("No email or name found for user" + user.id, {
+      userId: user.id,
+    });
+  }
 }
 
 // Cases when Update is called:

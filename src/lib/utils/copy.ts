@@ -30,3 +30,17 @@ export const copyTextEditorContent = () => {
     Logger.error("Element to copy from could not be found");
   }
 };
+
+
+const htmlToRichText = (html: string) => {
+  const type = "text/html";
+  const blob = new Blob([html], { type });
+  const data = [new ClipboardItem({ [type]: blob })];
+
+  return data;
+};
+
+export const copyHTMLToClipboard = async (html: string) => {
+  const data = htmlToRichText(html);
+  await navigator.clipboard.write(data);
+};
