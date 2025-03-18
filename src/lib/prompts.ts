@@ -868,7 +868,7 @@ export const generateNotesWritingStylePrompt = (
           ${publication.preferredTopics.length > 0 ? `Here are my preferred topics. Use them to generate notes about me: ${publication.preferredTopics.join(", ")}` : ""}
 
           Here are the notes I want you to improve:
-          ${notesToImprove.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}`,
+          ${notesToImprove.map((note, index) => `(${index + 1}) ${note.body}`).join("\\n")}`,
     },
   ];
 

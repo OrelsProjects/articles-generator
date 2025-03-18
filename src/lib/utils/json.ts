@@ -1,10 +1,26 @@
 import { runPrompt } from "@/lib/open-router";
+import { jsonrepair } from "jsonrepair";
 
 import { Model } from "@/lib/open-router";
 import { fixJsonPrompt } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 
+function fixJsonRepair<T>(json: string): T | null {
+  try {
+    const jsonFixed = jsonrepair(json);
+    const jsonFixedObject = JSON.parse(jsonFixed) as T;
+    return jsonFixedObject;
+  } catch (error: any) {
+    loggerServer.error("Error fixing JSON:", error);
+    return null;
+  }
+}
+
 function fixJson<T>(json: string): T | null {
+  const jsonRepairFixed = fixJsonRepair<T>(json);
+  if (jsonRepairFixed) {
+    return jsonRepairFixed;
+  }
   // Find first index of { and last index of }
   const start = json.indexOf("{");
   const end = json.lastIndexOf("}");
@@ -25,7 +41,7 @@ export async function parseJson<T>(
   try {
     parsedJson = JSON.parse(json);
   } catch (error: any) {
-    loggerServer.error("Error parsing JSON:\n" + json, error);
+    loggerServer.warn("Error parsing JSON:\n" + json, error);
     const jsonFixedSync = fixJson<T>(json);
     if (!jsonFixedSync) {
       const jsonFixedString = await runPrompt(fixJsonPrompt(json), model);

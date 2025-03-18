@@ -68,6 +68,7 @@
     "framer-motion": "^11.2.10",
     "iconsax-react": "^0.0.8",
     "js-tiktoken": "^1.0.19",
+    "jsonrepair": "^3.12.0",
     "knex": "^3.1.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.365.0",
