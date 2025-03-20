@@ -208,6 +208,9 @@ export async function POST(req: NextRequest) {
               }
             : undefined,
         },
+        orderBy: {
+          reactionCount: "asc",
+        },
         take: 100,
       });
     }
