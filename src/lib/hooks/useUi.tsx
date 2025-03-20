@@ -24,10 +24,15 @@ export function useUi() {
     FeatureFlag.advancedGPT,
   );
 
+  const hasAdvancedFiltering = user?.meta?.featureFlags.includes(
+    FeatureFlag.advancedFiltering,
+  );
+
   return {
     setState,
     hasAdvancedGPT,
     showGenerateNotesSidebar,
     updateShowGenerateNotesSidebar,
+    hasAdvancedFiltering,
   };
 }

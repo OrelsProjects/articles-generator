@@ -1,4 +1,14 @@
 import { marked } from "marked";
+import { DateRange } from "react-day-picker";
+
+export interface InspirationFilters {
+  minLikes?: number | null;
+  minComments?: number | null;
+  minRestacks?: number | null;
+  keyword?: string | null;
+  dateRange?: DateRange;
+  type: "all" | "relevant-to-user"
+}
 
 export type NoteStatus = "draft" | "ready" | "published" | "archived";
 export type NoteFeedback = "dislike" | "like";

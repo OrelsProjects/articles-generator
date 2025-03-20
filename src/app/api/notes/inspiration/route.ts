@@ -6,6 +6,29 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { NotesComments } from "@/../prisma/generated/articles";
 import { Note } from "@/types/note";
+import { z } from "zod";
+import { InspirationFilters } from "@/types/note";
+import { DateRange } from "react-day-picker";
+
+// zod this. Use InspirationFilters type
+const InspirationFiltersSchema: z.ZodType<InspirationFilters> = z.object({
+  minLikes: z.number().optional(),
+  minComments: z.number().optional(),
+  minRestacks: z.number().optional(),
+  keyword: z.string().optional(),
+  dateRange: z
+    .object({
+      from: z.date(),
+      to: z.date(),
+    })
+    .optional(),
+  type: z.enum(["all", "relevant-to-user"]),
+});
+
+const bodySchema = z.object({
+  existingNotesIds: z.array(z.string()),
+  filters: InspirationFiltersSchema,
+});
 
 const filterNotes = (
   notes: NotesComments[],
@@ -44,11 +67,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const limit = 10; // Number of items per page
+  const limit = 16; // Number of items per page
 
   try {
     const body = await req.json();
-    const { existingNotesIds, cursor } = body;
+    const parsedBody = bodySchema.parse(body);
+    const { existingNotesIds, filters } = parsedBody;
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId: session.user.id,
@@ -67,21 +91,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const query = `
+    const query =
+      filters.keyword ||
+      `
     ${publication.personalDescription ? `\n${publication.personalDescription}` : ""}.
      ${publication.generatedAboutGeneral}.
      `;
-    console.log("query", query);
+
+    const shouldMilvusSearch =
+      filters.keyword || filters.type === "relevant-to-user";
+
     const randomMinReaction = Math.floor(Math.random() * 200);
     const randomMaxReaction =
       randomMinReaction + Math.floor(Math.random() * 10000);
     const randomMaxComment = Math.floor(Math.random() * 30);
 
-    console.log("randomMinReaction", randomMinReaction);
-    console.log("randomMaxReaction", randomMaxReaction);
-    console.log("randomMaxComment", randomMaxComment);
-
-    const filters: Filter[] = [
+    const searchFilters: Filter[] = [
       {
         leftSideValue: "reaction_count",
         rightSideValue: randomMinReaction.toString(),
@@ -99,11 +124,93 @@ export async function POST(req: NextRequest) {
       },
     ];
 
-    const inspirationNotes = await searchSimilarNotes({
-      query,
-      limit: 60 + existingNotesIds.length,
-      filters,
-    });
+    if (existingNotesIds.length > 0) {
+      searchFilters.push({
+        leftSideValue: "id",
+        rightSideValue: `["${existingNotesIds.join('","')}"]`,
+        operator: "not in",
+      });
+    }
+
+    if (filters.dateRange) {
+      if (filters.dateRange.from) {
+        searchFilters.push({
+          leftSideValue: "date",
+          rightSideValue: filters.dateRange.from.toISOString(),
+          operator: ">=",
+        });
+      }
+      if (filters.dateRange.to) {
+        searchFilters.push({
+          leftSideValue: "date",
+          rightSideValue: filters.dateRange.to.toISOString(),
+          operator: "<=",
+        });
+      }
+    }
+
+    if (filters.minComments) {
+      searchFilters.push({
+        leftSideValue: "comment_count",
+        rightSideValue: filters.minComments.toString(),
+        operator: ">=",
+      });
+    }
+
+    if (filters.minRestacks) {
+      searchFilters.push({
+        leftSideValue: "restack_count",
+        rightSideValue: filters.minRestacks.toString(),
+        operator: ">=",
+      });
+    }
+
+    if (filters.minLikes) {
+      searchFilters.push({
+        leftSideValue: "reaction_count",
+        rightSideValue: filters.minLikes.toString(),
+        operator: ">=",
+      });
+    }
+
+    console.log("searchFilters", searchFilters);
+    console.log("Query", query);
+
+    // If it's relevant to user, we search through milvus. otherwise, we search through the database
+    let inspirationNotes: NotesComments[] = [];
+    if (shouldMilvusSearch) {
+      inspirationNotes = await searchSimilarNotes({
+        query,
+        limit: 100 + existingNotesIds.length,
+        filters: searchFilters,
+        minMatch: 0.3,
+      });
+    } else {
+      inspirationNotes = await prismaArticles.notesComments.findMany({
+        where: {
+          commentId: {
+            notIn: existingNotesIds,
+          },
+          noteIsRestacked: false,
+          reactionCount: {
+            gte: filters.minLikes || 0,
+          },
+          commentsCount: {
+            gte: filters.minComments || 0,
+          },
+          restacks: {
+            gte: filters.minRestacks || 0,
+          },
+          date: filters.dateRange
+            ? {
+                gte: filters.dateRange.from,
+                lte: filters.dateRange.to,
+              }
+            : undefined,
+        },
+        take: 100,
+      });
+    }
 
     const existingNotes = await prismaArticles.notesComments.findMany({
       where: {

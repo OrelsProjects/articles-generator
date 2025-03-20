@@ -1,4 +1,5 @@
 import axios from "axios";
+import Mailgun, { MailListMembersResult } from "mailgun.js";
 
 export interface ListUser {
   email: string;
@@ -70,4 +71,35 @@ export const addUserToList = async (user: ListUser) => {
 
   const data = await resp.text();
   console.log(data);
+};
+
+export const sendFeaturesMailToList = async () => {
+  // const mailgun = new Mailgun(FormData);
+  // const listAddress = "orel@writeroom.co";
+  // const mg = mailgun.client({
+  //   username: "api",
+  //   key: process.env.MAILGUN_API_KEY || "API_KEY",
+  // });
+
+  // const users: MailListMembersResult =
+  //   await mg.lists.members.listMembers(listAddress);
+
+  // const tos = users.items;
+
+  // for (const to of tos) {
+  //   try {
+  //     const data = await mg.messages.create("writeroom.co", {
+  //       from: "WriteRoom <orel@writeroom.co>",
+  //       to: to.address,
+  //       subject: "WriteRoom new features",
+  //       template: "writeroom new features",
+  //       "h:X-Mailgun-Variables": JSON.stringify({
+  //         first_name: to.vars.first_name || "there",
+  //       }),
+  //     });
+  //     console.log(data); // logs response data
+  //   } catch (error) {
+  //     console.log(error, to); // logs any error
+  //   }
+  // }
 };

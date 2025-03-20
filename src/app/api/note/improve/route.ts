@@ -89,11 +89,11 @@ export async function POST(
     let model = defaultModel;
     if (requestModel) {
       if (requestModel === "gpt-4.5") {
-        model = "openai/gpt-4o";
+        model = "openai/gpt-4.5-preview";
       } else if (requestModel === "claude-3.5") {
         model = "anthropic/claude-3.5-sonnet";
       } else if (requestModel === "claude-3.7") {
-        model = "anthropic/claude-3.5-sonnet";
+        model = "anthropic/claude-3.7-sonnet";
       }
     }
 

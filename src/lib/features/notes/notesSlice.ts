@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
 import { Note, NoteDraft, NoteStatus } from "@/types/note";
-
+import { Filter } from "@/lib/dal/milvus";
 export interface NotesState {
   userNotes: NoteDraft[];
   inspirationNotes: Note[];
   selectedNote: (NoteDraft & { isFromInspiration?: boolean }) | null;
+  inspirationFilters: Filter[];
   selectedImage: { url: string; alt: string } | null;
   loadingNotes: boolean;
   loadingInspiration: boolean;
@@ -20,6 +21,7 @@ export interface NotesState {
 export const initialState: NotesState = {
   userNotes: [],
   inspirationNotes: [],
+  inspirationFilters: [],
   selectedNote: null,
   selectedImage: null,
   loadingNotes: false,
@@ -154,6 +156,9 @@ const notesSlice = createSlice({
       state.error = action.payload;
       state.loadingNotes = false;
     },
+    setInspirationFilters: (state, action: PayloadAction<Filter[]>) => {
+      state.inspirationFilters = action.payload;
+    },
   },
 });
 
@@ -171,6 +176,7 @@ export const {
   addInspirationNotes,
   removeNote,
   resetNotification,
+  setInspirationFilters,
 } = notesSlice.actions;
 
 export const selectNotes = (state: RootState) => state.notes;

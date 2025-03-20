@@ -39,7 +39,7 @@ async function searchSimilarArticles({
   limit = 20,
   includeBody = false,
   filters = [],
-  minMatch = 0.3,
+  minMatch = 0,
 }: SearchOptions) {
   const MILVUS_API_KEY = process.env.MILVUS_API_KEY;
   const MILVUS_ENDPOINT = process.env.MILVUS_ENDPOINT;
@@ -173,9 +173,9 @@ async function searchSimilarArticles({
 
 async function searchSimilarNotes({
   query,
-  limit = 30,
+  limit = 100,
   filters = [],
-  minMatch = 0.3,
+  minMatch = 0,
 }: SearchOptions) {
   const MILVUS_API_KEY = process.env.MILVUS_API_KEY;
   const MILVUS_ENDPOINT = process.env.MILVUS_ENDPOINT;
@@ -235,19 +235,22 @@ async function searchSimilarNotes({
   const data = await response.json();
 
   const topMatchNotes = data.data
-    ? data.data.filter((note: any) => note.distance >= minMatch)
+    ? data.data.filter((note: any) =>
+        minMatch ? note.distance >= minMatch : true,
+      )
     : [];
-  const topNotes = topMatchNotes.slice(0, limit);
+  //select random notes from topMatchNotes
 
   const notesFromDb = await prismaArticles.notesComments.findMany({
     where: {
       id: {
-        in: topNotes.map((note: any) => note.id),
+        in: topMatchNotes.map((note: any) => note.id),
       },
     },
   });
 
-  return notesFromDb;
+  const topNotes = notesFromDb.sort(() => Math.random() - 0.5).slice(0, limit);
+  return topNotes;
 }
 
 export { searchSimilarArticles, searchSimilarNotes };

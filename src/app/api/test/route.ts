@@ -1,6 +1,3 @@
-import prisma from "@/app/api/_db/db";
-import { getAuthorId } from "@/lib/dal/publication";
-import { addUserToList } from "@/lib/mail/mail";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -55,6 +52,8 @@ export async function GET() {
   //     fullName: user.name!,
   //   });
   // }
+
+  // await sendFeaturesMailToList();
 
   return NextResponse.json({ message: "success" });
 }

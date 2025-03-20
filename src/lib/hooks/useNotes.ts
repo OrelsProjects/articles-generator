@@ -4,10 +4,8 @@ import {
   selectNotes,
   setNotes,
   setLoadingNotes,
-  setLoadingInspiration,
   setError,
   setSelectedNote,
-  addInspirationNotes,
   addNotes,
   setSelectedImage,
   updateNote,
@@ -38,58 +36,17 @@ export const useNotes = () => {
     userNotes,
     selectedNote,
     loadingNotes,
-    loadingInspiration,
     error,
-    inspirationNotes,
     selectedImage,
     hasMoreUserNotes,
-    hasMoreInspirationNotes,
     userNotesCursor,
-    inspirationNotesCursor,
   } = useAppSelector(selectNotes);
 
   const { consumeCredits } = useCredits();
-
   const [loadingEditNote, setLoadingEditNote] = useState(false);
 
-  const loadingInspirationRef = useRef(false);
   const loadingNotesRef = useRef(false);
   const loadingCreateNoteDraftRef = useRef(false);
-
-  const fetchInspirationNotes = async (loadMore = false) => {
-    if (loadingInspirationRef.current) return;
-    try {
-      if (inspirationNotes.length > 0) {
-        EventTracker.track("notes_inspiration_load_more");
-      }
-      loadingInspirationRef.current = true;
-      dispatch(setLoadingInspiration(true));
-
-      const response = await axios.post("/api/notes/inspiration", {
-        existingNotesIds: inspirationNotes.map(note => note.id),
-        cursor: loadMore ? inspirationNotesCursor : null,
-      });
-      dispatch(setError(null));
-      dispatch(
-        addInspirationNotes({
-          items: response.data.items,
-          nextCursor: response.data.nextCursor,
-          hasMore: response.data.hasMore,
-          options: { toStart: false },
-        }),
-      );
-    } catch (error) {
-      dispatch(
-        setError(
-          error instanceof Error ? error.message : "An unknown error occurred",
-        ),
-      );
-      console.error("Error fetching notes:", error);
-    } finally {
-      dispatch(setLoadingInspiration(false));
-      loadingInspirationRef.current = false;
-    }
-  };
 
   const fetchNotes = async (limit?: number, loadMore = false) => {
     if (loadingNotesRef.current) return;
@@ -198,7 +155,7 @@ export const useNotes = () => {
         console.error("Error generating new note:", error);
       }
     },
-    [dispatch],
+    [userNotes, selectedNote, selectNote, consumeCredits, dispatch],
   );
 
   const selectImage = useCallback(
@@ -234,7 +191,7 @@ export const useNotes = () => {
         throw error;
       }
     },
-    [userNotes],
+    [userNotes, selectedNote, selectNote, dispatch],
   );
 
   const updateNoteFeedback = useCallback(
@@ -269,7 +226,7 @@ export const useNotes = () => {
         throw error;
       }
     },
-    [userNotes],
+    [userNotes, dispatch],
   );
 
   const editNoteBody = async (noteId: string | null, body: string) => {
@@ -353,14 +310,11 @@ export const useNotes = () => {
   };
 
   return {
-    inspirationNotes,
     userNotes,
     selectedNote,
     loadingNotes,
-    loadingInspiration,
     error,
     fetchNotes,
-    fetchInspirationNotes,
     selectNote,
     generateNewNotes,
     selectedImage,
@@ -368,9 +322,7 @@ export const useNotes = () => {
     updateNoteStatus,
     updateNoteFeedback,
     hasMoreUserNotes,
-    hasMoreInspirationNotes,
     loadMoreUserNotes: () => fetchNotes(),
-    loadMoreInspirationNotes: () => fetchInspirationNotes(true),
     editNoteBody,
     loadingEditNote,
     createDraftNote,
