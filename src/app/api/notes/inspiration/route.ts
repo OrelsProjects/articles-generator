@@ -211,8 +211,12 @@ export async function POST(req: NextRequest) {
         orderBy: {
           reactionCount: "asc",
         },
-        take: 100,
+        take: 500,
       });
+
+      inspirationNotes = inspirationNotes
+        .sort(() => Math.random() - 0.5)
+        .slice(0, limit);
     }
 
     const existingNotes = await prismaArticles.notesComments.findMany({
