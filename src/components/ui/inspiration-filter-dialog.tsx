@@ -46,15 +46,15 @@ const likesOptions = [
 const commentsOptions = [
   { label: "0 comments", value: "0" },
   { label: "10 comments", value: "10" },
-  { label: "50 comments", value: "50", limitedResults: true },
   { label: "100 comments", value: "100", limitedResults: true },
+  { label: "1k comments", value: "1000", limitedResults: true },
 ];
 
 const restacksOptions = [
   { label: "0 restacks", value: "0" },
   { label: "10 restacks", value: "10" },
-  { label: "50 restacks", value: "50", limitedResults: true },
   { label: "100 restacks", value: "100", limitedResults: true },
+  { label: "1k restacks", value: "1000", limitedResults: true },
 ];
 
 export function InspirationFilterDialog({
