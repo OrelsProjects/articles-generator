@@ -28,6 +28,7 @@ import { differenceInDays, format } from "date-fns";
 import { InspirationFilters } from "@/types/note";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { cn } from "@/lib/utils";
 
 interface InspirationFilterDialogProps {
   filters: InspirationFilters;
@@ -161,17 +162,40 @@ export function InspirationFilterDialog({
         <div className="border border-border rounded-md">
           {/* Search bar */}
           <div className="flex justify-between items-center gap-2 border-b border-border py-2 px-4">
-            <div className="relative flex-1">
-              <Input
-                placeholder="Search a term or phrase to see similar posts..."
-                className="pl-8 pr-4 h-10 border-none shadow-none focus-visible:ring-0"
-                value={keyword}
-                maxLength={120}
-                onChange={e => handleFilterChange("keyword", e.target.value)}
-              />
-              <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
-                <Search className="h-4 w-4" />
+            <div className="w-full flex flex-col  items-start">
+              <div className="w-full relative flex-1">
+                <Input
+                  placeholder="Search a term or phrase to see similar posts..."
+                  className="pl-8 pr-4 h-10 border-none shadow-none focus-visible:ring-0"
+                  value={keyword}
+                  maxLength={120}
+                  onChange={e => handleFilterChange("keyword", e.target.value)}
+                />
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <Search className="h-4 w-4" />
+                </div>
               </div>
+              {/* <div
+                className={cn(
+                  "text-xs text-muted-foreground mt-1 px-4",
+                  { hidden: newFilters.type === "all" },
+                  {
+                    "text-red-600 dark:text-red-400":
+                      keyword.length > 0 && keyword.length <= 20,
+                    "text-yellow-600 dark:text-yellow-400":
+                      keyword.length > 20 && keyword.length <= 70,
+                    "text-green-600 dark:text-green-400": keyword.length > 70,
+                  },
+                )}
+              >
+                {keyword.length > 0 &&
+                  keyword.length <= 20 &&
+                  "Too short, bad results"}
+                {keyword.length > 20 &&
+                  keyword.length <= 70 &&
+                  "Better, okay results"}
+                {keyword.length > 70 && "Good!"}
+              </div> */}
             </div>
             <DialogTrigger asChild>
               <TooltipButton
@@ -188,23 +212,36 @@ export function InspirationFilterDialog({
 
           {/* Filter row */}
           <div className="w-full grid grid-cols-2 border-b border-border py-2 px-4">
-            <Select
-              value={
-                newFilters.keyword
-                  ? "all"
-                  : newFilters?.type ?? "relevant-to-user"
-              }
-              onValueChange={value => handleFilterChange("type", value)}
-              disabled={!!newFilters.keyword}
-            >
-              <SelectTrigger className="h-10 shadow-none border-0 border-r border-border rounded-none">
-                <SelectValue placeholder="Relevant to me" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="relevant-to-user">Relevant to me</SelectItem>
-                <SelectItem value="all">All posts</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <TooltipButton
+                variant="link"
+                className="p-0"
+                tooltipContent={
+                  newFilters.type === "relevant-to-user"
+                    ? "Looks for similarity in the body. The longer the search term, the better."
+                    : "Looks for matches in the body of the post"
+                }
+              >
+                <InfoCircledIcon className="h-4 w-4 text-muted-foreground" />
+              </TooltipButton>
+              <Select
+                value={newFilters?.type || "relevant-to-user"}
+                onValueChange={value => handleFilterChange("type", value)}
+              >
+                <SelectTrigger className="h-10 shadow-none border-0 border-r border-border rounded-none">
+                  <SelectValue placeholder="Relevant to me" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    value="relevant-to-user"
+                    className="flex justify-start items-center gap-2"
+                  >
+                    Relevant to me
+                  </SelectItem>
+                  <SelectItem value="all">All posts</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="w-full grid grid-cols-[1fr_auto] gap-4">
               <Input
                 placeholder="Anytime"

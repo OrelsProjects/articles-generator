@@ -4,7 +4,7 @@ import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { NotesComments } from "@/../prisma/generated/articles";
+import { NotesComments, Prisma } from "@/../prisma/generated/articles";
 import { Note } from "@/types/note";
 import { z } from "zod";
 import { InspirationFilters } from "@/types/note";
@@ -94,17 +94,21 @@ export async function POST(req: NextRequest) {
     const query =
       filters.keyword ||
       `
-    ${publication.personalDescription ? `\n${publication.personalDescription}` : ""}.
-     ${publication.generatedAboutGeneral}.
+    ${publication.generatedDescription}
      `;
 
-    const shouldMilvusSearch =
-      filters.keyword || filters.type === "relevant-to-user";
+    const shouldMilvusSearch = filters.type === "relevant-to-user";
 
-    const randomMinReaction = Math.floor(Math.random() * 200);
-    const randomMaxReaction =
-      randomMinReaction + Math.floor(Math.random() * 10000);
-    const randomMaxComment = Math.floor(Math.random() * 30);
+    const likes = filters.minLikes;
+    const minLikes = likes ? likes : 200;
+    const extraMinLikes = likes ? likes : 0;
+    const minRandom = likes ? Math.random() / 2 : Math.random();
+    const maxLikes = likes ? likes * 2 : 3000;
+    const extraMaxLikes = likes ? likes * 2 : 0;
+    const maxRandom = likes ? Math.random() / 10 : Math.random();
+
+    const randomMinReaction = Math.floor(minRandom * minLikes + extraMinLikes);
+    const randomMaxReaction = Math.floor(maxRandom * maxLikes + extraMaxLikes);
 
     const searchFilters: Filter[] = [
       {
@@ -183,9 +187,10 @@ export async function POST(req: NextRequest) {
         query,
         limit: 100 + existingNotesIds.length,
         filters: searchFilters,
-        minMatch: 0.3,
+        minMatch: 0.2,
       });
     } else {
+      console.time("prisma - long query");
       inspirationNotes = await prismaArticles.notesComments.findMany({
         where: {
           commentId: {
@@ -207,6 +212,12 @@ export async function POST(req: NextRequest) {
                 lte: filters.dateRange.to,
               }
             : undefined,
+          body: filters.keyword
+            ? {
+                contains: filters.keyword,
+                mode: "insensitive", // Case insensitive
+              }
+            : undefined,
         },
         orderBy: {
           reactionCount: "asc",
@@ -214,6 +225,20 @@ export async function POST(req: NextRequest) {
         take: 500,
       });
 
+      // console.time("prisma - long query");
+      // inspirationNotes = await prismaArticles.$queryRaw`
+      //   SELECT * FROM "notes_comments"
+      //   WHERE "note_is_restacked" = false
+      //   ${existingNotesIds.length > 0 ? Prisma.sql`AND "id" NOT IN (${Prisma.join(existingNotesIds)})` : Prisma.empty}
+      //   AND "reaction_count" >= ${filters.minLikes || 0}
+      //   AND "children_count" >= ${filters.minComments || 0}
+      //   AND "restacks" >= ${filters.minRestacks || 0}
+      //   ${filters.dateRange ? Prisma.sql`AND "date" BETWEEN ${filters.dateRange.from} AND ${filters.dateRange.to}` : Prisma.empty}
+      //   ${filters.keyword ? Prisma.sql`AND "body" % ${filters.keyword}` : Prisma.empty}
+      //   ORDER BY "reaction_count" ASC
+      //   LIMIT 500;
+      // `;
+      console.timeEnd("prisma - long query");
       inspirationNotes = inspirationNotes
         .sort(() => Math.random() - 0.5)
         .slice(0, limit);
