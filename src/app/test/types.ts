@@ -1,0 +1,50 @@
+/**
+ * Parameters for creating a Substack post
+ */
+export interface CreatePostParams {
+  /** The content of the post */
+  message: string;
+  /** Optional: Schedule post for future (in seconds) */
+  scheduleSeconds?: number;
+  /** Optional: Automatically close the tab after posting */
+  autoCloseTab?: boolean;
+}
+
+/**
+ * Response from the extension API
+ */
+export interface ExtensionResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+
+/**
+ * Message to send to the extension
+ */
+export interface ExtensionMessage {
+  type: "API_REQUEST";
+  action: "createSubstackPost";
+  params: [string, number | undefined, boolean | undefined];
+}
+
+/**
+ * Error types for Substack posting
+ */
+export enum SubstackError {
+  EXTENSION_NOT_FOUND = "Extension not found",
+  EXTENSION_DISABLED = "Extension is disabled",
+  NETWORK_ERROR = "Network error occurred",
+  AUTHENTICATION_ERROR = "Authentication failed",
+  INVALID_PARAMETERS = "Invalid parameters provided",
+  UNKNOWN_ERROR = "An unknown error occurred"
+}
+
+/**
+ * Hook return type
+ */
+export interface UseSubstackPost {
+  createPost: (params: CreatePostParams) => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
+} 

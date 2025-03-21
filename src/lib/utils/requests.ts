@@ -56,7 +56,7 @@ export async function fetchWithHeaders(
     } catch (error: any) {
       console.error(
         `Error fetching ${url} (Attempt ${attempt}):`,
-        error.message,
+        error.response.data.code,
       );
       if (attempt === retries) {
         return null; // Give up after max retries

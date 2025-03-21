@@ -7,19 +7,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { NotesComments, Prisma } from "@/../prisma/generated/articles";
 import { Note } from "@/types/note";
 import { z } from "zod";
-import { InspirationFilters } from "@/types/note";
-import { DateRange } from "react-day-picker";
+
+export const maxDuration = 150;
 
 // zod this. Use InspirationFilters type
-const InspirationFiltersSchema: z.ZodType<InspirationFilters> = z.object({
+const InspirationFiltersSchema = z.object({
   minLikes: z.number().optional(),
   minComments: z.number().optional(),
   minRestacks: z.number().optional(),
   keyword: z.string().optional(),
   dateRange: z
     .object({
-      from: z.date(),
-      to: z.date(),
+      from: z.string(),
+      to: z.string().optional(),
     })
     .optional(),
   type: z.enum(["all", "relevant-to-user"]),
@@ -140,14 +140,14 @@ export async function POST(req: NextRequest) {
       if (filters.dateRange.from) {
         searchFilters.push({
           leftSideValue: "date",
-          rightSideValue: filters.dateRange.from.toISOString(),
+          rightSideValue: new Date(filters.dateRange.from).getTime() / 1000,
           operator: ">=",
         });
       }
       if (filters.dateRange.to) {
         searchFilters.push({
           leftSideValue: "date",
-          rightSideValue: filters.dateRange.to.toISOString(),
+          rightSideValue: new Date(filters.dateRange.to).getTime(),
           operator: "<=",
         });
       }

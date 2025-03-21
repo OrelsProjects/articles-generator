@@ -14,6 +14,18 @@ import loggerServer from "@/loggerServer";
 import { parseJson } from "@/lib/utils/json";
 import { buildSubstackUrl } from "@/lib/utils/url";
 import { setPublications as scrapePosts } from "@/lib/utils/publication";
+import { z } from "zod";
+
+const schema = z.object({
+  url: z.string(),
+  byline: z.object({
+    authorId: z.number(),
+    name: z.string(),
+    handle: z.string(),
+    photoUrl: z.string(),
+    bio: z.string(),
+  }),
+});
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -25,10 +37,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
-  const { url } = await req.json();
-  // const userId = "67d015d26230c417488f62ed";
-  // const url = "https://scrambleit.substack.com/";
-
+  const body = await req.json();
+  const { url, byline } = schema.parse(body);
   try {
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
@@ -147,6 +157,7 @@ export async function POST(req: NextRequest) {
           id: publicationMetadata.id,
         },
         data: {
+          authorId: byline.authorId,
           generatedDescription: descriptionObject.about,
           generatedAboutGeneral: descriptionObject.aboutGeneral,
           writingStyle: descriptionObject.writingStyle,
@@ -159,7 +170,6 @@ export async function POST(req: NextRequest) {
         },
       });
     } else {
-      const authorId = await getAuthorId(userId);
       publicationMetadata = await prisma.publicationMetadata.create({
         data: {
           publicationUrl: url,
@@ -175,7 +185,7 @@ export async function POST(req: NextRequest) {
           privateLife: descriptionObject.privateLife,
           highlights: descriptionObject.highlights,
           idInArticlesDb: Number(userPublication.id),
-          authorId: authorId || 0,
+          authorId: byline.authorId,
         },
       });
     }
@@ -212,7 +222,7 @@ export async function POST(req: NextRequest) {
           lambdaName: "substack-scraper",
           body: {
             url,
-            includeBody: "true",
+            authorId: byline.authorId,
           },
         }),
       });

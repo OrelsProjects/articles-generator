@@ -116,7 +116,11 @@ export const getAuthorId = async (
       },
     },
   });
-  
+
+  if (userPublication?.publication?.authorId) {
+    return userPublication.publication.authorId;
+  }
+
   if (!userPublication?.publication?.idInArticlesDb) {
     return null;
   }

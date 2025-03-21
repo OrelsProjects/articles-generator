@@ -12,3 +12,11 @@ export type ArticleWithBody = Omit<
   canonicalUrl: string;
   bodyText: string;
 };
+
+export interface Byline {
+  authorId: number;
+  handle: string;
+  name: string;
+  photoUrl: string;
+  bio: string; 
+} 

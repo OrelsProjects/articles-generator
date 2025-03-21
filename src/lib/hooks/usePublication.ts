@@ -6,9 +6,12 @@ import {
 import axios from "axios";
 import { Publication } from "@/types/publication";
 import { Logger } from "@/logger";
+import { Byline } from "@/types/article";
+import { useRef } from "react";
 
 export const usePublication = () => {
   const dispatch = useAppDispatch();
+  const loadingAnalyze = useRef(false);
 
   const validatePublication = async (
     url: string,
@@ -25,12 +28,15 @@ export const usePublication = () => {
     }
   };
 
-  const analyzePublication = async (url: string) => {
+  const analyzePublication = async (url: string, byline: Byline) => {
+    if (loadingAnalyze.current) return;
     try {
+      loadingAnalyze.current = true;
       const res = await axios.post<{ publication: Publication }>(
         "api/user/analyze",
         {
           url,
+          byline,
         },
       );
       dispatch(setPublication(res.data.publication));
@@ -38,6 +44,8 @@ export const usePublication = () => {
     } catch (error: any) {
       Logger.error(error);
       throw error;
+    } finally {
+      loadingAnalyze.current = false;
     }
   };
 

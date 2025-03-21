@@ -250,7 +250,7 @@ export function InspirationFilterDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="w-full grid grid-cols-[1fr_auto] gap-4 opacity-50 user-select-none cursor-not-allowed">
+            <div className="w-full grid grid-cols-[1fr_auto] gap-4 ">
               <Input
                 placeholder="Anytime"
                 className=" h-10 shadow-none border-none !ring-none"
@@ -260,7 +260,7 @@ export function InspirationFilterDialog({
 
               <Popover open={openCalendar} onOpenChange={setOpenCalendar}>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" disabled>
+                  <Button variant="ghost" size="icon">
                     <CalendarIcon className="h-4 w-4 mt-1 text-muted-foreground" />
                   </Button>
                 </PopoverTrigger>

@@ -5,7 +5,7 @@ import axios from "axios";
 
 export type Filter = {
   leftSideValue: string;
-  rightSideValue: string;
+  rightSideValue: string | number;
   operator: "=" | "!=" | ">" | "<" | ">=" | "<=" | "in" | "not in";
 };
 
@@ -250,7 +250,16 @@ async function searchSimilarNotes({
   });
 
   const topNotes = notesFromDb.sort(() => Math.random() - 0.5).slice(0, limit);
-  return topNotes;
+  return topNotes.map(note => {
+    const noteFromMilvus = topMatchNotes.find(
+      (match: any) => match.id === note.id,
+    );
+    return {
+      ...note,
+      body: noteFromMilvus?.body || note.body,
+      date: noteFromMilvus?.date ? new Date(noteFromMilvus.date * 1000)  : note.date,
+    };
+  });
 }
 
 export { searchSimilarArticles, searchSimilarNotes };

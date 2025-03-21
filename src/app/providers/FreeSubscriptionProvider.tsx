@@ -5,7 +5,7 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { Logger } from "@/logger";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 
@@ -18,13 +18,15 @@ export default function FreeSubscriptionProvider({
   const pathname = usePathname();
   const { user } = useAppSelector(selectAuth);
   const [loading, setLoading] = useState(false);
-
+  const loadingRef = useRef(false);
   let code = searchParams.get("code");
 
   const handleFreeSubscription = async () => {
     code = code || localStorage.getItem("code");
+    if (loadingRef.current) return;
     if (code) {
       try {
+        loadingRef.current = true;
         setLoading(true);
         const response = await axios.post<{
           success: boolean;
@@ -58,6 +60,7 @@ export default function FreeSubscriptionProvider({
         // so we can try again later
       } finally {
         setLoading(false);
+        loadingRef.current = false;
       }
     }
   };

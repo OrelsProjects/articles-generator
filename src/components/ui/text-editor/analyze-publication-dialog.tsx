@@ -27,6 +27,9 @@ import {
 import { Logger } from "@/logger";
 import { setShowAnalyzePublicationDialog } from "@/lib/features/ui/uiSlice";
 import { MotionAlert } from "@/components/ui/motion-components";
+import { Byline } from "@/types/article";
+import { toast } from "react-toastify";
+import { AuthorSelectionDialog } from "@/app/test/author-selection-dialog";
 
 const loadingStatesConst = [
   { text: "Validating publication in our databases..." },
@@ -85,9 +88,13 @@ export function AnalyzePublicationDialog({
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingBylines, setLoadingBylines] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
   const [loadingStates, setLoadingStates] = useState(loadingStatesConst);
-
+  const [openAuthorSelectionDialog, setOpenAuthorSelectionDialog] =
+    useState(false);
+  const [bylines, setBylines] = useState<Byline[]>([]);
+  const [hasPublication, setHasPublication] = useState(false);
 
   useEffect(() => {
     if (open !== undefined) {
@@ -108,7 +115,30 @@ export function AnalyzePublicationDialog({
     }
   }, [publications]);
 
-  const handleSubmit = async () => {
+  const getBylines = async () => {
+    if (loading) return;
+    try {
+      setLoadingBylines(true);
+      const { valid, hasPublication } = await validatePublication(url);
+      if (!valid) {
+        setError(ERRORS.INVALID_SUBSTACK_URL);
+        return;
+      }
+      setHasPublication(hasPublication);
+      const response = await fetch(`/api/publication/bylines?url=${url}`);
+      const data = await response.json();
+      setBylines(data);
+      setOpenAuthorSelectionDialog(true);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch bylines");
+    } finally {
+      setLoadingBylines(false);
+    }
+  };
+
+  const handleSubmit = async (byline: Byline) => {
+    if (loading) return;
     if (!validateUrl(url)) {
       setError(ERRORS.INVALID_URL);
       return;
@@ -119,14 +149,9 @@ export function AnalyzePublicationDialog({
     }
     setError(null);
     setLoading(true);
+    debugger;
     setIsOpen(false);
     try {
-      const { valid, hasPublication } = await validatePublication(url);
-      if (!valid) {
-        setError(ERRORS.INVALID_SUBSTACK_URL);
-        setIsOpen(true);
-        return;
-      }
       if (hasPublication) {
         // Make time to fetch publication shorter
         const newLoadingStates = loadingStates.map(state => ({
@@ -135,7 +160,8 @@ export function AnalyzePublicationDialog({
         }));
         setLoadingStates(newLoadingStates);
       }
-      await analyzePublication(url);
+      setOpenAuthorSelectionDialog(false);
+      await analyzePublication(url, byline);
     } catch (error: any) {
       Logger.error("Error analyzing publication:", error);
       if (error.response?.status === 404) {
@@ -190,7 +216,7 @@ export function AnalyzePublicationDialog({
               onKeyDown={e => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  handleSubmit();
+                  getBylines();
                 }
               }}
             />
@@ -240,14 +266,23 @@ export function AnalyzePublicationDialog({
           <DialogFooter>
             <Button
               type="submit"
-              onClick={handleSubmit}
-              disabled={!url.trim() || loading}
+              onClick={getBylines}
+              disabled={!url.trim() || loading || loadingBylines}
             >
-              {loading ? "Analyzing..." : "Connect Newsletter"}
+              {loading || loadingBylines
+                ? "Analyzing..."
+                : "Connect Newsletter"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AuthorSelectionDialog
+        open={openAuthorSelectionDialog}
+        onOpenChange={setOpenAuthorSelectionDialog}
+        bylines={bylines}
+        onSelect={handleSubmit}
+      />
 
       <MultiStepLoader
         loadingStates={loadingStates}

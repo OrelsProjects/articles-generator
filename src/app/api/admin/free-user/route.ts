@@ -1,7 +1,6 @@
 import prisma from "@/app/api/_db/db";
 import { NextRequest, NextResponse } from "next/server";
 import cuid from "cuid";
-import { Plan } from "@prisma/client";
 import loggerServer from "@/loggerServer";
 
 const ONE_DAY = 1000 * 60 * 60 * 24; // 1 day

@@ -14,6 +14,7 @@ import {
   getUserArticlesBody,
 } from "@/lib/dal/articles";
 import { toValidUrl } from "@/lib/utils/url";
+import { getBylines } from "@/lib/publication";
 
 export const getArticleEndpoint = (
   url: string,
@@ -143,9 +144,9 @@ interface SubstackPost {
  */
 function convertPostsToDbRows(post: SubstackPost): {
   post: Post;
-  bylines: any;
-  audioItems: any;
-  podcastFields: any;
+  bylines: Byline[];
+  audioItems: AudioItem[];
+  podcastFields?: PodcastField;
 } {
   // We'll map out only the data that matches your schema
   return {
@@ -184,7 +185,7 @@ function convertPostsToDbRows(post: SubstackPost): {
     },
     bylines: post.publishedBylines ?? [],
     audioItems: post.audio_items ?? [],
-    podcastFields: post.podcastFields ?? [],
+    podcastFields: post.podcastFields,
   };
 }
 
@@ -266,7 +267,7 @@ export async function populatePublications(
   );
 
   const postsWithBody = currentUserPosts.filter(post => post.bodyText);
-  if (postsWithBody.length >= currentUserPosts.length * 0.5) {
+  if (postsWithBody.length > currentUserPosts.length * 0.5) {
     return [{ url, status: "completed" }];
   }
 
@@ -290,7 +291,7 @@ export async function populatePublications(
   const postsToGetBody = [...allPosts]
     .sort((a, b) => (b.reactionCount || 0) - (a.reactionCount || 0))
     .slice(0, maxArticlesToGetBody);
-    
+
   for (const post of postsToGetBody) {
     const formattedPost = {
       ...post,
@@ -305,33 +306,50 @@ export async function populatePublications(
   const publications = extractPublications(allPosts);
 
   try {
+    const dbItems = allPosts.map(post => convertPostsToDbRows(post));
     // 1) Insert ALL Posts First
-    for (const post of allPosts) {
-      const { post: postData } = convertPostsToDbRows(post);
-      const countPosts = await prismaArticles.post.upsert({
-        where: { id: postData.id.toString() },
-        update: {
-          ...postData,
-          id: postData.id.toString(),
-          reactions: postData.reactions as any,
-          bodyJson: postData.bodyJson as any,
-          postTags: postData.postTags as any,
-          reaction: postData.reaction as any,
-          hidden: `${postData.hidden}`,
-          podcastEpisodeImageInfo: postData.podcastEpisodeImageInfo as any,
-        },
-        create: {
-          ...postData,
-          id: postData.id.toString(),
-          reactions: postData.reactions as any,
-          bodyJson: postData.bodyJson as any,
-          postTags: postData.postTags as any,
-          reaction: postData.reaction as any,
-          hidden: `${postData.hidden}`,
-          podcastEpisodeImageInfo: postData.podcastEpisodeImageInfo as any,
-        },
-      });
-      console.log(`Inserted ${countPosts} posts`);
+    const postsBatches: {
+      post: Post;
+      bylines: Byline[];
+      audioItems: AudioItem[];
+      podcastFields?: PodcastField;
+    }[][] = [];
+    const batchSize = 20;
+    for (let i = 0; i < allPosts.length; i += batchSize) {
+      const batch = dbItems.slice(i, i + batchSize);
+      postsBatches.push(batch);
+    }
+    for (const batch of postsBatches) {
+      const promises: Promise<any>[] = [];
+      for (const batchItem of batch) {
+        const postData = batchItem.post;
+        promises.push(
+          prismaArticles.post.upsert({
+            where: { id: postData.id.toString() },
+            update: {
+              ...postData,
+              id: postData.id.toString(),
+              reactions: postData.reactions as any,
+              bodyJson: postData.bodyJson as any,
+              postTags: postData.postTags as any,
+              reaction: postData.reaction as any,
+              hidden: `${postData.hidden}`,
+              podcastEpisodeImageInfo: postData.podcastEpisodeImageInfo as any,
+            },
+            create: {
+              ...postData,
+              id: postData.id.toString(),
+              reactions: postData.reactions as any,
+              bodyJson: postData.bodyJson as any,
+              postTags: postData.postTags as any,
+              reaction: postData.reaction as any,
+              hidden: `${postData.hidden}`,
+              podcastEpisodeImageInfo: postData.podcastEpisodeImageInfo as any,
+            },
+          }),
+        );
+      }
+      await Promise.all(promises);
     }
 
     // 2) Insert ALL Publications Next
@@ -350,169 +368,82 @@ export async function populatePublications(
       console.log(`Inserted ${countPublications} publications`);
     }
 
-    // 3) Bylines, AudioItems, and PodcastFields
-    // for (const post of allPosts) {
-    //   const {
-    //     post: postData,
-    //     bylines,
-    //     audioItems,
-    //     podcastFields,
-    //   } = convertPostsToDbRows(post);
+    // unique bylines by id
+    const allBylines = dbItems
+      .flatMap(item => item.bylines)
+      .filter(
+        (byline, index, self) =>
+          index === self.findIndex(t => t.id === byline.id),
+      );
+    // unique by userId
+    const allBylinePublicationUsers = dbItems
+      .flatMap(item =>
+        item.bylines.flatMap(byline =>
+          byline.publicationUsers?.map(bpu => ({
+            ...bpu,
+            bylineId: byline.id,
+          })),
+        ),
+      )
+      .filter(
+        (bpu, index, self) =>
+          index === self.findIndex(t => t?.user_id === bpu?.user_id),
+      );
 
-    //   // Audio Items
-    //   // if (audioItems.length > 0) {
-    //   //   for (const audio of audioItems) {
-    //   //     const countAudioItems = await prismaArticles.audioItem.create({
-    //   //       data: {
-    //   //         id: audio.id,
-    //   //         postId: audio.post_id,
-    //   //         voiceId: audio.voice_id.toString(),
-    //   //         audioUrl: audio.audio_url,
-    //   //         type: audio.type,
-    //   //         status: audio.status,
-    //   //       },
-    //   //     });
-    //   //     console.log(`Inserted ${countAudioItems} audioItems`);
-    //   //   }
+    for (const byline of allBylines) {
+      const numericBylineId = parseInt(byline.id, 10);
+      if (isNaN(numericBylineId)) continue;
 
-    //   //   // Podcast Fields
-    //   //   if (podcastFields) {
-    //   //     const existingPodcast = await prismaArticles.podcastField.findFirst({
-    //   //       where: { postId: podcastFields.post_id },
-    //   //     });
-    //   //     if (existingPodcast) {
-    //   //       const countPodcastFields = await prismaArticles.podcastField.update(
-    //   //         {
-    //   //           where: { id: existingPodcast.id },
-    //   //           data: {
-    //   //             podcastEpisodeNumber: podcastFields.podcast_episode_number,
-    //   //             podcastSeasonNumber: podcastFields.podcast_season_number,
-    //   //             podcastEpisodeType: podcastFields.podcast_episode_type,
-    //   //             shouldSyndicateToOtherFeed:
-    //   //               podcastFields.should_syndicate_to_other_feed,
-    //   //             syndicateToSectionId:
-    //   //               podcastFields.syndicate_to_section_id || null,
-    //   //             hideFromFeed: podcastFields.hide_from_feed || false,
-    //   //             freePodcastUrl: podcastFields.free_podcast_url || null,
-    //   //             freePodcastDuration:
-    //   //               podcastFields.free_podcast_duration || null,
-    //   //           },
-    //   //         },
-    //   //       );
-    //   //       console.log(`Inserted ${countPodcastFields} podcastFields`);
-    //   //     } else {
-    //   //       const countPodcastFields = await prismaArticles.podcastField.create(
-    //   //         {
-    //   //           data: {
-    //   //             postId: podcastFields.post_id,
-    //   //             podcastEpisodeNumber: podcastFields.podcast_episode_number,
-    //   //             podcastSeasonNumber: podcastFields.podcast_season_number,
-    //   //             podcastEpisodeType: podcastFields.podcast_episode_type,
-    //   //             shouldSyndicateToOtherFeed:
-    //   //               podcastFields.should_syndicate_to_other_feed,
-    //   //             syndicateToSectionId:
-    //   //               podcastFields.syndicate_to_section_id || null,
-    //   //             hideFromFeed: podcastFields.hide_from_feed || false,
-    //   //             freePodcastUrl: podcastFields.free_podcast_url || null,
-    //   //             freePodcastDuration:
-    //   //               podcastFields.free_podcast_duration || null,
-    //   //           },
-    //   //         },
-    //   //       );
-    //   //       console.log(`Inserted ${countPodcastFields} podcastFields`);
-    //   //     }
-    //   //   }
+      // Upsert Byline
+      const countBylines = await prismaArticles.byline.upsert({
+        where: { id: numericBylineId },
+        update: {
+          id: numericBylineId,
+          name: byline.name,
+          handle: byline.handle,
+          previousName: byline.previous_name || null,
+          photoUrl: byline.photo_url || null,
+          bio: byline.bio || null,
+        },
+        create: {
+          id: numericBylineId,
+          name: byline.name,
+          handle: byline.handle,
+          previousName: byline.previous_name || null,
+          photoUrl: byline.photo_url || null,
+          bio: byline.bio || null,
+        },
+      });
+      console.log(`Inserted ${countBylines} bylines`);
+    }
 
-    //   //   // Bylines
-    //   //   if (bylines.length > 0) {
-    //   //     for (const byline of bylines) {
-    //   //       const numericBylineId = parseInt(byline.id, 10);
-    //   //       if (isNaN(numericBylineId)) continue;
-
-    //   //       // Upsert Byline
-    //   //       const countBylines = await prismaArticles.byline.upsert({
-    //   //         where: { id: numericBylineId },
-    //   //         update: {
-    //   //           id: numericBylineId,
-    //   //           name: byline.name,
-    //   //           handle: byline.handle,
-    //   //           previousName: byline.previous_name || null,
-    //   //           photoUrl: byline.photo_url || null,
-    //   //           bio: byline.bio || null,
-    //   //           profileSetUpAt: byline.profile_set_up_at
-    //   //             ? new Date(byline.profile_set_up_at)
-    //   //             : null,
-    //   //           twitterScreenName: byline.twitter_screen_name || null,
-    //   //           isGuest: byline.is_guest,
-    //   //           bestsellerTier: byline.bestseller_tier || null,
-    //   //         },
-    //   //         create: {
-    //   //           id: numericBylineId,
-    //   //           name: byline.name,
-    //   //           handle: byline.handle,
-    //   //           previousName: byline.previous_name || null,
-    //   //           photoUrl: byline.photo_url || null,
-    //   //           bio: byline.bio || null,
-    //   //           profileSetUpAt: byline.profile_set_up_at
-    //   //             ? new Date(byline.profile_set_up_at)
-    //   //             : null,
-    //   //           twitterScreenName: byline.twitter_screen_name || null,
-    //   //           isGuest: byline.is_guest,
-    //   //           bestsellerTier: byline.bestseller_tier || null,
-    //   //         },
-    //   //       });
-    //   //       console.log(`Inserted ${countBylines} bylines`);
-    //   //       // Ensure Post-Byline Link
-    //   //       const existing = await prismaArticles.postByline.findFirst({
-    //   //         where: {
-    //   //           postId: parseInt(postData.id, 10),
-    //   //           bylineId: numericBylineId,
-    //   //         },
-    //   //       });
-
-    //   //       if (!existing) {
-    //   //         const countPostBylines = await prismaArticles.postByline.create({
-    //   //           data: {
-    //   //             postId: parseInt(postData.id, 10),
-    //   //             bylineId: numericBylineId,
-    //   //           },
-    //   //         });
-    //   //         console.log(`Inserted ${countPostBylines} postBylines`);
-    //   //       }
-
-    //   //       // BylinePublicationUser
-    //   //       if (byline.publicationUsers && byline.publicationUsers.length > 0) {
-    //   //         for (const bpu of byline.publicationUsers) {
-    //   //           const countBylinePublicationUsers =
-    //   //             await prismaArticles.bylinePublicationUser.upsert({
-    //   //               where: { id: bpu.id.toString() },
-    //   //               update: {
-    //   //                 userId: bpu.user_id.toString(),
-    //   //                 publicationId: bpu.publication_id.toString(),
-    //   //                 role: bpu.role,
-    //   //                 public: bpu.public,
-    //   //                 isPrimary: bpu.is_primary,
-    //   //                 bylineId: numericBylineId,
-    //   //               },
-    //   //               create: {
-    //   //                 id: bpu.id.toString(),
-    //   //                 userId: bpu.user_id.toString(),
-    //   //                 publicationId: bpu.publication_id.toString(),
-    //   //                 role: bpu.role,
-    //   //                 public: bpu.public,
-    //   //                 isPrimary: bpu.is_primary,
-    //   //                 bylineId: numericBylineId,
-    //   //               },
-    //   //             });
-    //   //           console.log(
-    //   //             `Inserted ${countBylinePublicationUsers} bylinePublicationUsers`,
-    //   //           );
-    //   //         }
-    //   //       }
-    //   //     }
-    //   //   }
-    //   // }
-    // }
+    for (const bpu of allBylinePublicationUsers) {
+      if (!bpu) continue;
+      const countBylinePublicationUsers =
+        await prismaArticles.bylinePublicationUser.upsert({
+          where: { id: BigInt(bpu.id) },
+          update: {
+            userId: BigInt(bpu.user_id),
+            publicationId: BigInt(bpu.publication_id),
+            role: bpu.role,
+            public: bpu.public,
+            isPrimary: bpu.is_primary,
+            bylineId: BigInt(bpu.bylineId),
+          },
+          create: {
+            id: BigInt(bpu.id),
+            userId: BigInt(bpu.user_id),
+            publicationId: BigInt(bpu.publication_id),
+            role: bpu.role,
+            public: bpu.public,
+            isPrimary: bpu.is_primary,
+            bylineId: BigInt(bpu.bylineId),
+          },
+        });
+      console.log(
+        `Inserted ${countBylinePublicationUsers} bylinePublicationUsers`,
+      );
+    }
 
     publicationsStatus.push({ url, status: "completed" });
   } catch (error: any) {

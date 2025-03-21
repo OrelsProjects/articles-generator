@@ -1,7 +1,7 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import loggerServer from "@/loggerServer";
-import { Plan } from "@prisma/client";
+import { FeatureFlag, Plan } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { getStripeInstance } from "@/lib/stripe";
@@ -68,12 +68,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Price not found" }, { status: 400 });
     }
 
-    // Mark the free user code as used
-    await prisma.freeUsers.update({
-      where: { id: freeUser.id },
-      data: { status: "used" },
-    });
-
     // Calculate the end date (30 days from now)
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 30);
@@ -126,6 +120,19 @@ export async function POST(request: Request) {
       plan: "premium",
       duration: "1 month",
       trialEndDate: trialEndDate.toISOString(),
+    });
+
+    // Mark the free user code as used
+    await prisma.freeUsers.update({
+      where: { id: freeUser.id },
+      data: { status: "used" },
+    });
+
+    await prisma.userMetadata.update({
+      where: { userId: session.user.id },
+      data: {
+        featureFlags: [FeatureFlag.advancedGPT, FeatureFlag.advancedFiltering]
+      },
     });
 
     return NextResponse.json(
