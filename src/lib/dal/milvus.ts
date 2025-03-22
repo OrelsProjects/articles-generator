@@ -179,7 +179,7 @@ async function searchSimilarNotes({
 }: SearchOptions) {
   const MILVUS_API_KEY = process.env.MILVUS_API_KEY;
   const MILVUS_ENDPOINT = process.env.MILVUS_ENDPOINT;
-  const COLLECTION_NAME = "notes_valid";
+  const COLLECTION_NAME = "notes";
   if (!MILVUS_API_KEY || !MILVUS_ENDPOINT) {
     throw new Error("Missing Milvus configuration");
   }
@@ -250,16 +250,11 @@ async function searchSimilarNotes({
   });
 
   const topNotes = notesFromDb.sort(() => Math.random() - 0.5).slice(0, limit);
-  return topNotes.map(note => {
-    const noteFromMilvus = topMatchNotes.find(
-      (match: any) => match.id === note.id,
-    );
-    return {
-      ...note,
-      body: noteFromMilvus?.body || note.body,
-      date: noteFromMilvus?.date ? new Date(noteFromMilvus.date * 1000)  : note.date,
-    };
-  });
+  return topNotes.map(note => ({
+    ...note,
+    body: note.body,
+    date: note.date,
+  }));
 }
 
 export { searchSimilarArticles, searchSimilarNotes };

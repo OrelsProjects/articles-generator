@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { runPrompt } from "@/lib/open-router";
 import { Publication } from "@/types/publication";
-import { getAuthorId, getPublicationByUrl } from "@/lib/dal/publication";
+import { getPublicationByUrl } from "@/lib/dal/publication";
 import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 import { Article, ArticleWithBody } from "@/types/article";

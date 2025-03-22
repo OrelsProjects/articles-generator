@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
       if (filters.dateRange.from) {
         searchFilters.push({
           leftSideValue: "date",
-          rightSideValue: new Date(filters.dateRange.from).getTime() / 1000,
+          rightSideValue: new Date(filters.dateRange.from).getTime(),
           operator: ">=",
         });
       }

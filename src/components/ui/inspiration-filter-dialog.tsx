@@ -97,7 +97,7 @@ export function InspirationFilterDialog({
     if (newFilters) {
       let filters = { ...newFilters };
       if (dateRange) {
-        const filters = {
+        filters = {
           ...newFilters,
           dateRange: dateRange,
         };
@@ -134,7 +134,7 @@ export function InspirationFilterDialog({
       opt => opt.value === likes.toString(),
     );
 
-    // If range is lower than 365 days, it's also limited
+    // If range is lower than 30 days, it's also limited
     let isDateLimited = false;
     if (dateRange) {
       if (dateRange.from && dateRange.to) {
@@ -142,7 +142,7 @@ export function InspirationFilterDialog({
       } else if (dateRange.from) {
         const difference = differenceInDays(new Date(), dateRange.from);
         console.log(difference);
-        isDateLimited = difference < 365;
+        isDateLimited = difference < 30;
       }
     }
 
@@ -183,27 +183,6 @@ export function InspirationFilterDialog({
                   <Search className="h-4 w-4" />
                 </div>
               </div>
-              {/* <div
-                className={cn(
-                  "text-xs text-muted-foreground mt-1 px-4",
-                  { hidden: newFilters.type === "all" },
-                  {
-                    "text-red-600 dark:text-red-400":
-                      keyword.length > 0 && keyword.length <= 20,
-                    "text-yellow-600 dark:text-yellow-400":
-                      keyword.length > 20 && keyword.length <= 70,
-                    "text-green-600 dark:text-green-400": keyword.length > 70,
-                  },
-                )}
-              >
-                {keyword.length > 0 &&
-                  keyword.length <= 20 &&
-                  "Too short, bad results"}
-                {keyword.length > 20 &&
-                  keyword.length <= 70 &&
-                  "Better, okay results"}
-                {keyword.length > 70 && "Good!"}
-              </div> */}
             </div>
             <DialogTrigger asChild>
               <TooltipButton
