@@ -13,12 +13,14 @@ import { CreatePostResponse } from "@/types/createPostResponse";
 import { Logger } from "@/logger";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { FeatureFlag } from "@prisma/client";
+import { useNotes } from "@/lib/hooks/useNotes";
 /**
  * Custom hook for creating Substack posts through a Chrome extension
  * @returns {UseSubstackPost} Hook methods and state
  */
 export function useSubstackPost(): UseSubstackPost {
   const { user } = useAppSelector(state => state.auth);
+  const { updateNoteStatus } = useNotes();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [postResponse, setPostResponse] = useState<CreatePostResponse | null>(
@@ -144,6 +146,13 @@ export function useSubstackPost(): UseSubstackPost {
 
         if (result.success && result.result) {
           setPostResponse(result.result);
+        }
+
+        if (params.moveNoteToPublished) {
+          await updateNoteStatus(
+            params.moveNoteToPublished.noteId,
+            "published",
+          );
         }
 
         return result.result || null;

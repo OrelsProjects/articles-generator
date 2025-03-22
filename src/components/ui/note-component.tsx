@@ -3,7 +3,6 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
 import { convertMDToHtml, Note, NoteDraft, NoteFeedback } from "@/types/note";
 import {
-  ExternalLink,
   Heart,
   MessageCircle,
   RefreshCw,
@@ -11,7 +10,6 @@ import {
   ThumbsDown,
   X,
   Archive,
-  Check,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -175,8 +173,6 @@ export default function NoteComponent({ note }: NoteProps) {
     selectNote,
     selectedNote,
   } = useNotes();
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [showExtensionDialog, setShowExtensionDialog] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [showExpandButton, setShowExpandButton] = useState(false);
@@ -454,7 +450,7 @@ export default function NoteComponent({ note }: NoteProps) {
         </TooltipButton>
 
         {/* Replace the Substack posting button with the new component */}
-        <SubstackPostButton noteBody={note.body} size="sm" variant="ghost" />
+        <SubstackPostButton note={note} size="sm" variant="ghost" />
       </div>
     );
 

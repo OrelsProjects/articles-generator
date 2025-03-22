@@ -5,9 +5,11 @@ import { TooltipButton } from "@/components/ui/tooltip-button";
 import { useSubstackPost } from "@/lib/hooks/useSubstackPost";
 import { SuccessDialog } from "@/components/notes/success-dialog";
 import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
+import { Note, NoteDraft } from "@/types/note";
+import { useNotes } from "@/lib/hooks/useNotes";
 
 interface SubstackPostButtonProps {
-  noteBody: string;
+  note: Note | NoteDraft;
   size?: "sm" | "lg" | "default" | "icon";
   variant?: "ghost" | "default" | "outline";
   tooltipContent?: string;
@@ -15,7 +17,7 @@ interface SubstackPostButtonProps {
 }
 
 export function SubstackPostButton({
-  noteBody,
+  note,
   size = "sm",
   variant = "ghost",
   tooltipContent = "Post instantly",
@@ -27,12 +29,18 @@ export function SubstackPostButton({
     postResponse,
     canUseSubstackPost,
   } = useSubstackPost();
+  const { updateNoteStatus } = useNotes();
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
 
   const handleSendNote = async () => {
     try {
-      const response = await createPost({ message: noteBody });
+      const response = await createPost({
+        message: note.body,
+        moveNoteToPublished: {
+          noteId: note.id,
+        },
+      });
       if (response) {
         setShowSuccessDialog(true);
       }

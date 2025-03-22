@@ -6,6 +6,10 @@ import { CreatePostResponse } from "@/types/createPostResponse";
 export interface CreatePostParams {
   /** The content of the post */
   message: string;
+  /** Optional: Move note to status "published" */
+  moveNoteToPublished?: {
+    noteId: string;
+  };
   /** Optional: Schedule post for future (in seconds) */
   scheduleSeconds?: number;
   /** Optional: Automatically close the tab after posting */
