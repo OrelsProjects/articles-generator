@@ -165,6 +165,7 @@ export const generateSessionId = async (options: {
   name: string | null;
   urlOrigin: string;
   freeTrial?: number;
+  referralCode?: string;
 }): Promise<string> => {
   const stripe = getStripeInstance();
 
@@ -188,12 +189,13 @@ export const generateSessionId = async (options: {
     mode: "subscription",
     success_url: `${urlOrigin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${urlOrigin}/cancel`,
-    client_reference_id: userId,
+    client_reference_id: options.referralCode || userId,
     customer_email: email || "",
     metadata: {
       clientName: name || "",
       productId,
       priceId,
+      referral: options.referralCode || "",
     },
   });
   return stripeSession.id;

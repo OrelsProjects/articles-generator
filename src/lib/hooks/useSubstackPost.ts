@@ -20,7 +20,6 @@ import { useNotes } from "@/lib/hooks/useNotes";
  */
 export function useSubstackPost(): UseSubstackPost {
   const { user } = useAppSelector(state => state.auth);
-  const { updateNoteStatus } = useNotes();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [postResponse, setPostResponse] = useState<CreatePostResponse | null>(
@@ -142,29 +141,26 @@ export function useSubstackPost(): UseSubstackPost {
         };
 
         // Send message to extension
-        const result = await sendExtensionMessage(message);
+        const sendMessageResponse = await sendExtensionMessage(message);
 
-        if (result.success && result.result) {
-          setPostResponse(result.result);
-        }
-
-        if (params.moveNoteToPublished) {
-          await updateNoteStatus(
-            params.moveNoteToPublished.noteId,
-            "published",
+        if (sendMessageResponse.success && sendMessageResponse.result) {
+          setPostResponse(sendMessageResponse.result);
+          setIsLoading(false);
+          return sendMessageResponse.result;
+        } else {
+          throw new Error(
+            sendMessageResponse.error || SubstackError.UNKNOWN_ERROR,
           );
         }
-
-        return result.result || null;
       } catch (error) {
+        console.log("Error in createPost", error);
         if (error instanceof Error) {
           setError(error.message);
         } else {
           setError(SubstackError.UNKNOWN_ERROR);
         }
-        throw error;
-      } finally {
         setIsLoading(false);
+        throw error;
       }
     },
     [sendExtensionMessage],

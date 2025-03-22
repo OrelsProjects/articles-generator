@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Send, RefreshCw } from "lucide-react";
-import { toast } from "react-toastify";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { useSubstackPost } from "@/lib/hooks/useSubstackPost";
 import { SuccessDialog } from "@/components/notes/success-dialog";
@@ -30,22 +29,29 @@ export function SubstackPostButton({
     canUseSubstackPost,
   } = useSubstackPost();
   const { updateNoteStatus } = useNotes();
+
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
 
   const handleSendNote = async () => {
     try {
-      const response = await createPost({
+      await createPost({
         message: note.body,
-        moveNoteToPublished: {
-          noteId: note.id,
-        },
       });
-      if (response) {
-        setShowSuccessDialog(true);
-      }
+
+      //   await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log("Post sent successfully");
+      setShowSuccessDialog(true);
     } catch (error) {
+      console.error("Error sending post:", error);
       setShowExtensionDialog(true);
+    }
+  };
+
+  const handleOpenChangeSuccessDialog = (open: boolean) => {
+    setShowSuccessDialog(open);
+    if (!open) {
+      updateNoteStatus(note.id, "published");
     }
   };
 
@@ -72,7 +78,7 @@ export function SubstackPostButton({
 
       <SuccessDialog
         open={showSuccessDialog}
-        onOpenChange={setShowSuccessDialog}
+        onOpenChange={handleOpenChangeSuccessDialog}
         response={postResponse}
       />
 

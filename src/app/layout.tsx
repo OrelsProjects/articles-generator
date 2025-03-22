@@ -13,7 +13,8 @@ import AnimationProvider from "@/app/providers/AnimationProvider";
 import { cn } from "@/lib/utils";
 import { ToastProvider } from "@/app/providers/ToastProvider";
 import { PlusJakartaSans } from "@/lib/utils/fonts";
-
+import Script from "next/script";
+import AffiliateProvider from "@/app/providers/AffiliateProvider";
 interface RootLayoutProps {
   children: React.ReactNode;
   locale: never;
@@ -93,8 +94,17 @@ export default function Layout({ children }: RootLayoutProps) {
             <SessionWrapper>
               <TopLoaderProvider />
               <ToastProvider />
-              <AnimationProvider>{children}</AnimationProvider>
-              <ClientTrackersProvider />
+              <Script
+                src="https://r.wdfl.co/rw.js"
+                data-rewardful="00b47f"
+              ></Script>
+              <Script id="rewardful-queue" strategy="beforeInteractive">
+                {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
+              </Script>
+              <AffiliateProvider>
+                <AnimationProvider>{children}</AnimationProvider>
+                <ClientTrackersProvider />
+              </AffiliateProvider>
             </SessionWrapper>
           </StoreProvider>
         </Suspense>

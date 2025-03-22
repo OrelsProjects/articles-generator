@@ -9,6 +9,7 @@ import { z } from "zod";
 const checkoutSchema = z.object({
   plan: z.enum(["standard", "premium", "executive"]),
   interval: z.enum(["month", "year"]),
+  referralCode: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -18,7 +19,9 @@ export async function POST(req: NextRequest) {
   }
   try {
     const nextUrl = req.nextUrl;
-    const { plan, interval } = checkoutSchema.parse(await req.json());
+    const { plan, interval, referralCode } = checkoutSchema.parse(
+      await req.json(),
+    );
 
     const productId =
       plan === "standard"
@@ -60,6 +63,7 @@ export async function POST(req: NextRequest) {
       email: session.user.email || null,
       name: session.user.name || null,
       freeTrial: 7,
+      referralCode,
     });
     return NextResponse.json({ sessionId }, { status: 200 });
   } catch (error: any) {

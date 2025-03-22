@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import { CreatePostResponse } from '@/types/createPostResponse';
+import { CreatePostResponse } from "@/types/createPostResponse";
 
 interface SuccessDialogProps {
   open: boolean;
@@ -17,12 +17,17 @@ interface SuccessDialogProps {
   response: CreatePostResponse | null;
 }
 
-export function SuccessDialog({ open, onOpenChange, response }: SuccessDialogProps) {
+export function SuccessDialog({
+  open,
+  onOpenChange,
+  response,
+}: SuccessDialogProps) {
+  console.log("Success dialog", open, response);
   const handleViewNote = () => {
     if (response) {
       window.open(
         `https://substack.com/@${response.user_primary_publication.subdomain}/note/c-${response.id}`,
-        '_blank'
+        "_blank",
       );
       onOpenChange(false);
     }
@@ -44,11 +49,9 @@ export function SuccessDialog({ open, onOpenChange, response }: SuccessDialogPro
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Continue
           </Button>
-          <Button onClick={handleViewNote}>
-            View note
-          </Button>
+          <Button onClick={handleViewNote}>View note</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-} 
+}

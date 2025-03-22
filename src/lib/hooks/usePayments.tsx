@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { setProducts } from "@/lib/features/products/productsSlice";
 import { useRef } from "react";
 import { selectAuth } from "@/lib/features/auth/authSlice";
-
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
 );
@@ -14,7 +14,9 @@ const stripePromise = loadStripe(
 export default function usePayments() {
   const dispatch = useAppDispatch();
   const loadingProducts = useRef(false);
+  const [referral, setReferral] = useLocalStorage("referral", null);
   const { user } = useAppSelector(selectAuth);
+
   const getProducts = async () => {
     try {
       if (loadingProducts.current) {
@@ -36,7 +38,7 @@ export default function usePayments() {
     try {
       const response = await axios.post<{ sessionId: string }>(
         "/api/stripe/checkout",
-        { interval, plan },
+        { interval, plan, referral },
       );
       const stripe = await stripePromise;
       const { error } = await stripe!.redirectToCheckout({
