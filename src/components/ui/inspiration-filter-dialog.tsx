@@ -75,7 +75,8 @@ export function InspirationFilterDialog({
   const restacks = newFilters?.minRestacks || 0;
   const keyword = newFilters?.keyword || "";
 
-  const hasFilters = likes > 0 || comments > 0 || restacks > 0 || keyword;
+  const hasFilters =
+    likes > 0 || comments > 0 || restacks > 0 || keyword || dateRange;
 
   const handleFilterChange = (key: keyof InspirationFilters, value: string) => {
     let newType =
@@ -230,13 +231,20 @@ export function InspirationFilterDialog({
               </Select>
             </div>
             <div className="w-full grid grid-cols-[1fr_auto] gap-4 ">
-              <Input
-                placeholder="Anytime"
-                className=" h-10 shadow-none border-none !ring-none"
-                value={dateInputValue}
-                disabled
-              />
-
+              <div className="relative">
+                <Input
+                  placeholder="Anytime"
+                  className="h-10 shadow-none border-none !ring-none z-10"
+                  value={dateInputValue}
+                  disabled
+                />
+                <div
+                  className="absolute inset-0 z-20 cursor-pointer"
+                  onClick={() => {
+                    setOpenCalendar(!openCalendar);
+                  }}
+                />
+              </div>
               <Popover open={openCalendar} onOpenChange={setOpenCalendar}>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon">
