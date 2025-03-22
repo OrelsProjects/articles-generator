@@ -1,28 +1,8 @@
-import { usePublication } from "@/lib/hooks/usePublication";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link2 } from "lucide-react";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { validateUrl } from "@/lib/utils/url";
-import { Logger } from "@/logger";
 import { AnalyzePublicationDialog } from "./analyze-publication-dialog";
-
-const loadingStatesConst = [
-  { text: "Validating publication in our databases..." },
-  { text: "Checking Substack availability..." },
-  { text: "Extracting publications...", delay: 20000 },
-  { text: "Analyzing writing style...", delay: 20000 },
-  { text: "Generating content insights...", delay: 1000 },
-  { text: "Setting up your preferences..." },
-  { text: "Almost done..." },
-];
-
-interface ErrorState {
-  value: string;
-  type: "error" | "warn";
-  explanation: string;
-}
-
 export function AnalyzePublicationButton({
   variant = "default",
   className,

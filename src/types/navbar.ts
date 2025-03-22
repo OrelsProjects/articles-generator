@@ -47,13 +47,6 @@ export const navItems = [
     disabled: true,
     locationInMobile: "sidebar",
   },
-  {
-    name: "Schedule (coming soon)",
-    href: "/schedule",
-    icon: Calendar,
-    disabled: true,
-    locationInMobile: "sidebar",
-  },
 ];
 
 export const externalLinks = navItems.filter(item => item.newTab);

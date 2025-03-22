@@ -53,7 +53,7 @@ export async function getBylines(url: string) {
 
     return uniqueBylines;
   } catch (error) {
-    debugger;
+    
     console.error(error);
     throw new Error("Failed to fetch bylines");
   }

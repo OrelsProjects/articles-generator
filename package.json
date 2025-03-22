@@ -91,11 +91,13 @@
     "react-textarea-autosize": "^8.5.7",
     "react-toastify": "^10.0.5",
     "recharts": "^2.15.1",
+    "remark-parse": "^11.0.0",
     "slugify": "^1.6.6",
     "stripe": "^17.4.0",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
     "turndown": "^7.2.0",
+    "unified": "^11.0.5",
     "uuid": "^9.0.1",
     "winston": "^3.13.0",
     "zod": "^3.24.2"
@@ -120,5 +122,19 @@
     "tailwindcss": "^3.3.0",
     "ts-jest": "^29.2.6",
     "typescript": "^5"
-  }
+  },
+  "description": "1. Open your firebase project 2. Go to project settings 3. Service accounts tab 4. Choose your programming language 5. Press Generate new private key",
+  "main": "jest.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OrelsProjects/articles-generator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/OrelsProjects/articles-generator/issues"
+  },
+  "homepage": "https://github.com/OrelsProjects/articles-generator#readme"
 }

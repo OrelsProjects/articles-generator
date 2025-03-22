@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SubstackPostButton } from "@/components/notes/substack-post-button";
 
 // Define feedback options
 const FEEDBACK_OPTIONS = [
@@ -174,6 +175,8 @@ export default function NoteComponent({ note }: NoteProps) {
     selectNote,
     selectedNote,
   } = useNotes();
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showExtensionDialog, setShowExtensionDialog] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [showExpandButton, setShowExpandButton] = useState(false);
@@ -449,6 +452,9 @@ export default function NoteComponent({ note }: NoteProps) {
             <Archive className="h-4 w-4" />
           )}
         </TooltipButton>
+
+        {/* Replace the Substack posting button with the new component */}
+        <SubstackPostButton noteBody={note.body} size="sm" variant="ghost" />
       </div>
     );
 
@@ -468,152 +474,154 @@ export default function NoteComponent({ note }: NoteProps) {
   }, [htmlContent]);
 
   return (
-    <div
-      className={cn(
-        "flex flex-col relative rounded-xl shadow-sm border border-border/60 bg-card",
-        {
-          "border-primary/80": note.id === selectedNote?.id,
-        },
-      )}
-    >
-      <div className="h-full flex flex-col justify-between gap-4 transition-opacity duration-200">
-        <div className="w-full flex-col items-start gap-4 transition-opacity duration-200">
-          <div
-            className={cn(
-              "w-full flex justify-between border-b border-border/60 p-2",
-              {
-                "opacity-60": feedback === "dislike",
-              },
-            )}
-          >
-            <Author />
-            <div className="flex items-center gap-2">
-              {/* date */}
-              <p className="text-xs text-muted-foreground">
-                {new Date(note.timestamp).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-          </div>
-          <div
-            className={cn("w-full flex-1", {
-              "opacity-60": feedback === "dislike",
-            })}
-          >
-            <div className="w-full relative z-20">
-              {/* Content */}
-              <div
-                ref={contentRef}
-                className={cn(
-                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 cursor-pointer z-10",
-                  isExpanded ? "max-h-none" : "max-h-[260px]",
-                  isUserNote && "cursor-pointer",
-                )}
-                onClick={() => selectNote(note)}
-              >
-                <div
-                  className="prose prose-sm max-w-none note-component-content"
-                  dangerouslySetInnerHTML={{
-                    __html: htmlContent,
-                  }}
-                />
+    <>
+      <div
+        className={cn(
+          "flex flex-col relative rounded-xl shadow-sm border border-border/60 bg-card",
+          {
+            "border-primary/80": note.id === selectedNote?.id,
+          },
+        )}
+      >
+        <div className="h-full flex flex-col justify-between gap-4 transition-opacity duration-200">
+          <div className="w-full flex-col items-start gap-4 transition-opacity duration-200">
+            <div
+              className={cn(
+                "w-full flex justify-between border-b border-border/60 p-2",
+                {
+                  "opacity-60": feedback === "dislike",
+                },
+              )}
+            >
+              <Author />
+              <div className="flex items-center gap-2">
+                {/* date */}
+                <p className="text-xs text-muted-foreground">
+                  {new Date(note.timestamp).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
               </div>
-              {/* Expand Button */}
-              {showExpandButton && (
-                <div className="relative h-4 w-full z-20">
-                  <Button
-                    variant="link"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto"
-                  >
-                    {isExpanded ? "less" : "more"}
-                  </Button>
+            </div>
+            <div
+              className={cn("w-full flex-1", {
+                "opacity-60": feedback === "dislike",
+              })}
+            >
+              <div className="w-full relative z-20">
+                {/* Content */}
+                <div
+                  ref={contentRef}
+                  className={cn(
+                    "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 cursor-pointer z-10",
+                    isExpanded ? "max-h-none" : "max-h-[260px]",
+                    isUserNote && "cursor-pointer",
+                  )}
+                  onClick={() => selectNote(note)}
+                >
                   <div
-                    className={cn(
-                      "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent -z-10",
-                      isExpanded ? "opacity-0" : "opacity-100",
+                    className="prose prose-sm max-w-none note-component-content"
+                    dangerouslySetInnerHTML={{
+                      __html: htmlContent,
+                    }}
+                  />
+                </div>
+                {/* Expand Button */}
+                {showExpandButton && (
+                  <div className="relative h-4 w-full z-20">
+                    <Button
+                      variant="link"
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto"
+                    >
+                      {isExpanded ? "less" : "more"}
+                    </Button>
+                    <div
+                      className={cn(
+                        "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent -z-10",
+                        isExpanded ? "opacity-0" : "opacity-100",
+                      )}
+                    />
+                  </div>
+                )}
+                {/* Hover Actions Bar */}
+                {/* {!isUserNote && (
+                  <div className="absolute -bottom-2 left-0 right-0 bg-background/95 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-3 flex justify-between items-center z-30">
+                    {entityKey && (
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link
+                          href={`https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`}
+                          target="_blank"
+                          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 z-30"
+                        >
+                          View on Substack
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      </Button>
                     )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary hover:text-primary/80"
+                      onClick={() => selectNote(note)}
+                    >
+                      <span className="text-xs">Edit & post</span>
+                    </Button>
+                  </div>
+                )} */}
+              </div>
+              {attachment && (
+                <div
+                  className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
+                  onClick={() =>
+                    selectImage({
+                      url: attachment,
+                      alt: "Note attachment",
+                    })
+                  }
+                >
+                  <Image
+                    src={attachment}
+                    alt="Attachment"
+                    width={400}
+                    height={300}
+                    className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
                   />
                 </div>
               )}
-              {/* Hover Actions Bar */}
-              {/* {!isUserNote && (
-                <div className="absolute -bottom-2 left-0 right-0 bg-background/95 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-3 flex justify-between items-center z-30">
-                  {entityKey && (
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link
-                        href={`https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`}
-                        target="_blank"
-                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 z-30"
-                      >
-                        View on Substack
-                        <ExternalLink className="h-3 w-3" />
-                      </Link>
-                    </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary hover:text-primary/80"
-                    onClick={() => selectNote(note)}
-                  >
-                    <span className="text-xs">Edit & post</span>
-                  </Button>
-                </div>
-              )} */}
             </div>
-            {attachment && (
-              <div
-                className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
-                onClick={() =>
-                  selectImage({
-                    url: attachment,
-                    alt: "Note attachment",
-                  })
-                }
-              >
-                <Image
-                  src={attachment}
-                  alt="Attachment"
-                  width={400}
-                  height={300}
-                  className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
-                />
-              </div>
-            )}
           </div>
-        </div>
-        <div className="w-full flex items-center justify-between border-t border-border/60 py-2">
-          <div className="w-full flex items-center justify-between gap-2">
-            <Reactions />
-            <div
-              className={cn("flex items-center justify-between gap-2 px-2", {
-                "w-full pr-4": isUserNote,
-              })}
-            >
-              <NotesActions />
-              <Button
-                onClick={() =>
-                  selectNote(note, {
-                    forceShowEditor: true,
-                    isFromInspiration: true,
-                  })
-                }
-                variant="link"
-                size="sm"
-                className={cn("text-xs p-0 text-foreground", {
-                  hidden: isUserNote,
+          <div className="w-full flex items-center justify-between border-t border-border/60 py-2">
+            <div className="w-full flex items-center justify-between gap-2">
+              <Reactions />
+              <div
+                className={cn("flex items-center justify-between gap-2 px-2", {
+                  "w-full pr-4": isUserNote,
                 })}
               >
-                Edit & post
-              </Button>
+                <NotesActions />
+                <Button
+                  onClick={() =>
+                    selectNote(note, {
+                      forceShowEditor: true,
+                      isFromInspiration: true,
+                    })
+                  }
+                  variant="link"
+                  size="sm"
+                  className={cn("text-xs p-0 text-foreground", {
+                    hidden: isUserNote,
+                  })}
+                >
+                  Edit & post
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

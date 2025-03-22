@@ -94,7 +94,7 @@ export function InspirationFilterDialog({
   };
 
   const handleApplyFilters = () => {
-    debugger;
+    
     if (newFilters) {
       let filters = { ...newFilters };
       if (dateRange) {

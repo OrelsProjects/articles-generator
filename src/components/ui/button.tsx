@@ -22,7 +22,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         "neumorphic-primary":
-          "rounded-md bg-gradient-to-b from-primary via-primary/80 to-primary/60 text-primary-foreground shadow-md border !border-primary px-4 py-2 transition-colors",
+          "rounded-md bg-gradient-to-b from-primary via-primary/80 to-primary/60 text-primary-foreground shadow-md border !border-primary px-4 py-2 transition-colors font-semibold",
       },
       size: {
         default: "h-9 px-4 py-2",

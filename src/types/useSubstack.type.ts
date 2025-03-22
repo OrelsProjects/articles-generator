@@ -1,3 +1,5 @@
+import { CreatePostResponse } from "@/types/createPostResponse";
+
 /**
  * Parameters for creating a Substack post
  */
@@ -13,9 +15,11 @@ export interface CreatePostParams {
 /**
  * Response from the extension API
  */
-export interface ExtensionResponse {
+export interface ExtensionResponse<T> {
   success: boolean;
-  data?: any;
+  result?: T;
+  message?: string;
+  action?: string;
   error?: string;
 }
 
@@ -25,7 +29,7 @@ export interface ExtensionResponse {
 export interface ExtensionMessage {
   type: "API_REQUEST" | "PING";
   action?: "createSubstackPost";
-  params?: [string, number | undefined, boolean | undefined];
+  params?: [any];
 }
 
 /**
@@ -33,18 +37,21 @@ export interface ExtensionMessage {
  */
 export enum SubstackError {
   EXTENSION_NOT_FOUND = "Extension not found",
+  PENDING = "Pending",
   EXTENSION_DISABLED = "Extension is disabled",
   NETWORK_ERROR = "Network error occurred",
   AUTHENTICATION_ERROR = "Authentication failed",
   INVALID_PARAMETERS = "Invalid parameters provided",
-  UNKNOWN_ERROR = "An unknown error occurred"
+  UNKNOWN_ERROR = "An unknown error occurred",
 }
 
 /**
  * Hook return type
  */
 export interface UseSubstackPost {
-  createPost: (params: CreatePostParams) => Promise<void>;
+  createPost: (params: CreatePostParams) => Promise<CreatePostResponse | null>;
   isLoading: boolean;
   error: string | null;
-} 
+  postResponse: CreatePostResponse | null;
+  canUseSubstackPost: boolean;
+}

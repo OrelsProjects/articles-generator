@@ -63,6 +63,7 @@ enum FeatureFlag {
   advancedGPT
   articles
   advancedFiltering
+  instantPost
 }
 
 model User {

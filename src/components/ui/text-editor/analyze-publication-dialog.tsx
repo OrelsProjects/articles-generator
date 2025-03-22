@@ -13,11 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
-import { AlertCircle, AlertTriangle, HelpCircle, Link2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, AlertTriangle, HelpCircle } from "lucide-react";
+import { AlertDescription } from "@/components/ui/alert";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { validateSubstackUrl, validateUrl } from "@/lib/utils/url";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import {
   Tooltip,
   TooltipContent,
@@ -29,7 +29,7 @@ import { setShowAnalyzePublicationDialog } from "@/lib/features/ui/uiSlice";
 import { MotionAlert } from "@/components/ui/motion-components";
 import { Byline } from "@/types/article";
 import { toast } from "react-toastify";
-import { AuthorSelectionDialog } from "@/app/test/author-selection-dialog";
+import { AuthorSelectionDialog } from "@/components/onboarding/author-selection-dialog";
 
 const loadingStatesConst = [
   { text: "Validating publication in our databases..." },
@@ -38,7 +38,14 @@ const loadingStatesConst = [
   { text: "Analyzing writing style...", delay: 6000 },
   { text: "Generating content insights...", delay: 4000 },
   { text: "Setting up your preferences..." },
-  { text: "Almost done..." },
+  { text: "Almost done...", delay: 3000 },
+  { text: "I promise, it's almost ready...", delay: 3000 },
+  { text: "Okay, I'm working really hard to make it ready...", delay: 3000 },
+  {
+    text: "I hope you know by now that the statuses are fake and that I am stalling...",
+    delay: 10000,
+  },
+  { text: "Well, this is awkward... Hope it finishes soon...🤦", delay: 3000 },
 ];
 
 const ERRORS = {
@@ -149,7 +156,7 @@ export function AnalyzePublicationDialog({
     }
     setError(null);
     setLoading(true);
-    debugger;
+
     setIsOpen(false);
     try {
       if (hasPublication) {
