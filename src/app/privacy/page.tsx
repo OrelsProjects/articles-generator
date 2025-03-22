@@ -2,7 +2,7 @@ import React from "react";
 
 const COMPANY_NAME = process.env.NEXT_PUBLIC_APP_NAME;
 const WEBSITE_URL = process.env.NEXT_PUBLIC_APP_URL;
-const POLICY_EFFECTIVE_DATE = "07 Nov 2024";
+const POLICY_EFFECTIVE_DATE = "01 Mar 2025";
 
 const PrivacyPolicy: React.FC = () => {
   return (
