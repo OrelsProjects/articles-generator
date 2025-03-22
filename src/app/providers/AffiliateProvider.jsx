@@ -7,10 +7,12 @@ export default function AffiliateProvider({ children }) {
   const [, setReferral] = useLocalStorage("referral", null);
 
   useEffect(() => {
-    rewardful("ready", function () {
-      setReferral(Rewardful.referral);
-    });
-  }, []);
+    if (rewardful) {
+      rewardful("ready", function () {
+        setReferral(Rewardful.referral);
+      });
+    }
+  }, [rewardful]);
 
   return children;
 }
