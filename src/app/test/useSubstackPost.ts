@@ -8,9 +8,9 @@ import {
   SubstackError,
   UseSubstackPost,
 } from "./types";
+import axios from "axios";
 
-const EXTENSION_EVENT = 'substack-extension-message';
-const EXTENSION_RESPONSE_EVENT = 'substack-extension-response';
+const EXTENSION_ORIGIN = "chrome-extension://bmkhkeelhgcnpmemdmlfjfndcolhhkaj";
 
 /**
  * Custom hook for creating Substack posts through a Chrome extension
@@ -27,10 +27,16 @@ export function useSubstackPost(): UseSubstackPost {
     async (message: ExtensionMessage): Promise<ExtensionResponse> => {
       return new Promise((resolve, reject) => {
         // Set up listener for response
-        const handleResponse = (event: CustomEvent) => {
-          window.removeEventListener(EXTENSION_RESPONSE_EVENT, handleResponse as EventListener);
-          const response = event.detail as ExtensionResponse;
-          
+        const handleMessage = (event: MessageEvent) => {
+          console.log("handleMessage", event);
+          // Verify the message is from our extension
+          if (event.origin !== EXTENSION_ORIGIN) return;
+
+          const response = event.data as ExtensionResponse;
+
+          // Remove listener after receiving response
+          window.removeEventListener("message", handleMessage);
+
           if (!response.success) {
             reject(new Error(response.error || SubstackError.UNKNOWN_ERROR));
           } else {
@@ -39,26 +45,30 @@ export function useSubstackPost(): UseSubstackPost {
         };
 
         // Add listener for response
-        window.addEventListener(EXTENSION_RESPONSE_EVENT, handleResponse as EventListener);
+        window.addEventListener("message", handleMessage);
 
         // Send message to extension
         try {
-          window.dispatchEvent(
-            new CustomEvent(EXTENSION_EVENT, { detail: message })
+          chrome.runtime.sendMessage(
+            "bmkhkeelhgcnpmemdmlfjfndcolhhkaj", // your extension ID
+            { ...message },
+            response => {
+              console.log("Got a response from the extension:", response);
+            },
           );
         } catch (error) {
-          window.removeEventListener(EXTENSION_RESPONSE_EVENT, handleResponse as EventListener);
+          window.removeEventListener("message", handleMessage);
           reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
         }
 
         // Set timeout for response
         setTimeout(() => {
-          window.removeEventListener(EXTENSION_RESPONSE_EVENT, handleResponse as EventListener);
+          window.removeEventListener("message", handleMessage);
           reject(new Error(SubstackError.NETWORK_ERROR));
         }, 5000); // 5 second timeout
       });
     },
-    []
+    [],
   );
 
   /**
@@ -96,10 +106,35 @@ export function useSubstackPost(): UseSubstackPost {
         setIsLoading(false);
       }
     },
-    [sendExtensionMessage]
+    [sendExtensionMessage],
   );
 
+  const pingExtension = useCallback(async () => {
+    // const message: ExtensionMessage = {
+    //   type: "PING",
+    // };
+    // await sendExtensionMessage(message);
+    try {
+      const response = await axios.post(
+        "https://substack.com/api/v1/comment/feed",
+        {
+          headers: {
+            "content-type": "application/json",
+            Referer: "https://substack.com/home",
+            "Referrer-Policy": "strict-origin-when-cross-origin",
+          },
+          body: '{"bodyJson":{"type":"doc","attrs":{"schemaVersion":"v1"},"content":[{"type":"paragraph","content":[{"type":"text","text":"test"}]}]},"tabId":"for-you","surface":"feed","replyMinimumRole":"everyone"}',
+        },
+      );
+      debugger;
+      console.log("response", response);
+    } catch (error) {
+      console.error("error", error);
+    }
+  }, [sendExtensionMessage]);
+
   return {
+    pingExtension,
     createPost,
     isLoading,
     error,

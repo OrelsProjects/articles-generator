@@ -102,6 +102,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/chrome": "^0.0.310",
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.0",
     "@types/mixpanel-browser": "^2.51.0",

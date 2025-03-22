@@ -23,9 +23,9 @@ export interface ExtensionResponse {
  * Message to send to the extension
  */
 export interface ExtensionMessage {
-  type: "API_REQUEST";
-  action: "createSubstackPost";
-  params: [string, number | undefined, boolean | undefined];
+  type: "API_REQUEST" | "PING";
+  action?: "createSubstackPost";
+  params?: [string, number | undefined, boolean | undefined];
 }
 
 /**
