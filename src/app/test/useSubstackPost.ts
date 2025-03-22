@@ -109,32 +109,7 @@ export function useSubstackPost(): UseSubstackPost {
     [sendExtensionMessage],
   );
 
-  const pingExtension = useCallback(async () => {
-    // const message: ExtensionMessage = {
-    //   type: "PING",
-    // };
-    // await sendExtensionMessage(message);
-    try {
-      const response = await axios.post(
-        "https://substack.com/api/v1/comment/feed",
-        {
-          headers: {
-            "content-type": "application/json",
-            Referer: "https://substack.com/home",
-            "Referrer-Policy": "strict-origin-when-cross-origin",
-          },
-          body: '{"bodyJson":{"type":"doc","attrs":{"schemaVersion":"v1"},"content":[{"type":"paragraph","content":[{"type":"text","text":"test"}]}]},"tabId":"for-you","surface":"feed","replyMinimumRole":"everyone"}',
-        },
-      );
-      debugger;
-      console.log("response", response);
-    } catch (error) {
-      console.error("error", error);
-    }
-  }, [sendExtensionMessage]);
-
   return {
-    pingExtension,
     createPost,
     isLoading,
     error,

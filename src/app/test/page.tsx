@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 export default function SubstackPostExample() {
-  const { createPost, isLoading, error, pingExtension } = useSubstackPost();
+  const { createPost, isLoading, error } = useSubstackPost();
   const [loading, setLoading] = useState(false);
   const [loadingPing, setLoadingPing] = useState(false);
   const [message, setMessage] = useState("This is a test from writeroom");
@@ -82,9 +82,6 @@ export default function SubstackPostExample() {
           {isLoading ? "Posting..." : "Post to Substack"}
         </Button>
       </div>
-      <Button onClick={pingExtension} disabled={loadingPing}>
-        {loadingPing ? "Pinging..." : "Ping Extension"}
-      </Button>
     </div>
   );
 }
