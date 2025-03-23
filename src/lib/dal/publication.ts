@@ -154,9 +154,9 @@ export const getAuthorId = async (
 export const getHandleDetails = async (
   authorId: number,
 ): Promise<{ handle: string; name: string; photoUrl: string }> => {
-  const notesFromAuthor = await prismaArticles.notesComments.findMany({
+  const notesFromAuthor = await prismaArticles.byline.findFirstOrThrow({
     where: {
-      authorId: parseInt(authorId.toString()),
+      id: parseInt(authorId.toString()),
       handle: {
         not: "",
       },
@@ -167,18 +167,18 @@ export const getHandleDetails = async (
         not: "",
       },
     },
-    orderBy: {
-      reactionCount: "desc",
-    },
     select: {
       handle: true,
       name: true,
       photoUrl: true,
     },
-    take: 1,
   });
 
-  return { ...notesFromAuthor[0] };
+  return {
+    handle: notesFromAuthor.handle || "",
+    name: notesFromAuthor.name || "",
+    photoUrl: notesFromAuthor.photoUrl || "",
+  };
 };
 
 export const getPublicationArticles = async (publicationId: string) => {
