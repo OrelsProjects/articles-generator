@@ -14,19 +14,16 @@ export async function GET(req: NextRequest) {
 
   const searchParams = req.nextUrl.searchParams;
   const cursor = searchParams.get("cursor");
-  const limit = parseInt(searchParams.get("limit") || "10");
+  const limit = parseInt(searchParams.get("limit") || "20");
 
   try {
-    const now = new Date();
-    const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
     const userNotes = await prisma.note.findMany({
       where: {
         userId: session.user.id,
-        createdAt: {
-          gte: lastWeek,
-        },
         isArchived: false,
+      },
+      orderBy: {
+        updatedAt: "desc",
       },
       take: limit + 1, // Take one extra to know if there are more items
       ...(cursor
@@ -37,9 +34,6 @@ export async function GET(req: NextRequest) {
             skip: 1, // Skip the cursor
           }
         : {}),
-      orderBy: {
-        updatedAt: "desc",
-      },
     });
 
     let nextCursor: string | undefined = undefined;

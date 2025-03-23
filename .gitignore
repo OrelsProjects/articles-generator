@@ -43,3 +43,6 @@ next-env.d.ts
 
 # counter logs
 .VSCodeCounter
+
+# migration api
+/src/app/api/migration/*
