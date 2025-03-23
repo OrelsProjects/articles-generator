@@ -7,11 +7,13 @@ import { ExtensionInstallDialog } from "@/components/notes/extension-install-dia
 import { Note, NoteDraft } from "@/types/note";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
+import { EventTracker } from "@/eventTracker";
 
 interface SubstackPostButtonProps {
   note: Note | NoteDraft | null;
   size?: "sm" | "lg" | "default" | "icon";
   variant?: "ghost" | "default" | "outline";
+  source: string;
   includeText?: boolean;
   tooltipContent?: string;
   className?: string;
@@ -23,6 +25,7 @@ export function SubstackPostButton({
   variant = "ghost",
   tooltipContent = "Post instantly",
   includeText,
+  source,
   className,
 }: SubstackPostButtonProps) {
   const {
@@ -37,7 +40,8 @@ export function SubstackPostButton({
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
 
   const handleSendNote = async () => {
-    if(!note) return;
+    EventTracker.track("note_post_button_clicked_" + source);
+    if (!note) return;
     try {
       await createPost({
         message: note.body,

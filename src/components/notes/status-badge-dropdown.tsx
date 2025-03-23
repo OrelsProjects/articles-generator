@@ -7,6 +7,7 @@ import { NoteDraft, NoteStatus } from "@/types/note";
 import { Check, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { Badge } from "@/components/ui/badge";
+import { EventTracker } from "@/eventTracker";
 
 const STATUSES: NoteStatus[] = ["draft", "ready", "published"];
 
@@ -56,6 +57,11 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
   }, [isOpen]);
 
   const handleStatusChange = async (newStatus: NoteStatus) => {
+    EventTracker.track("note_status_change_via_status_badge", {
+      note_id: note.id,
+      previous_status: currentStatus,
+      new_status: newStatus,
+    });
     if (!onStatusChange || newStatus === currentStatus) return;
     setIsOpen(false);
     let previousStatus = currentStatus;
@@ -90,7 +96,9 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
           },
         )}
       >
-        {isLoading && <Loader2 className="h-2 w-2 md:h-3 md:w-3 animate-spin mr-0.5 md:mr-1" />}
+        {isLoading && (
+          <Loader2 className="h-2 w-2 md:h-3 md:w-3 animate-spin mr-0.5 md:mr-1" />
+        )}
         <span className="hidden md:block">{currentStatus}</span>
         <span className="block md:hidden">
           {currentStatus.charAt(0).toUpperCase() +

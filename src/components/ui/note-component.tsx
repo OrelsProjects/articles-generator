@@ -481,7 +481,12 @@ export default function NoteComponent({ note }: NoteProps) {
         </TooltipButton>
 
         {/* Replace the Substack posting button with the new component */}
-        <SubstackPostButton note={note} size="sm" variant="ghost" />
+        <SubstackPostButton
+          note={note}
+          size="sm"
+          variant="ghost"
+          source="note_component"
+        />
       </div>
     );
 

@@ -710,14 +710,15 @@ export default function GenerateNotesSidebar() {
               </div>
             )}
 
-              <SubstackPostButton
-                note={selectedNote}
-                size="lg"
-                variant="default"
-                tooltipContent="Post note"
-                className="w-full mt-2"
-                includeText
-              />
+            <SubstackPostButton
+              note={selectedNote}
+              size="lg"
+              variant="default"
+              tooltipContent="Post note"
+              className="w-full mt-2"
+              includeText
+              source="generate_notes_sidebar"
+            />
             {/* Generate Notes Button */}
             <Button
               variant="outline"
