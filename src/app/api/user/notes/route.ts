@@ -4,7 +4,7 @@ import { authOptions } from "@/auth/authOptions";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import prisma from "@/app/api/_db/db";
-import { NoteDraft, NoteStatus } from "@/types/note";
+import { NoteDraft } from "@/types/note";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -26,9 +26,7 @@ export async function GET(req: NextRequest) {
         createdAt: {
           gte: lastWeek,
         },
-        status: {
-          not: "archived",
-        },
+        isArchived: false,
       },
       take: limit + 1, // Take one extra to know if there are more items
       ...(cursor

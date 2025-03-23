@@ -166,7 +166,7 @@ export const useNotes = () => {
   );
 
   const updateNoteStatus = useCallback(
-    async (noteId: string, status: NoteStatus) => {
+    async (noteId: string, status: NoteStatus | "archived") => {
       EventTracker.track("notes_update_note_status_" + status);
       const previousStatus = userNotes.find(note => note.id === noteId)?.status;
       if (!previousStatus) {
@@ -182,9 +182,8 @@ export const useNotes = () => {
         } else {
           dispatch(updateNote({ id: noteId, note: { status } }));
         }
-        await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, {
-          status: status,
-        });
+        const body = status === "archived" ? { isArchived: true } : { status };
+        await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
       } catch (error: any) {
         Logger.error("Error updating status:", error);
         dispatch(updateNote({ id: noteId, note: { status: previousStatus } }));

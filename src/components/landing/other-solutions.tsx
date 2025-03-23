@@ -1,16 +1,11 @@
 import {
-  Bell,
   Bot,
-  Box,
-  Brain,
   Building2,
   Clock,
-  Dice1,
-  Dice2,
-  Dices,
-  DollarSign,
   Copy,
   Shuffle,
+  Pen,
+  FileStack,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -23,27 +18,39 @@ interface SolutionCardProps {
 const solutionCards: SolutionCardProps[] = [
   {
     icon: Bot,
-    title: "ChatGPT doesn't understand Substack",
+    title: "ChatGPT is simply not good enough",
     description:
-      "Generic AI tools don't integrate with Substack, forcing you to constantly copy/paste and switch between platforms.",
+      "ChatGPT generates robotic like text that is not good for your community.",
   },
   {
-    icon: Copy,
-    title: "Copy/paste workflow wastes time",
+    icon: FileStack,
+    title: "Docs/Notion/Evernote waste time",
     description:
-      "Keeping all your articles and notes in Google Docs is a pain. The format doesn't work well with Substack and it becomes a mess.",
+      "Keeping all your articles and notes in Google Docs, or making a database in Notion is a mess.",
   },
   {
     icon: Shuffle,
-    title: "Inconsistent newsletter quality",
+    title: "Inconsistent notes quality",
     description:
-      "Without a specialized tool for newsletter writers, your content quality varies wildly from issue to issue.",
+      "Even with a custom GPT, you still have to keep updating it with new information all the time.",
   },
   {
     icon: Clock,
     title: "Hours lost finding inspiration",
     description:
-      "Successful Substack writers earning $1k+/month can't afford to waste time searching for their next great newsletter idea.",
+      "Finding an idea for a new article takes time. And you have to find something that people will actually want to read.",
+  },
+  {
+    icon: Pen,
+    title: "Writing notes every day is hard",
+    description:
+      "Writing notes is the best way to build a community and grow your business. Damn hard to do it a few times a day.",
+  },
+  {
+    icon: Copy,
+    title: "Copy/pastes are a pain",
+    description:
+      "Copying and pasting notes from Google Docs, Notion or Evernote is a time-consuming and the formatting is not always good.",
   },
 ];
 
@@ -66,12 +73,14 @@ export default function OtherSolutions() {
     <div className="landing-section-container bg-muted">
       <div className="mx-auto px-6 md:px-0">
         <div className="landing-section-top">
-          <h3>Post more, in less time</h3>
-          <h2>Building a community is hard enough already</h2>
+          <h2>
+            Building a community is{" "}
+            <span className="text-destructive">hard</span> enough already
+          </h2>
           <p>
-            Writing notes is often overlooked, yet it has one of the highest
-            ROIs to grow your community. WriteRoom helps you write it and manage
-            it efficiently, so you can focus on scaling your business.
+            Posting notes daily, writing an article a week and keeping up with
+            the hottest trends takes a lot of time. And the solutions out there
+            are not built for Substack.
           </p>
         </div>
 

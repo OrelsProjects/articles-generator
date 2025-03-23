@@ -7,15 +7,37 @@ import {
   ExtensionResponse,
   SubstackError,
   UseSubstackPost,
+  BrowserType,
 } from "@/types/useSubstack.type";
 import axios from "axios";
 import { CreatePostResponse } from "@/types/createPostResponse";
 import { Logger } from "@/logger";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { FeatureFlag } from "@prisma/client";
-import { useNotes } from "@/lib/hooks/useNotes";
+
 /**
- * Custom hook for creating Substack posts through a Chrome extension
+ * Detects the current browser type
+ * @returns {BrowserType} The detected browser type
+ */
+const detectBrowser = (): BrowserType => {
+  if (typeof window === "undefined") return "unknown";
+  
+  // Check for Firefox
+  if (typeof window.browser !== "undefined" || 
+      (navigator.userAgent.indexOf("Firefox") !== -1)) {
+    return "firefox";
+  }
+  
+  // Check for Chrome
+  if (typeof chrome !== "undefined" && !!chrome.runtime) {
+    return "chrome";
+  }
+  
+  return "unknown";
+};
+
+/**
+ * Custom hook for creating Substack posts through a browser extension
  * @returns {UseSubstackPost} Hook methods and state
  */
 export function useSubstackPost(): UseSubstackPost {
@@ -25,43 +47,80 @@ export function useSubstackPost(): UseSubstackPost {
   const [postResponse, setPostResponse] = useState<CreatePostResponse | null>(
     null,
   );
-
+  const [browserType, setBrowserType] = useState<BrowserType>("unknown");
+  
   const loadingPing = useRef(false);
 
   const canUseSubstackPost = useMemo(
     () => user?.meta?.featureFlags.includes(FeatureFlag.instantPost),
     [user?.meta?.featureFlags],
   );
+  
+  // Set browser type on client side
+  useMemo(() => {
+    if (typeof window !== "undefined") {
+      setBrowserType(detectBrowser());
+    }
+  }, []);
 
   const verifyExtension = useCallback(async (): Promise<
     "success" | "error" | "pending"
   > => {
-    if (!chrome.runtime) return "error";
+    if (typeof window === "undefined") return "error";
     if (loadingPing.current) return "pending";
+    
     loadingPing.current = true;
     const pingMessage: ExtensionMessage = {
       type: "PING",
     };
+    
     setTimeout(() => {
       loadingPing.current = false;
     }, 5000);
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(
-        process.env.NEXT_PUBLIC_EXTENSION_ID,
-        pingMessage,
-        response => {
-          if (response.success) {
-            resolve("success");
-          } else {
-            Logger.error(
-              "Extension not found" + JSON.stringify(response || ""),
-            );
+    
+    return new Promise((resolve) => {
+      try {
+        // Firefox implementation
+        if (browserType === "firefox" && typeof browser !== "undefined") {
+          browser.runtime.sendMessage(
+            process.env.NEXT_PUBLIC_EXTENSION_ID as string,
+            pingMessage
+          ).then((response: any) => {
+            if (response?.success) {
+              resolve("success");
+            } else {
+              Logger.error("Extension not found in Firefox: " + JSON.stringify(response || ""));
+              resolve("error");
+            }
+          }).catch((err: unknown) => {
+            Logger.error("Firefox extension error: " + JSON.stringify(err));
             resolve("error");
-          }
-        },
-      );
+          });
+        } 
+        // Chrome implementation
+        else if (browserType === "chrome" && typeof chrome !== "undefined" && chrome.runtime) {
+          chrome.runtime.sendMessage(
+            process.env.NEXT_PUBLIC_EXTENSION_ID as string,
+            pingMessage,
+            (response: any) => {
+              if (response?.success) {
+                resolve("success");
+              } else {
+                Logger.error("Extension not found in Chrome: " + JSON.stringify(response || ""));
+                resolve("error");
+              }
+            }
+          );
+        } else {
+          Logger.error("Unsupported browser or extension API not available");
+          resolve("error");
+        }
+      } catch (error) {
+        Logger.error("Extension verify error: " + JSON.stringify(error));
+        resolve("error");
+      }
     });
-  }, []);
+  }, [browserType]);
 
   const sendExtensionMessage = useCallback(
     async (
@@ -71,20 +130,52 @@ export function useSubstackPost(): UseSubstackPost {
         const verificationStatus = await verifyExtension();
         if (verificationStatus === "error") {
           reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
+          return;
         }
         if (verificationStatus === "pending") {
           reject(new Error(SubstackError.PENDING));
+          return;
         }
-        if (verificationStatus === "success") {
-          try {
+        
+        // Set timeout for response
+        const timeoutId = setTimeout(() => {
+          reject(new Error(SubstackError.NETWORK_ERROR));
+        }, 10000); // 10 second timeout
+
+        try {
+          // Firefox implementation
+          if (browserType === "firefox" && typeof browser !== "undefined") {
+            browser.runtime.sendMessage(
+              process.env.NEXT_PUBLIC_EXTENSION_ID as string,
+              { ...message }
+            ).then((response: any) => {
+              clearTimeout(timeoutId);
+              if (response.success) {
+                const result = JSON.parse(response.data.result) as CreatePostResponse;
+                resolve({
+                  success: response.success,
+                  result,
+                  message: response.message,
+                  action: response.action,
+                  error: response.error,
+                });
+              } else {
+                reject(new Error(response.error || SubstackError.UNKNOWN_ERROR));
+              }
+            }).catch((error: unknown) => {
+              clearTimeout(timeoutId);
+              reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
+            });
+          } 
+          // Chrome implementation
+          else if (browserType === "chrome" && typeof chrome !== "undefined" && chrome.runtime) {
             chrome.runtime.sendMessage(
-              process.env.NEXT_PUBLIC_EXTENSION_ID,
+              process.env.NEXT_PUBLIC_EXTENSION_ID as string,
               { ...message },
-              response => {
+              (response: any) => {
+                clearTimeout(timeoutId);
                 if (response.success) {
-                  const result = JSON.parse(
-                    response.data.result,
-                  ) as CreatePostResponse;
+                  const result = JSON.parse(response.data.result) as CreatePostResponse;
                   resolve({
                     success: response.success,
                     result,
@@ -93,24 +184,21 @@ export function useSubstackPost(): UseSubstackPost {
                     error: response.error,
                   });
                 } else {
-                  reject(
-                    new Error(response.error || SubstackError.UNKNOWN_ERROR),
-                  );
+                  reject(new Error(response.error || SubstackError.UNKNOWN_ERROR));
                 }
-              },
+              }
             );
-          } catch (error) {
-            reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
+          } else {
+            clearTimeout(timeoutId);
+            reject(new Error(SubstackError.BROWSER_NOT_SUPPORTED));
           }
+        } catch (error) {
+          clearTimeout(timeoutId);
+          reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
         }
-
-        // Set timeout for response
-        setTimeout(() => {
-          reject(new Error(SubstackError.NETWORK_ERROR));
-        }, 10000); // 10 second timeout
       });
     },
-    [],
+    [browserType, verifyExtension],
   );
 
   /**
@@ -172,5 +260,6 @@ export function useSubstackPost(): UseSubstackPost {
     error,
     postResponse,
     canUseSubstackPost: canUseSubstackPost || false,
+    browserType,
   };
 }

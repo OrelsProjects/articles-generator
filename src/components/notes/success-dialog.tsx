@@ -15,12 +15,14 @@ interface SuccessDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   response: CreatePostResponse | null;
+  onArchiveNote: () => void;
 }
 
 export function SuccessDialog({
   open,
   onOpenChange,
   response,
+  onArchiveNote,
 }: SuccessDialogProps) {
   console.log("Success dialog", open, response);
   const handleViewNote = () => {
@@ -31,6 +33,11 @@ export function SuccessDialog({
       );
       onOpenChange(false);
     }
+  };
+
+  const handleArchiveNote = () => {
+    onArchiveNote();
+    onOpenChange(false);
   };
 
   return (
@@ -46,8 +53,8 @@ export function SuccessDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-end">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Continue
+          <Button variant="ghost" onClick={handleArchiveNote}>
+            Archive note
           </Button>
           <Button onClick={handleViewNote}>View note</Button>
         </DialogFooter>

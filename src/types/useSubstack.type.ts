@@ -1,6 +1,11 @@
 import { CreatePostResponse } from "@/types/createPostResponse";
 
 /**
+ * Supported browser types
+ */
+export type BrowserType = "chrome" | "firefox" | "unknown";
+
+/**
  * Parameters for creating a Substack post
  */
 export interface CreatePostParams {
@@ -47,6 +52,7 @@ export enum SubstackError {
   AUTHENTICATION_ERROR = "Authentication failed",
   INVALID_PARAMETERS = "Invalid parameters provided",
   UNKNOWN_ERROR = "An unknown error occurred",
+  BROWSER_NOT_SUPPORTED = "Browser not supported",
 }
 
 /**
@@ -58,4 +64,5 @@ export interface UseSubstackPost {
   error: string | null;
   postResponse: CreatePostResponse | null;
   canUseSubstackPost: boolean;
+  browserType: BrowserType;
 }

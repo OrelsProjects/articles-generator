@@ -17,7 +17,6 @@ enum NoteStatus {
   draft
   ready
   published
-  archived
 }
 
 enum NoteFeedback {
@@ -255,6 +254,8 @@ model Note {
   feedback        NoteFeedback?
   feedbackComment String?
 
+  isArchived Boolean @default(false)
+
   inspiration String?
 
   authorId Int
@@ -262,7 +263,7 @@ model Note {
   name     String?
 
   initialGeneratingModel String?
-  generatingModel String?
+  generatingModel        String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

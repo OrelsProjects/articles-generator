@@ -41,7 +41,7 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
     const draftNotes = notes.filter(note => note.status === "draft");
     const generatedNotes = notes.filter(note => note.status === "ready");
     const publishedNotes = notes.filter(note => note.status === "published");
-    const archivedNotes = notes.filter(note => note.status === "archived");
+    const archivedNotes = notes.filter(note => note.isArchived);
 
     setColumns([
       {

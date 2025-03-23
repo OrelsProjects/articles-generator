@@ -12,7 +12,7 @@ export interface InspirationFilters {
   type: "all" | "relevant-to-user"
 }
 
-export type NoteStatus = "draft" | "ready" | "published" | "archived";
+export type NoteStatus = "draft" | "ready" | "published";
 export type NoteFeedback = "dislike" | "like";
 
 export type JsonBody = {
@@ -37,6 +37,7 @@ export interface NoteDraft {
   feedbackComment?: string;
   authorName: string;
   attachments?: string[];
+  isArchived?: boolean;
 }
 
 export interface Note {

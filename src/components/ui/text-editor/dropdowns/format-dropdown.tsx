@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { Editor } from "@tiptap/react";
 import { Loader2, Sparkles, Send, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -9,7 +8,6 @@ import { MotionTooltipButton } from "@/components/ui/motion-components";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { INFINITY } from "@/lib/plans-consts";
-import { useSettings } from "@/lib/hooks/useSettings";
 import { Textarea } from "@/components/ui/textarea";
 
 // React node with onClick

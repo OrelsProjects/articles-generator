@@ -65,6 +65,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { copyHTMLToClipboard } from "@/lib/utils/copy";
+import { SubstackPostButton } from "@/components/notes/substack-post-button";
 
 // Define frontend model type
 type FrontendModel =
@@ -465,7 +466,6 @@ export default function GenerateNotesSidebar() {
                 New draft
               </Button>
             </div>
-
             {/* Editor */}
             <div className="min-h-[180px] md:min-h-[200px] w-full border border-border rounded-md relative">
               {editor && (
@@ -640,7 +640,6 @@ export default function GenerateNotesSidebar() {
                 </div>
               </div>
             </div>
-
             {/* Model Selection Dropdown */}
             {hasAdvancedGPT && (
               <div className="mt-6 mb-2">
@@ -711,8 +710,17 @@ export default function GenerateNotesSidebar() {
               </div>
             )}
 
+              <SubstackPostButton
+                note={selectedNote}
+                size="lg"
+                variant="default"
+                tooltipContent="Post note"
+                className="w-full mt-2"
+                includeText
+              />
             {/* Generate Notes Button */}
             <Button
+              variant="outline"
               className="w-full mt-2 mb-6 md:mb-0"
               onClick={handleGenerateNewNote}
               disabled={loadingGenerateNewIdea}
@@ -730,7 +738,7 @@ export default function GenerateNotesSidebar() {
       <ToastStepper
         loadingStates={ideaLoadingStates}
         loading={loadingGenerateNewIdea}
-        duration={5000}
+        duration={7500}
         loop={false}
         position="bottom-left"
       />

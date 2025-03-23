@@ -114,7 +114,7 @@ export default function NotesPage() {
               {loadingCreateNote && (
                 <RefreshCw className="h-4 w-4 animate-spin mr-2" />
               )}
-              Generate notes (3 credits)
+              Generate notes (3)
             </Button>
           </div>
         ) : (

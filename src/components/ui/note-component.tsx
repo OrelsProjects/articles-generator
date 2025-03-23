@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
-import { convertMDToHtml, Note, NoteDraft, NoteFeedback } from "@/types/note";
+import {
+  convertMDToHtml,
+  Note,
+  NoteDraft,
+  NoteFeedback,
+  NoteStatus,
+} from "@/types/note";
 import {
   Heart,
   MessageCircle,
@@ -10,6 +16,7 @@ import {
   ThumbsDown,
   X,
   Archive,
+  Loader2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,6 +36,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SubstackPostButton } from "@/components/notes/substack-post-button";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import StatusBadgeDropdown from "@/components/notes/status-badge-dropdown";
 
 // Define feedback options
 const FEEDBACK_OPTIONS = [
@@ -50,6 +65,13 @@ type DislikeFeedbackPopoverProps = {
   isLoading: boolean;
   feedback: NoteFeedback | null | undefined;
   disabled?: boolean;
+};
+
+const STATUSES: NoteStatus[] = ["draft", "ready", "published"];
+
+type StatusBadgeProps = {
+  note: NoteDraft;
+  onStatusChange?: (newStatus: NoteStatus) => Promise<void>;
 };
 
 const DislikeFeedbackPopover = ({
@@ -401,6 +423,15 @@ export default function NoteComponent({ note }: NoteProps) {
     }
   };
 
+  const handleStatusChange = async (newStatus: NoteStatus) => {
+    try {
+      await updateNoteStatus(note.id, newStatus);
+      return Promise.resolve();
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  };
+
   const NotesActions = () =>
     isUserNote && (
       <div className={cn("w-full flex items-center justify-between")}>
@@ -483,13 +514,21 @@ export default function NoteComponent({ note }: NoteProps) {
           <div className="w-full flex-col items-start gap-4 transition-opacity duration-200">
             <div
               className={cn(
-                "w-full flex justify-between border-b border-border/60 p-2",
+                "w-full flex justify-between border-b border-border/60 p-2 relative",
                 {
                   "opacity-60": feedback === "dislike",
                 },
               )}
             >
               <Author />
+              <div className="z-30 relative my-auto">
+                {isUserNote && (
+                  <StatusBadgeDropdown
+                    note={note as NoteDraft}
+                    onStatusChange={handleStatusChange}
+                  />
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 {/* date */}
                 <p className="text-xs text-muted-foreground">

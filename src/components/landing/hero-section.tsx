@@ -64,8 +64,8 @@ export const HeroSection = () => (
           {/* Feature list */}
           <ul className="w-full flex gap-2 justify-center">
             {[
-              "SEARCH VIRAL NOTES FOR IDEAS",
-              "WRITTEN DRAFT IN SECONDS",
+              "VIRAL NOTES RESEARCH TOOL",
+              "PERSONALIZED NOTES",
               "AI-ASSISTED TEXT-EDITOR",
             ].map((feature, index) => (
               <li

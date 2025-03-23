@@ -84,6 +84,6 @@ export const createNote = async (note: CreateNote): Promise<Note> => {
 export const archiveNote = async (noteId: string) => {
   await prisma.note.update({
     where: { id: noteId },
-    data: { status: "archived" },
+    data: { isArchived: true },
   });
 };

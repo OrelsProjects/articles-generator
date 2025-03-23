@@ -6,11 +6,13 @@ import { SuccessDialog } from "@/components/notes/success-dialog";
 import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
 import { Note, NoteDraft } from "@/types/note";
 import { useNotes } from "@/lib/hooks/useNotes";
+import { cn } from "@/lib/utils";
 
 interface SubstackPostButtonProps {
-  note: Note | NoteDraft;
+  note: Note | NoteDraft | null;
   size?: "sm" | "lg" | "default" | "icon";
   variant?: "ghost" | "default" | "outline";
+  includeText?: boolean;
   tooltipContent?: string;
   className?: string;
 }
@@ -20,6 +22,7 @@ export function SubstackPostButton({
   size = "sm",
   variant = "ghost",
   tooltipContent = "Post instantly",
+  includeText,
   className,
 }: SubstackPostButtonProps) {
   const {
@@ -34,6 +37,7 @@ export function SubstackPostButton({
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
 
   const handleSendNote = async () => {
+    if(!note) return;
     try {
       await createPost({
         message: note.body,
@@ -49,6 +53,7 @@ export function SubstackPostButton({
   };
 
   const handleOpenChangeSuccessDialog = (open: boolean) => {
+    if (!note) return;
     setShowSuccessDialog(open);
     if (!open) {
       updateNoteStatus(note.id, "published");
@@ -65,21 +70,31 @@ export function SubstackPostButton({
         tooltipContent={tooltipContent}
         variant={variant}
         size={size}
-        disabled={loadingSendNote}
+        disabled={loadingSendNote || !note}
         onClick={handleSendNote}
-        className={className}
+        className={cn(
+          {
+            "flex gap-2": includeText,
+          },
+          className,
+        )}
       >
         {loadingSendNote ? (
           <RefreshCw className="h-4 w-4 animate-spin" />
         ) : (
           <Send className="h-4 w-4" />
         )}
+        {includeText && "Post note"}
       </TooltipButton>
 
       <SuccessDialog
         open={showSuccessDialog}
         onOpenChange={handleOpenChangeSuccessDialog}
         response={postResponse}
+        onArchiveNote={() => {
+          if (!note) return;
+          updateNoteStatus(note.id, "archived");
+        }}
       />
 
       <ExtensionInstallDialog

@@ -33,12 +33,12 @@ export const initEventTracker = () => {
   try {
     const env = process.env.NODE_ENV;
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_API_KEY || "", {
-      debug: env !== "production",
+      // debug: env !== "production",
       api_host: "https://app.posthog.com",
       disable_session_recording: env !== "production",
     });
     mixpanel.init(process.env.NEXT_PUBLIC_EVENT_TRACKER_TOKEN || "", {
-      debug: env !== "production",
+      // debug: env !== "production",
       track_pageview: true,
       persistence: "localStorage",
       record_sessions_percent: 100,

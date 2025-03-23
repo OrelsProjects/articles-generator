@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       handle: handle,
       generatingModel: null,
       initialGeneratingModel: null,
+      isArchived: false,
       ...newNoteDraft,
       authorId: newNoteDraft?.authorId || authorId || 0,
     };
