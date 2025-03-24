@@ -23,6 +23,7 @@ export default function InspirationGrid() {
     filters,
     updateFilters,
     loadMore,
+    fetchInspirationNotes,
     hasMoreInspirationNotes,
   } = useInspiration();
   const { hasAdvancedFiltering } = useUi();
@@ -34,6 +35,13 @@ export default function InspirationGrid() {
 
   const shouldShowError = error && !notes.length;
   const shouldShowLoading = loading && !notes.length;
+
+  const hasFilters =
+    filters.keyword ||
+    filters.dateRange ||
+    filters.minComments ||
+    filters.minRestacks ||
+    filters.minLikes;
 
   const handleLoadMore = async () => {
     if (loadingMore) return;
@@ -221,14 +229,17 @@ export default function InspirationGrid() {
                   No notes found
                 </h3>
                 <p className="text-muted-foreground mb-8">
-                  Be the first to create a note and share your thoughts!
+                  {hasFilters
+                    ? "Try changing the filters to find more notes"
+                    : "Something probably went wrong. Try again."}
                 </p>
-                <Link
-                  href="/notes/new"
+                <Button
+                  variant="ghost"
+                  onClick={() => fetchInspirationNotes()}
                   className="px-6 py-3 bg-primary text-foreground rounded-md hover:bg-primary/90 transition-colors"
                 >
-                  Create Note
-                </Link>
+                  Try again
+                </Button>
               </div>
             )}
           </ScrollArea>

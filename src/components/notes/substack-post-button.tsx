@@ -57,16 +57,13 @@ export function SubstackPostButton({
   };
 
   const handleOpenChangeSuccessDialog = (open: boolean) => {
+    debugger;
     if (!note) return;
     setShowSuccessDialog(open);
     if (!open) {
       updateNoteStatus(note.id, "published");
     }
   };
-
-  // if (!canUseSubstackPost) {
-  //   return null;
-  // }
 
   return (
     <>

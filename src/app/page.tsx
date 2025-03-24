@@ -34,6 +34,7 @@ import { UsedByTopCreators } from "@/components/landing/used-by-top-creators";
 import ProductHighlightSection from "@/components/landing/product-highlight-section";
 import FeaturesSection from "@/components/landing/features-section";
 import WhyNotesSection from "@/components/landing/why-notes-section";
+import { MasonryGrid } from "@/components/ui/masonry-grid";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
 
@@ -238,36 +239,51 @@ function App() {
               Join successful Substack writers who are growing their audience
               and income with {appName}
             </p>
-            <div className="grid md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <div key={index} className="bg-card p-6 rounded-lg shadow-sm">
-                  <div className="flex items-center mb-4">
-                    {[1, 2, 3, 4, 5].map(i => (
-                      <svg
-                        key={i}
-                        className="w-5 h-5 text-yellow-400"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p
-                    className="text-muted-foreground mb-4"
-                    dangerouslySetInnerHTML={{
-                      __html: testimonial.quote,
-                    }}
-                  />
-                  <div>
-                    <div className="font-semibold">{testimonial.author}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {testimonial.title}
+            <MasonryGrid
+              cards={testimonials.map((testimonial, index) => ({
+                id: index,
+                content: (
+                  <div className="p-6">
+                    <div className="flex items-center mb-4">
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <svg
+                          key={i}
+                          className="w-5 h-5 text-yellow-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <p
+                      className="text-muted-foreground mb-4"
+                      dangerouslySetInnerHTML={{
+                        __html: testimonial.quote,
+                      }}
+                    />
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={testimonial.image}
+                        alt={testimonial.author}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <div>
+                        <div className="font-semibold">
+                          {testimonial.author}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {testimonial.title}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ),
+                className: "bg-card rounded-lg shadow-sm",
+              }))}
+              columns={3}
+              gap={8}
+            />
           </div>
         </motion.section>
 
@@ -407,13 +423,16 @@ and the exciting part is the AI assistant that helps me using my exact writing s
 <br/><br/>
 And what I like about it is just how easy it is to copy and paste the results into my substack writer tool.`,
     author: "MacDaniel Chimedza",
-    title: "Substack writer",
+    image: "/testimonials/macdaniel-chimedza.png",
+    title: "Author of The Weekly Mindset",
   },
   {
-    quote:
-      "Finally, an AI tool that integrates with Substack and assists without replacing my writing voice.",
-    author: "David W.",
-    title: "Tech Newsletter, $1.8K/month",
+    quote: `WriteRoom allowed me to finally find my voice on Substack Notes, one that I'm satisfied with and I feel like. 
+      <br/><br/> It resonates with readers.
+      <br/><br/> It's also extremely easy to use, so it lets me post multiple notes a day, even if I have little to no time`,
+    author: "Kacper Wojaczek",
+    image: "/testimonials/kacper-wojaczek.png",
+    title: "Author of Scramble IT",
   },
   {
     quote:

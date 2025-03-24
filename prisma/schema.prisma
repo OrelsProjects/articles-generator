@@ -179,14 +179,15 @@ model PublicationMetadata {
   title          String?
   description    String?
 
-  generatedDescription  String?
-  generatedAboutGeneral String?
-  writingStyle          String?
-  topics                String?
-  personality           String?
-  specialEvents         String?
-  privateLife           String?
-  highlights            String?
+  generatedDescription          String?
+  generatedDescriptionForSearch String?
+  generatedAboutGeneral         String?
+  writingStyle                  String?
+  topics                        String?
+  personality                   String?
+  specialEvents                 String?
+  privateLife                   String?
+  highlights                    String?
 
   // User-defined publication settings
   preferredTopics       String[]  @default([])

@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
         noteTopics: descriptionObject.noteTopics,
       },
     });
+    
     return NextResponse.json({
       success: true,
       descriptionObject,

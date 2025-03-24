@@ -1,220 +1,146 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Brain, Pen, Folders, DollarSign, Users } from "lucide-react";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
-import useMediaQuery from "@/lib/hooks/useMediaQuery";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
-const SubstackLogo = ({ className }: { className?: string }) => (
-  <div className={cn("bg-primary rounded-lg p-1", className)}>
-    <Image
-      src="/landing/substack-logo-white.png"
-      alt="Substack Logo"
-      fill
-      className={cn("!relative object-contain")}
-    />
-  </div>
-);
-const features = [
-  {
-    title: "Newsletter idea generation",
-    description:
-      "Never stare at a blank page again. Get unique ideas, customized titles and outlines suggestions <strong>based on millions of the best Substack newsletters in your niche</strong>. Perfect for writers with <strong>20+ published newsletters</strong>.",
-    icon: Brain,
-    videoUrl:
-      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/generate-ideas.mp4",
-    objectFit: "fit",
-  },
-  {
-    title: "Direct Substack integration",
-    description:
-      "No more copying and pasting between ChatGPT and Substack. Write, enhance, and publish—all in one place. <strong>Save hours every week</strong> with our seamless workflow.",
-    icon: SubstackLogo,
-    videoUrl:
-      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/substack-adjusted-full.mp4",
-    objectFit: "cover",
-  },
-  {
-    title: "AI assistance that preserves your voice",
-    description:
-      "Refine your tone, improve readability, and add details without losing your unique writing style. <strong>Grow your audience</strong> with consistently high-quality newsletters.",
-    icon: Pen,
-    videoUrl:
-      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/ai-assistance.mp4",
-    objectFit: "fit",
-  },
-  {
-    title: "Audience & income growth tools",
-    description: `Specifically designed for Substack writers earning <strong>$1k+/month</strong> who want to scale their newsletter business. Our tools help you <strong>increase subscriber engagement</strong> and <strong>boost your monthly income</strong>.`,
-    icon: DollarSign,
-    videoUrl:
-      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/organized-folders.mp4",
-    objectFit: "fit",
-  },
-];
+interface FeatureSectionProps {
+  src: string;
+  title: string;
+  description: string;
+  direction?: "ltr" | "rtl";
+}
 
-function FeatureCard({
-  feature,
-  isReversed = false,
-  isMobile = false,
-}: {
-  feature: any;
-  isReversed: boolean;
-  isMobile: boolean;
-}) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const mediaRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const {
-    title,
-    description,
-    icon: Icon,
-    imageUrl,
-    videoUrl,
-    objectFit = "cover",
-  } = feature;
+const itemVariants = {
+  hidden: { opacity: 0, y: 300 },
+  visible: { opacity: 1, y: 0 },
+};
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            setTimeout(() => {
-              videoRef.current?.play();
-            }, 200);
+const itemVariantsMobile = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 10 },
+};
 
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      {
-        threshold: isMobile ? 0.3 : 0.4,
-        rootMargin: isMobile ? "-30%" : "0px 0px -40% 0px",
-      },
-    );
-
-    if (mediaRef.current) {
-      observer.observe(mediaRef.current);
-    }
-
-    return () => {
-      if (mediaRef.current) {
-        observer.unobserve(mediaRef.current);
-      }
-    };
-  }, [isMobile]);
-
-  // set video speed to 1.5
-  useEffect(() => {
-    if (videoUrl) {
-      if (videoRef.current) {
-        videoRef.current.playbackRate = 1.5;
-      }
-    }
-  }, [videoUrl]);
-
+function FeatureSectionCard({
+  src,
+  title,
+  description,
+  direction = "ltr",
+}: FeatureSectionProps) {
   return (
     <div
-      ref={cardRef}
       className={cn(
-        "w-full overflow-clip flex flex-col lg:flex-row lg:justify-between items-center gap-8 p-6 rounded-2xl bg-gradient-to-tl from-primary/15 to-background backdrop-blur-lg",
-        isReversed ? "lg:flex-row-reverse bg-gradient-to-tr" : "",
+        "relative grid items-center gap-6 lg:grid-cols-2 lg:gap-12 px-6 rounded-t-lg border border-primary/15 overflow-clip py-12 rounded-xl",
+        {
+          "rounded-bl-lg": direction === "ltr",
+          "rounded-br-lg": direction === "rtl",
+        },
       )}
     >
-      <div className="flex-1 space-y-4">
-        <div className="flex items-center gap-3">
-          <Icon className="!w-6 !h-6 text-primary" />
-          <h3 className="text-2xl font-semibold text-primary">{title}</h3>
-        </div>
-        <p
-          className="text-muted-foreground leading-relaxed"
-          dangerouslySetInnerHTML={{
-            __html: description,
-          }}
-        />
+      {/* <img
+        src={
+          direction === "rtl"
+            ? "/landing/feature-background-flip.png"
+            : "/landing/feature-background.png"
+        }
+        alt="feature background"
+        className={cn(
+          "absolute inset-0 w-full h-full object-cover z-50 opacity-20",
+        )}
+      /> */}
+      {/* {direction === "rtl" ? (
+        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_bottom_right,_hsla(24.6,95%,53.1%,0.15),_transparent,_transparent)] z-20"></div>
+      ) : (
+        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_bottom_left,_hsla(24.6,95%,53.1%,0.15),_transparent,_transparent)] z-20"></div>
+      )} */}
+
+      <div
+        className={cn(
+          "space-y-4 mb-16",
+          direction === "rtl" && "lg:order-last",
+        )}
+      >
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          {title}
+        </h2>
+        <p className="text-foreground font-thin">{description}</p>
       </div>
-      <div ref={mediaRef}>
+      <div
+        className={cn(
+          "relative w-fit",
+          direction === "rtl" && "lg:order-first",
+        )}
+      >
         <motion.div
-          initial={{ opacity: 0, scale: 0.8, y: 100 }}
-          animate={{
-            opacity: isVisible ? 1 : 0,
-            scale: isVisible ? 1 : 0.8,
-            y: isVisible ? 0 : 100,
-          }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className="bg-white rounded-lg w-[330px] h-[200px] md:w-[430px] md:h-[300px] flex justify-center items-center"
+          variants={itemVariants}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          initial="hidden"
+          whileInView="visible"
+          className="hidden sm:block max-w-[490px] max-h-[646px] rounded-2xl bg-primary/5 border border-primary/30 p-10"
         >
-          {videoUrl ? (
-            <video
-              ref={videoRef}
-              id={`${title}-video`}
-              src={videoUrl}
-              muted
-              loop
-              playsInline
-              className={cn(
-                "rounded-lg w-[330px] h-[200px] md:w-[430px] md:h-[300px] object-fit",
-                {
-                  "!object-cover": objectFit === "cover",
-                },
-              )}
-              style={{ opacity: isVisible ? 1 : 0 }}
-            />
-          ) : imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={title}
-              className={cn(
-                "rounded-lg w-[330px] h-[200px] md:w-[430px] md:h-[300px] object-fit",
-                {
-                  "!object-cover": objectFit === "cover",
-                },
-              )}
-              style={{ opacity: isVisible ? 1 : 0 }}
-            />
-          ) : null}
+          <Image
+            src={src || "/placeholder.svg"}
+            alt={title}
+            width={500}
+            height={370}
+            className="rounded-2xl"
+          />
+        </motion.div>
+        <motion.div
+          variants={itemVariantsMobile}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          initial="hidden"
+          whileInView="visible"
+          className="block sm:hidden rounded-2xl"
+        >
+          <Image
+            src={src || "/placeholder.svg"}
+            alt={title}
+            width={500}
+            height={370}
+            className="rounded-2xl"
+          />
         </motion.div>
       </div>
     </div>
   );
 }
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.3,
+    },
+  },
+};
 
-function ProductHighlightSection() {
-  const isMobile = useMediaQuery("(max-width: 768px)");
-
+export default function FeatureSection() {
   return (
-    <section
-      id="features"
-      className="landing-section-container bg-background rounded-[3rem] shadow-[0_0_10px_rgba(0,0,0,0.2)]"
+    <motion.section
+      className="w-full min-h-screen flex flex-col justify-start items-center gap-12 bg-background py-12 relative px-6 md:px-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
     >
-      <div className="mx-auto md:px-0 relative">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
-            Powerful features for serious Substack writers
-          </h2>
-          <p>
-            Everything you&apos;ll need, from advanced research tools to very
-            personalized notes generation
-            <br /> with WriteRoom AI that&apos;s trained on over{" "}
-            <span className="font-bold">3 million notes</span>.
-          </p>
-        </div>
-
-        {/* <div className="w-full space-y-12">
-          {features.map((feature, index) => (
-            <FeatureCard
-              key={feature.title}
-              feature={feature}
-              isReversed={index % 2 !== 0}
-              isMobile={isMobile}
-            />
-          ))}
-        </div> */}
-      </div>
-    </section>
+      <motion.div className="landing-section-container flex flex-col gap-12">
+        <FeatureSectionCard
+          src="/landing/graphs/graph-average-time-to-complete.png"
+          title="Webhook completion time insights"
+          description="Gain insights into the average time it takes for your webhooks to complete. Identify slow-performing webhooks and optimize processing to improve overall efficiency."
+          direction="ltr"
+        />
+        <FeatureSectionCard
+          src="/landing/graphs/graph-webhooks-sent-over-time.png"
+          title="Webhook activity trends"
+          description="Visualize the volume of webhooks sent over time to detect peak activity periods and usage patterns. Use this data to better plan resource allocation and ensure system stability during high-traffic times."
+          direction="rtl"
+        />
+        <FeatureSectionCard
+          src="/landing/features/advanced-filtering.png"
+          title="Advanced filtering"
+          description="Filter webhooks by status, response time, and more to quickly identify issues and improve reliability. Stay informed and proactive in resolving problems to ensure seamless user experiences."
+          direction="ltr"
+        />
+      </motion.div>
+    </motion.section>
   );
 }
-
-export default ProductHighlightSection;

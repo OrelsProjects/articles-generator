@@ -119,10 +119,15 @@ function FeatureCard({
     <div
       ref={cardRef}
       className={cn(
-        "w-full overflow-clip flex flex-col lg:flex-row lg:justify-between items-center gap-8 p-6 rounded-2xl bg-gradient-to-tl from-primary/15 to-background backdrop-blur-lg",
+        "w-full overflow-clip flex flex-col lg:flex-row lg:justify-between items-center gap-8 p-6 rounded-2xl relative",
         isReversed ? "lg:flex-row-reverse bg-gradient-to-tr" : "",
       )}
     >
+      {isReversed ? (
+        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_bottom_right,_hsla(24.6,95%,53.1%,0.15),_transparent,_transparent)] z-20"></div>
+      ) : (
+        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_bottom_left,_hsla(24.6,95%,53.1%,0.15),_transparent,_transparent)] z-20"></div>
+      )}
       <div className="flex-1 space-y-4">
         <div className="flex items-center gap-3">
           <Icon className="!w-6 !h-6 text-primary" />

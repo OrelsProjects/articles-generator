@@ -226,7 +226,7 @@ export function InspirationFilterDialog({
                   >
                     Relevant to me
                   </SelectItem>
-                  <SelectItem value="all">All posts</SelectItem>
+                  <SelectItem value="all">Exact match (includes)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

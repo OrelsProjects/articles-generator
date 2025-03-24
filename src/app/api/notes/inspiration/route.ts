@@ -94,16 +94,16 @@ export async function POST(req: NextRequest) {
     const query =
       filters.keyword ||
       `
-    ${publication.generatedDescription}
+    ${publication.generatedDescriptionForSearch || publication.generatedDescription}
      `;
 
     const shouldMilvusSearch = filters.type === "relevant-to-user";
 
     const likes = filters.minLikes;
-    const minLikes = likes ? likes : 200;
+    const minLikes = likes ? likes : 50;
     const extraMinLikes = likes ? likes : 0;
     const minRandom = likes ? Math.random() / 2 : Math.random();
-    const maxLikes = likes ? likes * 2 : 3000;
+    const maxLikes = likes ? likes * 2 : 5000;
     const extraMaxLikes = likes ? likes * 2 : 0;
     const maxRandom = likes ? Math.random() / 10 : Math.random();
 
@@ -120,11 +120,6 @@ export async function POST(req: NextRequest) {
         leftSideValue: "reaction_count",
         rightSideValue: randomMaxReaction.toString(),
         operator: "<=",
-      },
-      {
-        leftSideValue: "id",
-        rightSideValue: `["${existingNotesIds.join('","')}"]`,
-        operator: "not in",
       },
     ];
 

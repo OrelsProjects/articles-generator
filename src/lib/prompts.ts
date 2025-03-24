@@ -119,6 +119,37 @@ export const generateOutlinePrompt = (
   },
 ];
 
+export const generateVectorSearchOptimizedDescriptionPrompt = (
+  publication: PublicationMetadata,
+) => [
+  {
+    role: "system",
+    content: `
+          You are an expert in transforming user descriptions into concise, keyword-laden text suited for vector/semantic search.
+
+          **Goals & Requirements**:
+          1. Create a concise, single-paragraph summary of the user’s description, focusing on essential expertise, services, and relevant skills.
+          2. Eliminate or minimize personal anecdotes, private life events, and specific dates (unless they are crucial to the user’s professional identity).
+          3. Remove or generalize any mentions of specific names (authors, products, brands), personal anecdotes, dates, or platform references (including "Substack" or "newsletter").
+          4. **Never** use the word “Substack.” If the raw description includes “Substack,” replace it with “newsletter.”
+          5. Incorporate industry-relevant keywords (e.g., SaaS, marketing, solopreneur, accountability apps, etc.) that the user might want to rank for.
+          6. Favor clarity, brevity, and high-value phrasing over storytelling fluff.
+          7. Maintain a natural, human-like tone—avoid robotic or overly formal language.
+          8. Return exactly **one JSON object** with a single key: "optimizedDescription". The value should be the transformed description string, and **nothing else**.
+
+          **Response Format**:
+          {
+            "optimizedDescription": "<Transformed description text>"
+          }
+    `,
+  },
+  {
+    role: "user",
+    content: `
+    ${publication.generatedDescription}
+    `,
+  },
+];
 export const generateIdeasPrompt = (
   publication: PublicationMetadata,
   topArticles: ArticleWithBody[],

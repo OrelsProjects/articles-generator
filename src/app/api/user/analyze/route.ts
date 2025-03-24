@@ -1,7 +1,10 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { extractContent } from "@/app/api/user/analyze/_utils";
 import { authOptions } from "@/auth/authOptions";
-import { generateDescriptionPrompt } from "@/lib/prompts";
+import {
+  generateDescriptionPrompt,
+  generateVectorSearchOptimizedDescriptionPrompt,
+} from "@/lib/prompts";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { runPrompt } from "@/lib/open-router";
@@ -236,6 +239,23 @@ export async function POST(req: NextRequest) {
         }),
       });
     }
+
+    const generatedDescriptionForSearch = await runPrompt(
+      generateVectorSearchOptimizedDescriptionPrompt(publicationMetadata),
+      "anthropic/claude-3.7-sonnet",
+    );
+
+    const parsedGeneratedDescriptionForSearch = await parseJson<{
+      optimizedDescription: string;
+    }>(generatedDescriptionForSearch);
+
+    await prisma.publicationMetadata.update({
+      where: { id: publication.id },
+      data: {
+        generatedDescriptionForSearch:
+          parsedGeneratedDescriptionForSearch.optimizedDescription,
+      },
+    });
 
     return NextResponse.json({
       publication,
