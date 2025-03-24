@@ -24,7 +24,7 @@ export function SuccessDialog({
   response,
   onArchiveNote,
 }: SuccessDialogProps) {
-  console.log("Success dialog", open, response);
+  
   const handleViewNote = () => {
     if (response) {
       window.open(
