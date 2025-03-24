@@ -38,8 +38,19 @@ import { MasonryGrid } from "@/components/ui/masonry-grid";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
 
-const DividerPrimary = ({ children }: { children: React.ReactNode }) => (
-  <div className="w-full h-fit md:min-h-[400px] bg-primary flex justify-center items-center">
+const DividerPrimary = ({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) => (
+  <div
+    className={cn(
+      "w-full h-fit md:min-h-[400px] bg-primary flex justify-center items-center",
+      className,
+    )}
+  >
     {children}
   </div>
 );
@@ -162,41 +173,6 @@ function App() {
           <UsedByTopCreators />
         </DividerPrimary>
         {/* Social Proof Banner */}
-        {/* <motion.section
-        className="py-6 bg-primary/10"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-lg font-medium">
-            <span className="font-bold">1,000+ Substack writers</span> with <span className="font-bold">20+ published newsletters</span> trust {appName}
-          </p>
-          <div className="flex justify-center gap-8 mt-4">
-            <div className="flex items-center">
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full bg-primary/20 border-2 border-background flex items-center justify-center text-xs font-bold">
-                    {i}
-                  </div>
-                ))}
-              </div>
-              <span className="ml-2 text-sm font-medium">Earning $1k+/month</span>
-            </div>
-            <div className="flex items-center">
-              <div className="flex items-center">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-                <span className="ml-1 text-sm font-medium">4.9/5 (87 reviews)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.section> */}
         <OtherSolutions />
         <DividerPrimary>
           <h2 className="text-center text-primary-foreground text-[56px] leading-[4rem] font-bold">
@@ -222,46 +198,25 @@ function App() {
           </h2>
         </DividerPrimary>
         <WhyNotesSection />
+        <DividerPrimary>
+          <h2 className="text-center text-primary-foreground text-[56px] leading-[4rem] font-bold">
+            <span className="text-orange-950">Need more</span> than notes?
+          </h2>
+        </DividerPrimary>
         <FeaturesSection />
         {/* Testimonials Section */}
-        <motion.section
-          className="landing-section-container bg-muted p-24"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          viewport={{ once: true }}
-        >
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
-              Writers Love {appName}—Here&apos;s Why
+        <DividerPrimary>
+          <div className="container mx-auto py-24">
+            <h2 className="text-center text-primary-foreground text-[56px] leading-[4rem] font-bold mb-12">
+              <span className="text-orange-950">
+                How they are growing their audience with {appName}
+              </span>
             </h2>
-            <p className="text-xl text-center text-muted-foreground mb-16 max-w-3xl mx-auto">
-              Join successful Substack writers who are growing their audience
-              and income with {appName}
-            </p>
             <MasonryGrid
               cards={testimonials.map((testimonial, index) => ({
                 id: index,
                 content: (
-                  <div className="p-6">
-                    <div className="flex items-center mb-4">
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <svg
-                          key={i}
-                          className="w-5 h-5 text-yellow-400"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
-                    </div>
-                    <p
-                      className="text-muted-foreground mb-4"
-                      dangerouslySetInnerHTML={{
-                        __html: testimonial.quote,
-                      }}
-                    />
+                  <div className="p-6 flex flex-col gap-4 shadow-lg">
                     <div className="flex items-center gap-2">
                       <img
                         src={testimonial.image}
@@ -277,46 +232,42 @@ function App() {
                         </div>
                       </div>
                     </div>
+                    <p
+                      className="text-foreground mb-4"
+                      dangerouslySetInnerHTML={{
+                        __html: testimonial.quote,
+                      }}
+                    />
                   </div>
                 ),
-                className: "bg-card rounded-lg shadow-sm",
+                className: "bg-card rounded-lg shadow-lg",
               }))}
               columns={3}
               gap={8}
             />
           </div>
-        </motion.section>
+        </DividerPrimary>
 
         {/* Pricing Section */}
         <Pricing className="bg-background" />
 
         {/* FAQ Section */}
-        <motion.section
-          id="faq"
-          className="py-20 bg-muted"
-          variants={gentleFadeIn}
-          {...gentleFadeInTransition}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
-        >
-          <div className="max-w-3xl mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl text-center font-bold tracking-tight text-foreground sm:text-5xl mb-4">
-                Frequently Asked Questions
-              </h2>
-              <p className="text-muted-foreground/80 text-center text-2xl font-normal">
-                (Based on actual users feedback)
-              </p>
+        <motion.section id="faq" className="bg-muted">
+          <div className="landing-section-container">
+            <div className="max-w-3xl mx-auto px-4">
+              <div className="text-center mb-16">
+                <h2>Frequently Asked Questions</h2>
+                <p>Based on actual users feedback</p>
+              </div>
+              <Accordion type="single" collapsible className="space-y-4">
+                {faq.map((item, index) => (
+                  <AccordionItem key={index} value={`item-${index}`}>
+                    <AccordionTrigger>{item.question}</AccordionTrigger>
+                    <AccordionContent>{item.answer}</AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </div>
-            <Accordion type="single" collapsible className="space-y-4">
-              {faq.map((item, index) => (
-                <AccordionItem key={index} value={`item-${index}`}>
-                  <AccordionTrigger>{item.question}</AccordionTrigger>
-                  <AccordionContent>{item.answer}</AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
           </div>
         </motion.section>
 
@@ -433,12 +384,6 @@ And what I like about it is just how easy it is to copy and paste the results in
     author: "Kacper Wojaczek",
     image: "/testimonials/kacper-wojaczek.png",
     title: "Author of Scramble IT",
-  },
-  {
-    quote:
-      "This tool is a must-have for serious Substack writers with 20+ posts who want to scale their income.",
-    author: "Mark T.",
-    title: "Newsletter Writer, $3.5K/month",
   },
 ];
 

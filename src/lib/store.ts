@@ -7,8 +7,32 @@ import settingsReducer from "@/lib/features/settings/settingsSlice";
 import notesReducer from "@/lib/features/notes/notesSlice";
 import inspirationReducer from "@/lib/features/inspiration/inspirationSlice";
 
+// Load UI state from localStorage
+const loadUiState = () => {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const serializedState = localStorage.getItem("uiState");
+    if (serializedState === null) return undefined;
+    return JSON.parse(serializedState);
+  } catch (err) {
+    console.error("Error loading UI state from localStorage:", err);
+    return undefined;
+  }
+};
+
+// Save UI state to localStorage
+const saveUiState = (state: any) => {
+  if (typeof window === "undefined") return;
+  try {
+    const serializedState = JSON.stringify(state);
+    localStorage.setItem("uiState", serializedState);
+  } catch (err) {
+    console.error("Error saving UI state to localStorage:", err);
+  }
+};
+
 export const makeStore = () => {
-  return configureStore({
+  const store = configureStore({
     reducer: {
       ui: uiReducer,
       auth: authReducer,
@@ -18,7 +42,20 @@ export const makeStore = () => {
       notes: notesReducer,
       inspiration: inspirationReducer,
     },
+    preloadedState: {
+      ui: loadUiState(),
+    },
   });
+
+  // Subscribe to store changes to save UI state
+  if (typeof window !== "undefined") {
+    store.subscribe(() => {
+      const state = store.getState();
+      saveUiState(state.ui);
+    });
+  }
+
+  return store;
 };
 
 export type AppStore = ReturnType<typeof makeStore>;

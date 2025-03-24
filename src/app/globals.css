@@ -551,3 +551,7 @@ p:empty::after {
     transform: translateX(100%);
   }
 }
+
+.highlight-feature-text {
+  @apply text-primary bg-primary/10 px-1.5 py-0.5 pt-0 rounded-md;
+}

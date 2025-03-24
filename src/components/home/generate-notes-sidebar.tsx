@@ -202,7 +202,6 @@ export default function GenerateNotesSidebar() {
     selectNote,
     improveText,
   } = useNotes();
-  const [open, setOpen] = useState(false);
   const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
   const [loadingImprovement, setLoadingImprovement] = useState(false);
   const [selectedModel, setSelectedModel] =
@@ -211,16 +210,6 @@ export default function GenerateNotesSidebar() {
   const [previousSelectedNote, setPreviousSelectedNote] =
     useState<NoteDraft | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (showGenerateNotesSidebar) {
-      setOpen(true);
-      // set to false after 100ms
-      setTimeout(() => {
-        updateShowGenerateNotesSidebar(false);
-      }, 100);
-    }
-  }, [showGenerateNotesSidebar]);
 
   const handleEditNoteBody = async (noteId: string | null, html: string) => {
     if (loadingEditNote) return;
@@ -343,7 +332,7 @@ export default function GenerateNotesSidebar() {
     if (selectedNote?.id !== previousSelectedNote?.id) {
       setPreviousSelectedNote(selectedNote);
       if (!open) {
-        setOpen(true);
+        updateShowGenerateNotesSidebar(true);
       }
     }
     if (selectedNote) {
@@ -354,7 +343,7 @@ export default function GenerateNotesSidebar() {
   }, [selectedNote]);
 
   const handleToggleSidebar = () => {
-    setOpen(!open);
+    updateShowGenerateNotesSidebar(!showGenerateNotesSidebar);
   };
 
   const handleCreateDraftNote = async () => {
@@ -399,11 +388,11 @@ export default function GenerateNotesSidebar() {
         size="icon"
         className={cn(
           "fixed h-12 w-12 bottom-0 right-4 -translate-y-1/2 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0 md:flex hidden",
-          open ? "!right-[400px]" : "",
+          showGenerateNotesSidebar ? "!right-[400px]" : "",
         )}
         onClick={handleToggleSidebar}
       >
-        {open ? (
+        {showGenerateNotesSidebar ? (
           <ChevronRight className="h-6 w-6 text-primary-foreground" />
         ) : (
           <Pencil className="h-6 w-6" />
@@ -416,7 +405,7 @@ export default function GenerateNotesSidebar() {
         size="icon"
         className={cn(
           "md:hidden fixed h-12 w-12 bottom-20 right-4 z-50 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0",
-          open ? "opacity-0 pointer-events-none" : "opacity-100",
+          showGenerateNotesSidebar ? "opacity-0 pointer-events-none" : "opacity-100",
         )}
         onClick={handleToggleSidebar}
       >
@@ -440,7 +429,7 @@ export default function GenerateNotesSidebar() {
       <div
         className={cn(
           "fixed top-0 right-0 md:w-[400px] w-full h-[calc(100vh-64px)] md:h-screen bg-background border-l border-border transition-all duration-300 transform overflow-hidden z-50",
-          open ? "translate-x-0" : "translate-x-full",
+          showGenerateNotesSidebar ? "translate-x-0" : "translate-x-full",
         )}
       >
         <div className="flex flex-col h-full">

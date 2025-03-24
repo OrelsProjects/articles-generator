@@ -84,7 +84,6 @@ export async function GET() {
     // }
 
     return NextResponse.json({
-      success: true,
       // message: `Successfully processed ${userIds.length} users in ${batches.length} batches`,
     });
   } catch (error) {

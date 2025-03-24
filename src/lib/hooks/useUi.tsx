@@ -2,6 +2,7 @@ import { selectAuth } from "@/lib/features/auth/authSlice";
 import {
   selectUi,
   setShowGenerateNotesSidebar,
+  setSideBarState,
   setUiState,
 } from "@/lib/features/ui/uiSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
@@ -20,6 +21,10 @@ export function useUi() {
     dispatch(setShowGenerateNotesSidebar(show));
   };
 
+  const updateSideBarState = (state: "collapsed" | "expanded") => {
+    dispatch(setSideBarState(state));
+  };
+
   const hasAdvancedGPT = user?.meta?.featureFlags.includes(
     FeatureFlag.advancedGPT,
   );
@@ -28,11 +33,13 @@ export function useUi() {
     FeatureFlag.advancedFiltering,
   );
 
+
   return {
     setState,
     hasAdvancedGPT,
     showGenerateNotesSidebar,
     updateShowGenerateNotesSidebar,
     hasAdvancedFiltering,
+    updateSideBarState,
   };
 }

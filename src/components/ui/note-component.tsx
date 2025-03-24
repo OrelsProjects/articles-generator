@@ -500,7 +500,7 @@ export default function NoteComponent({ note }: NoteProps) {
   useEffect(() => {
     if (contentRef.current) {
       requestAnimationFrame(() => {
-        setShowExpandButton((contentRef.current?.scrollHeight || 999) > 260);
+        setShowExpandButton((contentRef.current?.scrollHeight || 999) > 160);
       });
     }
   }, [htmlContent]);
@@ -509,7 +509,7 @@ export default function NoteComponent({ note }: NoteProps) {
     <>
       <div
         className={cn(
-          "flex flex-col relative rounded-xl shadow-sm border border-border/60 bg-card",
+          "flex flex-col relative rounded-xl shadow-md border border-border/60 bg-card",
           {
             "border-primary/80": note.id === selectedNote?.id,
           },
@@ -649,9 +649,9 @@ export default function NoteComponent({ note }: NoteProps) {
                       isFromInspiration: true,
                     })
                   }
-                  variant="link"
+                  variant="outline-primary"
                   size="sm"
-                  className={cn("text-xs p-0 text-foreground", {
+                  className={cn("text-xs", {
                     hidden: isUserNote,
                   })}
                 >

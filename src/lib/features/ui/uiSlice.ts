@@ -7,6 +7,7 @@ export interface UiState {
   showGenerateNotesSidebar: boolean;
   showAnalyzePublicationDialog: boolean;
   showGenerateIdeasDialog: boolean;
+  sideBarState: "collapsed" | "expanded";
 }
 
 export const initialState: UiState = {
@@ -15,6 +16,7 @@ export const initialState: UiState = {
   showGenerateNotesSidebar: false,
   showAnalyzePublicationDialog: false,
   showGenerateIdeasDialog: false,
+  sideBarState: "expanded",
 };
 
 const uiSlice = createSlice({
@@ -36,6 +38,9 @@ const uiSlice = createSlice({
     setShowGenerateNotesSidebar: (state, action) => {
       state.showGenerateNotesSidebar = action.payload;
     },
+    setSideBarState: (state, action) => {
+      state.sideBarState = action.payload;
+    },
   },
 });
 
@@ -45,6 +50,7 @@ export const {
   setShowAnalyzePublicationDialog,
   setShowGenerateIdeasDialog,
   setShowGenerateNotesSidebar,
+  setSideBarState,
 } = uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;

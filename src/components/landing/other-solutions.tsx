@@ -74,7 +74,7 @@ export default function OtherSolutions() {
       <div className="mx-auto px-6 md:px-0">
         <div className="landing-section-top">
           <h2>
-            Building a Substack community is{" "}
+            Building a Substack community is <br />
             <span className="text-destructive">hard</span> enough already
           </h2>
           <p>

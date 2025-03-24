@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -35,13 +35,24 @@ import Logo from "@/components/ui/logo";
 import { Separator } from "@radix-ui/react-separator";
 import { navItems } from "@/types/navbar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-
+import { useUi } from "@/lib/hooks/useUi";
+import { selectUi } from "@/lib/features/ui/uiSlice";
 export function AppSidebar({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const { updateSideBarState } = useUi();
+  const { sideBarState } = useAppSelector(selectUi);
   const [showOpenButton, setShowOpenButton] = useState(false);
   const pathname = usePathname();
   const { user } = useAppSelector(selectAuth);
   const { signOut } = useAuth();
+
+  const sidebarCollapsed = useMemo(
+    () => sideBarState === "collapsed",
+    [sideBarState],
+  );
+
+  const handleUpdateSideBarState = (state: "collapsed" | "expanded") => {
+    updateSideBarState(state);
+  };
 
   // Filter nav items by location
   const bottomNavItems = navItems.filter(
@@ -50,12 +61,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const sidebarNavItems = navItems.filter(
     item => item.locationInMobile === "sidebar" || !item.locationInMobile,
   );
-
-  useEffect(() => {
-    if (!collapsed) {
-      setShowOpenButton(false);
-    }
-  }, [collapsed]);
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -69,16 +74,16 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         <div
           className={cn(
             "h-full bg-background border-r border-border flex-col transition-all duration-300 relative z-50 hidden md:flex",
-            collapsed ? "w-16" : "w-64",
+            sidebarCollapsed ? "w-16" : "w-64",
           )}
         >
           <div
             className="flex items-center justify-between p-4 border-b border-border relative"
-            onMouseEnter={() => setShowOpenButton(collapsed && true)}
+            onMouseEnter={() => setShowOpenButton(sidebarCollapsed && true)}
             onMouseLeave={() => setShowOpenButton(false)}
           >
             <SidebarOpen
-              onClick={() => setCollapsed(false)}
+              onClick={() => handleUpdateSideBarState("expanded")}
               size={18}
               className={cn(
                 "absolute cursor-pointer left-1/2 -translate-x-1/2 z-20",
@@ -89,7 +94,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               )}
             />
             <Logo
-              withText={!collapsed}
+              withText={!sidebarCollapsed}
               className={cn("z-10", {
                 "opacity-0": showOpenButton,
               })}
@@ -98,9 +103,13 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={() =>
+              handleUpdateSideBarState(
+                sidebarCollapsed ? "expanded" : "collapsed",
+              )
+            }
             className={cn("ml-auto absolute top-2.5 right-0 hidden md:flex", {
-              "!hidden": collapsed,
+              "!hidden": sidebarCollapsed,
             })}
           >
             <SidebarClose size={18} />
@@ -127,10 +136,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                           )}
                         >
                           <item.icon size={20} />
-                          {!collapsed && <span>{item.name}</span>}
+                          {!sidebarCollapsed && <span>{item.name}</span>}
                         </Link>
                       </TooltipTrigger>
-                      {collapsed && (
+                      {sidebarCollapsed && (
                         <TooltipContent
                           side="right"
                           className="flex items-center gap-2"
@@ -153,7 +162,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                   variant="ghost"
                   className={cn(
                     "w-full flex items-center gap-2 justify-start",
-                    collapsed && "justify-center",
+                    sidebarCollapsed && "justify-center",
                   )}
                 >
                   <Avatar className="h-8 w-8">
@@ -165,7 +174,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                       <User size={16} />
                     </AvatarFallback>
                   </Avatar>
-                  {!collapsed && (
+                  {!sidebarCollapsed && (
                     <div className="flex-1 text-left overflow-hidden">
                       <p className="truncate font-medium text-sm">
                         {user?.displayName || "User"}

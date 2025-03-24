@@ -54,7 +54,7 @@ export const MasonryGrid = ({
               <div
                 key={card.id}
                 className={cn(
-                  "relative overflow-hidden bg-background/90 text-foreground rounded-xl",
+                  "relative overflow-hidden bg-background/90 text-foreground rounded-xl shadow-md",
                   card.className,
                 )}
               >

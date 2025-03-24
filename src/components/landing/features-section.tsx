@@ -190,13 +190,13 @@ function FeaturesSection() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
-    <section id="features" className="landing-section-container bg-background">
+    <section id="features" className="landing-section-container bg-muted">
       <div className="mx-auto md:px-0 relative">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
-            Need more than notes? See how WriteRoom
-            <br />
-            helps you write articles faster and better
+            See how WriteRoom helps you write articles
+            <br /> <span className="text-primary">faster</span> and{" "}
+            <span className="text-primary">better</span>
           </h2>
           <p>
             An AI-powered, Substack-like text editor that will make sure you
@@ -205,7 +205,8 @@ function FeaturesSection() {
               <br /> generates outlines and guide you when you're stuck.
             </span>
             <br />
-            Oh, and everything is ultra personalized to your writing style and topics.
+            Oh, and everything is ultra personalized to your writing style and
+            topics.
           </p>
         </div>
 

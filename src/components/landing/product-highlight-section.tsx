@@ -1,12 +1,15 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { MotionImage } from "@/components/ui/motion-components";
 
 interface FeatureSectionProps {
   src: string;
   title: string;
   description: string;
   direction?: "ltr" | "rtl";
+  longImage?: boolean;
+  rotateImage?: boolean;
 }
 
 const itemVariants = {
@@ -14,54 +17,54 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+const itemVariantsLongImage = (rotate?: boolean) => ({
+  hidden: { opacity: 0, y: 300 },
+  visible: { opacity: 1, y: "-33%", rotate: rotate ? -12 : 0 },
+});
+
 const itemVariantsMobile = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 10 },
 };
+
+const itemVariantsMobileLongImage = (rotate?: boolean) => ({
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: "-33%", rotate: rotate ? -12 : 0 },
+});
 
 function FeatureSectionCard({
   src,
   title,
   description,
   direction = "ltr",
+  longImage = false,
+  rotateImage = false,
 }: FeatureSectionProps) {
   return (
     <div
       className={cn(
-        "relative grid items-center gap-6 lg:grid-cols-2 lg:gap-12 px-6 rounded-t-lg border border-primary/15 overflow-clip py-12 rounded-xl",
+        "h-full grid items-center gap-6 lg:grid-cols-2 lg:gap-12 px-6 rounded-t-lg border border-primary/15 overflow-clip py-12 rounded-xl max-h-[444px] relative",
         {
           "rounded-bl-lg": direction === "ltr",
           "rounded-br-lg": direction === "rtl",
         },
       )}
     >
-      {/* <img
-        src={
-          direction === "rtl"
-            ? "/landing/feature-background-flip.png"
-            : "/landing/feature-background.png"
-        }
-        alt="feature background"
-        className={cn(
-          "absolute inset-0 w-full h-full object-cover z-50 opacity-20",
-        )}
-      /> */}
-      {/* {direction === "rtl" ? (
-        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_bottom_right,_hsla(24.6,95%,53.1%,0.15),_transparent,_transparent)] z-20"></div>
-      ) : (
-        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_bottom_left,_hsla(24.6,95%,53.1%,0.15),_transparent,_transparent)] z-20"></div>
-      )} */}
-
       <div
         className={cn(
           "space-y-4 mb-16",
           direction === "rtl" && "lg:order-last",
         )}
       >
-        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          {title}
-        </h2>
-        <p className="text-foreground font-thin">{description}</p>
+        <h4
+          className="text-2xl font-bold tracking-tight sm:text-3xl !text-start"
+          dangerouslySetInnerHTML={{ __html: title }}
+        />
+
+        <p
+          className="text-foreground font-thin"
+          dangerouslySetInnerHTML={{ __html: description }}
+        />
       </div>
       <div
         className={cn(
@@ -69,34 +72,36 @@ function FeatureSectionCard({
           direction === "rtl" && "lg:order-first",
         )}
       >
-        <motion.div
-          variants={itemVariants}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          initial="hidden"
-          whileInView="visible"
-          className="hidden sm:block max-w-[490px] max-h-[646px] rounded-2xl bg-primary/5 border border-primary/30 p-10"
-        >
-          <Image
+        <motion.div className="hidden sm:block max-w-[490px] max-h-[346px] rounded-2xl bg-primary/5 border border-primary/30 p-10 overflow-hidden">
+          <MotionImage
+            variants={
+              longImage ? itemVariantsLongImage(rotateImage) : itemVariants
+            }
+            transition={{ duration: 0.5 }}
+            initial="hidden"
+            whileInView="visible"
             src={src || "/placeholder.svg"}
             alt={title}
             width={500}
             height={370}
-            className="rounded-2xl"
+            className={cn("rounded-2xl rotate-45", rotateImage && "rotate-12")}
           />
         </motion.div>
-        <motion.div
-          variants={itemVariantsMobile}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          initial="hidden"
-          whileInView="visible"
-          className="block sm:hidden rounded-2xl"
-        >
-          <Image
+        <motion.div className="block sm:hidden rounded-2xl">
+          <MotionImage
+            variants={
+              longImage
+                ? itemVariantsMobileLongImage(rotateImage)
+                : itemVariantsMobile
+            }
+            transition={{ duration: 0.5 }}
+            initial="hidden"
+            whileInView="visible"
             src={src || "/placeholder.svg"}
             alt={title}
             width={500}
             height={370}
-            className="rounded-2xl"
+            className={cn("rounded-2xl", rotateImage && "rotate-12")}
           />
         </motion.div>
       </div>
@@ -121,25 +126,37 @@ export default function FeatureSection() {
       initial="hidden"
       animate="visible"
     >
-      <motion.div className="landing-section-container flex flex-col gap-12">
-        <FeatureSectionCard
-          src="/landing/graphs/graph-average-time-to-complete.png"
-          title="Webhook completion time insights"
-          description="Gain insights into the average time it takes for your webhooks to complete. Identify slow-performing webhooks and optimize processing to improve overall efficiency."
-          direction="ltr"
-        />
-        <FeatureSectionCard
-          src="/landing/graphs/graph-webhooks-sent-over-time.png"
-          title="Webhook activity trends"
-          description="Visualize the volume of webhooks sent over time to detect peak activity periods and usage patterns. Use this data to better plan resource allocation and ensure system stability during high-traffic times."
-          direction="rtl"
-        />
-        <FeatureSectionCard
-          src="/landing/features/advanced-filtering.png"
-          title="Advanced filtering"
-          description="Filter webhooks by status, response time, and more to quickly identify issues and improve reliability. Stay informed and proactive in resolving problems to ensure seamless user experiences."
-          direction="ltr"
-        />
+      <motion.div className="landing-section-container landing-section-top flex flex-col">
+        <h2>
+          Our best features to help you{" "}
+          <span className="text-primary">grow fast</span>
+        </h2>
+        <p className="mb-12">
+          We&apos;ve built a suite of features to help you grow your audience
+          and get more subscribers.
+        </p>
+        <div className="flex flex-col gap-12">
+          <FeatureSectionCard
+            src="/landing/features/notes-editor.png"
+            title="Use WriteRoom's AI to outline and write <span class='highlight-feature-text'>100% of your note</span>"
+            description="Generate notes that are tailored exactly to your audience with WriteRoom's AI that's trained on millions of notes and post them instantly from WriteRoom."
+            longImage
+            rotateImage
+            direction="ltr"
+          />
+          <FeatureSectionCard
+            src="/landing/features/inspirations.png"
+            title="<span class='highlight-feature-text'>Get inspired</span> by top viral posts in your specific niche"
+            description="WriteRoom curates the top viral posts in your specific niche and shows you the best of them so you never run out of ideas."
+            direction="rtl"
+          />
+          <FeatureSectionCard
+            src="/landing/features/advanced-filtering.png"
+            title="Run your research on <span class='highlight-feature-text'>millions of notes</span>"
+            description="Use advanced filtering to research through millions of updating notes and stay update-to-date with the latest trends."
+            direction="ltr"
+          />
+        </div>
       </motion.div>
     </motion.section>
   );
