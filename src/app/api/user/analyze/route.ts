@@ -49,6 +49,15 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    if (!userMetadata) {
+      // Create one to avoid running through all the process just to throw an error
+      await prisma.userMetadata.create({
+        data: {
+          userId,
+        },
+      });
+    }
+
     let publicationMetadata = userMetadata?.publication;
 
     let publications = await getPublicationByUrl(url, {
