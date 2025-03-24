@@ -23,7 +23,7 @@ export function SubstackPostButton({
   note,
   size = "sm",
   variant = "ghost",
-  tooltipContent = "Post instantly",
+  tooltipContent = "Post to Substack instantly",
   includeText,
   source,
   className,
