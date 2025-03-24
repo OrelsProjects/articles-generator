@@ -9,6 +9,7 @@ export const updateableFields = [
   "feedback",
   "feedbackComment",
   "body",
+  "isArchived",
 ] as (keyof NoteDraft)[];
 
 export async function isOwnerOfNote(noteId: string, userId: string) {
