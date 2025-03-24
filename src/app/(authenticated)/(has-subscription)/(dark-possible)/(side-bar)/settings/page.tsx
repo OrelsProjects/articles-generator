@@ -135,33 +135,6 @@ export default function SettingsPage() {
                     Your email address is used for login and cannot be changed.
                   </p>
                 </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <Label htmlFor="subscription">Subscription Plan</Label>
-                  <div className="text-sm font-medium">
-                    {planType === "standard"
-                      ? "Standard Plan"
-                      : planType === "premium"
-                        ? "Premium Plan"
-                        : "Executive Plan"}
-                  </div>
-                  {planType === "standard" ? (
-                    <Button variant="outline" className="mt-2">
-                      Upgrade to Premium
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="mt-2"
-                      onClick={() => setShowCancelDialog(true)}
-                    >
-                      Cancel Subscription
-                    </Button>
-                  )}
-                </div>
-
                 <Button onClick={handleSaveSettings}>Save Changes</Button>
               </CardContent>
             </Card>

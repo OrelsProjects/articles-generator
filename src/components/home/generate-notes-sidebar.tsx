@@ -714,7 +714,6 @@ export default function GenerateNotesSidebar() {
               note={selectedNote}
               size="lg"
               variant="default"
-              tooltipContent="Post note"
               className="w-full mt-2"
               includeText
               source="generate_notes_sidebar"

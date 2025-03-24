@@ -510,7 +510,7 @@ p:empty::after {
 }
 
 .landing-section-container h3 {
-  @apply text-base font-medium leading-7 text-muted-foreground uppercase text-center;
+  @apply text-xl sm:text-2xl font-semibold leading-7;
 }
 
 .landing-section-top {

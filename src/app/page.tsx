@@ -25,14 +25,23 @@ import { initialTextForEnhancement, textByType } from "@/lib/landing-consts";
 import { appName } from "@/lib/consts";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { cn } from "@/lib/utils";
-import FeaturesSection from "@/components/landing/features-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import Header from "@/components/landing/header";
 import OtherSolutions from "@/components/landing/other-solutions";
 import Pricing from "@/components/landing/pricing-section";
 import { ThemeProvider } from "@/app/providers/ThemeProvider";
+import { UsedByTopCreators } from "@/components/landing/used-by-top-creators";
+import ProductHighlightSection from "@/components/landing/product-highlight-section";
+import FeaturesSection from "@/components/landing/features-section";
+import WhyNotesSection from "@/components/landing/why-notes-section";
 
 type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
+
+const DividerPrimary = ({ children }: { children: React.ReactNode }) => (
+  <div className="w-full h-fit md:min-h-[400px] bg-primary flex justify-center items-center">
+    {children}
+  </div>
+);
 
 const EnhancmentDemo = () => {
   const [loadingTone, setLoadingTone] = useState<ImprovementType | null>(null);
@@ -144,11 +153,13 @@ function App() {
   }, [fetchingProducts, products, didFetchProducts]);
 
   return (
-    <div className="min-h-screen w-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen w-screen overflow-x-hidden bg-primary">
       <ThemeProvider forcedTheme="light">
         <Header />
         <HeroSection />
-
+        <DividerPrimary>
+          <UsedByTopCreators />
+        </DividerPrimary>
         {/* Social Proof Banner */}
         {/* <motion.section
         className="py-6 bg-primary/10"
@@ -185,12 +196,32 @@ function App() {
           </div>
         </div>
       </motion.section> */}
-
         <OtherSolutions />
+        <DividerPrimary>
+          <h2 className="text-center text-primary-foreground text-[56px] leading-[4rem] font-bold">
+            <span className="text-orange-950">Discover</span> how {appName} will
+            help you
+            <br />{" "}
+            <span className="bg-orange-400 rounded-lg px-4">
+              {" "}
+              grow your community
+            </span>
+            <br /> faster than ever before.
+          </h2>
+        </DividerPrimary>
 
         {/* Features Section */}
+        <ProductHighlightSection />
+        <DividerPrimary>
+          <h2 className="text-center text-primary-foreground text-[56px] leading-[4rem] font-bold">
+            <span className="text-orange-950">Writing notes</span> is the best
+            way
+            <br /> to grow on Substack
+            <span className="bg-orange-400 rounded-lg px-4">FAST</span>
+          </h2>
+        </DividerPrimary>
+        <WhyNotesSection />
         <FeaturesSection />
-
         {/* Testimonials Section */}
         <motion.section
           className="landing-section-container bg-muted p-24"
@@ -274,35 +305,37 @@ function App() {
         </motion.section>
 
         {/* Final CTA */}
-        <section className="py-20 bg-gradient-to-r from-background to-muted-foreground/10">
-          <div className="max-w-5xl mx-auto px-4 text-center">
-            <h2 className="text-4xl font-bold mb-6">
-              Write Better Newsletters. Grow Your Audience.{" "}
-              <span className="text-primary">Increase Your Income.</span>
-            </h2>
-            <p className="text-xl mb-8 opacity-90">
-              Join 1,000+ Substack writers earning $1k+/month with {appName}
-              &apos;s fully-integrated AI assistant.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="outline" size="lg" asChild>
-                <Link href="/login">Try It Free</Link>
-              </Button>
-              <Button size="lg" variant="default" asChild>
-                <Link href="#pricing">Upgrade to Pro</Link>
-              </Button>
+        <section className="w-full h-fit bg-background">
+          <div className="py-20 bg-gradient-to-r from-background to-muted-foreground/10">
+            <div className="max-w-5xl mx-auto px-4 text-center">
+              <h2 className="text-4xl font-bold mb-6">
+                Write Better. Grow Your Audience.{" "}
+                <span className="text-primary">Increase Your Income.</span>
+              </h2>
+              <p className="text-xl mb-8 opacity-90">
+                Join 1,000+ Substack writers earning $1k+/month with {appName}
+                &apos;s fully-integrated AI assistant.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button variant="outline" size="lg" asChild>
+                  <Link href="/login">Try It Free</Link>
+                </Button>
+                <Button size="lg" variant="default" asChild>
+                  <Link href="#pricing">Upgrade to Pro</Link>
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="text-center text-foreground text-sm mt-6">
-            <p>
-              Need help?{" "}
-              <a
-                href="mailto:orelsmail@gmail.com"
-                className="underline text-primary"
-              >
-                contact me
-              </a>
-            </p>
+            <div className="text-center text-foreground text-sm mt-6">
+              <p>
+                Need help?{" "}
+                <a
+                  href="mailto:orelsmail@gmail.com"
+                  className="underline text-primary"
+                >
+                  contact me
+                </a>
+              </p>
+            </div>
           </div>
         </section>
       </ThemeProvider>

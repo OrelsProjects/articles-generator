@@ -70,11 +70,11 @@ const SolutionCard = ({
 
 export default function OtherSolutions() {
   return (
-    <div className="landing-section-container bg-muted">
+    <div className="landing-section-container bg-background rounded-[3rem] shadow-[0_0_10px_rgba(0,0,0,0.2)]">
       <div className="mx-auto px-6 md:px-0">
         <div className="landing-section-top">
           <h2>
-            Building a community is{" "}
+            Building a Substack community is{" "}
             <span className="text-destructive">hard</span> enough already
           </h2>
           <p>

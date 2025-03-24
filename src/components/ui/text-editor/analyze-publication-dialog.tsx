@@ -40,9 +40,16 @@ const loadingStatesConst = [
   { text: "Setting up your preferences..." },
   { text: "Almost done...", delay: 3000 },
   { text: "I promise, it's almost ready...", delay: 3000 },
-  { text: "Okay, I'm working really hard to make it ready...", delay: 3000 },
   {
-    text: "I hope you know by now that the statuses are fake and that I am stalling...",
+    text: "You have a humongous publication, my machines really struggle...🤖",
+    delay: 10000,
+  },
+  {
+    text: "Okay, if you're still here, I'll let you in on a secret: I've been faking it.",
+    delay: 10000,
+  },
+  {
+    text: "The statuses are not real. I just wanted to make you feel good while you wait.",
     delay: 10000,
   },
   { text: "Well, this is awkward... Hope it finishes soon...🤦", delay: 3000 },

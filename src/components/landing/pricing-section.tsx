@@ -12,7 +12,6 @@ import usePayments from "@/lib/hooks/usePayments";
 import PriceContainer from "@/components/ui/price-container";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
 import { toast } from "react-toastify";
 
 const pricingPlans = [

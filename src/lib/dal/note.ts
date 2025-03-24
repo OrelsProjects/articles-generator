@@ -42,7 +42,7 @@ export const getUserNotes = async (
       },
     },
   });
-  
+
   if (!userMetadata) {
     return [];
   }

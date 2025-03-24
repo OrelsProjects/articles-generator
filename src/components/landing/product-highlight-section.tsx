@@ -44,9 +44,9 @@ const features = [
     objectFit: "fit",
   },
   {
-    title: "Easily organize your notes",
-    description: `Instead of having a massive list of drafts, you can easily organize your notes into folders. Fast.`,
-    icon: Folders,
+    title: "Audience & income growth tools",
+    description: `Specifically designed for Substack writers earning <strong>$1k+/month</strong> who want to scale their newsletter business. Our tools help you <strong>increase subscriber engagement</strong> and <strong>boost your monthly income</strong>.`,
+    icon: DollarSign,
     videoUrl:
       "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/organized-folders.mp4",
     objectFit: "fit",
@@ -181,30 +181,28 @@ function FeatureCard({
   );
 }
 
-function FeaturesSection() {
+function ProductHighlightSection() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
-    <section id="features" className="landing-section-container bg-background">
+    <section
+      id="features"
+      className="landing-section-container bg-background rounded-[3rem] shadow-[0_0_10px_rgba(0,0,0,0.2)]"
+    >
       <div className="mx-auto md:px-0 relative">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
-            Need more than notes? See how WriteRoom
-            <br />
-            helps you write articles faster and better
+            Powerful features for serious Substack writers
           </h2>
           <p>
-            An AI-powered, Substack-like text editor that will make sure you
-            never stare at a blank page again.
-            <span className="hidden">
-              <br /> generates outlines and guide you when you're stuck.
-            </span>
-            <br />
-            Oh, and everything is ultra personalized to your writing style and topics.
+            Everything you&apos;ll need, from advanced research tools to very
+            personalized notes generation
+            <br /> with WriteRoom AI that&apos;s trained on over{" "}
+            <span className="font-bold">3 million notes</span>.
           </p>
         </div>
 
-        <div className="w-full space-y-12">
+        {/* <div className="w-full space-y-12">
           {features.map((feature, index) => (
             <FeatureCard
               key={feature.title}
@@ -213,10 +211,10 @@ function FeaturesSection() {
               isMobile={isMobile}
             />
           ))}
-        </div>
+        </div> */}
       </div>
     </section>
   );
 }
 
-export default FeaturesSection;
+export default ProductHighlightSection;

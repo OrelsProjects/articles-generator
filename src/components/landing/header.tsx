@@ -4,7 +4,7 @@ import Logo from "@/components/ui/logo";
 
 export default function Header() {
   return (
-    <header className="w-full flex justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+    <header className="w-full flex justify-center bg-background backdrop-blur border-b border-border">
       <div className="container flex items-center justify-between py-4 px-6 md:px-0 md:py-6 xl:px-20 mx-auto">
         <div className="flex gap-6 md:gap-10">
           <Logo textClassName="font-bold text-xl" />
