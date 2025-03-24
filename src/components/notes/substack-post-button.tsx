@@ -64,9 +64,9 @@ export function SubstackPostButton({
     }
   };
 
-  if (!canUseSubstackPost) {
-    return null;
-  }
+  // if (!canUseSubstackPost) {
+  //   return null;
+  // }
 
   return (
     <>
