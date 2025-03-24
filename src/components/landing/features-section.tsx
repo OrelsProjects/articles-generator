@@ -202,7 +202,7 @@ function FeaturesSection() {
             An AI-powered, Substack-like text editor that will make sure you
             never stare at a blank page again.
             <span className="hidden">
-              <br /> generates outlines and guide you when you're stuck.
+              <br /> generates outlines and guide you when you&apos;re stuck.
             </span>
             <br />
             Oh, and everything is ultra personalized to your writing style and
