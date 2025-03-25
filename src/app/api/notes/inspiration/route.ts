@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     const query =
       filters.keyword ||
       `
-    ${publication.generatedDescriptionForSearch || publication.generatedDescription}
+    ${publication.generatedDescription}
      `;
 
     const shouldMilvusSearch = filters.type === "relevant-to-user";
