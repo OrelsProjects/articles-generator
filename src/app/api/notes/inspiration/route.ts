@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     const shouldMilvusSearch = filters.type === "relevant-to-user";
 
     const likes = filters.minLikes;
-    const minLikes = likes ? likes : 1000;
+    const minLikes = likes ? likes : 50;
     const extraMinLikes = likes ? likes : 50;
     const minRandom = likes ? Math.random() / 2 : Math.random();
     const maxLikes = likes ? likes * 2 : 5000;
