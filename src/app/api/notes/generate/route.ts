@@ -15,6 +15,8 @@ import { FeatureFlag, Note, NoteStatus } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
 import { canUseAI, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
+import { getBylines } from "@/lib/publication";
+import { getByline } from "@/lib/dal/byline";
 
 export const maxDuration = 120; // This function can run for a maximum of 2 minutes
 
@@ -142,6 +144,7 @@ export async function POST(
       notesUserDisliked,
       notesUserLiked,
       notesFromAuthor,
+      byline,
       inspirations,
     ] = await Promise.all([
       prisma.note.findMany({
@@ -162,6 +165,7 @@ export async function POST(
       prismaArticles.notesComments.findMany({
         where: {
           authorId: parseInt(authorId.toString()),
+          noteIsRestacked: false,
         },
         orderBy: {
           reactionCount: "desc",
@@ -174,6 +178,7 @@ export async function POST(
         },
         take: 10,
       }),
+      getByline(parseInt(authorId.toString())),
       searchSimilarNotes({
         query,
         limit: 20,
@@ -252,9 +257,10 @@ export async function POST(
     // const newNotes3: any[] = await parseJson(promptResponse3);
     // newNotes = [...newNotes, ...newNotes2, ...newNotes3];
 
-    const handle = notesFromAuthor[0]?.handle;
-    const name = notesFromAuthor[0]?.name;
-    const thumbnail = notesFromAuthor[0]?.photoUrl || session.user.image;
+    const handle = byline?.handle || notesFromAuthor[0]?.handle;
+    const name = byline?.name || notesFromAuthor[0]?.name;
+    const thumbnail =
+      byline?.photoUrl || notesFromAuthor[0]?.photoUrl || session.user.image;
 
     const notesCreated: Note[] = [];
     for (const note of newNotes) {

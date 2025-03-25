@@ -1,4 +1,5 @@
 import prisma from "@/app/api/_db/db";
+import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addUserToList, sendMail } from "@/lib/mail/mail";
 import {
   generateSubscriptionDeletedEmail,
@@ -84,6 +85,8 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   });
+
+  await setFeatureFlagsByPlan(plan, user.id);
 
   if (user.email && user.name) {
     await addUserToList({

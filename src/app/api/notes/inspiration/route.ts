@@ -250,6 +250,7 @@ export async function POST(req: NextRequest) {
         commentId: {
           in: existingNotesIds,
         },
+        noteIsRestacked: false,
       },
       distinct: ["commentId"],
     });
