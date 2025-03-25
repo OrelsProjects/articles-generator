@@ -1,45 +1,48 @@
-import axios from "axios";
-import Mailgun, { MailListMembersResult } from "mailgun.js";
+import Mailchimp, { MessagesMessage } from "@mailchimp/mailchimp_transactional";
+
+const mailchimpTx = Mailchimp(process.env.MAILCHIMP_API_KEY || "");
 
 export interface ListUser {
   email: string;
   fullName: string;
 }
 
-const requestExtras = {
-  auth: {
-    username: "api",
-    password: process.env.MAILGUN_API_KEY || "",
-  },
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded",
-  },
+export const testEndpoint = async () => {
+  const response = await mailchimpTx.users.ping();
+  if (response === "PONG!") {
+    return true;
+  }
+  return false;
 };
 
-export const sendMail = async (
-  to: string,
-  from: string,
-  subject: string,
-  template: string,
-  cc: string[] = [],
-) => {
-  const formData = new FormData();
-  formData.append("from", from + " " + "<support@writeroom.co>");
-  formData.append("to", to);
+export const sendMail = async ({
+  to,
+  from,
+  subject,
+  template,
+  cc,
+}: {
+  to: string | string[];
+  from: string;
+  subject: string;
+  template: string;
+  cc: string[];
+}) => {
+  const message: MessagesMessage = {
+    from_email: `${from}@writeroom.co`,
+    subject,
+    html: template,
+    to: Array.isArray(to)
+      ? to.map(t => ({ email: t, type: "to" }))
+      : [{ email: to, type: "to" }],
+  };
   for (const c of cc) {
-    formData.append("to", c);
+    message.to.push({ email: c, type: "cc" });
   }
-  formData.append("subject", subject);
-  formData.append("html", template);
-
   try {
-    const response = await axios.post(
-      `https://api.mailgun.net/v3/${process.env.MAILGUN_ORG}/messages`,
-      formData,
-      requestExtras,
-    );
-
-    console.log("Mail sent successfully:", response.data);
+    const response = await mailchimpTx.messages.send({ message });
+    console.log("Mail sent successfully:", response);
+    return response;
   } catch (error: any) {
     throw new Error(`Error sending mail: ${error.message}`);
   }
@@ -80,12 +83,9 @@ export const sendFeaturesMailToList = async () => {
   //   username: "api",
   //   key: process.env.MAILGUN_API_KEY || "API_KEY",
   // });
-
   // const users: MailListMembersResult =
   //   await mg.lists.members.listMembers(listAddress);
-
   // const tos = users.items;
-
   // for (const to of tos) {
   //   try {
   //     const data = await mg.messages.create("writeroom.co", {

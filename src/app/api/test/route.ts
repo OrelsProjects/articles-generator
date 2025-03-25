@@ -5,53 +5,55 @@ import { NextResponse } from "next/server";
 import { runPrompt } from "@/lib/open-router";
 import { generateVectorSearchOptimizedDescriptionPrompt } from "@/lib/prompts";
 import { parseJson } from "@/lib/utils/json";
+import { sendMail, testEndpoint } from "@/lib/mail/mail";
+import { welcomeTemplate } from "@/lib/mail/templates";
 
-async function processUser(userId: string) {
-  try {
-    const userMetadata = await prisma.userMetadata.findUnique({
-      where: { userId },
-      include: { publication: true },
-    });
+// async function processUser(userId: string) {
+//   try {
+//     const userMetadata = await prisma.userMetadata.findUnique({
+//       where: { userId },
+//       include: { publication: true },
+//     });
 
-    const publicationMetadata = userMetadata?.publication;
+//     const publicationMetadata = userMetadata?.publication;
 
-    if (!publicationMetadata) {
-      console.log(`No publication found for user ${userId}`);
-      return;
-    }
+//     if (!publicationMetadata) {
+//       console.log(`No publication found for user ${userId}`);
+//       return;
+//     }
 
-    const generatedDescriptionForSearch = await runPrompt(
-      generateVectorSearchOptimizedDescriptionPrompt(publicationMetadata),
-      "anthropic/claude-3.7-sonnet",
-    );
+//     const generatedDescriptionForSearch = await runPrompt(
+//       generateVectorSearchOptimizedDescriptionPrompt(publicationMetadata),
+//       "anthropic/claude-3.7-sonnet",
+//     );
 
-    const parsedGeneratedDescriptionForSearch = await parseJson<{
-      optimizedDescription: string;
-    }>(generatedDescriptionForSearch);
+//     const parsedGeneratedDescriptionForSearch = await parseJson<{
+//       optimizedDescription: string;
+//     }>(generatedDescriptionForSearch);
 
-    await prisma.publicationMetadata.update({
-      where: { id: publicationMetadata.id },
-      data: {
-        generatedDescriptionForSearch:
-          parsedGeneratedDescriptionForSearch.optimizedDescription,
-      },
-    });
+//     await prisma.publicationMetadata.update({
+//       where: { id: publicationMetadata.id },
+//       data: {
+//         generatedDescriptionForSearch:
+//           parsedGeneratedDescriptionForSearch.optimizedDescription,
+//       },
+//     });
 
-    console.log(`Successfully processed user ${userId}`);
-  } catch (error) {
-    console.error(`Error processing user ${userId}:`, error);
-  }
-}
+//     console.log(`Successfully processed user ${userId}`);
+//   } catch (error) {
+//     console.error(`Error processing user ${userId}:`, error);
+//   }
+// }
 
-async function processBatch(userIds: string[]) {
-  return Promise.all(userIds.map(userId => processUser(userId)));
-}
+// async function processBatch(userIds: string[]) {
+//   return Promise.all(userIds.map(userId => processUser(userId)));
+// }
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  //   const session = await getServerSession(authOptions);
+  //   if (!session) {
+  //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  //   }
 
   try {
     // Get all users with publications
@@ -83,8 +85,18 @@ export async function GET() {
     //   await new Promise(resolve => setTimeout(resolve, 1000));
     // }
 
+    const result = await testEndpoint();
+    const mailResult = await sendMail({
+      to: "orelsmail@gmail.com",
+      from: "orel",
+      subject: "Test",
+      template: welcomeTemplate(),
+      cc: ["orelzilberman@gmail.com"],
+    });
+
     return NextResponse.json({
-      // message: `Successfully processed ${userIds.length} users in ${batches.length} batches`,
+      result,
+      mailResult,
     });
   } catch (error) {
     console.error("Error processing users:", error);

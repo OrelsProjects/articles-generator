@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     }
 
     const query =
-      filters.keyword ||
+      filters.keyword?.toLocaleLowerCase() ||
       `
     ${publication.generatedDescription}
      `;
@@ -100,15 +100,21 @@ export async function POST(req: NextRequest) {
     const shouldMilvusSearch = filters.type === "relevant-to-user";
 
     const likes = filters.minLikes;
-    const minLikes = likes ? likes : 3000;
+    const minLikes = likes ? likes : 1000;
     const extraMinLikes = likes ? likes : 50;
     const minRandom = likes ? Math.random() / 2 : Math.random();
     const maxLikes = likes ? likes * 2 : 5000;
     const extraMaxLikes = likes ? likes * 2 : 0;
     const maxRandom = likes ? Math.random() / 10 : Math.random();
 
-    const randomMinReaction = Math.floor(minRandom * minLikes + extraMinLikes);
-    const randomMaxReaction = Math.floor(maxRandom * maxLikes + extraMaxLikes);
+    let randomMinReaction = Math.floor(minRandom * minLikes + extraMinLikes);
+    let randomMaxReaction = Math.floor(maxRandom * maxLikes + extraMaxLikes);
+
+    if (randomMaxReaction > randomMaxReaction) {
+      let temp = randomMaxReaction;
+      randomMaxReaction = randomMinReaction;
+      randomMinReaction = temp;
+    }
 
     const searchFilters: Filter[] = [
       {
@@ -220,7 +226,7 @@ export async function POST(req: NextRequest) {
         take: 500,
       });
 
-      // console.time("prisma - long query");
+      console.time("prisma - long query");
       // inspirationNotes = await prismaArticles.$queryRaw`
       //   SELECT * FROM "notes_comments"
       //   WHERE "note_is_restacked" = false
@@ -229,7 +235,7 @@ export async function POST(req: NextRequest) {
       //   AND "children_count" >= ${filters.minComments || 0}
       //   AND "restacks" >= ${filters.minRestacks || 0}
       //   ${filters.dateRange ? Prisma.sql`AND "date" BETWEEN ${filters.dateRange.from} AND ${filters.dateRange.to}` : Prisma.empty}
-      //   ${filters.keyword ? Prisma.sql`AND "body" % ${filters.keyword}` : Prisma.empty}
+      //   ${filters.keyword ? Prisma.sql`AND similarity("body", ${filters.keyword}) > 0.3` : Prisma.empty}
       //   ORDER BY "reaction_count" ASC
       //   LIMIT 500;
       // `;

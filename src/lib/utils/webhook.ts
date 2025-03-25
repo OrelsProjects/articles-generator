@@ -180,12 +180,13 @@ export async function handleSubscriptionDeleted(event: Stripe.Event) {
   });
 
   const userEmail = (customer as any).email;
-  await sendMail(
-    userEmail,
-    process.env.NEXT_PUBLIC_APP_NAME as string,
-    "Subscription Deleted",
-    generateSubscriptionDeletedEmail(subscriptionId),
-  );
+  await sendMail({
+    to: userEmail,
+    from: "orel",
+    subject: "Subscription Deleted",
+    template: generateSubscriptionDeletedEmail(subscriptionId),
+    cc: [],
+  });
 }
 
 export async function handleSubscriptionTrialEnding(event: any) {
@@ -195,13 +196,14 @@ export async function handleSubscriptionTrialEnding(event: any) {
   const userEmail = (customer as any).email;
 
   // Send email notification about trial ending
-  await sendMail(
-    userEmail,
-    process.env.NEXT_PUBLIC_APP_NAME as string,
-    "Your Trial is Ending Soon",
-    generateSubscriptionTrialEndingEmail(
+  await sendMail({
+    to: userEmail,
+    from: "orel",
+    subject: "Your Trial is Ending Soon",
+    template: generateSubscriptionTrialEndingEmail(
       subscription.id,
       new Date(subscription.trial_end * 1000),
     ),
-  );
+    cc: ["orelsmail@gmail.com"],
+  });
 }

@@ -54,12 +54,13 @@ export async function GET(req: NextRequest) {
     const plan = product.metadata?.plan;
 
     try {
-      await sendMail(
-        session.customer_email || "",
-        process.env.NEXT_PUBLIC_APP_NAME as string,
-        "Payment confirmation",
-        welcomeTemplate(),
-      );
+      await sendMail({
+        to: session.customer_email || "",
+        from: "orel",
+        subject: "Payment confirmation",
+        template: welcomeTemplate(),
+        cc: [],
+      });
     } catch (error: any) {
       loggerServer.error("Failed to send welcome email", error);
     }
