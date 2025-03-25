@@ -34,7 +34,7 @@ enum IdeaStatus {
 enum Plan {
   standard
   premium
-  executive
+  hobbyist
 }
 
 enum PotentialClientStatus {

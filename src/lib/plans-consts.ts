@@ -8,20 +8,20 @@ export const INFINITY = 999999;
 
 // Credits allocated per plan per billing period
 export const creditsPerPlan: PlanCredits = {
-  standard: 50,
-  premium: 200,
-  executive: 350,
+  hobbyist: 50,
+  standard: 200,
+  premium: 350,
 };
 
 export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
-  standard: [FeatureFlag.instantPost],
-  premium: [
+  hobbyist: [FeatureFlag.instantPost],
+  standard: [
     FeatureFlag.articles,
     FeatureFlag.instantPost,
     FeatureFlag.advancedGPT,
     FeatureFlag.advancedFiltering,
   ],
-  executive: [
+  premium: [
     FeatureFlag.articles,
     FeatureFlag.instantPost,
     FeatureFlag.advancedGPT,

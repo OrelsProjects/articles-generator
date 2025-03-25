@@ -7,7 +7,7 @@ import { generateSessionId } from "@/lib/stripe";
 import { z } from "zod";
 
 const checkoutSchema = z.object({
-  plan: z.enum(["standard", "premium", "executive", "hobbyist"]),
+  plan: z.enum(["hobbyist", "standard", "premium"]),
   interval: z.enum(["month", "year"]),
   referralCode: z.string().optional(),
 });
@@ -24,11 +24,11 @@ export async function POST(req: NextRequest) {
     );
 
     const productId =
-      plan === "standard" || plan === "hobbyist"
-        ? process.env.STRIPE_PRICING_ID_STANDARD
-        : plan === "premium"
-          ? process.env.STRIPE_PRICING_ID_PREMIUM
-          : process.env.STRIPE_PRICING_ID_EXECUTIVE;
+      plan === "hobbyist"
+        ? process.env.STRIPE_PRICING_ID_HOBBYIST
+        : plan === "standard"
+          ? process.env.STRIPE_PRICING_ID_STANDARD
+          : process.env.STRIPE_PRICING_ID_PREMIUM;
 
     if (!productId) {
       loggerServer.error("Invalid pricing plan", { plan });

@@ -29,10 +29,6 @@ export default function HelpPage() {
       answer: "Yes, we offer mobile apps for both iOS and Android. You can download them from the App Store or Google Play Store. Your notes will sync automatically across all your devices."
     },
     {
-      question: "How secure are my notes?",
-      answer: "Your notes are encrypted both in transit and at rest. We use industry-standard encryption protocols to ensure your data remains private and secure. Additionally, we offer two-factor authentication for added security."
-    },
-    {
       question: "Can I collaborate with others on notes?",
       answer: "Yes, you can share notes with others and collaborate in real-time. To share a note, open it and click the 'Share' button. You can set different permission levels for collaborators."
     },

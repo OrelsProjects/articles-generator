@@ -54,7 +54,7 @@ export default function SettingsPage() {
   };
 
   // Calculate credit usage
-  const planType = user?.meta?.plan || "standard";
+  const planType = user?.meta?.plan || "hobbyist";
 
   const creditPercentage = Math.min(
     Math.round((credits.used / Math.max(credits.total, 1)) * 100),
@@ -93,7 +93,7 @@ export default function SettingsPage() {
 
                 <div className="mt-4 text-sm text-muted-foreground">
                   <p>Credits reset every month.</p>
-                  {planType !== "executive" && (
+                  {planType !== "premium" && (
                     <div className="mt-2">
                       <Button variant="outline">
                         Upgrade to get more credits
