@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { MotionImage } from "@/components/ui/motion-components";
@@ -29,7 +28,7 @@ const itemVariantsMobile = {
 
 const itemVariantsMobileLongImage = (rotate?: boolean) => ({
   hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: "-33%", rotate: rotate ? -12 : 0 },
+  visible: { opacity: 1, y: "-12%", rotate: rotate ? -12 : 0 },
 });
 
 function FeatureSectionCard({
@@ -43,7 +42,7 @@ function FeatureSectionCard({
   return (
     <div
       className={cn(
-        "h-full grid items-center gap-6 lg:grid-cols-2 lg:gap-12 px-6 rounded-t-lg border border-primary/15 overflow-clip py-12 rounded-xl max-h-[444px] relative",
+        "h-full grid items-center gap-6 lg:grid-cols-2 lg:gap-12 px-6 rounded-t-lg border border-primary/15 overflow-clip py-12 rounded-xl max-h-[653px] lg:max-h-[444px] relative",
         {
           "rounded-bl-lg": direction === "ltr",
           "rounded-br-lg": direction === "rtl",
@@ -72,7 +71,7 @@ function FeatureSectionCard({
           direction === "rtl" && "lg:order-first",
         )}
       >
-        <motion.div className="hidden sm:block max-w-[490px] max-h-[346px] rounded-2xl bg-primary/5 border border-primary/30 p-10 overflow-hidden">
+        <motion.div className="hidden sm:block max-w-[490px] max-h-[446px] rounded-2xl bg-primary/5 border border-primary/30 p-10 overflow-hidden">
           <MotionImage
             variants={
               longImage ? itemVariantsLongImage(rotateImage) : itemVariants

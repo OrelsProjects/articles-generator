@@ -13,7 +13,7 @@ export type Model =
   | "google/gemini-2.0-flash-001"
   | "openai/gpt-4.5-preview";
 
-function getTokenCount(text: string) {
+export function getTokenCount(text: string) {
   const encoding = new Tiktoken(o200k_base);
   const tokens = encoding.encode(text);
   return tokens.length;
@@ -58,7 +58,7 @@ export async function runPrompt(
     "Estimated token count:",
     tokenCount,
     "Estimated price:",
-    `$${priceInput.toFixed(2)}`,
+    `$${priceInput.toFixed(5)}`,
   );
   console.time("runPrompt");
   let response = await axios.post(

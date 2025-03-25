@@ -733,15 +733,15 @@ export const generateNotesPrompt = (
   options: {
     noteCount: number;
     maxLength: number;
-    useTopTypes: boolean;
+    noteTemplates: { description: string }[];
   } = {
     noteCount: 3,
     maxLength: 280,
-    useTopTypes: false,
+    noteTemplates: [],
   },
 ) => {
   const allTopics = [...userNotes.map(note => note.topics).flat()];
-  const { noteCount, maxLength, useTopTypes } = options;
+  const { noteCount, maxLength, noteTemplates } = options;
   // Topics count, json of topic to count
   const topicsCount = allTopics.reduce((acc: Record<string, number>, topic) => {
     acc[topic] = (acc[topic] || 0) + 1;
@@ -754,17 +754,6 @@ export const generateNotesPrompt = (
       acc[topic] = (acc[topic] || 0) + 1;
       return acc;
     }, {});
-
-  const topTypes = `
-    Here are the top performing note types:
-      - Story-driven hook: Notes that begins with a personal story or specific moment tend to grab attention more effectively.
-      - Contrarian truth: Notes challenging common beliefs often outperform standard advice posts
-      - Value-focused educational content: Quick, actionable tips that provide immediate value perform well
-      - Inspirational and vulnerable posts: Notes that share personal struggles and how they were overcome resonate deeply
-      - Hot takes: Sharing controversial opinions can generate significant interaction from both supporters and critics.
-
-      Don't limit yourself to these types, but use them as inspiration.
-`;
 
   const messages = [
     {
@@ -786,8 +775,13 @@ export const generateNotesPrompt = (
     Avoid repeating the same notes as the user's previously written notes or inspiration notes,
     or writing something that is the opposite of what the user wrote.
     Each note should have a great hook, that will entice the user to read it from the get-go.
-
-    ${useTopTypes ? topTypes : ""}
+    ${
+      noteTemplates.length > 0
+        ? `
+    Use the notes that are most relevant to your description and writing style.
+    Templates: ${noteTemplates.map(template => `(${template.description})`).join("\\n")}`
+        : ""
+    }
 
     Response must follow the following rules:
   - Must use new lines when needed, avoid using hashtags

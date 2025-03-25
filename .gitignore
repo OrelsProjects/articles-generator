@@ -46,3 +46,4 @@ next-env.d.ts
 
 # migration api
 /src/app/api/migration/*
+/src/app/api/note-templates/*

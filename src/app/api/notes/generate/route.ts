@@ -15,8 +15,8 @@ import { FeatureFlag, Note, NoteStatus } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
 import { canUseAI, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
-import { getBylines } from "@/lib/publication";
 import { getByline } from "@/lib/dal/byline";
+import { noteTemplates } from "@/app/api/notes/generate/_consts";
 
 export const maxDuration = 120; // This function can run for a maximum of 2 minutes
 
@@ -37,7 +37,7 @@ export async function POST(
   const requestedModel = body.model;
   const useTopTypes = body.useTopTypes || false;
   const featureFlags = session.user.meta?.featureFlags || [];
-  let initialGeneratingModel: Model = "anthropic/claude-3.7-sonnet";
+  let initialGeneratingModel: Model = "openai/gpt-4o";
   let model: Model = "anthropic/claude-3.7-sonnet";
 
   if (requestedModel && featureFlags.includes(FeatureFlag.advancedGPT)) {
@@ -220,7 +220,7 @@ export async function POST(
       {
         noteCount: count,
         maxLength: 280,
-        useTopTypes,
+        noteTemplates: useTopTypes ? noteTemplates : [],
       },
     );
 
@@ -241,15 +241,19 @@ export async function POST(
       id: index,
     }));
 
-    const improveNotesMessages = generateNotesWritingStylePrompt(
-      userMetadata,
-      userMetadata.publication,
-      newNotesWithIds,
-    );
-    const improvedNotesResponse = await runPrompt(improveNotesMessages, model);
-    const improvedNotes: { id: number; body: string }[] = await parseJson(
-      improvedNotesResponse,
-    );
+    let improvedNotes: { id: number; body: string }[] = [];
+    if (model !== initialGeneratingModel) {
+      const improveNotesMessages = generateNotesWritingStylePrompt(
+        userMetadata,
+        userMetadata.publication,
+        newNotesWithIds,
+      );
+      const improvedNotesResponse = await runPrompt(
+        improveNotesMessages,
+        model,
+      );
+      improvedNotes = await parseJson(improvedNotesResponse);
+    }
     newNotes = newNotes.map((note, index) => {
       const improvedNote = improvedNotes.find(n => n.id === index);
       return improvedNote ? { ...note, body: improvedNote.body } : note;

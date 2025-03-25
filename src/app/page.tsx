@@ -252,7 +252,10 @@ function App() {
         <Pricing className="bg-background" />
 
         {/* FAQ Section */}
-        <motion.section id="faq" className="bg-muted px-6 md:px-0 flex justify-center items-center">
+        <motion.section
+          id="faq"
+          className="bg-muted px-6 md:px-0 flex justify-center items-center"
+        >
           <div className="landing-section-container">
             <div className="max-w-3xl mx-auto px-4">
               <div className="text-center mb-16">
@@ -279,16 +282,9 @@ function App() {
                 Write Better. Grow Your Audience.{" "}
                 <span className="text-primary">Increase Your Income.</span>
               </h2>
-              {/* <p className="text-xl mb-8 opacity-90">
-                Join Substack writers with {appName}
-                &apos;s fully-integrated AI assistant.
-              </p> */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="outline" size="lg" asChild>
-                  <Link href="/login">Try It Free</Link>
-                </Button>
-                <Button size="lg" variant="default" asChild>
-                  <Link href="#pricing">Upgrade to Pro</Link>
+                <Button size="lg" asChild>
+                  <Link href="#pricing">Try It Free</Link>
                 </Button>
               </div>
             </div>

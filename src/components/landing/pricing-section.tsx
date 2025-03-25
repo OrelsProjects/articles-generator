@@ -18,12 +18,13 @@ const basicFeatures = (credits: number) => [
   `${credits} WriteRoom AI Credits/Month`,
   "Easy one-click posting",
   "Specialized AI-Powered Substack editor",
-  "3m+ Notes Inspirations",
+  "Growing Notes Inspirations (3m+)",
 ];
 
 const advancedFeatures = [
-  "Advanced Notes (3m+) Research Tools",
+  "Advanced Notes Research Tools",
   "Choose your LLM (Includes GPT-4.5)",
+  "Access to The Best Notes Templates",
 ];
 
 const premiumFeatures = [
