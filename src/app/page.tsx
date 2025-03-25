@@ -47,7 +47,7 @@ const DividerPrimary = ({
 }) => (
   <div
     className={cn(
-      "w-full h-fit md:min-h-[400px] bg-primary flex justify-center items-center",
+      "w-full h-fit md:min-h-[400px] bg-primary flex justify-center items-center py-12 lg:py-0",
       className,
     )}
   >
@@ -175,7 +175,7 @@ function App() {
         {/* Social Proof Banner */}
         <OtherSolutions />
         <DividerPrimary>
-          <h2 className="text-center text-primary-foreground text-[56px] leading-[4rem] font-bold">
+          <h2 className="text-center text-primary-foreground text-3xl lg:text-[56px] lg:leading-[4rem] font-bold">
             <span className="text-orange-950">Discover</span> how {appName} will
             help you
             <br />{" "}
@@ -190,7 +190,7 @@ function App() {
         {/* Features Section */}
         <ProductHighlightSection />
         <DividerPrimary>
-          <h2 className="text-center text-primary-foreground text-[56px] leading-[4rem] font-bold">
+          <h2 className="text-center text-primary-foreground text-3xl lg:text-[56px] lg:leading-[4rem] font-bold">
             <span className="text-orange-950">Writing notes</span> is the best
             way
             <br /> to grow on Substack
@@ -199,15 +199,15 @@ function App() {
         </DividerPrimary>
         <WhyNotesSection />
         <DividerPrimary>
-          <h2 className="text-center text-primary-foreground text-[56px] leading-[4rem] font-bold">
+          <h2 className="text-center text-primary-foreground text-3xl lg:text-[56px] lg:leading-[4rem] font-bold">
             <span className="text-orange-950">Need more</span> than notes?
           </h2>
         </DividerPrimary>
         <FeaturesSection />
         {/* Testimonials Section */}
         <DividerPrimary>
-          <div className="container mx-auto py-24">
-            <h2 className="text-center text-primary-foreground text-[56px] leading-[4rem] font-bold mb-12">
+          <div className="container mx-auto py-4 lg:py-24">
+            <h2 className="text-center text-primary-foreground text-3xl lg:text-[56px] lg:leading-[4rem] font-bold mb-12">
               <span className="text-orange-950">
                 How they are growing their audience with {appName}
               </span>
@@ -252,7 +252,7 @@ function App() {
         <Pricing className="bg-background" />
 
         {/* FAQ Section */}
-        <motion.section id="faq" className="bg-muted">
+        <motion.section id="faq" className="bg-muted px-6 md:px-0 flex justify-center items-center">
           <div className="landing-section-container">
             <div className="max-w-3xl mx-auto px-4">
               <div className="text-center mb-16">
@@ -279,10 +279,10 @@ function App() {
                 Write Better. Grow Your Audience.{" "}
                 <span className="text-primary">Increase Your Income.</span>
               </h2>
-              <p className="text-xl mb-8 opacity-90">
-                Join 1,000+ Substack writers earning $1k+/month with {appName}
+              {/* <p className="text-xl mb-8 opacity-90">
+                Join Substack writers with {appName}
                 &apos;s fully-integrated AI assistant.
-              </p>
+              </p> */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button variant="outline" size="lg" asChild>
                   <Link href="/login">Try It Free</Link>

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import useMediaQuery from "@/lib/hooks/useMediaQuery";
+import { appName } from "@/lib/consts";
 
 const SubstackLogo = ({ className }: { className?: string }) => (
   <div className={cn("bg-primary rounded-lg p-1", className)}>
@@ -190,11 +191,11 @@ function FeaturesSection() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
-    <section id="features" className="landing-section-container bg-muted">
-      <div className="mx-auto md:px-0 relative">
+    <section id="features" className="landing-section-container bg-muted px-6 md:px-0">
+      <div className="mx-auto relative">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
-            See how WriteRoom helps you write articles
+            See how {appName} helps you write articles
             <br /> <span className="text-primary">faster</span> and{" "}
             <span className="text-primary">better</span>
           </h2>

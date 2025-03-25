@@ -6,7 +6,6 @@ import Link from "next/link";
 
 export const HeroSection = () => (
   <section className="h-fit min-h-screen w-screen bg-background py-12 pb-28 rounded-b-[3rem] shadow-lg overflow-y-visible relative">
-
     <div className="w-full h-full  max-w-6xl mx-auto flex flex-col items-center justify-start relative">
       {/* Background grid lines */}
       <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
@@ -36,25 +35,12 @@ export const HeroSection = () => (
             />
           ))}
         </div>
-        {/* <div className="absolute bottom-2 flex justify-between w-full h-[27rem]">
-        {[...Array(11)].map((_, i) => (
-          <div
-            key={`v-line-${i}`}
-            className={cn("h-full w-5 border-x-2 border-primary/20", {
-              "border-none": i === 0 || i === 10,
-            })}
-          />
-        ))}
-      </div> */}
-
-        {/* Blue accent line at the bottom */}
-        {/* <div className="absolute bottom-0 left-0 right-0 h-2 bg-primary/20 rounded-t-full" /> */}
       </div>
 
       <div className="w-screen container flex items-center justify-center relative z-10">
         <div className="flex-1 space-y-8 w-full">
           <div className="flex flex-col gap-16 items-center text-center lg:text-left">
-            <h1 className="text-center font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] md:-mb-4">
+            <h1 className="text-center font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] lg:-mb-4">
               The growth platform
               <br />
               {/* <span className="text-primary bg-primary/20 rounded-md p-1 py-0"> */}
@@ -63,7 +49,7 @@ export const HeroSection = () => (
             </h1>
 
             {/* Feature list */}
-            <ul className="w-full flex gap-2 justify-center">
+            <ul className="w-full flex flex-col lg:flex-row gap-2 justify-center items-center">
               {[
                 "VIRAL NOTES RESEARCH TOOL",
                 "PERSONALIZED NOTES",
@@ -76,7 +62,7 @@ export const HeroSection = () => (
                   <div className="bg-primary rounded-full p-1">
                     <Check className="h-2.5 w-2.5 flex-none text-background" />
                   </div>
-                  <span className="text-sm font-black text-primary leading-tight md:leading-relaxed text-left">
+                  <span className="text-sm font-black text-primary leading-tight lg:leading-relaxed text-left">
                     {feature}
                   </span>
                 </li>
@@ -86,7 +72,7 @@ export const HeroSection = () => (
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <Button
                 size="lg"
-                className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground px-8 sm:px-16 py-6 font-bold rounded-xl w-full sm:w-auto"
+                className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground mt-6 px-8 sm:px-16 lg:mt-0 py-6 font-bold rounded-xl w-full sm:w-auto"
                 asChild
               >
                 <Link href="#pricing">Try 7-day free trial</Link>
@@ -94,20 +80,22 @@ export const HeroSection = () => (
               <Button
                 size="lg"
                 variant="outline"
-                className="text-lg hover:bg-primary/10 px-8 sm:px-16 py-6 font-semibold rounded-xl w-full sm:w-auto"
+                className="text-lg hover:bg-primary/10 px-8 sm:px-16 py-6 font-semibold rounded-xl w-full sm:w-auto hidden lg:flex"
                 asChild
               >
                 <Link href="/login">Login</Link>
               </Button>
             </div>
-            <div className="relative w-screen max-w-6xl h-[600px] bg-gradient-to-b from-primary via-primary/80 to-primary/60 rounded-[32px] flex items-center justify-center">
-              <motion.img
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-                src="/landing/landing-hero.png"
-                alt="Hero"
-                className="absolute mx-auto mt-32 w-screen max-w-5xl !h-[600px] rounded-[32px] shadow-md"
-              />
+            <div className="w-screen h-fit px-4 flex justify-center items-center">
+              <div className="relative w-screen h-[220px] lg:max-w-6xl lg:h-[600px] bg-gradient-to-b from-primary via-primary/80 to-primary/60 rounded-[32px] flex items-center justify-center overflow-clip lg:overflow-visible">
+                <motion.img
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.3 }}
+                  src="/landing/landing-hero.png"
+                  alt="Hero"
+                  className="absolute mx-auto mt-32 w-full max-w-5xl lg:!h-[600px] rounded-[32px] shadow-md translate-x-10 -translate-y-8 lg:translate-x-0 lg:translate-y-0"
+                />
+              </div>
             </div>
           </div>
         </div>

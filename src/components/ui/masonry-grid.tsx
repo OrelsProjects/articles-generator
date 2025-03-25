@@ -13,6 +13,7 @@ type Card = {
 interface MasonryGridProps {
   cards: Card[];
   columns?: number;
+  columnsMobile?: number;
   gap?: number;
   className?: string;
 }

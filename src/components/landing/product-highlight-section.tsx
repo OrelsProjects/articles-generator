@@ -121,12 +121,12 @@ const containerVariants = {
 export default function FeatureSection() {
   return (
     <motion.section
-      className="w-full min-h-screen flex flex-col justify-start items-center gap-12 bg-background py-12 relative px-6 md:px-8"
+      className="w-full min-h-screen flex flex-col justify-start items-center gap-12 bg-background py-4 lg:py-12 relative md:px-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.div className="landing-section-container landing-section-top flex flex-col">
+      <motion.div className="landing-section-container landing-section-top flex flex-col px-6 md:px-0">
         <h2>
           Our best features to help you{" "}
           <span className="text-primary">grow fast</span>
