@@ -7,7 +7,7 @@ import { generateSessionId } from "@/lib/stripe";
 import { z } from "zod";
 
 const checkoutSchema = z.object({
-  plan: z.enum(["standard", "premium", "executive"]),
+  plan: z.enum(["standard", "premium", "executive", "hobbyist"]),
   interval: z.enum(["month", "year"]),
   referralCode: z.string().optional(),
 });
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     );
 
     const productId =
-      plan === "standard"
+      plan === "standard" || plan === "hobbyist"
         ? process.env.STRIPE_PRICING_ID_STANDARD
         : plan === "premium"
           ? process.env.STRIPE_PRICING_ID_PREMIUM
@@ -32,7 +32,10 @@ export async function POST(req: NextRequest) {
 
     if (!productId) {
       loggerServer.error("Invalid pricing plan", { plan });
-      return NextResponse.json({ error: "Invalid pricing plan" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid pricing plan" },
+        { status: 400 },
+      );
     }
 
     const stripe = getStripeInstance();

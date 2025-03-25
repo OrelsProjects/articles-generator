@@ -14,62 +14,52 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
 
+const basicFeatures = (credits: number) => [
+  `${credits} WriteRoom AI Credits/Month`,
+  "Easy one-click posting",
+  "Specialized AI-Powered Substack editor",
+  "3m+ Notes Inspirations",
+];
+
+const advancedFeatures = [
+  "Advanced Notes (3m+) Research Tools",
+  "Choose your LLM (Includes GPT-4.5)",
+];
+
+const premiumFeatures = [
+  "<span class='text-primary'>Same price forever</span>",
+];
+
 const pricingPlans = [
+  {
+    name: "Hobbyist",
+    description:
+      "The essentials to start building your Substack business today.",
+    monthlyPrice: 12.99,
+    yearlyPlanPrice: 9.99,
+    features: [...basicFeatures(50)],
+    annualSavings: 35.98,
+    popular: false,
+  },
   {
     name: "Standard",
     description:
-      "The essentials to start building your Substack business today.",
+      "Scale your Substack presence and business.<br/>Ideal for accounts looking to grow.",
     monthlyPrice: 29.99,
     yearlyPlanPrice: 23.99,
-    features: [
-      "50 Post Writing AI Credits",
-      "Up to 20 Followed Accounts",
-      "5 Collab Conversation Credits",
-      "Streamlined Inbox for Engagement",
-      "4m+ Post Inspirational Content Database",
-      "Unlimited AI Comment Credits*",
-      "Content Analytics & Statistics",
-      "Top Leads",
-    ],
+    features: [...basicFeatures(200), ...advancedFeatures],
+
     annualSavings: 71.98,
-    popular: false,
+    popular: true,
   },
   {
     name: "Premium",
     description:
-      "Scale your Substack presence and business. Ideal for accounts looking to grow.",
+      "Supercharge your Substack activity.<br/>Ideal for large, active accounts.",
     monthlyPrice: 49.99,
     yearlyPlanPrice: 39.99,
-    features: [
-      "100 Post Writing AI Credits/Month",
-      "Up to 40 Followed Accounts",
-      "15 Collab Conversation Credits",
-      "Streamlined Inbox for Engagement",
-      "4m+ Post Inspirational Content Database",
-      "Unlimited AI Comment Credits*",
-      "Content Analytics & Statistics",
-      "Top Leads",
-    ],
+    features: [...basicFeatures(350), ...advancedFeatures, ...premiumFeatures],
     annualSavings: 119.98,
-    popular: true,
-  },
-  {
-    name: "Executive",
-    description:
-      "Supercharge your Substack activity. Ideal for large, active accounts.",
-    monthlyPrice: 99.99,
-    yearlyPlanPrice: 79.99,
-    features: [
-      "150 Post Writing AI Credits/Month",
-      "Up to 60 Followed Accounts",
-      "40 Collab Conversation Credits",
-      "Streamlined Inbox for Engagement",
-      "4m+ Post Inspirational Content Database",
-      "Unlimited AI Comment Credits*",
-      "Content Analytics & Statistics",
-      "Top Leads",
-    ],
-    annualSavings: 239.98,
     popular: false,
   },
 ];
@@ -110,9 +100,6 @@ export default function Pricing({
     <motion.section
       id="pricing"
       className={cn("w-full h-full py-20 relative z-20", className)}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
     >
       <div className="max-w-6xl mx-auto px-8 relative z-50">
         {onboarding && (
@@ -179,10 +166,11 @@ export default function Pricing({
                 delay: index * 0.1 + (onboarding ? 0.6 : 0.1),
                 duration: 0.8,
               }}
+              className="h-full"
             >
               <Card
                 className={cn(
-                  "ring-1 ring-gray-200 rounded-3xl p-8 xl:p-10 border-none",
+                  "h-full ring-1 ring-gray-200 rounded-3xl p-8 xl:p-10 border-none",
                   plan.popular && "ring-2 ring-primary",
                 )}
               >
@@ -202,9 +190,12 @@ export default function Pricing({
                       </div>
                     )}
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground">
-                    {plan.description}
-                  </p>
+                  <p
+                    className="text-xs text-muted-foreground"
+                    dangerouslySetInnerHTML={{
+                      __html: plan.description,
+                    }}
+                  />
                   <div className="!mt-2">
                     <PriceContainer
                       originalPrice={plan.monthlyPrice}
@@ -243,7 +234,12 @@ export default function Pricing({
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
+                        <span
+                          className="text-sm"
+                          dangerouslySetInnerHTML={{
+                            __html: feature,
+                          }}
+                        />
                       </li>
                     ))}
                   </ul>

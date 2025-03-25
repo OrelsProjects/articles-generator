@@ -3,6 +3,32 @@ import { Button } from "@/components/ui/button";
 import { Link2 } from "lucide-react";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { AnalyzePublicationDialog } from "./analyze-publication-dialog";
+import { MultiStepLoader } from "@/components/ui/multi-step-loader";
+
+const loadingStatesConst = [
+  { text: "Validating publication in our databases..." },
+  { text: "Checking Substack availability..." },
+  { text: "Extracting publications...", delay: 7000 },
+  { text: "Analyzing writing style...", delay: 6000 },
+  { text: "Generating content insights...", delay: 4000 },
+  { text: "Setting up your preferences..." },
+  { text: "Almost done...", delay: 3000 },
+  { text: "I promise, it's almost ready...", delay: 3000 },
+  {
+    text: "You have a humongous publication, my machines really struggle...🤖",
+    delay: 10000,
+  },
+  {
+    text: "Okay, if you're still here, I'll let you in on a secret: I've been faking it.",
+    delay: 10000,
+  },
+  {
+    text: "The statuses are not real. I just wanted to make you feel good while you wait.",
+    delay: 10000,
+  },
+  { text: "Well, this is awkward... Hope it finishes soon...🤦", delay: 3000 },
+];
+
 export function AnalyzePublicationButton({
   variant = "default",
   className,
@@ -11,7 +37,7 @@ export function AnalyzePublicationButton({
   className?: string;
 }) {
   const { publications } = useAppSelector(state => state.publications);
-
+  const [analyzing, setAnalyzing] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -31,7 +57,18 @@ export function AnalyzePublicationButton({
         Connect Substack
       </Button>
 
-      <AnalyzePublicationDialog open={open} onOpenChange={setOpen} />
+      <AnalyzePublicationDialog
+        open={open}
+        onOpenChange={setOpen}
+        onAnalyzing={setAnalyzing}
+      />
+
+      <MultiStepLoader
+        loadingStates={loadingStatesConst}
+        loading={analyzing}
+        duration={3000}
+        loop={false}
+      />
     </div>
   );
 }

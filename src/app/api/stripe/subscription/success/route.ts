@@ -53,12 +53,16 @@ export async function GET(req: NextRequest) {
 
     const plan = product.metadata?.plan;
 
-    await sendMail(
-      session.customer_email || "",
-      process.env.NEXT_PUBLIC_APP_NAME as string,
-      "Payment confirmation",
-      welcomeTemplate(),
-    );
+    try {
+      await sendMail(
+        session.customer_email || "",
+        process.env.NEXT_PUBLIC_APP_NAME as string,
+        "Payment confirmation",
+        welcomeTemplate(),
+      );
+    } catch (error: any) {
+      loggerServer.error("Failed to send welcome email", error);
+    }
 
     return NextResponse.redirect(
       req.nextUrl.origin + `/home?success=true&plan=${plan}`,

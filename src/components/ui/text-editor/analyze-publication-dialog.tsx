@@ -89,11 +89,13 @@ interface ErrorState {
 interface AnalyzePublicationDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onAnalyzing?: (analyzing: boolean) => void;
 }
 
 export function AnalyzePublicationDialog({
   open,
   onOpenChange,
+  onAnalyzing,
 }: AnalyzePublicationDialogProps) {
   const dispatch = useAppDispatch();
   const { analyzePublication, validatePublication } = usePublication();
@@ -104,11 +106,9 @@ export function AnalyzePublicationDialog({
   const [loading, setLoading] = useState(false);
   const [loadingBylines, setLoadingBylines] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
-  const [loadingStates, setLoadingStates] = useState(loadingStatesConst);
   const [openAuthorSelectionDialog, setOpenAuthorSelectionDialog] =
     useState(false);
   const [bylines, setBylines] = useState<Byline[]>([]);
-  const [hasPublication, setHasPublication] = useState(false);
 
   useEffect(() => {
     if (open !== undefined) {
@@ -138,7 +138,6 @@ export function AnalyzePublicationDialog({
         setError(ERRORS.INVALID_SUBSTACK_URL);
         return;
       }
-      setHasPublication(hasPublication);
       const response = await fetch(`/api/publication/bylines?url=${url}`);
       const data = await response.json();
       setBylines(data);
@@ -166,14 +165,7 @@ export function AnalyzePublicationDialog({
 
     setIsOpen(false);
     try {
-      if (hasPublication) {
-        // Make time to fetch publication shorter
-        const newLoadingStates = loadingStates.map(state => ({
-          ...state,
-          delay: state.delay ? state.delay / 2 : 1500,
-        }));
-        setLoadingStates(newLoadingStates);
-      }
+      onAnalyzing?.(true);
       setOpenAuthorSelectionDialog(false);
       await analyzePublication(url, byline);
     } catch (error: any) {
@@ -194,6 +186,7 @@ export function AnalyzePublicationDialog({
       setIsOpen(true);
     } finally {
       setLoading(false);
+      onAnalyzing?.(false);
     }
   };
 
@@ -296,13 +289,6 @@ export function AnalyzePublicationDialog({
         onOpenChange={setOpenAuthorSelectionDialog}
         bylines={bylines}
         onSelect={handleSubmit}
-      />
-
-      <MultiStepLoader
-        loadingStates={loadingStates}
-        loading={loading}
-        duration={3000}
-        loop={false}
       />
     </div>
   );

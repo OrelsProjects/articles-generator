@@ -1,4 +1,4 @@
-import { AIUsageType, Plan } from "@prisma/client";
+import { AIUsageType, FeatureFlag, Plan } from "@prisma/client";
 
 type PlanCredits = Record<Plan, number>;
 
@@ -9,8 +9,24 @@ export const INFINITY = 999999;
 // Credits allocated per plan per billing period
 export const creditsPerPlan: PlanCredits = {
   standard: 50,
-  premium: 100,
-  executive: 250,
+  premium: 200,
+  executive: 350,
+};
+
+export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
+  standard: [FeatureFlag.instantPost],
+  premium: [
+    FeatureFlag.articles,
+    FeatureFlag.instantPost,
+    FeatureFlag.advancedGPT,
+    FeatureFlag.advancedFiltering,
+  ],
+  executive: [
+    FeatureFlag.articles,
+    FeatureFlag.instantPost,
+    FeatureFlag.advancedGPT,
+    FeatureFlag.advancedFiltering,
+  ],
 };
 
 // Cost in credits for each AI operation
