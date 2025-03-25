@@ -7,20 +7,24 @@ const images = [
     alt: "Ana Notes",
   },
   {
-    src: "/landing/notes/yana-notes-proof.png",
-    alt: "Yana Proof",
-  },
-  {
-    src: "/landing/notes/philip-notes.png",
-    alt: "Philip Notes",
-  },
-  {
     src: "/landing/notes/mcilroy-notes.png",
     alt: "McIlroy Notes",
   },
   {
     src: "/landing/notes/yana-notes.png",
     alt: "Yana Notes",
+  },
+  {
+    src: "/landing/notes/yana-notes-proof.png",
+    alt: "Yana Proof",
+  },
+  {
+    src: "/landing/notes/mark-notes.png",
+    alt: "Mark Notes",
+  },
+  {
+    src: "/landing/notes/philip-notes.png",
+    alt: "Philip Notes",
   },
   {
     src: "/landing/notes/maya-notes.png",

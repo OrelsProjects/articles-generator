@@ -286,7 +286,7 @@ export async function POST(req: NextRequest) {
       authorName: note.name,
       body: note.body,
       handle: note.handle,
-      thumbnail: note.photoUrl,
+      thumbnail: note.photoUrl || undefined,
       reactionCount: note.reactionCount,
       entityKey: note.entityKey,
       commentsCount: note.commentsCount || 0,

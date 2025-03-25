@@ -176,7 +176,7 @@ model NotesComments {
     date            DateTime @map("date")
     handle          String   @map("handle")
     name            String   @map("name")
-    photoUrl        String   @map("photo_url")
+    photoUrl        String?   @map("photo_url")
     reactionCount   Int      @map("reaction_count")
     reactions       Json?    @map("reactions")
     commentsCount   Int?      @map("children_count")
