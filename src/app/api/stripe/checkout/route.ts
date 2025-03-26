@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
       name: session.user.name || null,
       freeTrial: 7,
       referralCode,
+      allowCoupon: true,
     });
 
     console.log("sessionId", sessionId);

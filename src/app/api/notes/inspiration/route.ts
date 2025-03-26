@@ -213,17 +213,32 @@ export async function POST(req: NextRequest) {
                 lte: filters.dateRange.to,
               }
             : undefined,
-          body: filters.keyword
-            ? {
-                contains: filters.keyword,
-                mode: "insensitive", // Case insensitive
-              }
-            : undefined,
+          AND: {
+            OR: [
+              {
+                body: filters.keyword
+                  ? {
+                      contains: filters.keyword,
+                      mode: "insensitive", // Case insensitive
+                    }
+                  : undefined,
+              },
+              {
+                name: filters.keyword
+                  ? {
+                      contains: filters.keyword,
+                      mode: "insensitive", // Case insensitive
+                    }
+                  : undefined,
+              },
+            ],
+          },
         },
         orderBy: {
           reactionCount: "asc",
         },
         take: 500,
+        skip: existingNotesIds.length,
       });
 
       console.time("prisma - long query");
