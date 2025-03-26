@@ -226,7 +226,7 @@ export async function POST(req: NextRequest) {
               {
                 name: filters.keyword
                   ? {
-                      contains: filters.keyword,
+                      startsWith: filters.keyword,
                       mode: "insensitive", // Case insensitive
                     }
                   : undefined,

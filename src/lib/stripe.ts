@@ -166,6 +166,7 @@ export const generateSessionId = async (options: {
   urlOrigin: string;
   freeTrial?: number;
   referralCode?: string;
+  allowCoupon?: boolean;
 }): Promise<string> => {
   const stripe = getStripeInstance();
 
@@ -191,6 +192,7 @@ export const generateSessionId = async (options: {
     cancel_url: `${urlOrigin}/cancel`,
     client_reference_id: options.referralCode || userId,
     customer_email: email || "",
+    allow_promotion_codes: options.allowCoupon || false,
     metadata: {
       clientName: name || "",
       productId,
