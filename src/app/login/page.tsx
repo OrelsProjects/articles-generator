@@ -59,9 +59,9 @@ const Auth = () => {
           </Button>
           <div className="grid gap-4 mt-4">
             {[
-              "Get smart suggestions without losing your voice",
+              "Use WriteRoom's AI to outline your notes (with your voice)",
               "Break through writer's block",
-              "Write faster and better",
+              "Grow faster than ever before",
             ].map((perk, index) => (
               <div key={index} className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
