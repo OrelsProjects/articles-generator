@@ -182,9 +182,13 @@ const ideaLoadingStates = [
 ];
 
 // Define AI models
-const AI_MODELS: { value: FrontendModel; label: string }[] = [
+const AI_MODELS: {
+  value: FrontendModel;
+  label: string;
+  recommended?: boolean;
+}[] = [
   { value: "gpt-4.5", label: "GPT-4.5" },
-  { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+  { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro", recommended: true },
   { value: "claude-3.5", label: "Claude 3.5" },
   { value: "claude-3.7", label: "Claude 3.7" },
   { value: "claude-3.5-haiku", label: "Claude 3.5 Haiku" },
@@ -407,7 +411,9 @@ export default function GenerateNotesSidebar() {
         size="icon"
         className={cn(
           "md:hidden fixed h-12 w-12 bottom-20 right-4 z-50 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0",
-          showGenerateNotesSidebar ? "opacity-0 pointer-events-none" : "opacity-100",
+          showGenerateNotesSidebar
+            ? "opacity-0 pointer-events-none"
+            : "opacity-100",
         )}
         onClick={handleToggleSidebar}
       >
@@ -671,6 +677,11 @@ export default function GenerateNotesSidebar() {
                     {AI_MODELS.map(model => (
                       <SelectItem key={model.value} value={model.value}>
                         {model.label}
+                        {model.recommended && (
+                          <span className="text-xs text-primary ml-4">
+                            (Recommended)
+                          </span>
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>
