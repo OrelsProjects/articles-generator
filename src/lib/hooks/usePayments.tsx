@@ -43,10 +43,13 @@ export default function usePayments() {
       );
       console.log("response", response.data);
       const stripe = await stripePromise;
+      console.log("stripe", stripe);
       const { error } = await stripe!.redirectToCheckout({
         sessionId: response.data.sessionId,
       });
+      console.log("error", error);
       if (error) {
+        console.log("error", error);
         Logger.error("Error redirecting to checkout", { error });
         throw error;
       }
