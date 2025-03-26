@@ -7,6 +7,7 @@ import { setProducts } from "@/lib/features/products/productsSlice";
 import { useRef } from "react";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
 );
@@ -40,6 +41,7 @@ export default function usePayments() {
         "/api/stripe/checkout",
         { interval, plan, referral },
       );
+      console.log("response", response.data);
       const stripe = await stripePromise;
       const { error } = await stripe!.redirectToCheckout({
         sessionId: response.data.sessionId,
