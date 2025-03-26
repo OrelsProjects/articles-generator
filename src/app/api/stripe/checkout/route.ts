@@ -30,6 +30,8 @@ export async function POST(req: NextRequest) {
           ? process.env.STRIPE_PRICING_ID_STANDARD
           : process.env.STRIPE_PRICING_ID_PREMIUM;
 
+    console.log("productId", productId);
+
     if (!productId) {
       loggerServer.error("Invalid pricing plan", { plan });
       return NextResponse.json(
@@ -46,6 +48,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Product not found" }, { status: 400 });
     }
 
+    console.log("product", product);
+
     const prices = await stripe.prices.list({
       product: productId,
     });
@@ -53,6 +57,9 @@ export async function POST(req: NextRequest) {
     const price = prices.data.find(
       price => price.recurring?.interval === interval,
     );
+
+    console.log("price", price);
+
     if (!price) {
       loggerServer.error("Price not found", { productId, interval });
       return NextResponse.json({ error: "Price not found" }, { status: 400 });
@@ -68,6 +75,9 @@ export async function POST(req: NextRequest) {
       freeTrial: 7,
       referralCode,
     });
+
+    console.log("sessionId", sessionId);
+
     return NextResponse.json({ sessionId }, { status: 200 });
   } catch (error: any) {
     loggerServer.error("Error creating a checkout session", error);
