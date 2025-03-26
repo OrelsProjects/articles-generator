@@ -28,6 +28,7 @@ const advancedFeatures = [
 ];
 
 const premiumFeatures = [
+  "<span class='text-primary'>Can ask for a feature that will be implemented</span>",
   "<span class='text-primary'>Same price forever</span>",
 ];
 

@@ -49,6 +49,8 @@ export async function POST(
       model = "anthropic/claude-3.7-sonnet";
     } else if (requestedModel === "claude-3.5-haiku") {
       model = "anthropic/claude-3.5-haiku";
+    } else if (requestedModel === "gemini-2.5-pro") {
+      model = "google/gemini-2.5-pro-exp-03-25:free";
     }
   }
 
