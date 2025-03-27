@@ -470,7 +470,6 @@ export function StatusBoard({
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
-
       >
         <div
           className={`grid grid-cols-1 ${displayColumns.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"} gap-4 ${className}`}

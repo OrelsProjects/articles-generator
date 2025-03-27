@@ -6,6 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { StatusItem as StatusItemType } from "./types";
 import { UniqueIdentifier } from "@dnd-kit/core";
+import { Send } from "lucide-react";
+import { SubstackPostButton } from "@/components/notes/substack-post-button";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 interface StatusItemProps {
   item: StatusItemType;
   onSelectItem: (itemId: UniqueIdentifier, content: string) => void;
@@ -21,6 +25,8 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
     transition,
     isDragging,
   } = useSortable({ id: item.id });
+
+  const [isHovering, setIsHovering] = useState(false);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -39,6 +45,14 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
       }}
       {...attributes}
       {...listeners}
+      onMouseEnter={() => {
+        setIsHovering(true);
+        listeners?.onMouseEnter?.();
+      }}
+      onMouseLeave={() => {
+        setIsHovering(false);
+        listeners?.onMouseLeave?.();
+      }}
     >
       <CardContent className="p-3">
         <div className="flex items-start gap-2">
@@ -49,9 +63,19 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
             </AvatarFallback>
           </Avatar>
 
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 space-y-2.5">
             {item.author && (
-              <div className="font-medium text-sm">{item.author}</div>
+              <div className="w-full flex justify-between">
+                <div className="font-medium text-sm pt-1">{item.author}</div>
+                <SubstackPostButton
+                  note={item.id.toString()}
+                  source="status-board"
+                  className={cn(
+                    "hidden lg:flex opacity-0 transition-opacity duration-200",
+                    isHovering && "opacity-100",
+                  )}
+                />
+              </div>
             )}
             <div className="text-sm break-words">{item.content}</div>
           </div>

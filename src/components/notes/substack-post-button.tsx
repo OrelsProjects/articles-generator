@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { EventTracker } from "@/eventTracker";
 
 interface SubstackPostButtonProps {
-  note: Note | NoteDraft | null;
+  note: Note | NoteDraft | string | null;
   size?: "sm" | "lg" | "default" | "icon";
   variant?: "ghost" | "default" | "outline";
   source: string;
@@ -32,7 +32,7 @@ export function SubstackPostButton({
     createPost,
     isLoading: loadingSendNote,
     postResponse,
-    canUseSubstackPost,
+    getNoteById,
   } = useSubstackPost();
   const { updateNoteStatus } = useNotes();
 
@@ -42,9 +42,11 @@ export function SubstackPostButton({
   const handleSendNote = async () => {
     EventTracker.track("note_post_button_clicked_" + source);
     if (!note) return;
+    const noteObject = typeof note === "string" ? getNoteById(note) : note;
+    if (!noteObject) return;
     try {
       await createPost({
-        message: note.body,
+        message: noteObject.body,
       });
 
       //   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -61,7 +63,8 @@ export function SubstackPostButton({
     if (!note) return;
     setShowSuccessDialog(open);
     if (!open) {
-      updateNoteStatus(note.id, "published");
+      if (typeof note === "string") updateNoteStatus(note, "published");
+      else updateNoteStatus(note.id, "published");
     }
   };
 
@@ -94,7 +97,8 @@ export function SubstackPostButton({
         response={postResponse}
         onArchiveNote={() => {
           if (!note) return;
-          updateNoteStatus(note.id, "archived");
+          if (typeof note === "string") updateNoteStatus(note, "archived");
+          else updateNoteStatus(note.id, "archived");
         }}
       />
 

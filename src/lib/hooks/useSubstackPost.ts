@@ -13,7 +13,8 @@ import axios from "axios";
 import { CreatePostResponse } from "@/types/createPostResponse";
 import { Logger } from "@/logger";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { FeatureFlag } from "@prisma/client";
+import { FeatureFlag, Note } from "@prisma/client";
+import { NoteDraft } from "@/types/note";
 
 /**
  * Detects the current browser type
@@ -42,6 +43,7 @@ const detectBrowser = (): BrowserType => {
  */
 export function useSubstackPost(): UseSubstackPost {
   const { user } = useAppSelector(state => state.auth);
+  const {userNotes} = useAppSelector(state => state.notes);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [postResponse, setPostResponse] = useState<CreatePostResponse | null>(
@@ -254,6 +256,10 @@ export function useSubstackPost(): UseSubstackPost {
     [sendExtensionMessage],
   );
 
+  const getNoteById = useCallback((noteId: string): NoteDraft | null => {
+    return userNotes.find(note => note.id === noteId) || null;
+  }, [userNotes]);
+
   return {
     createPost,
     isLoading,
@@ -261,5 +267,6 @@ export function useSubstackPost(): UseSubstackPost {
     postResponse,
     canUseSubstackPost: canUseSubstackPost || false,
     browserType,
+    getNoteById,
   };
 }

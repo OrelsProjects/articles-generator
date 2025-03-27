@@ -1,4 +1,6 @@
 import { CreatePostResponse } from "@/types/createPostResponse";
+import { NoteDraft } from "@/types/note";
+import { Note } from "@/types/note";
 
 /**
  * Supported browser types
@@ -65,4 +67,5 @@ export interface UseSubstackPost {
   postResponse: CreatePostResponse | null;
   canUseSubstackPost: boolean;
   browserType: BrowserType;
+  getNoteById: (noteId: string) => NoteDraft | null;
 }
