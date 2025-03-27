@@ -45,8 +45,8 @@ const features = [
     objectFit: "fit",
   },
   {
-    title: "Easily organize your notes",
-    description: `Instead of having a massive list of drafts, you can easily organize your notes into folders. Fast.`,
+    title: "Easily organize your posts",
+    description: `Instead of having a massive list of drafts, you can easily organize your posts into folders. Fast.`,
     icon: Folders,
     videoUrl:
       "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/organized-folders.mp4",
