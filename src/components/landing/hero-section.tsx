@@ -10,10 +10,10 @@ import axios from "axios";
 export const HeroSection = () => {
   const [count, setCount] = useState("");
   const [topFiveImages, setTopFiveImages] = useState<string[]>([]);
-  
+
   const fetchData = async () => {
     try {
-      const response = await axios.get("/api/visit");
+      const response = await axios.get("/api/landing/users");
       setCount(response.data.count);
       setTopFiveImages(response.data.topFiveImages);
     } catch (error) {}

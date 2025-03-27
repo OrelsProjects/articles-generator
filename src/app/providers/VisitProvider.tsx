@@ -1,7 +1,11 @@
 import axios from "axios";
 import { useEffect } from "react";
 
-const fetcher = (url: string) => axios.post(url).then(res => res.data);
+const fetcher = (url: string) =>
+  axios
+    .post(url)
+    .then(res => res.data)
+    .catch(() => {});
 
 export default function VisitProvider({
   children,
