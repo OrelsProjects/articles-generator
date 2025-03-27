@@ -7,8 +7,8 @@ const images = [
     alt: "Ana Notes",
   },
   {
-    src: "/landing/notes/mcilroy-notes.png",
-    alt: "McIlroy Notes",
+    src: "/landing/notes/kristina-notes.png",
+    alt: "Kristina Notes",
   },
   {
     src: "/landing/notes/yana-notes.png",
