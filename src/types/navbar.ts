@@ -4,7 +4,6 @@ import {
   PenTool,
   Settings,
   BarChart,
-  Calendar,
   Lightbulb,
 } from "lucide-react";
 

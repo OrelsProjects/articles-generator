@@ -55,6 +55,7 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
   const subscriptionId = subscription.id;
   const user = await getUserBySubscription(subscription);
   const isTrialing = subscription.trial_end !== null;
+  const isFreeSubscription = subscription.metadata?.isFreeSubscription;
   const plan: Plan = product.metadata?.plan as Plan;
   if (!user) {
     loggerServer.error("No user found for subscription", {
@@ -77,7 +78,7 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
 
       // Credits information
       creditsPerPeriod: creditsPerPlan[plan],
-      creditsRemaining: creditsPerPlan[plan],
+      creditsRemaining: isFreeSubscription ? 12 : creditsPerPlan[plan],
       lastCreditReset: new Date(),
 
       currentPeriodStart: new Date(subscription.current_period_start * 1000),
