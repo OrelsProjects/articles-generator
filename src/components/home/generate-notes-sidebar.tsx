@@ -65,7 +65,8 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { copyHTMLToClipboard } from "@/lib/utils/copy";
-import { SubstackPostButton } from "@/components/notes/substack-post-button";
+import { InstantPostButton } from "@/components/notes/instant-post-button";
+import { setDidShowSaveTooltip } from "@/lib/features/ui/uiSlice";
 
 // Define frontend model type
 type FrontendModel =
@@ -84,13 +85,6 @@ const formatOptions: {
   tooltip?: string;
   type: ImprovementType;
 }[] = [
-  // {
-  //   type: "fact-check",
-  //   label: "Fact-check",
-  //   subLabel: "Check the text for accuracy",
-  //   icon: Check,
-  //   divider: false,
-  // },
   {
     type: "new-version",
     label: "New version",
@@ -199,6 +193,8 @@ export default function GenerateNotesSidebar() {
     updateShowGenerateNotesSidebar,
     showGenerateNotesSidebar,
     hasAdvancedGPT,
+    updateDidShowSaveTooltip,
+    didShowSaveTooltip,
   } = useUi();
   const {
     generateNewNotes,
@@ -210,11 +206,13 @@ export default function GenerateNotesSidebar() {
   } = useNotes();
   const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
   const [loadingImprovement, setLoadingImprovement] = useState(false);
+  const [showSaveReminderTooltip, setShowSaveReminderTooltip] = useState(false);
   const [selectedModel, setSelectedModel] =
     useState<FrontendModel>("claude-3.7");
   const [useTopTypes, setUseTopTypes] = useState(false);
   const [previousSelectedNote, setPreviousSelectedNote] =
     useState<NoteDraft | null>(null);
+  const [isTextChanged, setIsTextChanged] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleEditNoteBody = async (noteId: string | null, html: string) => {
@@ -224,27 +222,30 @@ export default function GenerateNotesSidebar() {
       return;
     }
     try {
+      setIsTextChanged(false);
       await editNoteBody(noteId, body);
     } catch (e: any) {
+      setIsTextChanged(true);
       toast.error(e.message);
     }
   };
-
-  const onEditNoteBody = useCallback(
-    debounce(async (noteId: string | null, html: string) => {
-      handleEditNoteBody(noteId, html);
-    }, 3500),
-    [],
-  );
 
   const editor = useEditor(
     notesTextEditorOptions(html => {
       const isInspirationNotSaved =
         selectedNote?.isFromInspiration && !selectedNote;
       if (isInspirationNotSaved) {
+        setIsTextChanged(false);
         return;
       }
-      onEditNoteBody(selectedNote?.id || null, html);
+      if (isTextChanged && !didShowSaveTooltip) {
+        setShowSaveReminderTooltip(true);
+        updateDidShowSaveTooltip(true);
+        setTimeout(() => {
+          setShowSaveReminderTooltip(false);
+        }, 5500);
+      }
+      setIsTextChanged(true);
     }),
   );
 
@@ -355,6 +356,12 @@ export default function GenerateNotesSidebar() {
   const handleCreateDraftNote = async () => {
     selectNote(null);
   };
+
+  useEffect(() => {
+    if (selectedNote?.isFromInspiration) {
+      setIsTextChanged(false);
+    }
+  }, [selectedNote]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -596,9 +603,14 @@ export default function GenerateNotesSidebar() {
                 </div>
                 <div className="flex items-center gap-1 md:gap-2">
                   <TooltipButton
-                    tooltipContent="Save"
+                    tooltipContent={
+                      showSaveReminderTooltip ? "Don't forget to save" : "Save"
+                    }
                     variant="ghost"
                     className="w-8 h-8 p-0"
+                    forceShowTooltip={
+                      showSaveReminderTooltip ? { length: 5000 } : undefined
+                    }
                     disabled={loadingEditNote || !canSave}
                     onClick={() => {
                       handleEditNoteBody(selectedNote?.id || null, content);
@@ -607,7 +619,12 @@ export default function GenerateNotesSidebar() {
                     {loadingEditNote ? (
                       <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
                     ) : (
-                      <Save className="h-5 w-5 text-muted-foreground" />
+                      <Save
+                        className={cn(
+                          "h-5 w-5 text-muted-foreground",
+                          isTextChanged && "text-primary",
+                        )}
+                      />
                     )}
                   </TooltipButton>
                   <TooltipButton
@@ -712,7 +729,7 @@ export default function GenerateNotesSidebar() {
               </div>
             )}
 
-            <SubstackPostButton
+            <InstantPostButton
               note={selectedNote}
               size="lg"
               variant="default"

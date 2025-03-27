@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { StatusItem as StatusItemType } from "./types";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { Send } from "lucide-react";
-import { SubstackPostButton } from "@/components/notes/substack-post-button";
+import { InstantPostButton } from "@/components/notes/instant-post-button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 interface StatusItemProps {
@@ -67,7 +67,7 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
             {item.author && (
               <div className="w-full flex justify-between">
                 <div className="font-medium text-sm pt-1">{item.author}</div>
-                <SubstackPostButton
+                <InstantPostButton
                   note={item.id.toString()}
                   source="status-board"
                   className={cn(

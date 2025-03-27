@@ -7,6 +7,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
+import { useState } from "react";
 
 interface TooltipButtonProps extends ButtonProps {
   tooltipContent?: React.ReactNode;
@@ -15,6 +17,9 @@ interface TooltipButtonProps extends ButtonProps {
   tooltipDelayDuration?: number;
   className?: string;
   hideTooltip?: boolean;
+  forceShowTooltip?: {
+    length?: number;
+  };
   children: React.ReactNode;
 }
 
@@ -31,10 +36,23 @@ export const TooltipButton = React.forwardRef<
       hideTooltip = false,
       className,
       children,
+      forceShowTooltip,
       ...props
     },
     ref,
   ) => {
+
+    const [showTooltip, setShowTooltip] = useState(false);
+
+    useEffect(() => {
+      if (forceShowTooltip?.length) {
+        setShowTooltip(forceShowTooltip.length > 0);
+      }
+      setTimeout(() => {
+        setShowTooltip(false);
+      }, forceShowTooltip?.length);
+    }, [forceShowTooltip]);
+
     return !tooltipContent ? (
       <Button
         ref={ref}
@@ -46,7 +64,11 @@ export const TooltipButton = React.forwardRef<
       </Button>
     ) : (
       <TooltipProvider>
-        <Tooltip delayDuration={tooltipDelayDuration}>
+        <Tooltip
+          onOpenChange={setShowTooltip}
+          delayDuration={tooltipDelayDuration}
+          open={showTooltip}
+        >
           <TooltipTrigger asChild disabled={hideTooltip}>
             <Button
               ref={ref}

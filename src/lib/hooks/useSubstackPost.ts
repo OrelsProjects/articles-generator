@@ -6,7 +6,7 @@ import {
   ExtensionMessage,
   ExtensionResponse,
   SubstackError,
-  UseSubstackPost,
+  UseSubstackPost as UseExtension,
   BrowserType,
 } from "@/types/useSubstack.type";
 import axios from "axios";
@@ -39,9 +39,9 @@ const detectBrowser = (): BrowserType => {
 
 /**
  * Custom hook for creating Substack posts through a browser extension
- * @returns {UseSubstackPost} Hook methods and state
+ * @returns {UseExtension} Hook methods and state
  */
-export function useSubstackPost(): UseSubstackPost {
+export function useExtension(): UseExtension {
   const { user } = useAppSelector(state => state.auth);
   const {userNotes} = useAppSelector(state => state.notes);
   const [isLoading, setIsLoading] = useState(false);

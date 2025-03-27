@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { NoteDraft } from "@/types/note";
@@ -92,13 +92,13 @@ export default function PersonalNotesGrid() {
   );
 
   // Transform notes into the format expected by MasonryGrid
-  const gridCards = userNotes.map((note: NoteDraft) => {
+  const gridCards = useMemo(() => userNotes.map((note: NoteDraft) => {
     return {
       id: parseInt(note.id),
       className: "col-span-1",
       content: <NoteComponent note={note} />,
     };
-  });
+  }), [userNotes]);
 
   return (
     <div className="w-full pb-24 bg-transparent py-8">

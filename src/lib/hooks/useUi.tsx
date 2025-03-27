@@ -1,6 +1,7 @@
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import {
   selectUi,
+  setDidShowSaveTooltip,
   setShowGenerateNotesSidebar,
   setSideBarState,
   setUiState,
@@ -25,6 +26,10 @@ export function useUi() {
     dispatch(setSideBarState(state));
   };
 
+  const updateDidShowSaveTooltip = (didShow: boolean) => {
+    dispatch(setDidShowSaveTooltip(didShow));
+  };
+
   const hasAdvancedGPT = user?.meta?.featureFlags.includes(
     FeatureFlag.advancedGPT,
   );
@@ -33,6 +38,7 @@ export function useUi() {
     FeatureFlag.advancedFiltering,
   );
 
+  const didShowSaveTooltip = useAppSelector(selectUi).didShowSaveTooltip;
 
   return {
     setState,
@@ -41,5 +47,7 @@ export function useUi() {
     updateShowGenerateNotesSidebar,
     hasAdvancedFiltering,
     updateSideBarState,
+    updateDidShowSaveTooltip,
+    didShowSaveTooltip,
   };
 }

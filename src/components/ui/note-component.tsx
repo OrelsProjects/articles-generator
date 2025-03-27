@@ -16,7 +16,6 @@ import {
   ThumbsDown,
   X,
   Archive,
-  Loader2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,14 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SubstackPostButton } from "@/components/notes/substack-post-button";
-import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { InstantPostButton } from "@/components/notes/instant-post-button";
 import StatusBadgeDropdown from "@/components/notes/status-badge-dropdown";
 
 // Define feedback options
@@ -65,13 +57,6 @@ type DislikeFeedbackPopoverProps = {
   isLoading: boolean;
   feedback: NoteFeedback | null | undefined;
   disabled?: boolean;
-};
-
-const STATUSES: NoteStatus[] = ["draft", "ready", "published"];
-
-type StatusBadgeProps = {
-  note: NoteDraft;
-  onStatusChange?: (newStatus: NoteStatus) => Promise<void>;
 };
 
 const DislikeFeedbackPopover = ({
@@ -203,6 +188,8 @@ export default function NoteComponent({ note }: NoteProps) {
   const [isDislikePopoverOpen, setIsDislikePopoverOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  console.log("note", note);
+
   const isUserNote = useMemo(() => {
     if ("reactionCount" in note) {
       return false;
@@ -234,6 +221,13 @@ export default function NoteComponent({ note }: NoteProps) {
   const feedback = useMemo(() => {
     if ("feedback" in note) {
       return note.feedback;
+    }
+    return null;
+  }, [note]);
+
+  const status = useMemo(() => {
+    if ("status" in note) {
+      return note.status;
     }
     return null;
   }, [note]);
@@ -432,6 +426,13 @@ export default function NoteComponent({ note }: NoteProps) {
     }
   };
 
+  const handleSelectNote = () => {
+    selectNote(note, {
+      forceShowEditor: true,
+      isFromInspiration: !isUserNote,
+    });
+  };
+
   const NotesActions = () =>
     isUserNote && (
       <div className={cn("w-full flex items-center justify-between")}>
@@ -481,7 +482,7 @@ export default function NoteComponent({ note }: NoteProps) {
         </TooltipButton>
 
         {/* Replace the Substack posting button with the new component */}
-        <SubstackPostButton
+        <InstantPostButton
           note={note}
           size="sm"
           variant="ghost"
@@ -535,7 +536,6 @@ export default function NoteComponent({ note }: NoteProps) {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {/* date */}
                 <p className="text-xs text-muted-foreground">
                   {new Date(note.timestamp).toLocaleDateString("en-US", {
                     month: "short",
@@ -559,7 +559,7 @@ export default function NoteComponent({ note }: NoteProps) {
                     isExpanded ? "max-h-none" : "max-h-[260px]",
                     isUserNote && "cursor-pointer",
                   )}
-                  onClick={() => selectNote(note)}
+                  onClick={handleSelectNote}
                 >
                   <div
                     className="prose prose-sm max-w-none note-component-content"
@@ -586,31 +586,6 @@ export default function NoteComponent({ note }: NoteProps) {
                     />
                   </div>
                 )}
-                {/* Hover Actions Bar */}
-                {/* {!isUserNote && (
-                  <div className="absolute -bottom-2 left-0 right-0 bg-background/95 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-3 flex justify-between items-center z-30">
-                    {entityKey && (
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link
-                          href={`https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`}
-                          target="_blank"
-                          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 z-30"
-                        >
-                          View on Substack
-                          <ExternalLink className="h-3 w-3" />
-                        </Link>
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-primary hover:text-primary/80"
-                      onClick={() => selectNote(note)}
-                    >
-                      <span className="text-xs">Edit & post</span>
-                    </Button>
-                  </div>
-                )} */}
               </div>
               {attachment && (
                 <div

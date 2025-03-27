@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { NoteDraft, NoteStatus } from "@/types/note";
@@ -18,7 +18,6 @@ type StatusBadgeProps = {
 
 const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState<NoteStatus>(note.status);
   const [isOpen, setIsOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -56,6 +55,10 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+  const currentStatus = useMemo(() => {
+    return note.status;
+  }, [note]);
+
   const handleStatusChange = async (newStatus: NoteStatus) => {
     EventTracker.track("note_status_change_via_status_badge", {
       note_id: note.id,
@@ -65,14 +68,11 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
     if (!onStatusChange || newStatus === currentStatus) return;
     setIsOpen(false);
     let previousStatus = currentStatus;
-    setCurrentStatus(newStatus);
     setIsLoading(true);
     try {
       await onStatusChange(newStatus);
-      setCurrentStatus(newStatus);
       setIsOpen(false);
     } catch (error) {
-      setCurrentStatus(previousStatus);
       console.error("Failed to change status:", error);
       toast.error("Failed to change status");
     } finally {

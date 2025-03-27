@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Send, RefreshCw } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
-import { useSubstackPost } from "@/lib/hooks/useSubstackPost";
+import { useExtension } from "@/lib/hooks/useSubstackPost";
 import { SuccessDialog } from "@/components/notes/success-dialog";
 import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
 import { Note, NoteDraft } from "@/types/note";
@@ -19,7 +19,7 @@ interface SubstackPostButtonProps {
   className?: string;
 }
 
-export function SubstackPostButton({
+export function InstantPostButton({
   note,
   size = "sm",
   variant = "ghost",
@@ -33,7 +33,7 @@ export function SubstackPostButton({
     isLoading: loadingSendNote,
     postResponse,
     getNoteById,
-  } = useSubstackPost();
+  } = useExtension();
   const { updateNoteStatus } = useNotes();
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
