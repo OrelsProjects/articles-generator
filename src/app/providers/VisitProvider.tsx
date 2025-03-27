@@ -1,5 +1,5 @@
 import axios from "axios";
-import useSWR from "swr";
+import { useEffect } from "react";
 
 const fetcher = (url: string) => axios.post(url).then(res => res.data);
 
@@ -8,7 +8,9 @@ export default function VisitProvider({
 }: {
   children: React.ReactNode;
 }) {
-  useSWR("/api/visit", fetcher);
+  useEffect(() => {
+    fetcher("/api/visit");
+  }, []);
 
   return children;
 }
