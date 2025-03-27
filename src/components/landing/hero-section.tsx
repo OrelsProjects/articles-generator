@@ -4,19 +4,24 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Check, Star } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
-import useSWR from "swr";
-
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 
 export const HeroSection = () => {
-  const { data: users } = useSWR("/api/landing/users", fetcher);
+  const [count, setCount] = useState("");
+  const [topFiveImages, setTopFiveImages] = useState<string[]>([]);
+  
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("/api/visit");
+      setCount(response.data.count);
+      setTopFiveImages(response.data.topFiveImages);
+    } catch (error) {}
+  };
 
-  const count = useMemo(() => users?.count, [users]);
-  const topFiveImages = useMemo(
-    (): string[] => users?.topFiveImages || [],
-    [users],
-  );
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <section className="h-fit min-h-screen w-screen bg-background py-12 pb-28 rounded-b-[3rem] shadow-lg overflow-y-visible relative">
