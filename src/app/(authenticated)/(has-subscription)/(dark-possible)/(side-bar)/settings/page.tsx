@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import axios from "axios";
+import Link from "next/link";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -184,7 +185,7 @@ export default function SettingsPage() {
 
         {/* Cancel Subscription Confirmation Dialog */}
         <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle className="text-xl">
                 Wait! Are you sure you want to cancel?
@@ -225,9 +226,15 @@ export default function SettingsPage() {
                 type="button"
                 variant="ghost"
                 className="sm:w-auto text-muted-foreground border-muted-foreground/30 hover:bg-destructive/10"
-                onClick={() => cancelSubscription()}
+                asChild
               >
-                I don&apos;t want to grow my Substack
+                <Link
+                  href={
+                    process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
+                  }
+                >
+                  I don&apos;t want to grow my Substack
+                </Link>
               </Button>
               <Button
                 type="button"
