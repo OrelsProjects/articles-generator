@@ -9,6 +9,7 @@ interface FeatureSectionProps {
   direction?: "ltr" | "rtl";
   longImage?: boolean;
   rotateImage?: boolean;
+  sideViewImage?: boolean;
 }
 
 const itemVariants = {
@@ -17,8 +18,8 @@ const itemVariants = {
 };
 
 const itemVariantsLongImage = (rotate?: boolean) => ({
-  hidden: { opacity: 0, y: 300 },
-  visible: { opacity: 1, y: "-33%", rotate: rotate ? -12 : 0 },
+  hidden: { opacity: 0, y: 300, x: 300, rotate: rotate ? -12 : 0 },
+  visible: { opacity: 1, y: "-33%", x: 0 },
 });
 
 const itemVariantsMobile = {
@@ -27,9 +28,18 @@ const itemVariantsMobile = {
 };
 
 const itemVariantsMobileLongImage = (rotate?: boolean) => ({
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: "-12%", rotate: rotate ? -12 : 0 },
+  hidden: { opacity: 0, y: 50, x: 50, rotate: rotate ? -12 : 0 },
+  visible: { opacity: 1, y: "-12%", x: 0 },
 });
+// Slide from right to left
+const itemVariantsSideViewImage = {
+  hidden: { opacity: 0, x: 30, scale: 1.6, rotate: -12 },
+  visible: { opacity: 1, x: 20, scale: 1.6 },
+};
+const itemVariantsSideViewImageMobile = {
+  hidden: { opacity: 0, x: 150,  scale: 1.6, rotate: -12 },
+  visible: { opacity: 1, x: 20, scale: 1.6 },
+};
 
 function FeatureSectionCard({
   src,
@@ -38,6 +48,7 @@ function FeatureSectionCard({
   direction = "ltr",
   longImage = false,
   rotateImage = false,
+  sideViewImage = false,
 }: FeatureSectionProps) {
   return (
     <div
@@ -71,10 +82,19 @@ function FeatureSectionCard({
           direction === "rtl" && "lg:order-first",
         )}
       >
-        <motion.div className="hidden sm:block max-w-[490px] max-h-[446px] rounded-2xl bg-primary/5 border border-primary/30 p-10 overflow-hidden">
+        <motion.div
+          className={cn(
+            "hidden sm:block max-w-[490px] max-h-[446px] rounded-2xl bg-primary/5 border border-primary/30 p-10 overflow-hidden",
+            sideViewImage && "overflow-hidden",
+          )}
+        >
           <MotionImage
             variants={
-              longImage ? itemVariantsLongImage(rotateImage) : itemVariants
+              sideViewImage
+                ? itemVariantsSideViewImage
+                : longImage
+                  ? itemVariantsLongImage(rotateImage)
+                  : itemVariants
             }
             transition={{ duration: 0.5 }}
             initial="hidden"
@@ -83,15 +103,21 @@ function FeatureSectionCard({
             alt={title}
             width={500}
             height={370}
-            className={cn("rounded-2xl rotate-45", rotateImage && "rotate-12")}
+            className={cn(
+              "rounded-2xl",
+              rotateImage && "rotate-12",
+              sideViewImage && "object-cover",
+            )}
           />
         </motion.div>
         <motion.div className="block sm:hidden rounded-2xl">
           <MotionImage
             variants={
-              longImage
-                ? itemVariantsMobileLongImage(rotateImage)
-                : itemVariantsMobile
+              sideViewImage
+                ? itemVariantsSideViewImageMobile
+                : longImage
+                  ? itemVariantsMobileLongImage(rotateImage)
+                  : itemVariantsMobile
             }
             transition={{ duration: 0.5 }}
             initial="hidden"
@@ -150,10 +176,17 @@ export default function FeatureSection() {
             direction="rtl"
           />
           <FeatureSectionCard
+            src="/landing/features/kanban-board.png"
+            title="Organize your notes in a <span class='highlight-feature-text'>Kanban board</span>"
+            description="The Kanban view lets you visually organize and track your notes in columns. Easily manage posts by status—drafts, ready or published—all at a glance."
+            direction="ltr"
+            sideViewImage
+          />
+          <FeatureSectionCard
             src="/landing/features/advanced-filtering.png"
             title="Run your research on <span class='highlight-feature-text'>millions of notes</span>"
             description="Use advanced filtering to research through millions of updating notes and stay update-to-date with the latest trends."
-            direction="ltr"
+            direction="rtl"
           />
         </div>
       </motion.div>

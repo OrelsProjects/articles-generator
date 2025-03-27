@@ -305,63 +305,19 @@ function App() {
     </div>
   );
 }
-const painPoints = [
-  {
-    icon: <Lightbulb className="h-8 w-8 text-primary" />,
-    problem: "I never know what to write next in my newsletter.",
-    problemDetails:
-      "You've got zero direction, no coherent theme, and every new issue feels like you're starting from scratch.",
-  },
-  {
-    icon: <BrainCircuit className="h-8 w-8 text-primary" />,
-    problem:
-      "I want to refine my writing, but AI tools feel disconnected from Substack.",
-    problemDetails:
-      "Constantly switching between ChatGPT and Substack breaks your flow and wastes valuable time.",
-  },
-  {
-    icon: <FileEdit className="h-8 w-8 text-primary" />,
-    problem: "I waste too much time structuring my newsletters.",
-    problemDetails:
-      "You're stuck mapping outlines and reorganizing paragraphs instead of growing your audience and income.",
-  },
-];
-
-const steps = [
-  {
-    title: "AI-Powered newsletter idea generation",
-    description:
-      "Get title, subtitle & outline ideas based on 5M+ high-performing Substack newsletters.",
-    visual: (
-      <div className="space-y-2">
-        <div className="h-8 bg-muted rounded animate-pulse" />
-        <div className="h-8 bg-muted rounded animate-pulse" />
-        <div className="h-8 bg-muted rounded animate-pulse" />
-      </div>
-    ),
-  },
-  {
-    title: "Smart newsletter editing & enhancements",
-    description: `Expand ideas, refine tone, and improve clarity—all in one clean editor that integrates directly with Substack.<br/>
-      And the best part? The AI will not add any text. Only refine what's already there.
-      `,
-    visual: <EnhancmentDemo />,
-  },
-  {
-    title: "Publish directly to Substack",
-    description:
-      "One-click publishing to Substack so you can focus on what matters—growing your audience and income.",
-    visual: (
-      <div className="relative">
-        <Edit3 className="h-12 w-12 text-primary mx-auto" />
-      </div>
-    ),
-  },
-];
 
 const testimonials = [
   {
-    // quote: `${appName} helps me plan Substack newsletters faster than ever, growing my subscriber base by 32% in just 3 months.`,
+    quote: `I love ${appName}.
+    <br/><br/>
+    I've been using it to get inspiration for my Substack Notes and it saves me so much time coming up with new ideas.
+    <br/><br/>
+     I <strong>highly recommend</strong> it to anyone writing daily on Substack.`,
+    author: "Mark Willis",
+    image: "/testimonials/mark-willis.png",
+    title: "Author of Creator's Playbook"
+  },
+  {
     quote: `Writing a newsletter outline used to take me hours. Now I do it in minutes.
   ${appName} makes that possible for me.
 <br/><br/>
@@ -380,33 +336,6 @@ And what I like about it is just how easy it is to copy and paste the results in
     author: "Kacper Wojaczek",
     image: "/testimonials/kacper-wojaczek.png",
     title: "Author of Scramble IT",
-  },
-];
-
-const footerLinks = [
-  {
-    title: "Product",
-    links: [
-      { label: "Features", href: "#" },
-      { label: "Pricing", href: "#" },
-      { label: "Use Cases", href: "#" },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "Blog", href: "#" },
-      { label: "Documentation", href: "#" },
-      { label: "Tutorials", href: "#" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About", href: "#" },
-      { label: "Contact", href: "#" },
-      { label: "Privacy", href: "#" },
-    ],
   },
 ];
 
