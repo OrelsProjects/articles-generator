@@ -112,7 +112,9 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
       selectedItem={selectedNote?.id}
       onStatusChange={handleStatusChange}
       onSelectItem={(itemId: UniqueIdentifier) => {
-        selectNote(itemId.toString());
+        selectNote(itemId.toString(), {
+          forceShowEditor: true,
+        });
       }}
       onNewItem={async (status: UniqueIdentifier) => {
         await createDraftNote({ status: status as NoteStatus });

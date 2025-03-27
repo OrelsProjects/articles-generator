@@ -1,4 +1,5 @@
 import loggerServer from "@/loggerServer";
+import { Model429Error } from "@/types/errors/Model429Error";
 import axios from "axios";
 import { Tiktoken } from "js-tiktoken/lite";
 import o200k_base from "js-tiktoken/ranks/o200k_base";
@@ -94,10 +95,12 @@ export async function runPrompt(
           messages,
         },
       );
+      if (error.code === "429") {
+        throw new Model429Error(
+          `The model ${model} is currently overloaded. Please try again later.`,
+        );
+      }
     }
-  }
-
-  if (response.data.error) {
     throw new Error(
       `Something went wrong with running the prompts. ${JSON.stringify(response.data)}`,
     );

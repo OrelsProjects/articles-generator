@@ -17,6 +17,7 @@ import { canUseAI, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
 import { getByline } from "@/lib/dal/byline";
 import { noteTemplates } from "@/app/api/notes/generate/_consts";
+import { Model429Error } from "@/types/errors/Model429Error";
 
 export const maxDuration = 120; // This function can run for a maximum of 2 minutes
 
@@ -317,7 +318,7 @@ export async function POST(
     return NextResponse.json(response);
   } catch (error: any) {
     const code = error.code || "unknown";
-    if (code === 429) {
+    if (code === 429 || error instanceof Model429Error) {
       return NextResponse.json(
         { success: false, error: "Rate limit exceeded" },
         { status: 429 },

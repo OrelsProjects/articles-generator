@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { StatusItem as StatusItemType } from "./types";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { Send } from "lucide-react";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -66,7 +65,7 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
           <div className="flex-1 min-w-0 space-y-2.5">
             {item.author && (
               <div className="w-full flex justify-between">
-                <div className="font-medium text-sm pt-1">{item.author}</div>
+                <div className="font-medium text-sm pt-1.5">{item.author}</div>
                 <InstantPostButton
                   note={item.id.toString()}
                   source="status-board"
