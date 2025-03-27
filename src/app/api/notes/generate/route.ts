@@ -316,6 +316,13 @@ export async function POST(
     };
     return NextResponse.json(response);
   } catch (error: any) {
+    const code = error.code || "unknown";
+    if (code === 429) {
+      return NextResponse.json(
+        { success: false, error: "Rate limit exceeded" },
+        { status: 429 },
+      );
+    }
     loggerServer.error("Failed to fetch notes", error);
     return NextResponse.json(
       { success: false, error: "Failed to fetch notes" },

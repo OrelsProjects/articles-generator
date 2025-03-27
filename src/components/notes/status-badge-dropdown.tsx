@@ -67,7 +67,6 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
     });
     if (!onStatusChange || newStatus === currentStatus) return;
     setIsOpen(false);
-    let previousStatus = currentStatus;
     setIsLoading(true);
     try {
       await onStatusChange(newStatus);

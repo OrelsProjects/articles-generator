@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import {
   selectNotes,
@@ -11,6 +11,8 @@ import {
   updateNote,
   removeNote,
   addNote,
+  setLoadingNotesGenerate,
+  setErrorGenerateNotes,
 } from "@/lib/features/notes/notesSlice";
 import {
   isNoteDraft,
@@ -20,7 +22,7 @@ import {
   NoteStatus,
   noteToNoteDraft,
 } from "@/types/note";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Logger } from "@/logger";
 import { useUi } from "@/lib/hooks/useUi";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
@@ -120,6 +122,7 @@ export const useNotes = () => {
   const generateNewNotes = useCallback(
     async (model?: string, options?: { useTopTypes?: boolean }) => {
       try {
+        dispatch(setLoadingNotesGenerate(true));
         EventTracker.track("notes_generate_new_notes", { model });
         const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
           "/api/notes/generate",
@@ -152,7 +155,19 @@ export const useNotes = () => {
           selectNote(body[0]);
         }
       } catch (error) {
+        // if error is 429, set errorGenerateNotes
+        if (error instanceof AxiosError && error.response?.status === 429) {
+          dispatch(
+            setErrorGenerateNotes({
+              message:
+                "Seems like the model you chose is not available right now. Try a different one.",
+              hideAfter: 5000,
+            }),
+          );
+        }
         console.error("Error generating new note:", error);
+      } finally {
+        dispatch(setLoadingNotesGenerate(false));
       }
     },
     [userNotes, selectedNote, selectNote, consumeCredits, dispatch],
@@ -308,6 +323,11 @@ export const useNotes = () => {
       : null;
   };
 
+  const isLoadingGenerateNotes =
+    useAppSelector(selectNotes).loadingNotesGenerate;
+
+  const errorGenerateNotes = useAppSelector(selectNotes).errorGenerateNotes;
+
   return {
     userNotes,
     selectedNote,
@@ -326,5 +346,7 @@ export const useNotes = () => {
     loadingEditNote,
     createDraftNote,
     improveText,
+    isLoadingGenerateNotes,
+    errorGenerateNotes,
   };
 };

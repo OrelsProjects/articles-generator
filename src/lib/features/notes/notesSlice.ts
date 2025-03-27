@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
-import { Note, NoteDraft, NoteStatus } from "@/types/note";
+import { Note, NoteDraft } from "@/types/note";
 import { Filter } from "@/lib/dal/milvus";
+
 export interface NotesState {
   userNotes: NoteDraft[];
   inspirationNotes: Note[];
@@ -9,8 +10,10 @@ export interface NotesState {
   inspirationFilters: Filter[];
   selectedImage: { url: string; alt: string } | null;
   loadingNotes: boolean;
+  loadingNotesGenerate: boolean;
   loadingInspiration: boolean;
   error: string | null;
+  errorGenerateNotes: string | null;
   hasMoreUserNotes: boolean;
   hasMoreInspirationNotes: boolean;
   userNotesCursor: string | null;
@@ -25,8 +28,10 @@ export const initialState: NotesState = {
   selectedNote: null,
   selectedImage: null,
   loadingNotes: false,
+  loadingNotesGenerate: false,
   loadingInspiration: false,
   error: null,
+  errorGenerateNotes: null,
   hasMoreUserNotes: true,
   hasMoreInspirationNotes: true,
   userNotesCursor: null,
@@ -159,6 +164,18 @@ const notesSlice = createSlice({
     setInspirationFilters: (state, action: PayloadAction<Filter[]>) => {
       state.inspirationFilters = action.payload;
     },
+    setLoadingNotesGenerate: (state, action: PayloadAction<boolean>) => {
+      state.loadingNotesGenerate = action.payload;
+    },
+    setErrorGenerateNotes: (
+      state,
+      action: PayloadAction<{ message: string | null; hideAfter: number }>,
+    ) => {
+      state.errorGenerateNotes = action.payload.message;
+      setTimeout(() => {
+        state.errorGenerateNotes = null;
+      }, action.payload.hideAfter);
+    },
   },
 });
 
@@ -177,6 +194,8 @@ export const {
   removeNote,
   resetNotification,
   setInspirationFilters,
+  setLoadingNotesGenerate,
+  setErrorGenerateNotes,
 } = notesSlice.actions;
 
 export const selectNotes = (state: RootState) => state.notes;

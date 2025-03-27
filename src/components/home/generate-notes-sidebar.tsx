@@ -203,8 +203,9 @@ export default function GenerateNotesSidebar() {
     loadingEditNote,
     selectNote,
     improveText,
+    isLoadingGenerateNotes,
+    errorGenerateNotes,
   } = useNotes();
-  const [loadingGenerateNewIdea, setLoadingGenerateNewIdea] = useState(false);
   const [loadingImprovement, setLoadingImprovement] = useState(false);
   const [showSaveReminderTooltip, setShowSaveReminderTooltip] = useState(false);
   const [selectedModel, setSelectedModel] =
@@ -287,18 +288,15 @@ export default function GenerateNotesSidebar() {
   };
 
   const handleGenerateNewNote = async () => {
-    if (loadingGenerateNewIdea) {
+    if (isLoadingGenerateNotes) {
       return;
     }
-    setLoadingGenerateNewIdea(true);
     try {
       await generateNewNotes(selectedModel, {
         useTopTypes,
       });
     } catch (e: any) {
       toast.error(e.message || "Something went wrong.. Try again.");
-    } finally {
-      setLoadingGenerateNewIdea(false);
     }
   };
 
@@ -388,6 +386,12 @@ export default function GenerateNotesSidebar() {
   const improveDropdownOptions = useMemo(() => {
     return formatOptions;
   }, [selectedNote]);
+
+  useEffect(() => {
+    if (errorGenerateNotes) {
+      toast.error(errorGenerateNotes);
+    }
+  }, [errorGenerateNotes]);
 
   if (!editor) {
     return null;
@@ -541,7 +545,7 @@ export default function GenerateNotesSidebar() {
                 </BubbleMenu>
               )}
               <EditorContent
-                disabled={loadingGenerateNewIdea}
+                disabled={isLoadingGenerateNotes}
                 editor={editor}
                 className="min-h-[180px] md:min-h-[200px] max-h-[200px] md:max-h-[300px] px-3 prose prose-sm max-w-none focus:outline-none overflow-auto"
               />
@@ -742,9 +746,9 @@ export default function GenerateNotesSidebar() {
               variant="outline"
               className="w-full mt-2 mb-6 md:mb-0"
               onClick={handleGenerateNewNote}
-              disabled={loadingGenerateNewIdea}
+              disabled={isLoadingGenerateNotes}
             >
-              {loadingGenerateNewIdea ? (
+              {isLoadingGenerateNotes ? (
                 <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
               ) : (
                 <Sparkles className="h-5 w-5 mr-2" />
@@ -756,7 +760,7 @@ export default function GenerateNotesSidebar() {
       </div>
       <ToastStepper
         loadingStates={ideaLoadingStates}
-        loading={loadingGenerateNewIdea}
+        loading={isLoadingGenerateNotes}
         duration={7500}
         loop={false}
         position="bottom-left"

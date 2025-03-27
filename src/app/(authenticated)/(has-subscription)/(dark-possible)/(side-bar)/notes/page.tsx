@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
+import { useUi } from "@/lib/hooks/useUi";
 
 export default function NotesPage() {
   const {
@@ -16,34 +17,35 @@ export default function NotesPage() {
     loadingNotes,
     generateNewNotes,
     createDraftNote,
+    isLoadingGenerateNotes,
+    errorGenerateNotes,
   } = useNotes();
-  const [loadingCreateNote, setLoadingCreateNote] = useState(false);
 
   useEffect(() => {
     fetchNotes();
   }, []);
 
+  useEffect(() => {
+    if (errorGenerateNotes) {
+      toast.error(errorGenerateNotes);
+    }
+  }, [errorGenerateNotes]);
+
   const handleCreateNote = async () => {
-    if (loadingCreateNote) return;
-    setLoadingCreateNote(true);
+    if (isLoadingGenerateNotes) return;
     try {
       await generateNewNotes();
     } catch (error) {
       toast.error("Failed to create note");
-    } finally {
-      setLoadingCreateNote(false);
     }
   };
 
   const handleCreateDraftNote = async () => {
-    if (loadingCreateNote) return;
-    setLoadingCreateNote(true);
+    if (isLoadingGenerateNotes) return;
     try {
       await createDraftNote();
     } catch (error) {
       toast.error("Failed to create note");
-    } finally {
-      setLoadingCreateNote(false);
     }
   };
 
@@ -54,12 +56,12 @@ export default function NotesPage() {
           <h1 className="text-3xl font-bold">My Notes</h1>
           <Button
             onClick={handleCreateDraftNote}
-            disabled={loadingCreateNote}
+            disabled={isLoadingGenerateNotes}
             className={cn("flex items-center gap-2", {
               hidden: userNotes.length === 0,
             })}
           >
-            {loadingCreateNote ? (
+            {isLoadingGenerateNotes ? (
               <RefreshCw className="h-4 w-4 animate-spin" />
             ) : (
               <Plus size={16} />
@@ -84,12 +86,12 @@ export default function NotesPage() {
           <Button
             variant="neumorphic-primary"
             onClick={handleCreateDraftNote}
-            disabled={loadingCreateNote}
+            disabled={isLoadingGenerateNotes}
             className={cn("flex items-center gap-2", {
               hidden: userNotes.length === 0,
             })}
           >
-            {loadingCreateNote ? (
+            {isLoadingGenerateNotes ? (
               <RefreshCw className="h-4 w-4 animate-spin" />
             ) : (
               <Plus size={16} />
@@ -109,9 +111,9 @@ export default function NotesPage() {
             <Button
               variant="neumorphic-primary"
               onClick={handleCreateNote}
-              disabled={loadingCreateNote}
+              disabled={isLoadingGenerateNotes}
             >
-              {loadingCreateNote && (
+              {isLoadingGenerateNotes && (
                 <RefreshCw className="h-4 w-4 animate-spin mr-2" />
               )}
               Generate notes (3)
