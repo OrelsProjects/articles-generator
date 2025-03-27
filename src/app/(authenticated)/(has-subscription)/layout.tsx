@@ -3,6 +3,7 @@
 import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
 import NewSubscriptionDialog from "@/app/providers/NewSubscriptionDialog";
 import SubscriptionProvider from "@/app/providers/SubscriptionProvider";
+import VisitProvider from "@/app/providers/VisitProvider";
 
 export default function ContentLayout({
   children,
@@ -13,7 +14,7 @@ export default function ContentLayout({
     <FreeSubscriptionProvider>
       <SubscriptionProvider>
         <NewSubscriptionDialog />
-        {children}
+        <VisitProvider>{children}</VisitProvider>
       </SubscriptionProvider>
     </FreeSubscriptionProvider>
   );

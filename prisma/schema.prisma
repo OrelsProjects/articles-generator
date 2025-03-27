@@ -415,3 +415,14 @@ model Subscription {
 
   @@map("subscriptions")
 }
+
+model Visits {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  name   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("visits")
+}
