@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
           },
         },
         orderBy: {
-          reactionCount: "asc",
+          reactionCount: "desc",
         },
         take: 500,
         skip: existingNotesIds.length,
