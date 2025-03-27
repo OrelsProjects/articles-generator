@@ -61,7 +61,7 @@ function FeatureSectionCard({
         />
 
         <p
-          className="text-foreground font-thin"
+          className="text-foreground font-thin !text-start"
           dangerouslySetInnerHTML={{ __html: description }}
         />
       </div>
