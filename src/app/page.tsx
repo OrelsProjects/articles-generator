@@ -106,16 +106,6 @@ const EnhancmentDemo = () => {
   );
 };
 
-// Define animation variants
-const gentleFadeIn: Variants = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-};
-
-const gentleFadeInTransition = {
-  transition: { duration: 1.2, ease: "easeOut" },
-};
-
 const faq = [
   {
     question: `Can I specify the outline and let ${appName} work with it?`,
@@ -142,28 +132,6 @@ const faq = [
 ];
 
 function App() {
-  const router = useCustomRouter();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [fetchingProducts, setFetchingProducts] = useState(false);
-  const [didFetchProducts, setDidFetchProducts] = useState(false);
-
-  useEffect(() => {
-    if (didFetchProducts) return;
-    if (products.length > 0 || fetchingProducts) return;
-    setFetchingProducts(true);
-    fetch("/api/stripe/products")
-      .then(res => res.json())
-      .then(data => setProducts(data.products || []))
-      .catch(err => {
-        console.log(err);
-        setProducts([]);
-      })
-      .finally(() => {
-        setFetchingProducts(false);
-        setDidFetchProducts(true);
-      });
-  }, [fetchingProducts, products, didFetchProducts]);
-
   return (
     <div className="min-h-screen w-screen overflow-x-hidden bg-primary">
       <ThemeProvider forcedTheme="light">
@@ -174,7 +142,7 @@ function App() {
         </DividerPrimary>
         {/* Social Proof Banner */}
         <OtherSolutions />
-        <DividerPrimary>
+        <DividerPrimary className="flex-col gap-10">
           <h2 className="text-center text-primary-foreground text-3xl lg:text-[56px] lg:leading-[4rem] font-bold">
             <span className="text-orange-950">Discover</span> how {appName} will
             help you
@@ -185,6 +153,13 @@ function App() {
             </span>
             <br /> faster than ever before.
           </h2>
+          <Button
+            variant={"outline"}
+            className="text-xl lg:text-2xl p-6 lg:p-8"
+            asChild
+          >
+            <Link href="#pricing">Start growing for free</Link>
+          </Button>
         </DividerPrimary>
 
         {/* Features Section */}
@@ -315,7 +290,7 @@ const testimonials = [
      I <strong>highly recommend</strong> it to anyone writing daily on Substack.`,
     author: "Mark Willis",
     image: "/testimonials/mark-willis.png",
-    title: "Author of Creator's Playbook"
+    title: "Author of Creator's Playbook",
   },
   {
     quote: `Writing a newsletter outline used to take me hours. Now I do it in minutes.

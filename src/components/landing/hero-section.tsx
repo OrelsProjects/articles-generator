@@ -63,10 +63,10 @@ export const HeroSection = () => {
           <div className="flex-1 space-y-8 w-full">
             <div className="flex flex-col gap-16 items-center text-center lg:text-left">
               <h1 className="text-center font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] lg:-mb-4">
-                The growth platform
+                Grow your Substack
                 <br />
                 {/* <span className="text-primary bg-primary/20 rounded-md p-1 py-0"> */}
-                for Substack leaders
+                With Viral Notes
                 {/* </span> */}
               </h1>
 
@@ -74,8 +74,8 @@ export const HeroSection = () => {
               <ul className="w-full flex flex-col lg:flex-row gap-2 justify-center items-center">
                 {[
                   "VIRAL NOTES RESEARCH TOOL",
-                  "PERSONALIZED NOTES",
-                  "AI-ASSISTED TEXT-EDITOR",
+                  "PERSONALIZED GENERATED NOTES",
+                  "X2.3 MORE SUBSCRIBERS",
                 ].map((feature, index) => (
                   <li
                     key={index}
@@ -98,7 +98,7 @@ export const HeroSection = () => {
                     className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground mt-6 px-8 sm:px-16 lg:mt-0 py-6 font-bold rounded-xl w-full sm:w-auto"
                     asChild
                   >
-                    <Link href="#pricing">Try it for free</Link>
+                    <Link href="#pricing">Start growing for free</Link>
                   </Button>
                 </div>
                 {topFiveImages.length > 0 && (
