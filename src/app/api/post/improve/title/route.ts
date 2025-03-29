@@ -60,14 +60,15 @@ export async function POST(
       );
     }
 
-    const isValid = await canUseAI(
+    const { result, status } = await canUseAI(
       session.user.id,
       "titleOrSubtitleRefinement",
     );
-    if (!isValid) {
+    
+    if (!result) {
       return NextResponse.json(
         { success: false, error: "Not enough credits" },
-        { status: 400 },
+        { status },
       );
     }
 

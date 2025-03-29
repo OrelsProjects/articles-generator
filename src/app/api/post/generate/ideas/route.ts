@@ -73,11 +73,14 @@ export async function GET(
       );
     }
 
-    const isValid = await canUseAI(session.user.id, "ideaGeneration");
-    if (!isValid) {
+    const { result, status } = await canUseAI(
+      session.user.id,
+      "ideaGeneration",
+    );
+    if (!result) {
       return NextResponse.json(
         { success: false, error: "Not enough credits" },
-        { status: 400 },
+        { status },
       );
     }
 

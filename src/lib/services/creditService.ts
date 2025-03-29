@@ -1,5 +1,5 @@
 import prisma from "@/app/api/_db/db";
-import { creditsPerPlan } from "@/lib/plans-consts";
+import { differenceInMonths, addMonths } from "date-fns";
 
 /**
  * Checks if a user's credits need to be reset and resets them if necessary
@@ -49,11 +49,11 @@ export const checkAndResetCredits = async (
       // We're in a new billing period
       shouldReset = true;
     } else {
+      const now = new Date();
       // Check if it's been a month since the last reset for monthly subscribers
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      const monthsElapsed = differenceInMonths(now, lastReset);
 
-      if (lastReset < oneMonthAgo) {
+      if (monthsElapsed >= 1) {
         shouldReset = true;
       }
     }
@@ -85,3 +85,18 @@ export const checkAndResetCredits = async (
     return { credits: 0 };
   }
 };
+
+export function getNextRefillDate(lastCreditDate: Date): Date {
+  // Convert input to Date object if it’s not already
+  const lastDate = new Date(lastCreditDate);
+
+  // Ensure the input is valid
+  if (isNaN(lastDate.getTime())) {
+    throw new Error("Invalid last_credit_date provided");
+  }
+
+  // Calculate the next refill date by adding 1 month
+  const nextRefillDate = addMonths(lastDate, 1);
+
+  return nextRefillDate;
+}

@@ -30,11 +30,12 @@ export async function POST(
   try {
     const { text, type, noteId, model: requestModel } = await request.json();
 
-    const isValid = await canUseAI(session.user.id, "textEnhancement");
-    if (!isValid) {
+    const { result, status } = await canUseAI(session.user.id, "textEnhancement");
+
+    if (!result) {
       return NextResponse.json(
         { success: false, error: "Not enough credits" },
-        { status: 400 },
+        { status },
       );
     }
 

@@ -84,7 +84,7 @@ export async function POST(
       );
     }
 
-    const [publication, isValid] = await Promise.all([
+    const [publication, canUseAIResult] = await Promise.all([
       prismaArticles.publication.findFirst({
         where: {
           id: parseInt(publicationId.toString()),
@@ -107,10 +107,10 @@ export async function POST(
       );
     }
 
-    if (!isValid) {
+    if (!canUseAIResult.result) {
       return NextResponse.json(
         { success: false, error: "Not enough credits" },
-        { status: 400 },
+        { status: canUseAIResult.status },
       );
     }
 

@@ -30,6 +30,7 @@ import { useCredits } from "@/lib/hooks/useCredits";
 import { EventTracker } from "@/eventTracker";
 import { decrementUsage } from "@/lib/features/settings/settingsSlice";
 import { ImprovementType } from "@/lib/prompts";
+import { set } from "lodash";
 
 export const useNotes = () => {
   const { updateShowGenerateNotesSidebar } = useUi();
@@ -156,14 +157,22 @@ export const useNotes = () => {
         }
       } catch (error) {
         // if error is 429, set errorGenerateNotes
-        if (error instanceof AxiosError && error.response?.status === 429) {
-          dispatch(
+        if (error instanceof AxiosError) {
+          const code = error.response?.status;
+          if (code === 429) {
+            dispatch(
+              setErrorGenerateNotes({
+                message:
+                  "Seems like the model you chose is not available right now. Try a different one.",
+                hideAfter: 5000,
+              }),
+            );
+          } else if (code === 402) {
             setErrorGenerateNotes({
-              message:
-                "Seems like the model you chose is not available right now. Try a different one.",
+              message: "You ran out of credits.",
               hideAfter: 5000,
-            }),
-          );
+            });
+          }
         }
         console.error("Error generating new note:", error);
       } finally {

@@ -1,9 +1,21 @@
 import prisma from "@/app/api/_db/db";
 import { creditCosts } from "@/lib/plans-consts";
+import { getNextRefillDate } from "@/lib/services/creditService";
 import loggerServer from "@/loggerServer";
 import { AIUsageType } from "@prisma/client";
 
-export async function canUseAI(userId: string, usageType: AIUsageType) {
+type AIUsageErrors = "NO-SUBSCRIPTION" | "USAGE-UNKNOWN" | "NOT-ENOUGH-CREDITS";
+
+const ErrorStatus: Record<AIUsageErrors, number> = {
+  "NO-SUBSCRIPTION": 403,
+  "USAGE-UNKNOWN": 404,
+  "NOT-ENOUGH-CREDITS": 402,
+};
+
+export async function canUseAI(
+  userId: string,
+  usageType: AIUsageType,
+): Promise<{ result: boolean; status: number; nextRefill?: Date }> {
   const subscription = await prisma.subscription.findFirst({
     where: {
       userId,
@@ -15,21 +27,41 @@ export async function canUseAI(userId: string, usageType: AIUsageType) {
   });
 
   if (!subscription) {
-    return false;
+    loggerServer.error("Failed to check canUseAI due to subscription null");
+    return {
+      result: false,
+      status: ErrorStatus["NO-SUBSCRIPTION"],
+    };
   }
 
   const cost = creditCosts[usageType];
   if (!cost) {
-    return false;
+    loggerServer.error(
+      "Failed to check canUseAI due to no cost for: " + usageType,
+    );
+
+    return {
+      result: false,
+      status: ErrorStatus["USAGE-UNKNOWN"],
+    };
   }
 
   let creditsLeft = subscription.creditsRemaining;
 
+  const nextRefill = getNextRefillDate(subscription.lastCreditReset);
+
   if (creditsLeft < cost) {
-    return false;
+    return {
+      result: false,
+      status: ErrorStatus["NOT-ENOUGH-CREDITS"],
+      nextRefill,
+    };
   }
 
-  return true;
+  return {
+    result: true,
+    status: 200,
+  };
 }
 
 export async function useCredits(
