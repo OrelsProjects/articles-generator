@@ -131,8 +131,12 @@ function FeatureCard({
       )}
       <div className="flex-1 space-y-4">
         <div className="flex items-center gap-3">
-          <Icon className="!w-6 !h-6 text-primary" />
-          <h3 className="text-2xl font-semibold text-primary">{title}</h3>
+          <div className="bg-primary/15 rounded-lg p-2">
+            <Icon className="!w-6 !h-6 text-primary" />
+          </div>
+          <h3 className="text-2xl font-bold tracking-tight sm:text-3xl !text-start">
+            {title}
+          </h3>
         </div>
         <p
           className="text-muted-foreground leading-relaxed"

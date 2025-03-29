@@ -11,6 +11,7 @@ import { ImprovementType } from "@/lib/prompts";
 import { formatText, textEditorOptions } from "@/lib/utils/text-editor";
 import { EditorContent, useEditor } from "@tiptap/react";
 import {
+  ArrowRight,
   BrainCircuit,
   Edit3,
   FileEdit,
@@ -158,7 +159,9 @@ function App() {
             className="text-xl lg:text-2xl p-6 lg:p-8"
             asChild
           >
-            <Link href="#pricing">Start growing for free</Link>
+            <Link href="#pricing">
+              Start growing for free <ArrowRight className="ml-2 mt-1" />
+            </Link>
           </Button>
         </DividerPrimary>
 

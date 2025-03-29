@@ -27,6 +27,10 @@ const images = [
     alt: "Philip Notes",
   },
   {
+    src: "/landing/notes/yana-75-subs.png",
+    alt: "Yana 75 subs",
+  },
+  {
     src: "/landing/notes/maya-notes.png",
     alt: "Maya Notes",
   },
