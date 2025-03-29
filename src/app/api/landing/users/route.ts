@@ -9,20 +9,24 @@ const TOP_CREATORS = [
   "https://lh3.googleusercontent.com/a/ACg8ocLG4ls3Xhzf8ejRKrnWv-_yyOkZkI3fmK3dyJI7DgzbaV7o7Ok=s96-c",
 ];
 export async function GET(req: NextRequest) {
-  const users = await prisma.user.findMany({
-    select: {
-      image: true,
-    },
-    where: {
-      image: {
-        not: null,
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        image: true,
       },
-    },
-  });
+      where: {
+        image: {
+          not: null,
+        },
+      },
+    });
 
-  // rounded to closest complete number, ceiling
-  const count = Math.ceil(users.length / 10) * 10;
+    // rounded to closest complete number, ceiling
+    const count = Math.ceil(users.length / 10) * 10;
 
-  const topFiveImages = TOP_CREATORS;
-  return NextResponse.json({ count: `${count.toString()}+`, topFiveImages });
+    const topFiveImages = TOP_CREATORS;
+    return NextResponse.json({ count: `${count.toString()}+`, topFiveImages });
+  } catch (error) {
+    return NextResponse.json({ success: false }, { status: 500 });
+  }
 }
