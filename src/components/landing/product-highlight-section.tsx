@@ -154,7 +154,7 @@ export default function FeatureSection() {
       <motion.div className="landing-section-container landing-section-top flex flex-col px-6 md:px-0">
         <h2>
           Our best features to help you{" "}
-          <span className="text-primary">grow 2.3x faster</span>
+          <span className="text-primary">grow 2.7x faster</span>
         </h2>
         <p className="mb-12">
           We&apos;ve built a suite of features to help you grow your audience

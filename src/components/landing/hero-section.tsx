@@ -75,7 +75,7 @@ export const HeroSection = () => {
                 {[
                   "VIRAL NOTES RESEARCH TOOL",
                   "PERSONALIZED GENERATED NOTES",
-                  "X2.3 MORE SUBSCRIBERS",
+                  "X2.4 MORE SUBSCRIBERS",
                 ].map((feature, index) => (
                   <li
                     key={index}
