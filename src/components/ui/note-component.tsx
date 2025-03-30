@@ -291,7 +291,7 @@ export default function NoteComponent({ note }: NoteProps) {
     <div
       onClick={() => {
         if (handle && !isUserNote) {
-          let baseUrl = `/writer/@${handle}`;
+          let baseUrl = `/writer/${handle}`;
           if (note.authorName) {
             baseUrl += `/${slugify(note.authorName, {
               lower: true,

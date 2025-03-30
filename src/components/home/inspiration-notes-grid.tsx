@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, Info, RefreshCw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspiration } from "@/lib/hooks/useInspiration";
-import { InspirationFilterDialog } from "@/components/ui/inspiration-filter-dialog";
+import { InspirationFilterDialog } from "@/components/ui/inspiration-filter/inspiration-filter-dialog";
 import { useUi } from "@/lib/hooks/useUi";
 export default function InspirationGrid() {
   const {

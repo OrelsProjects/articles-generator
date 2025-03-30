@@ -15,6 +15,13 @@ export interface Writer {
   photoUrl: string;
 }
 
+export interface WriterSearchResult {
+  id: string;
+  name: string;
+  handle: string;
+  photoUrl: string;
+}
+
 export const DBNotesToNotes = (
   note: (NotesComments & { attachments?: NotesAttachments[] })[],
 ): Note[] => {
@@ -26,9 +33,9 @@ export const DBNotesToNotes = (
     body: note.body,
     jsonBody: Array.isArray(note.bodyJson) ? note.bodyJson : [],
     timestamp: note.date,
-    authorId: note.authorId,
+    authorId: Number(note.authorId),
     authorName: note.name || "",
-    handle: note.name || "",
+    handle: note.handle || "",
     reactionCount: note.reactionCount,
     commentsCount: note.commentsCount || 0,
     restacks: note.restacks,

@@ -5,3 +5,20 @@ export async function getByline(authorId: number) {
     where: { id: authorId },
   });
 }
+
+export async function searchByline(query: string) {
+  return await prismaArticles.byline.findMany({
+    where: {
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { handle: { contains: query, mode: "insensitive" } },
+      ],
+    },
+    // orderBy: {
+    //   notes: {
+    //     _count: "desc",
+    //   },
+    // },
+    take: 10,
+  });
+}

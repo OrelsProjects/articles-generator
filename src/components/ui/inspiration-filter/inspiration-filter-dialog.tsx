@@ -14,11 +14,11 @@ import {
   RefreshCw,
   Search,
   AlertTriangle,
+  User,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
-import { parseDateRange } from "@/lib/utils/date";
 import {
   Popover,
   PopoverContent,
@@ -29,6 +29,7 @@ import { InspirationFilters } from "@/types/note";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
+import { WriterSearchBar } from "@/components/ui/inspiration-filter/writer-search-bar";
 
 interface InspirationFilterDialogProps {
   filters: InspirationFilters;
@@ -69,6 +70,9 @@ export function InspirationFilterDialog({
     filters?.dateRange,
   );
   const [openCalendar, setOpenCalendar] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<"writer" | "keyword">(
+    "keyword",
+  );
 
   const likes = newFilters?.minLikes || 0;
   const comments = newFilters?.minComments || 0;
@@ -94,7 +98,6 @@ export function InspirationFilterDialog({
   };
 
   const handleApplyFilters = () => {
-    
     if (newFilters) {
       let filters = { ...newFilters };
       if (dateRange) {
@@ -168,7 +171,12 @@ export function InspirationFilterDialog({
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px] p-10 gap-1" hideCloseButton>
-        <div className="border border-border rounded-md">
+        <div
+          className={cn("border border-border rounded-md transition-all", {
+            "opacity-50": selectedSection === "writer",
+          })}
+          onClick={() => setSelectedSection("keyword")}
+        >
           {/* Search bar */}
           <div className="flex justify-between items-center gap-2 border-b border-border py-2 px-4">
             <div className="w-full flex flex-col  items-start">
@@ -331,6 +339,24 @@ export function InspirationFilterDialog({
             )}
           </div>
         </div>
+
+        {/* Writer search */}
+        <div
+          className={cn(
+            "flex items-center justify-between border border-border rounded-md mt-4 transition-all",
+            {
+              "opacity-50": selectedSection === "keyword",
+            },
+          )}
+          onClick={() => setSelectedSection("writer")}
+        >
+          <div className="w-full flex justify-between items-center gap-2 py-2 px-4">
+            <div className="w-full flex flex-col items-start">
+              <WriterSearchBar />
+            </div>
+          </div>
+        </div>
+
         {hasFilters && (
           <div className="w-full flex justify-end cursor-pointer">
             <Button

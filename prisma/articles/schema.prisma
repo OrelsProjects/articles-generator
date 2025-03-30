@@ -33,7 +33,7 @@ model BylinePublicationUser {
 }
 
 model Byline {
-    id                BigInt    @id
+    id                Int       @id
     name              String?   @map("name") @db.VarChar(255)
     handle            String?   @map("handle") @db.VarChar(255)
     previousName      String?   @map("previous_name") @db.VarChar(255)
@@ -43,6 +43,8 @@ model Byline {
     twitterScreenName String?   @map("twitter_screen_name") @db.VarChar(255)
     isGuest           Boolean?  @default(false) @map("is_guest")
     bestsellerTier    String?   @map("bestseller_tier") @db.VarChar(255)
+
+    notes NotesComments[]
 
     @@map("bylines")
 }
@@ -174,12 +176,12 @@ model NotesComments {
     body            String   @map("body")
     bodyJson        Json?    @map("body_json")
     date            DateTime @map("date")
-    handle          String?   @map("handle")
-    name            String?   @map("name")
-    photoUrl        String?   @map("photo_url")
+    handle          String?  @map("handle")
+    name            String?  @map("name")
+    photoUrl        String?  @map("photo_url")
     reactionCount   Int      @map("reaction_count")
     reactions       Json?    @map("reactions")
-    commentsCount   Int?      @map("children_count")
+    commentsCount   Int?     @map("children_count")
     restacks        Int      @map("restacks")
     restacked       Boolean  @map("restacked")
     timestamp       DateTime @map("timestamp")
@@ -187,12 +189,14 @@ model NotesComments {
     entityKey       String   @map("entity_key")
     noteIsRestacked Boolean  @map("note_is_restacked")
 
+    byline Byline? @relation(fields: [authorId], references: [id])
+
     @@map("notes_comments")
 }
 
 model NotesAttachments {
-    id           String @id
-    noteId       Int    @map("comment_id")
+    id           String  @id
+    noteId       Int     @map("comment_id")
     attachmentId String? @map("attachment_id")
     type         String? @map("type")
     imageUrl     String? @map("image_url")
