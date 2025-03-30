@@ -37,7 +37,7 @@ const itemVariantsSideViewImage = {
   visible: { opacity: 1, x: 20, scale: 1.6 },
 };
 const itemVariantsSideViewImageMobile = {
-  hidden: { opacity: 0, x: 150,  scale: 1.6, rotate: -12 },
+  hidden: { opacity: 0, x: 150, scale: 1.6, rotate: -12 },
   visible: { opacity: 1, x: 20, scale: 1.6 },
 };
 
@@ -146,6 +146,7 @@ const containerVariants = {
 export default function FeatureSection() {
   return (
     <motion.section
+      id="features"
       className="w-full min-h-screen flex flex-col justify-start items-center gap-12 bg-background py-4 lg:py-12 relative md:px-8"
       variants={containerVariants}
       initial="hidden"

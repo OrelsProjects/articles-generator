@@ -195,7 +195,7 @@ function FeaturesSection() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
-    <section id="features" className="landing-section-container bg-muted px-6 md:px-0">
+    <section className="landing-section-container bg-muted px-6 md:px-0">
       <div className="mx-auto relative">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
