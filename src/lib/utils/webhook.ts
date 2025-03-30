@@ -78,7 +78,7 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
 
       // Credits information
       creditsPerPeriod: creditsPerPlan[plan],
-      creditsRemaining: isFreeSubscription ? 30 : creditsPerPlan[plan],
+      creditsRemaining: isFreeSubscription ? 10 : creditsPerPlan[plan],
       lastCreditReset: new Date(),
 
       currentPeriodStart: new Date(subscription.current_period_start * 1000),

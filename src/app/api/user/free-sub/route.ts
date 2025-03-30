@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 
     // Calculate the end date (30 days from now)
     const trialEndDate = new Date();
-    trialEndDate.setDate(trialEndDate.getDate() + 30);
+    trialEndDate.setDate(trialEndDate.getDate() + 7);
 
     // Create a customer first
     const customer = await stripe.customers.create({
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: price.id }],
-      trial_period_days: 30,
+      trial_period_days: 7,
       cancel_at_period_end: true,
       metadata: {
         freeTrialCode: code,
