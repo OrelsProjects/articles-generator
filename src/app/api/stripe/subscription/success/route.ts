@@ -61,6 +61,13 @@ export async function GET(req: NextRequest) {
         template: welcomeTemplate(),
         cc: [],
       });
+      await sendMail({
+        to: "orelsmail@gmail.com",
+        from: "orel",
+        subject: "Payment confirmation - " + session.customer_email,
+        template: welcomeTemplate(),
+        cc: [],
+      });
     } catch (error: any) {
       loggerServer.error("Failed to send welcome email", error);
     }
