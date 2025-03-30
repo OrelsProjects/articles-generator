@@ -4,7 +4,7 @@ import { getUserArticles } from "@/lib/dal/articles";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { runPrompt } from "@/lib/open-router";
 import { generateTitleSubtitleImprovementPrompt as generateTitleImprovementPrompt } from "@/lib/prompts";
-import { canUseAI, useCredits } from "@/lib/utils/credits";
+import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
 import { handleUsageError } from "@/lib/utils/ideas";
 import { parseJson } from "@/lib/utils/json";
 import loggerServer from "@/loggerServer";
@@ -43,6 +43,7 @@ export async function POST(
   }
 
   let usageId: string = "";
+  let didConsumeCredits = false;
 
   try {
     const { menuType, improveType, ideaId, value } = await request.json();
@@ -72,6 +73,11 @@ export async function POST(
       );
     }
 
+    const { creditsUsed, creditsRemaining } = await useCredits(
+      session.user.id,
+      "titleOrSubtitleRefinement",
+    );
+    didConsumeCredits = true;
     const relatedArticles = await getRelatedArticles(
       `title: ${idea?.title}\nsubtitle: ${idea?.subtitle}`,
     );
@@ -112,11 +118,6 @@ export async function POST(
       subtitle: string;
     }>(promptResponse);
 
-    const { creditsUsed, creditsRemaining } = await useCredits(
-      session.user.id,
-      "titleOrSubtitleRefinement",
-    );
-
     const response: AIUsageResponse<{ title: string; subtitle: string }> = {
       responseBody: {
         body: { title, subtitle },
@@ -129,7 +130,9 @@ export async function POST(
     return NextResponse.json(response);
   } catch (error: any) {
     loggerServer.error("Error improving article:", error);
-
+    if (didConsumeCredits) {
+      await undoUseCredits(session.user.id, "titleOrSubtitleRefinement");
+    }
     const { message, status } = await handleUsageError(error, usageId);
     return NextResponse.json({ success: false, error: message }, { status });
   }

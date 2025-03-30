@@ -18,8 +18,7 @@ import {
   handleUsageError,
   setUserGeneratingIdeas,
 } from "@/lib/utils/ideas";
-import { canUseAI, useCredits } from "@/lib/utils/credits";
-import { AIUsageType } from "@prisma/client";
+import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
@@ -43,7 +42,7 @@ export async function GET(
   }
 
   let usageId: string = "";
-
+  let didConsumeCredits = false;
   try {
     console.time("Pre-query");
 
@@ -83,6 +82,12 @@ export async function GET(
         { status },
       );
     }
+
+    const { creditsUsed, creditsRemaining } = await useCredits(
+      session.user.id,
+      "ideaGeneration",
+    );
+    didConsumeCredits = true;
 
     console.timeEnd("Pre-query");
 
@@ -215,11 +220,6 @@ export async function GET(
 
     console.timeEnd("Start generating ideas");
 
-    const { creditsUsed, creditsRemaining } = await useCredits(
-      session.user.id,
-      "ideaGeneration",
-    );
-
     const response: AIUsageResponse<IdeaLLM[]> = {
       responseBody: {
         body: ideasWithOutlines,
@@ -231,6 +231,9 @@ export async function GET(
     return NextResponse.json(response);
   } catch (error: any) {
     loggerServer.error("Error generating ideas:", error);
+    if (didConsumeCredits) {
+      await undoUseCredits(session.user.id, "ideaGeneration");
+    }
     const { message, status } = await handleUsageError(error, usageId);
     return NextResponse.json({ success: false, error: message }, { status });
   } finally {

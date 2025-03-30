@@ -2,7 +2,7 @@ import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { runPrompt } from "@/lib/open-router";
 import { generateImprovementPromptPost } from "@/lib/prompts";
-import { canUseAI, useCredits } from "@/lib/utils/credits";
+import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
 import { handleUsageError } from "@/lib/utils/ideas";
 import loggerServer from "@/loggerServer";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
@@ -24,6 +24,7 @@ export async function POST(
   }
 
   let usageId: string = "";
+  let didConsumeCredits = false;
 
   try {
     const { text, type, ideaId, customText } = await request.json();
@@ -35,6 +36,12 @@ export async function POST(
         { status },
       );
     }
+
+    const { creditsUsed, creditsRemaining } = await useCredits(
+      session.user.id,
+      "textEnhancement",
+    );
+    didConsumeCredits = true;
 
     const idea = await prisma.idea.findUnique({
       where: {
@@ -54,10 +61,6 @@ export async function POST(
       },
     );
     const response = await runPrompt(messages, model);
-    const { creditsUsed, creditsRemaining } = await useCredits(
-      session.user.id,
-      "textEnhancement",
-    );
 
     return NextResponse.json({
       responseBody: {
@@ -69,7 +72,9 @@ export async function POST(
     });
   } catch (error: any) {
     loggerServer.error("Error improving article:", error);
-
+    if (didConsumeCredits) {
+      await undoUseCredits(session.user.id, "textEnhancement");
+    }
     const { message, status } = await handleUsageError(error, usageId);
     return NextResponse.json({ success: false, error: message }, { status });
   }

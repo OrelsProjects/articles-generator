@@ -1,4 +1,4 @@
-import { AIUsageType, FeatureFlag, Plan } from "@prisma/client";
+import { AIUsageType, FeatureFlag, Plan, UserMetadata } from "@prisma/client";
 
 type PlanCredits = Record<Plan, number>;
 
@@ -35,4 +35,8 @@ export const creditCosts: CreditsCost = {
   [AIUsageType.textEnhancement]: 1,
   [AIUsageType.titleOrSubtitleRefinement]: 1,
   [AIUsageType.notesGeneration]: 3,
+};
+
+export const canUseFeature = (userMetadata: UserMetadata, featureFlag: FeatureFlag) => {
+  return userMetadata.featureFlags.includes(featureFlag);
 };

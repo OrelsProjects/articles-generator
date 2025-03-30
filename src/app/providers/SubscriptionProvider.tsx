@@ -1,5 +1,5 @@
+import Loading from "@/components/ui/loading";
 import axios from "axios";
-import { Loader2 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -29,7 +29,7 @@ export default function SubscriptionProvider({
   if (loading) {
     return (
       <div className="w-screen h-screen flex items-center justify-center">
-        <Loader2 className="w-20 h-20 animate-spin text-primary" />
+        <Loading spinnerClassName="h-16 w-16" />
       </div>
     );
   }

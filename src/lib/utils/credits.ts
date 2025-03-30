@@ -105,3 +105,33 @@ export async function useCredits(
 
   return { creditsUsed, creditsRemaining };
 }
+
+export async function undoUseCredits(userId: string, usageType: AIUsageType) {
+  try {
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        userId,
+        status: "active",
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (!subscription) {
+      loggerServer.error("Subscription not found when trying to use credits", {
+        userId,
+      });
+      return { creditsUsed: 0, creditsRemaining: 0 };
+    }
+
+    const cost = creditCosts[usageType];
+
+    await prisma.subscription.update({
+      where: { id: subscription.id },
+      data: { creditsRemaining: subscription.creditsRemaining + cost },
+    });
+  } catch (error) {
+    loggerServer.error("Error undoing use credits", { error });
+  }
+}

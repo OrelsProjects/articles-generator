@@ -4,10 +4,10 @@ import { selectAuth } from "@/lib/features/auth/authSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { Logger } from "@/logger";
 import axios from "axios";
-import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
+import Loading from "@/components/ui/loading";
 
 export default function FreeSubscriptionProvider({
   children,
@@ -74,7 +74,7 @@ export default function FreeSubscriptionProvider({
   if (loading) {
     return (
       <div className="w-screen h-screen flex items-center justify-center">
-        <Loader2 className="w-20 h-20 animate-spin text-primary" />
+        <Loading spinnerClassName="h-16 w-16" />
       </div>
     );
   }

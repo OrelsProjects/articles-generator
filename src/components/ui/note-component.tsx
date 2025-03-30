@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
 import StatusBadgeDropdown from "@/components/notes/status-badge-dropdown";
+import slugify from "slugify";
 
 // Define feedback options
 const FEEDBACK_OPTIONS = [
@@ -188,8 +189,6 @@ export default function NoteComponent({ note }: NoteProps) {
   const [isDislikePopoverOpen, setIsDislikePopoverOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  console.log("note", note);
-
   const isUserNote = useMemo(() => {
     if ("reactionCount" in note) {
       return false;
@@ -205,8 +204,15 @@ export default function NoteComponent({ note }: NoteProps) {
   }, [note]);
 
   const attachment = useMemo(() => {
+    console.log("note", note);
     if ("attachment" in note) {
+      // if attachment is an array, return the first one
+      if (Array.isArray(note.attachment)) {
+        return note.attachment?.[0];
+      }
       return note.attachment as string;
+    } else if ("attachments" in note) {
+      return note.attachments?.[0] as string;
     }
     return null;
   }, [note]);
@@ -221,13 +227,6 @@ export default function NoteComponent({ note }: NoteProps) {
   const feedback = useMemo(() => {
     if ("feedback" in note) {
       return note.feedback;
-    }
-    return null;
-  }, [note]);
-
-  const status = useMemo(() => {
-    if ("status" in note) {
-      return note.status;
     }
     return null;
   }, [note]);
@@ -289,74 +288,49 @@ export default function NoteComponent({ note }: NoteProps) {
     );
 
   const Author = () => (
-    <Popover>
-      <PopoverTrigger asChild>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0 overflow-hidden cursor-pointer">
-            {thumbnail ? (
-              <Image
-                src={thumbnail}
-                alt={note.authorName || "Author"}
-                width={32}
-                height={32}
-                className="object-cover w-full h-full hover:opacity-90 transition-opacity"
-              />
-            ) : (
-              <span className="text-sm">
-                {note.authorName?.charAt(0) || "A"}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col gap-0.5">
-              <p className="font-medium text-sm">{note.authorName}</p>
-              {handle && (
-                <Link
-                  href={`https://substack.com/@${handle}`}
-                  target="_blank"
-                  className="text-xs text-muted-foreground"
-                >
-                  @{handle}
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </PopoverTrigger>
-      <PopoverContent className="w-60 p-3" side="bottom" align="start">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full overflow-hidden">
-            {thumbnail ? (
-              <Image
-                src={thumbnail}
-                alt={note.authorName || "Author"}
-                width={40}
-                height={40}
-                className="object-cover w-full h-full"
-              />
-            ) : (
-              <div className="w-full h-full bg-primary/20 flex items-center justify-center">
-                <span className="text-lg">
-                  {note.authorName?.charAt(0) || "A"}
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-col gap-0.5">
+    <div
+      onClick={() => {
+        if (handle && !isUserNote) {
+          let baseUrl = `/writer/@${handle}`;
+          if (note.authorName) {
+            baseUrl += `/${slugify(note.authorName, {
+              lower: true,
+              strict: true,
+            })}`;
+          }
+          window.open(baseUrl, "_blank");
+        }
+      }}
+      className={cn("flex items-center gap-2", {
+        "cursor-pointer": handle && !isUserNote,
+      })}
+    >
+      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0 overflow-hidden cursor-pointer">
+        {thumbnail ? (
+          <Image
+            src={thumbnail}
+            alt={note.authorName || "Author"}
+            width={32}
+            height={32}
+            className="object-cover w-full h-full hover:opacity-90 transition-opacity"
+          />
+        ) : (
+          <span className="text-sm">{note.authorName?.charAt(0) || "A"}</span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-0.5">
+          {isUserNote ? (
             <p className="font-medium text-sm">{note.authorName}</p>
-            {handle && (
-              <Link
-                href={`https://substack.com/@${handle}`}
-                target="_blank"
-                className="text-xs text-muted-foreground"
-              >
-                @{handle}
-              </Link>
-            )}
-          </div>
+          ) : (
+            <p className="font-medium text-sm cursor-pointer">
+              {note.authorName}
+            </p>
+          )}
+          {handle && <p className="text-xs text-muted-foreground">@{handle}</p>}
         </div>
-      </PopoverContent>
-    </Popover>
+      </div>
+    </div>
   );
 
   const handleFeedbackChange = (
@@ -589,7 +563,7 @@ export default function NoteComponent({ note }: NoteProps) {
               </div>
               {attachment && (
                 <div
-                  className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
+                  className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200 px-10"
                   onClick={() =>
                     selectImage({
                       url: attachment,
@@ -600,9 +574,9 @@ export default function NoteComponent({ note }: NoteProps) {
                   <Image
                     src={attachment}
                     alt="Attachment"
-                    width={400}
-                    height={300}
-                    className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
+                    width={300}
+                    height={200}
+                    className=" rounded-lg hover:opacity-90 transition-opacity"
                   />
                 </div>
               )}

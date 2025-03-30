@@ -118,7 +118,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <Button
-                  variant="ghost"
+                  variant="link"
                   className="mt-2 text-muted-foreground border border-muted-foreground/5 rounded-md"
                   onClick={() => setShowCancelDialog(true)}
                 >

@@ -15,11 +15,6 @@ import { PlusJakartaSans } from "@/lib/utils/fonts";
 import Script from "next/script";
 import AffiliateProvider from "@/app/providers/AffiliateProvider";
 
-interface RootLayoutProps {
-  children: React.ReactNode;
-  locale: never;
-}
-
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME as string;
 const APP_DEFAULT_TITLE = process.env.NEXT_PUBLIC_APP_DEFAULT_TITLE as string;
 const APP_TITLE_TEMPLATE = process.env.NEXT_PUBLIC_APP_TITLE_TEMPLATE as string;
@@ -73,9 +68,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Layout({ children }: RootLayoutProps) {
-  initLogger();
-
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" className={cn("antialiased", PlusJakartaSans.className)}>
       <head>

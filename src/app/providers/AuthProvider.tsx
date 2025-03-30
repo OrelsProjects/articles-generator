@@ -21,6 +21,7 @@ import { Session } from "next-auth";
 import { Loader2 } from "lucide-react";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { useSettings } from "@/lib/hooks/useSettings";
+import Loading from "@/components/ui/loading";
 
 export default function AuthProvider({
   children,
@@ -148,7 +149,7 @@ export default function AuthProvider({
   if (loading) {
     return (
       <div className="w-screen h-screen flex items-center justify-center">
-        <Loader2 className="w-20 h-20 animate-spin text-primary" />
+        <Loading spinnerClassName="h-16 w-16" />
       </div>
     );
   }

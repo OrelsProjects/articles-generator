@@ -23,7 +23,6 @@ import {
   setShowIdeasPanel,
 } from "@/lib/features/ui/uiSlice";
 import { toast } from "react-toastify";
-import { useCredits } from "@/lib/hooks/useCredits";
 
 export default function GenerateIdeasDialog() {
   const dispatch = useAppDispatch();

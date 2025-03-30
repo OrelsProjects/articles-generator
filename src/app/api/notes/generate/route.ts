@@ -13,7 +13,7 @@ import { Model, runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
 import { FeatureFlag, Note, NoteStatus } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
-import { canUseAI, useCredits } from "@/lib/utils/credits";
+import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
 import { getByline } from "@/lib/dal/byline";
 import { noteTemplates } from "@/app/api/notes/generate/_consts";
@@ -60,6 +60,7 @@ export async function POST(
   }
 
   const count = Math.min(parseInt(countString || "3"), 3);
+  let didConsumeCredits = false;
   try {
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
@@ -113,6 +114,12 @@ export async function POST(
         { status: canUseAIResult.status },
       );
     }
+
+    const { creditsUsed, creditsRemaining } = await useCredits(
+      session.user.id,
+      "notesGeneration",
+    );
+    didConsumeCredits = true;
 
     const authorId = publication.authorId;
 
@@ -303,10 +310,6 @@ export async function POST(
       thumbnail: note.thumbnail || undefined,
     }));
 
-    const { creditsUsed, creditsRemaining } = await useCredits(
-      session.user.id,
-      "notesGeneration",
-    );
     const response: AIUsageResponse<NoteDraft[]> = {
       responseBody: {
         body: notesResponse,
@@ -317,6 +320,9 @@ export async function POST(
     };
     return NextResponse.json(response);
   } catch (error: any) {
+    if (didConsumeCredits) {
+      await undoUseCredits(session.user.id, "notesGeneration");
+    }
     const code = error.code || "unknown";
     if (code === 429 || error instanceof Model429Error) {
       return NextResponse.json(

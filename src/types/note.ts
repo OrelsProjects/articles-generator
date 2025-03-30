@@ -57,65 +57,6 @@ export interface Note {
   attachments?: string[];
 }
 
-function convertJsonToMarkdown(json: any): string {
-  // Recursive helper to process each node.
-  function processNode(node: any): string {
-    if (!node) return "";
-
-    switch (node.type) {
-      case "doc":
-        return (node.content || []).map(processNode).join("\n\n");
-      case "paragraph":
-        return (node.content || []).map(processNode).join("");
-      case "text": {
-        let text = node.text || "";
-        if (node.marks && Array.isArray(node.marks)) {
-          node.marks.forEach((mark: any) => {
-            switch (mark.type) {
-              case "bold":
-                text = `**${text}**`;
-                break;
-              case "italic":
-                text = `*${text}*`;
-                break;
-              case "link": {
-                const href =
-                  mark.attrs && mark.attrs.href ? mark.attrs.href : "";
-                text = `[${text}](${href})`;
-                break;
-              }
-              default:
-                // Unknown mark, just ignore.
-                break;
-            }
-          });
-        }
-        return text;
-      }
-      case "orderedList":
-        return (node.content || [])
-          .map((child: any, index: number) => {
-            // Use index+1 for numbering.
-            return `${index + 1}. ${processNode(child)}`;
-          })
-          .join("\n");
-      case "bulletList":
-        return (node.content || [])
-          .map((child: any) => `- ${processNode(child)}`)
-          .join("\n");
-      case "listItem":
-        return (node.content || []).map(processNode).join("");
-      default:
-        // Fallback: if the node has content, process it; otherwise, output any text.
-        return node.content
-          ? node.content.map(processNode).join("")
-          : node.text || "";
-    }
-  }
-
-  return processNode(json);
-}
-
 export async function convertMDToHtml(md: string) {
   marked.setOptions({
     breaks: true, // Enable line breaks
