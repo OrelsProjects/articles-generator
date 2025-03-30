@@ -98,6 +98,8 @@ export default function Pricing({
     }
   };
 
+  const hadSubscription = user?.meta?.hadSubscription;
+
   return (
     <motion.section
       id="pricing"
@@ -230,7 +232,7 @@ export default function Pricing({
                     {loading && (
                       <RefreshCw className="mr-2 w-4 h-4 animate-spin" />
                     )}
-                    Start free trial
+                    {hadSubscription ? "Get started" : "Start free trial"}
                   </Button>
                   <ul className="space-y-3">
                     {plan.features.map((feature, i) => (

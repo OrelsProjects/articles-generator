@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import usePayments from "@/lib/hooks/usePayments";
+
 export default function OnboardingPage() {
   const router = useCustomRouter();
   const { user } = useAppSelector(state => state.auth);

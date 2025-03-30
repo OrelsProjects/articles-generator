@@ -27,10 +27,9 @@ export const authOptions: AuthOptions = {
             featureFlags: true,
           },
         }),
-        prisma.subscription.findFirst({
+        prisma.subscription.findMany({
           where: {
             userId: token.sub as string,
-            status: "active",
           },
           orderBy: {
             createdAt: "desc",
@@ -43,21 +42,29 @@ export const authOptions: AuthOptions = {
           },
         }),
       ];
-      const [userMetadata, subscription] = (await Promise.all(promises)) as [
+      const [userMetadata, subscriptions] = (await Promise.all(promises)) as [
         { publicationId: string | null; featureFlags: FeatureFlag[] } | null,
         {
           plan: string;
           currentPeriodStart: Date;
           currentPeriodEnd: Date;
           cancelAtPeriodEnd: boolean;
-        } | null,
+        }[],
       ];
+
+      const activeSubscription = subscriptions.find(
+        subscription => subscription.currentPeriodEnd > new Date(),
+      );
+
       session.user.meta = {
-        plan: subscription?.plan ? (subscription.plan as Plan) : null,
-        currentPeriodStart: subscription?.currentPeriodStart || null,
-        currentPeriodEnd: subscription?.currentPeriodEnd || null,
-        cancelAtPeriodEnd: subscription?.cancelAtPeriodEnd || false,
+        plan: activeSubscription?.plan
+          ? (activeSubscription.plan as Plan)
+          : null,
+        currentPeriodStart: activeSubscription?.currentPeriodStart || null,
+        currentPeriodEnd: activeSubscription?.currentPeriodEnd || null,
+        cancelAtPeriodEnd: activeSubscription?.cancelAtPeriodEnd || false,
         featureFlags: userMetadata?.featureFlags || [],
+        hadSubscription: subscriptions.length > 0,
       };
       session.user.publicationId = userMetadata?.publicationId || "";
       return session;

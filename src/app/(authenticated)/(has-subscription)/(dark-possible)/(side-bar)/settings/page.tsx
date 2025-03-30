@@ -96,19 +96,26 @@ export default function SettingsPage() {
                   <p>Credits reset every month.</p>
                   {planType !== "premium" && (
                     <div className="mt-2">
-                      <Button variant="outline" asChild>
-                        <Link
-                          target="_blank"
-                          href={
-                            process.env
-                              .NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
-                          }
-                        >
+                      <Button asChild>
+                        <Link href={"/pricing"}>
                           Upgrade to get more credits
                         </Link>
                       </Button>
                     </div>
                   )}
+                  <div className="mt-2">
+                    <Button variant="outline" asChild>
+                      <Link
+                        target="_blank"
+                        href={
+                          process.env
+                            .NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
+                        }
+                      >
+                        Change my plan
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
                 <Button
                   variant="ghost"

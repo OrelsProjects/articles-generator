@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { generateSessionId } from "@/lib/stripe";
 import { z } from "zod";
+import prisma from "@/app/api/_db/db";
 
 const checkoutSchema = z.object({
   plan: z.enum(["hobbyist", "standard", "premium"]),
@@ -22,6 +23,14 @@ export async function POST(req: NextRequest) {
     const { plan, interval, referralCode } = checkoutSchema.parse(
       await req.json(),
     );
+
+    const userPastSubscription = await prisma.subscription.findFirst({
+      where: {
+        userId: session.user.id,
+      },
+    });
+
+    const userHasSubscription = !!userPastSubscription;
 
     const productId =
       plan === "hobbyist"
@@ -72,7 +81,7 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       email: session.user.email || null,
       name: session.user.name || null,
-      freeTrial: 7,
+      freeTrial: userHasSubscription ? 0 : 7,
       referralCode,
       allowCoupon: true,
     });

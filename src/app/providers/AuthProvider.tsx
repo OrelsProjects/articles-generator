@@ -40,6 +40,7 @@ export default function AuthProvider({
   const setUser = async (session?: Session) => {
     let hasPublication = false;
     try {
+      debugger;
       const userPlan: Plan | null = session?.user?.meta
         ? session.user.meta.plan
         : null;
@@ -54,6 +55,7 @@ export default function AuthProvider({
           currentPeriodEnd: session?.user?.meta?.currentPeriodEnd || null,
           cancelAtPeriodEnd: session?.user?.meta?.cancelAtPeriodEnd || false,
           featureFlags: session?.user?.meta?.featureFlags || [],
+          hadSubscription: session?.user?.meta?.hadSubscription || false,
         },
       };
       dispatch(setUserAction(appUser));
