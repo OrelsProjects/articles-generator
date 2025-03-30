@@ -432,13 +432,15 @@ export default function GenerateNotesSidebar() {
       </Button>
 
       {/* Background black for mobile */}
-      <div
-        className={cn(
-          "fixed md:hidden inset-0 z-40 bg-black opacity-50 transition-opacity duration-300",
-          showGenerateNotesSidebar ? "opacity-50" : "opacity-0",
-        )}
-        onClick={handleToggleSidebar}
-      />
+      {showGenerateNotesSidebar && (
+        <div
+          className={cn(
+            "fixed md:hidden inset-0 z-40 bg-black opacity-50 transition-opacity duration-300",
+            showGenerateNotesSidebar ? "opacity-50" : "opacity-0",
+          )}
+          onClick={handleToggleSidebar}
+        />
+      )}
 
       {/* Sidebar - with mobile optimizations */}
       <div
