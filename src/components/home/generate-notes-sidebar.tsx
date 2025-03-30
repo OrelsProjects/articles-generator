@@ -431,23 +431,19 @@ export default function GenerateNotesSidebar() {
         <Pencil className="h-6 w-6" />
       </Button>
 
-      {/* Close button for mobile */}
-      <Button
-        variant="outline"
-        size="icon"
+      {/* Background black for mobile */}
+      <div
         className={cn(
-          "md:hidden fixed top-4 right-4 z-[60] h-9 w-9",
-          !open && "hidden",
+          "fixed md:hidden inset-0 z-40 bg-black opacity-50 transition-opacity duration-300",
+          showGenerateNotesSidebar ? "opacity-50" : "opacity-0",
         )}
         onClick={handleToggleSidebar}
-      >
-        <X className="h-5 w-5" />
-      </Button>
+      />
 
       {/* Sidebar - with mobile optimizations */}
       <div
         className={cn(
-          "fixed top-0 right-0 md:w-[400px] w-full h-[calc(100vh-64px)] md:h-screen bg-background border-l border-border transition-all duration-300 transform overflow-hidden z-50",
+          "fixed top-0 right-0 w-[90%] md:w-[400px] h-[calc(100vh-64px)] md:h-screen bg-background border-l border-border transition-all duration-300 transform overflow-hidden z-50",
           showGenerateNotesSidebar ? "translate-x-0" : "translate-x-full",
         )}
       >
