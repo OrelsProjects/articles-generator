@@ -17,6 +17,8 @@ import ArticleComponent from "@/components/ui/article-component";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { MasonryGrid } from "@/components/ui/masonry-grid";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LoadingNotes = ({
   notesAndArticlesOnly,
@@ -46,37 +48,11 @@ const LoadingNotes = ({
     </div>
 
     <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      <div className="flex flex-col lg:flex-row lg:space-x-8 space-y-8 lg:space-y-0">
-        <div className="lg:w-1/2 space-y-6">
-          <div
-            className={cn("flex items-center space-x-2", {
-              hidden: notesAndArticlesOnly,
-            })}
-          >
-            <MessageCircle className="text-muted-foreground" />
-            <h2 className="text-xl font-bold text-foreground">Top Notes</h2>
-          </div>
-          <div className="space-y-4">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-96 w-full rounded-lg" />
-            ))}
-          </div>
-        </div>
-
-        <div className="lg:w-1/2 space-y-6">
-          <div
-            className={cn("flex items-center space-x-2", {
-              hidden: notesAndArticlesOnly,
-            })}
-          >
-            <FileText className="text-muted-foreground" />
-            <h2 className="text-xl font-bold text-foreground">Top Articles</h2>
-          </div>
-          <div className="space-y-4">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-96 w-full rounded-lg" />
-            ))}
-          </div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-96 w-full rounded-lg" />
+          ))}
         </div>
       </div>
     </div>
@@ -90,8 +66,7 @@ export default function WriterPage({
 }) {
   const { writer, isLoading, fetchNextPage, hasMore, error, isLoadingMore } =
     useWriter(params.handle);
-  const [isNotesExpanded, setIsNotesExpanded] = useState(true);
-  const [isArticlesExpanded, setIsArticlesExpanded] = useState(true);
+  const [activeTab, setActiveTab] = useState("notes");
 
   if (isLoading || (!writer && !error)) {
     return <LoadingNotes />;
@@ -109,7 +84,11 @@ export default function WriterPage({
     return <div className="text-center text-destructive">Writer not found</div>;
   }
 
-  //   const quickActions = [];
+  const noteCards = writer.topNotes.map(note => ({
+    id: note.id,
+    content: <NoteComponent note={note} />,
+    // thumbnail: note.thumbnail,
+  }));
 
   return (
     <div className="h-screen bg-background">
@@ -137,62 +116,38 @@ export default function WriterPage({
 
       {/* Content Section */}
       <div className="h-full max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row lg:space-x-8 space-y-8 lg:space-y-0">
-          {/* Top Notes */}
-          <div className="lg:w-1/2 space-y-6">
-            <Button
-              variant="link"
-              onClick={() => setIsNotesExpanded(!isNotesExpanded)}
-              className="flex items-center space-x-2 w-fit group px-0"
-            >
-              <MessageCircle className="text-muted-foreground" />
-              <h2 className="text-xl font-bold text-foreground">Top Notes</h2>
-              <ChevronDown 
-                className={cn(
-                  "h-5 w-5 text-muted-foreground transition-transform duration-150",
-                  isNotesExpanded ? "transform rotate-180" : ""
-                )} 
-              />
-            </Button>
-            <div className={cn(
-              "space-y-4 transition-all duration-200 overflow-hidden",
-              isNotesExpanded ? "max-h-[2000px]" : "max-h-0"
-            )}>
-              {writer.topNotes.map(note => (
-                <NoteComponent key={note.id} note={note} />
-              ))}
-            </div>
-          </div>
+        <Tabs
+          defaultValue="notes"
+          className="w-fit"
+          onValueChange={setActiveTab}
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="notes" className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" />
+              Notes
+            </TabsTrigger>
+            <TabsTrigger value="articles" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Articles
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Top Articles */}
-          <div className="lg:w-1/2 space-y-6">
-            <Button 
-              variant="link"
-              onClick={() => setIsArticlesExpanded(!isArticlesExpanded)}
-              className="flex items-center space-x-2 w-fit group px-0"
-            >
-              <FileText className="text-muted-foreground" />
-              <h2 className="text-xl font-bold text-foreground">Top Articles</h2>
-              <ChevronDown 
-                className={cn(
-                  "h-5 w-5 text-muted-foreground transition-transform duration-150",
-                  isArticlesExpanded ? "transform rotate-180" : ""
-                )} 
-              />
-            </Button>
-            <div className={cn(
-              "space-y-4 transition-all duration-200 overflow-hidden",
-              isArticlesExpanded ? "max-h-[2000px]" : "max-h-0"
-            )}>
+          <TabsContent value="notes" className="mt-6">
+            <MasonryGrid cards={noteCards} columns={3} gap={4} />
+          </TabsContent>
+
+          <TabsContent value="articles" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {writer.topArticles.map(article => (
                 <ArticleComponent key={article.id} article={article} />
               ))}
             </div>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
+
         {isLoadingMore && <LoadingNotes notesAndArticlesOnly />}
         {hasMore && (
-          <div className="w-full flex justify-center mx-auto px-4 py-8 sm:px-6 lg:px-8">
+          <div className="w-full flex justify-center mt-8">
             <Button
               variant="ghost"
               size="sm"
