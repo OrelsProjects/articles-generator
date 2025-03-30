@@ -570,9 +570,7 @@ export default function GenerateNotesSidebar() {
                     disabled={loadingImprovement}
                     trigger={
                       <TooltipButton
-                        disabled={
-                          !hasContent || loadingImprovement || !selectedNote
-                        }
+                        disabled={!hasContent || loadingImprovement}
                         tooltipContent="Improve selected text (1 credit)"
                         variant="ghost"
                         size="sm"
