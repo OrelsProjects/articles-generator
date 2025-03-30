@@ -452,13 +452,23 @@ export default function GenerateNotesSidebar() {
         )}
       >
         <div className="flex flex-col h-full">
+          <div className="ml-auto p-4 pb-0">
+            <Button
+              variant="outline"
+              size="icon"
+              className={cn("z-[60] h-6 w-6", !open && "hidden")}
+              onClick={handleToggleSidebar}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
           {/* Content Area with header for mobile */}
           <div className="md:hidden border-b border-border p-4 flex items-center">
             <h2 className="text-lg font-semibold">Your content</h2>
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 overflow-auto p-4 pb-20 md:pb-4">
+          <div className="flex-1 overflow-auto p-4 pb-20 md:pb-4 md:pt-2">
             <div className="mb-4 flex items-center justify-end md:justify-between">
               <h3 className="hidden md:block text-base font-medium">
                 Your content
