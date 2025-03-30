@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
         name: session.user.name || "",
       },
     });
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     loggerServer.error(error);
     return NextResponse.json(
