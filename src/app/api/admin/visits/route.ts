@@ -21,37 +21,50 @@ export async function GET() {
       where: {
         userId: {
           in: visits.map(visit => visit.userId),
-        }
+        },
+        status: "active",
       },
     });
-    
-    
 
     // Group visits by userId
-    const groupedVisits = visits.reduce((acc, visit) => {
-      if (!acc[visit.userId]) {
-        const user = userCredits.find(user => user.userId === visit.userId);
-        acc[visit.userId] = {
-          userId: visit.userId,
-          name: visit.name,
-          visits: [],
-          creditsPerPeriod: user?.creditsPerPeriod || 0,
-          creditsRemaining: user?.creditsRemaining || 0,
-        };
-      }
-      acc[visit.userId].visits.push(visit);
-      return acc;
-    }, {} as Record<string, { userId: string; name: string; visits: typeof visits; creditsPerPeriod: number; creditsRemaining: number }>);
+    const groupedVisits = visits.reduce(
+      (acc, visit) => {
+        if (!acc[visit.userId]) {
+          const user = userCredits.find(user => user.userId === visit.userId);
+          acc[visit.userId] = {
+            userId: visit.userId,
+            name: visit.name,
+            visits: [],
+            creditsPerPeriod: user?.creditsPerPeriod || 0,
+            creditsRemaining: user?.creditsRemaining || 0,
+          };
+        }
+        acc[visit.userId].visits.push(visit);
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          userId: string;
+          name: string;
+          visits: typeof visits;
+          creditsPerPeriod: number;
+          creditsRemaining: number;
+        }
+      >,
+    );
 
     // Convert to array and sort by last visit date
-    const result = Object.values(groupedVisits).map(group => ({
-      userId: group.userId,
-      name: group.name,
-      lastVisit: group.visits[0].createdAt,
-      totalVisits: group.visits.length,
-      creditsPerPeriod: group.creditsPerPeriod,
-      creditsRemaining: group.creditsRemaining,
-    })).sort((a, b) => b.lastVisit.getTime() - a.lastVisit.getTime());
+    const result = Object.values(groupedVisits)
+      .map(group => ({
+        userId: group.userId,
+        name: group.name,
+        lastVisit: group.visits[0].createdAt,
+        totalVisits: group.visits.length,
+        creditsPerPeriod: group.creditsPerPeriod,
+        creditsRemaining: group.creditsRemaining,
+      }))
+      .sort((a, b) => b.lastVisit.getTime() - a.lastVisit.getTime());
 
     return NextResponse.json(result);
   } catch (error) {
@@ -61,4 +74,4 @@ export async function GET() {
       { status: 500 },
     );
   }
-} 
+}
