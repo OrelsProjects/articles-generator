@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
     let top60Articles = (await getUserArticles(
       { publicationId: Number(userPublication.id) },
       {
-        limit: 100,
+        limit: 60,
         freeOnly: false,
         order: {
           by: "reactionCount",
@@ -145,10 +145,10 @@ export async function POST(req: NextRequest) {
       },
     )) as ArticleWithBody[];
 
-    while (
-      getTokenCount(top60Articles.map(a => a.bodyText).join("\n")) > 120000
-    ) {
+    let count = getTokenCount(top60Articles.map(a => a.bodyText).join("\n"));
+    while (count > 120000) {
       top60Articles.shift(); // remove the worst-performing article
+      count = getTokenCount(top60Articles.map(a => a.bodyText).join("\n"));
     }
 
     const messages = generateDescriptionPrompt(description, top60Articles);
