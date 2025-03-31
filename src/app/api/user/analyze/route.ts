@@ -7,7 +7,7 @@ import {
 } from "@/lib/prompts";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { runPrompt } from "@/lib/open-router";
+import { getTokenCount, runPrompt } from "@/lib/open-router";
 import { Publication } from "@/types/publication";
 import { getPublicationByUrl } from "@/lib/dal/publication";
 import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";
@@ -133,19 +133,25 @@ export async function POST(req: NextRequest) {
       userPublication.customDomain || url,
     );
 
-    const top100Articles = (await getUserArticles(
+    let top60Articles = (await getUserArticles(
       { publicationId: Number(userPublication.id) },
       {
         limit: 100,
         freeOnly: false,
         order: {
-          by: "audience",
-          direction: "asc",
+          by: "reactionCount",
+          direction: "desc",
         },
       },
     )) as ArticleWithBody[];
-    // TODO limit by wordcount, so you dont have too many articles and the api request doesnt fail
-    const messages = generateDescriptionPrompt(description, top100Articles);
+
+    while (
+      getTokenCount(top60Articles.map(a => a.bodyText).join("\n")) > 120000
+    ) {
+      top60Articles.shift(); // remove the worst-performing article
+    }
+
+    const messages = generateDescriptionPrompt(description, top60Articles);
 
     const generatedDescription = await runPrompt(
       messages,
