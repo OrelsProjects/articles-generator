@@ -9,6 +9,8 @@ interface Visit {
   name: string;
   lastVisit: string;
   totalVisits: number;
+  creditsPerPeriod: number;
+  creditsRemaining: number;
 }
 
 export default function AdminVisitsPage() {
@@ -67,6 +69,12 @@ export default function AdminVisitsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Total Visits
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Credits/Period
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Credits Remaining
+                </th>
               </tr>
             </thead>
             <tbody className="bg-card divide-y divide-border">
@@ -88,6 +96,16 @@ export default function AdminVisitsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-foreground">
                       {visit.totalVisits}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-foreground">
+                      {visit.creditsPerPeriod}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-foreground">
+                      {visit.creditsRemaining}
                     </div>
                   </td>
                 </tr>
