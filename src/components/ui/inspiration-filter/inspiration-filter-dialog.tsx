@@ -39,22 +39,32 @@ interface InspirationFilterDialogProps {
 
 const likesOptions = [
   { label: "0 likes", value: "0" },
+  { label: "25 likes", value: "25" },
+  { label: "50 likes", value: "50" },
   { label: "100 likes", value: "100" },
+  { label: "250 likes", value: "250" },
   { label: "500 likes", value: "500" },
   { label: "1k likes", value: "1000", limitedResults: true },
+  { label: "2k likes", value: "2000", limitedResults: true },
   { label: "5k likes", value: "5000", limitedResults: true },
 ];
 
 const commentsOptions = [
   { label: "0 comments", value: "0" },
+  { label: "5 comment", value: "5" },
   { label: "10 comments", value: "10" },
+  { label: "25 comments", value: "25" },
+  { label: "50 comments", value: "50" },
   { label: "100 comments", value: "100", limitedResults: true },
   { label: "1k comments", value: "1000", limitedResults: true },
 ];
 
 const restacksOptions = [
   { label: "0 restacks", value: "0" },
+  { label: "5 restacks", value: "5" },
   { label: "10 restacks", value: "10" },
+  { label: "25 restacks", value: "25" },
+  { label: "50 restacks", value: "50" },
   { label: "100 restacks", value: "100", limitedResults: true },
   { label: "1k restacks", value: "1000", limitedResults: true },
 ];

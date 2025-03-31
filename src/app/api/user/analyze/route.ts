@@ -153,10 +153,19 @@ export async function POST(req: NextRequest) {
 
     const messages = generateDescriptionPrompt(description, top60Articles);
 
-    const generatedDescription = await runPrompt(
-      messages,
-      "anthropic/claude-3.7-sonnet",
-    );
+    let generatedDescription = "";
+    try {
+      generatedDescription = await runPrompt(
+        messages,
+        "google/gemini-2.5-pro-exp-03-25:free",
+      );
+    } catch (error: any) {
+      loggerServer.error("Error generating description:", error);
+      generatedDescription = await runPrompt(
+        messages,
+        "anthropic/claude-3.7-sonnet",
+      );
+    }
 
     const descriptionObject: {
       about: string;
