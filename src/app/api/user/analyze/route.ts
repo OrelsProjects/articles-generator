@@ -159,6 +159,9 @@ export async function POST(req: NextRequest) {
         messages,
         "google/gemini-2.5-pro-exp-03-25:free",
       );
+      if (!generatedDescription) {
+        throw new Error("No generated description");
+      }
     } catch (error: any) {
       loggerServer.error("Error generating description:", error);
       generatedDescription = await runPrompt(
