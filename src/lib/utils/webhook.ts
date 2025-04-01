@@ -1,4 +1,5 @@
 import prisma from "@/app/api/_db/db";
+import { getSubscription } from "@/lib/dal/subscription";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addUserToList, sendMail } from "@/lib/mail/mail";
 import {
@@ -357,5 +358,44 @@ export async function handleInvoicePaymentFailed(event: any) {
     subject: "Payment Failed",
     template: generateInvoicePaymentFailedEmail(invoice.id, customerEmail),
     cc: [],
+  });
+}
+
+export async function handleCheckoutSessionCompleted(event: any) {
+  const session = event.data.object as Stripe.Checkout.Session;
+
+  // get userId and credits from metadata
+  const userId = session.metadata?.userId as string;
+  const creditsString = session.metadata?.credits as string;
+  const credits = parseInt(creditsString);
+
+  if (!userId || !credits || isNaN(credits)) {
+    loggerServer.error(
+      "Invalid metadata" +
+        " " +
+        JSON.stringify(session.metadata) +
+        " In handleCheckoutSessionCompleted",
+    );
+    return;
+  }
+
+  const subscription = await getSubscription(userId);
+  if (!subscription) {
+    loggerServer.error(
+      "No subscription found for user" +
+        " " +
+        userId +
+        " In handleCheckoutSessionCompleted",
+    );
+    return;
+  }
+
+  await prisma.subscription.update({
+    where: {
+      id: subscription.id,
+    },
+    data: {
+      creditsRemaining: subscription.creditsRemaining + credits,
+    },
   });
 }

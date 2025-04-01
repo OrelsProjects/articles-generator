@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { getStripeInstance } from "@/lib/stripe";
 import loggerServer from "@/loggerServer";
 import {
+  handleCheckoutSessionCompleted,
   handleInvoicePaymentFailed,
   handleInvoicePaymentSucceeded,
   handleSubscriptionCreated,
@@ -23,6 +24,7 @@ const relevantEvents = new Set([
   "customer.subscription.trial_will_end",
   "invoice.payment_succeeded",
   "invoice.payment_failed",
+  "checkout.session.completed",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -73,6 +75,9 @@ export async function POST(req: NextRequest) {
         break;
       case "invoice.payment_failed":
         await handleInvoicePaymentFailed(event);
+        break;
+      case "checkout.session.completed":
+        await handleCheckoutSessionCompleted(event);
         break;
       default:
     }

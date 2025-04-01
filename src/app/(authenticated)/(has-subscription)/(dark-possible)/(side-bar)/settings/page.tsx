@@ -13,12 +13,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "react-toastify";
 import { PublicationPreferences } from "@/components/settings/publication-preferences";
 import { useSettings } from "@/lib/hooks/useSettings";
-import { creditsPerPlan } from "@/lib/plans-consts";
 import { Progress } from "@/components/ui/progress";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { useTheme } from "next-themes";
@@ -31,13 +29,18 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 import Link from "next/link";
+import { StepSliderDialog } from "@/components/ui/step-slider-dialog";
+import usePayments from "@/lib/hooks/usePayments";
+import { ExternalLink } from "lucide-react";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
+  const { purchaseCredits, loadingCredits } = usePayments();
   const { user } = useAppSelector(selectAuth);
   const { hasPublication } = useSettings();
   const { credits } = useAppSelector(selectSettings);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showGetTokensDialog, setShowGetTokensDialog] = useState(false);
 
   const handleSaveSettings = () => {
     toast.success("Settings saved successfully");
@@ -61,6 +64,15 @@ export default function SettingsPage() {
     Math.round((credits.used / Math.max(credits.total, 1)) * 100),
     100,
   );
+
+  const handlePurchaseCredits = async (credits: number) => {
+    try {
+      await purchaseCredits(credits);
+    } catch (error) {
+      console.error("Error purchasing credits:", error);
+      toast.error("Failed to purchase credits. Please try again.");
+    }
+  };
 
   return (
     <div className="w-full min-h-screen bg-transparent py-8 pb-28 md:py-16 flex justify-center items-start">
@@ -90,40 +102,49 @@ export default function SettingsPage() {
                     </span>
                   </div>
                   <Progress value={100 - creditPercentage} className="h-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Credits reset every month ({credits.total})
+                  </p>
                 </div>
 
                 <div className="mt-4 text-sm text-muted-foreground">
-                  <p>Credits reset every month.</p>
+                  <div className="mt-2">
+                    <Button
+                      variant="neumorphic-primary"
+                      className="px-5"
+                      onClick={() => setShowGetTokensDialog(true)}
+                    >
+                      Get more credits
+                    </Button>
+                  </div>
                   {planType !== "premium" && (
-                    <div className="mt-2">
-                      <Button asChild>
-                        <Link href={"/pricing"}>
-                          Upgrade to get more credits
+                    <div className="mt-2 w-fit">
+                      <div className="text-muted-foreground text-center mb-2">
+                        Or
+                      </div>
+                      <Button variant="outline" asChild>
+                        <Link
+                          target="_blank"
+                          href={
+                            process.env
+                              .NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
+                          }
+                        >
+                          Upgrade your plan <ExternalLink className="w-4 h-4 ml-2" />
                         </Link>
                       </Button>
                     </div>
                   )}
-                  <div className="mt-2">
-                    <Button variant="outline" asChild>
-                      <Link
-                        target="_blank"
-                        href={
-                          process.env
-                            .NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
-                        }
-                      >
-                        Change my plan
-                      </Link>
-                    </Button>
-                  </div>
                 </div>
-                <Button
-                  variant="link"
-                  className="mt-2 text-muted-foreground border border-muted-foreground/5 rounded-md"
-                  onClick={() => setShowCancelDialog(true)}
-                >
-                  Cancel subscription
-                </Button>
+                <div className="w-full flex justify-end">
+                  <Button
+                    variant="link"
+                    className="mt-2 text-muted-foreground/60 hover:text-destructive"
+                    onClick={() => setShowCancelDialog(true)}
+                  >
+                    Cancel subscription
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </section>
@@ -238,30 +259,33 @@ export default function SettingsPage() {
             </DialogHeader>
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-5">
               <Button
-                type="button"
                 variant="ghost"
-                className="sm:w-auto text-muted-foreground border-muted-foreground/30 hover:bg-destructive/10"
-                asChild
-              >
-                <Link
-                  href={
-                    process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
-                  }
-                >
-                  I don&apos;t want to grow my Substack
-                </Link>
-              </Button>
-              <Button
-                type="button"
                 className="sm:w-auto font-medium"
                 onClick={() => setShowCancelDialog(false)}
               >
                 Keep my subscription
               </Button>
+              <Button type="button" asChild>
+                <Link
+                  href={
+                    process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
+                  }
+                >
+                  Stop my Substack growth
+                </Link>
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
+      <StepSliderDialog
+        open={showGetTokensDialog}
+        onOpenChange={setShowGetTokensDialog}
+        onContinue={handlePurchaseCredits}
+        onCancel={() => {}}
+        disabled={loadingCredits}
+        loading={loadingCredits}
+      />
     </div>
   );
 }

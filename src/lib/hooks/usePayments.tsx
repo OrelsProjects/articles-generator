@@ -4,7 +4,7 @@ import { Product } from "@/types/payment";
 import { loadStripe } from "@stripe/stripe-js";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { setProducts } from "@/lib/features/products/productsSlice";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 
@@ -15,6 +15,7 @@ const stripePromise = loadStripe(
 export default function usePayments() {
   const dispatch = useAppDispatch();
   const loadingProducts = useRef(false);
+  const [loadingCredits, setLoadingCredits] = useState(false);
   const [referral, setReferral] = useLocalStorage("referral", null);
   const { user } = useAppSelector(selectAuth);
 
@@ -94,10 +95,41 @@ export default function usePayments() {
     }
   };
 
+  /**
+   * Purchase credits
+   */
+  const purchaseCredits = async (credits: number) => {
+    if (loadingCredits) {
+      return;
+    }
+    setLoadingCredits(true);
+    try {
+      const response = await axios.post("/api/user/subscription/credits", {
+        credits,
+      });
+      Logger.info("Credits purchased successfully", { response });
+      const stripe = await stripePromise;
+      const { error } = await stripe!.redirectToCheckout({
+        sessionId: response.data.sessionId,
+      });
+      if (error) {
+        Logger.error("Error redirecting to checkout", { error });
+        throw error;
+      }
+    } catch (error: any) {
+      Logger.error("Failed to purchase credits", { error });
+      throw error;
+    } finally {
+      setLoadingCredits(false);
+    }
+  };
+
   return {
     getProducts,
     goToCheckout,
     cancelSubscription,
     upgradeSubscription,
+    purchaseCredits,
+    loadingCredits,
   };
 }
