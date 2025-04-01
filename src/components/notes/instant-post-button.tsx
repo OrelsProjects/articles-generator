@@ -59,7 +59,6 @@ export function InstantPostButton({
   };
 
   const handleOpenChangeSuccessDialog = (open: boolean) => {
-    debugger;
     if (!note) return;
     setShowSuccessDialog(open);
     if (!open) {

@@ -11,6 +11,7 @@ import {
   ChevronDown,
   RefreshCw,
   Plus,
+  ExternalLink,
 } from "lucide-react";
 import { useWriter } from "@/lib/hooks/useWriter";
 import NoteComponent from "@/components/ui/note-component";
@@ -23,6 +24,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUi } from "@/lib/hooks/useUi";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
+import Link from "next/link";
+import { TooltipButton } from "@/components/ui/tooltip-button";
 
 const LoadingNotes = ({
   notesAndArticlesOnly,
@@ -131,9 +134,26 @@ export default function WriterPage({
               className="w-16 h-16 rounded-full object-cover border-2 border-border"
             />
             <div className="text-center sm:text-left">
-              <h1 className="text-lg md:text-xl font-bold text-foreground">
-                {writer.name}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg md:text-xl font-bold text-foreground">
+                  {writer.name}
+                </h1>
+                {writer.handle && (
+                  <TooltipButton
+                    variant="ghost-hover"
+                    size="icon"
+                    tooltipContent="View on Substack"
+                    onClick={() => {
+                      window.open(
+                        `https://substack.com/@${writer.handle}`,
+                        "_blank",
+                      );
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </TooltipButton>
+                )}
+              </div>
               <p className="text-muted-foreground">@{writer.handle}</p>
               <p className="mt-2 text-muted-foreground max-w-2xl">
                 {writer.bio}

@@ -21,6 +21,42 @@ const WriterSkeleton = () => (
   </div>
 );
 
+type FormattedTextProps = {
+  text?: string | null;
+  query: string;
+};
+
+export const FormattedText: React.FC<FormattedTextProps> = ({
+  text,
+  query,
+}) => {
+  if (!text || !query.trim()) return <>{text}</>;
+
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const matchIndex = lowerText.indexOf(lowerQuery);
+
+  if (matchIndex === -1) return <>{text}</>;
+
+  const startIndex = Math.max(0, matchIndex - 20);
+  const sliced = text.slice(startIndex);
+  const words = sliced.split(new RegExp(`(${query})`, "gi"));
+
+  return (
+    <>
+      {words.map((word, i) =>
+        word.toLowerCase() === lowerQuery.toLowerCase() ? (
+          <span key={i} className="font-extrabold">
+            {word}
+          </span>
+        ) : (
+          <span key={i}>{word}</span>
+        ),
+      )}
+    </>
+  );
+};
+
 export function WriterSearchBar() {
   const {
     result,
@@ -71,8 +107,7 @@ export function WriterSearchBar() {
     const scrollPercentage = (scrollTop / (scrollHeight - clientHeight)) * 100;
 
     if (scrollPercentage > 70) {
-      console.log("About to load more");
-      loadMore();
+        loadMore();
     }
   }, [loadMore, loadingMore]);
 
@@ -221,7 +256,7 @@ export function WriterSearchBar() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] md:max-w-[700px] lg:max-w-[900px] max-h-[80vh] p-0">
+        <DialogContent className="w-screen max-w-[90vw] sm:max-w-[550px] md:max-w-[80vw] min-h-[80vh] p-0">
           <DialogHeader className="p-6 pb-2">
             <div className="relative mt-4">
               <Input
@@ -265,24 +300,15 @@ export function WriterSearchBar() {
                     <img
                       src={writer.photoUrl}
                       alt={writer.name}
-                      className="w-12 h-12 rounded-full object-cover"
+                      className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                     />
                     <div className="flex flex-col">
-                      <span
-                        className="text-base font-medium"
-                        dangerouslySetInnerHTML={{
-                          __html: formatName(writer.name),
-                        }}
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        @{writer.handle}
+                      <span className="text-base font-medium">
+                        <FormattedText text={writer.name} query={query} />
                       </span>
-                      <span
-                        className="text-sm text-muted-foreground mt-1 line-clamp-2"
-                        dangerouslySetInnerHTML={{
-                          __html: formatBio(writer.bio) || "",
-                        }}
-                      />
+                      <span className="text-sm text-muted-foreground mt-1 line-clamp-2 whitespace-normal">
+                        <FormattedText text={writer.bio} query={query} />
+                      </span>
                     </div>
                   </button>
                 ))}
@@ -298,10 +324,16 @@ export function WriterSearchBar() {
               </div>
             )}
 
-            {!hasMore && result.length > 0 && !loading && !loadingMore && (
+            {!hasMore && !loading && !loadingMore ? (
               <div className="flex flex-col items-center justify-center py-8 text-muted-foreground text-sm">
                 <CheckCircle2 className="h-5 w-5 mb-2 text-primary/70" />
                 <p>You&apos;ve reached the end of the list</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground text-sm">
+                <Button variant="outline" size="sm" onClick={loadMore}>
+                  Load more
+                </Button>
               </div>
             )}
           </div>

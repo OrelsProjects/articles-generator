@@ -41,7 +41,6 @@ export default function AuthProvider({
   const setUser = async (session?: Session) => {
     let hasPublication = false;
     try {
-      debugger;
       const userPlan: Plan | null = session?.user?.meta
         ? session.user.meta.plan
         : null;

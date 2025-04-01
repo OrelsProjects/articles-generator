@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { WriterSearchResult } from "@/types/writer";
 import axios, { AxiosError } from "axios";
 
+const LIMIT = 20;
+
 export function useSearchWriter() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<WriterSearchResult[]>([]);
@@ -18,7 +20,7 @@ export function useSearchWriter() {
   const search = async (
     query: string,
     page: number = 1,
-    limit: number = 10,
+    limit: number = LIMIT,
   ) => {
     if (cancelRef.current) {
       cancelRef.current.abort();
@@ -62,7 +64,7 @@ export function useSearchWriter() {
     loadingMoreRef.current = true;
     setLoadingMore(true);
     setPage(page + 1);
-    await search(queryRef.current, page + 1, 10);
+    await search(queryRef.current, page + 1);
     loadingMoreRef.current = false;
     setLoadingMore(false);
   };
