@@ -241,7 +241,7 @@ export function WriterSearchBar() {
                       onClick={openShowAllDialog}
                       disabled={loading || !query}
                     >
-                      Show all {result.length} writers
+                      Show all
                     </Button>
                   </div>
                 )}

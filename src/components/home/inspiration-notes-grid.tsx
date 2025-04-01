@@ -10,11 +10,188 @@ import NoteComponent from "@/components/ui/note-component";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Info, RefreshCw } from "lucide-react";
+import {
+  ChevronDown,
+  Info,
+  RefreshCw,
+  X,
+  Calendar,
+  MessageSquare,
+  Repeat,
+  Heart,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspiration } from "@/lib/hooks/useInspiration";
 import { InspirationFilterDialog } from "@/components/ui/inspiration-filter/inspiration-filter-dialog";
 import { useUi } from "@/lib/hooks/useUi";
+import { Badge } from "@/components/ui/badge";
+import { InspirationFilters } from "@/types/note";
+import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
+
+// New component to display active filters
+const ActiveFilters = ({
+  filters,
+  updateFilters,
+}: {
+  filters: InspirationFilters;
+  updateFilters: (filters?: Partial<InspirationFilters>) => void;
+}) => {
+  const clearFilter = (key: keyof InspirationFilters) => {
+    const newFilters = { ...filters };
+    if (key === "dateRange") {
+      newFilters.dateRange = undefined;
+    } else {
+      // If it's a number, set it to 0.
+      // if it's a string, set it to "",
+      // if it's a boolean, set it to false.
+      if (typeof newFilters[key] === "number") {
+        (newFilters as any)[key] = 0;
+      } else if (typeof newFilters[key] === "string") {
+        (newFilters as any)[key] = "";
+      } else if (typeof newFilters[key] === "boolean") {
+        (newFilters as any)[key] = false;
+      }
+    }
+    updateFilters(newFilters);
+  };
+
+  const formatDateRange = (range?: DateRange) => {
+    if (!range) return "";
+    if (range.from && range.to) {
+      return `${format(range.from, "MMM d")} - ${format(range.to, "MMM d, yyyy")}`;
+    }
+    if (range.from) {
+      return `Since ${format(range.from, "MMM d, yyyy")}`;
+    }
+    return "";
+  };
+
+  const hasActiveFilters =
+    filters.keyword ||
+    filters.dateRange ||
+    (filters.minLikes && filters.minLikes > 0) ||
+    (filters.minComments && filters.minComments > 0) ||
+    (filters.minRestacks && filters.minRestacks > 0);
+
+  if (!hasActiveFilters) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 mb-4">
+      <span className="text-sm text-muted-foreground mr-1">
+        Active filters:
+      </span>
+
+      {filters.keyword && (
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-1 pl-3 pr-1.5 py-1"
+        >
+          <span>{filters.keyword}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-4 w-4 ml-1"
+            onClick={() => clearFilter("keyword")}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </Badge>
+      )}
+
+      {filters.dateRange && (
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-1 pl-3 pr-1.5 py-1"
+        >
+          <Calendar className="h-3 w-3 mr-1" />
+          <span>{formatDateRange(filters.dateRange)}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-4 w-4 ml-1"
+            onClick={() => clearFilter("dateRange")}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </Badge>
+      )}
+
+      {(filters.minLikes || 0) > 0 && (
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-1 pl-3 pr-1.5 py-1"
+        >
+          <Heart className="h-3 w-3 mr-1" />
+          <span>Min {filters.minLikes} likes</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-4 w-4 ml-1"
+            onClick={() => clearFilter("minLikes")}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </Badge>
+      )}
+
+      {(filters.minComments || 0) > 0 && (
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-1 pl-3 pr-1.5 py-1"
+        >
+          <MessageSquare className="h-3 w-3 mr-1" />
+          <span>Min {filters.minComments} comments</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-4 w-4 ml-1"
+            onClick={() => clearFilter("minComments")}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </Badge>
+      )}
+
+      {(filters.minRestacks || 0) > 0 && (
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-1 pl-3 pr-1.5 py-1"
+        >
+          <Repeat className="h-3 w-3 mr-1" />
+          <span>Min {filters.minRestacks} restacks</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-4 w-4 ml-1"
+            onClick={() => clearFilter("minRestacks")}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </Badge>
+      )}
+
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 text-xs"
+        onClick={() =>
+          updateFilters({
+            keyword: "",
+            dateRange: undefined,
+            minLikes: 0,
+            minComments: 0,
+            minRestacks: 0,
+            type: "all",
+          })
+        }
+      >
+        Clear all
+      </Button>
+    </div>
+  );
+};
+
 export default function InspirationGrid() {
   const {
     notes,
@@ -96,12 +273,7 @@ export default function InspirationGrid() {
         Something went wrong
       </h1>
       <p className="text-red-500">{error}</p>
-      <button
-        className="mt-4 px-4 py-2 bg-primary text-foreground rounded-md"
-        onClick={() => window.location.reload()}
-      >
-        Try Again
-      </button>
+      <Button onClick={() => fetchInspirationNotes()}>Try Again</Button>
     </div>
   );
 
@@ -156,6 +328,12 @@ export default function InspirationGrid() {
             content! Our AI engine selected these for you.
           </p>
         </div>
+
+        {/* Display active filters */}
+        {hasAdvancedFiltering && (
+          <ActiveFilters filters={filters} updateFilters={updateFilters} />
+        )}
+
         {shouldShowLoading ? (
           <Loading />
         ) : shouldShowError ? (

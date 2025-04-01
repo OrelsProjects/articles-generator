@@ -7,7 +7,7 @@ import {
   addInspirationNotes,
   setInspirationNotes,
 } from "@/lib/features/inspiration/inspirationSlice";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { EventTracker } from "@/eventTracker";
 import { InspirationFilters } from "@/types/note";
 import { NotesComments } from "../../../prisma/generated/articles";
@@ -21,24 +21,29 @@ export function useInspiration() {
     filters,
     hasMoreInspirationNotes,
   } = useAppSelector(state => state.inspiration);
+  const cancelRef = useRef<AbortController | null>(null);
 
   const loadingInspirationRef = useRef(false);
 
-  const fetchInspirationNotes = useCallback(
-    async (
-      loadMore = false,
-      newFilters?: Partial<InspirationFilters>,
-      existingNotes?: NotesComments[],
-    ) => {
-      if (loadingInspirationRef.current) return;
-      try {
-        if (inspirationNotes.length > 0) {
-          EventTracker.track("notes_inspiration_load_more");
-        }
-        loadingInspirationRef.current = true;
-        dispatch(setLoadingInspiration(true));
+  const fetchInspirationNotes = async (
+    loadMore = false,
+    newFilters?: Partial<InspirationFilters>,
+    existingNotes?: NotesComments[],
+  ) => {
+    if (cancelRef.current) {
+      cancelRef.current.abort();
+    }
+    cancelRef.current = new AbortController();
+    try {
+      if (inspirationNotes.length > 0) {
+        EventTracker.track("notes_inspiration_load_more");
+      }
+      loadingInspirationRef.current = true;
+      dispatch(setLoadingInspiration(true));
 
-        const response = await axios.post("/api/notes/inspiration", {
+      const response = await axios.post(
+        "/api/notes/inspiration",
+        {
           existingNotesIds: loadMore
             ? existingNotes
               ? existingNotes.map(note => note.id)
@@ -48,36 +53,38 @@ export function useInspiration() {
             ? inspirationNotes[inspirationNotes.length - 1]?.id
             : null,
           filters: newFilters || filters,
-        });
-        dispatch(setError(null));
-        if (loadMore) {
-          dispatch(
-            addInspirationNotes({
-              items: response.data.items,
-              nextCursor: response.data.nextCursor,
-              hasMore: response.data.hasMore,
-              options: { toStart: false },
-            }),
-          );
-        } else {
-          dispatch(setInspirationNotes(response.data.items));
-        }
-      } catch (error) {
+        },
+        { signal: cancelRef.current?.signal },
+      );
+      dispatch(setError(null));
+      if (loadMore) {
         dispatch(
-          setError(
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-          ),
+          addInspirationNotes({
+            items: response.data.items,
+            nextCursor: response.data.nextCursor,
+            hasMore: response.data.hasMore,
+            options: { toStart: false },
+          }),
         );
-        console.error("Error fetching inspiration notes:", error);
-      } finally {
-        dispatch(setLoadingInspiration(false));
-        loadingInspirationRef.current = false;
+      } else {
+        dispatch(setInspirationNotes(response.data.items));
       }
-    },
-    [inspirationNotes, filters],
-  );
+      dispatch(setLoadingInspiration(false));
+      loadingInspirationRef.current = false;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.code === "ERR_CANCELED") return;
+      }
+      dispatch(
+        setError(
+          error instanceof Error ? error.message : "An unknown error occurred",
+        ),
+      );
+      console.error("Error fetching inspiration notes:", error);
+      dispatch(setLoadingInspiration(false));
+      loadingInspirationRef.current = false;
+    }
+  };
 
   const updateFilters = useCallback(
     (newFilters?: Partial<InspirationFilters>) => {
@@ -92,8 +99,14 @@ export function useInspiration() {
       } else {
         updatedFilters = { ...filters, ...newFilters };
       }
+      if (updatedFilters.keyword) {
+        updatedFilters.type = "all";
+      } else {
+        updatedFilters.type = "relevant-to-user";
+      }
       dispatch(setInspirationFilters(updatedFilters));
       dispatch(setInspirationNotes([]));
+      dispatch(setError(null));
       fetchInspirationNotes(false, updatedFilters, []);
     },
     [dispatch, filters, fetchInspirationNotes],

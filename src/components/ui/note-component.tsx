@@ -204,7 +204,6 @@ export default function NoteComponent({ note }: NoteProps) {
   }, [note]);
 
   const attachment = useMemo(() => {
-    console.log("note", note);
     if ("attachment" in note) {
       // if attachment is an array, return the first one
       if (Array.isArray(note.attachment)) {

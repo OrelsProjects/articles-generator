@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   User,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
 import {
@@ -74,6 +74,7 @@ export function InspirationFilterDialog({
   onFilterChange,
   loading,
 }: InspirationFilterDialogProps) {
+  console.log("Filters in dialog", filters);
   const [newFilters, setNewFilters] =
     useState<Partial<InspirationFilters>>(filters);
   const [dateRange, setDateRange] = useState<DateRange | null | undefined>(
@@ -84,6 +85,9 @@ export function InspirationFilterDialog({
     "keyword",
   );
 
+  const likesFromFilters = useMemo(() => filters?.minLikes || 0, [filters]);
+  console.log("Likes from filters", likesFromFilters);
+
   const likes = newFilters?.minLikes || 0;
   const comments = newFilters?.minComments || 0;
   const restacks = newFilters?.minRestacks || 0;
@@ -91,6 +95,19 @@ export function InspirationFilterDialog({
 
   const hasFilters =
     likes > 0 || comments > 0 || restacks > 0 || keyword || dateRange;
+
+  useEffect(() => {
+    let filtersToUpdate = { ...filters };
+    for (const key in filters) {
+      const valueNew = filters[key as keyof InspirationFilters];
+      const valueCurrent = newFilters[key as keyof InspirationFilters];
+      const hasChanged = valueNew !== valueCurrent;
+      if (hasChanged) {
+        (filtersToUpdate as any)[key] = valueNew;
+      }
+    }
+    setNewFilters(filtersToUpdate);
+  }, [filters]);
 
   const handleFilterChange = (key: keyof InspirationFilters, value: string) => {
     let newType =
@@ -218,37 +235,7 @@ export function InspirationFilterDialog({
 
           {/* Filter row */}
           <div className="w-full grid grid-cols-2 border-b border-border py-2 px-4">
-            <div className="flex items-center gap-2">
-              <TooltipButton
-                variant="link"
-                className="p-0`"
-                tooltipContent={
-                  newFilters.type === "relevant-to-user"
-                    ? "Looks for similarity in the body. The longer the search term, the better."
-                    : "Looks for matches in the body of the post"
-                }
-              >
-                <InfoCircledIcon className="h-4 w-4 text-muted-foreground" />
-              </TooltipButton>
-              <Select
-                value={newFilters?.type || "relevant-to-user"}
-                onValueChange={value => handleFilterChange("type", value)}
-              >
-                <SelectTrigger className="h-10 shadow-none border-0 border-r border-border rounded-none">
-                  <SelectValue placeholder="Relevant to me" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    value="relevant-to-user"
-                    className="flex justify-start items-center gap-2"
-                  >
-                    Relevant to me
-                  </SelectItem>
-                  <SelectItem value="all">Exact match (includes)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-full grid grid-cols-[1fr_auto] gap-4 ">
+            <div className="w-full grid grid-cols-[1fr_auto] gap-4 col-span-2">
               <div className="relative">
                 <Input
                   placeholder="Anytime"
@@ -328,25 +315,6 @@ export function InspirationFilterDialog({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="flex items-center gap-2 border-t border-border px-4">
-            {hasLimitedResults && (
-              <div className="flex items-center gap-2 text-sm">
-                <AlertTriangle className="h-3 w-3 text-yellow-600/80" />
-                <span className="text-yellow-600/80">Limited results</span>
-                <TooltipButton
-                  variant="link"
-                  className="p-0"
-                  tooltipContent={
-                    newFilters.type === "all"
-                      ? "There aren't many results for your current search. Try lowering the filters or increasing the date range."
-                      : "Results may be inaccurate. Try lowering the filters or increasing the date range to atleast a year."
-                  }
-                >
-                  <InfoCircledIcon className="h-4 w-4 text-muted-foreground" />
-                </TooltipButton>
-              </div>
-            )}
           </div>
         </div>
 
