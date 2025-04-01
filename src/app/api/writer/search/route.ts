@@ -26,7 +26,9 @@ export async function POST(request: NextRequest) {
       name: result.name || "",
       handle: result.handle || "",
       photoUrl: result.photoUrl || "",
-    }));
+    }))
+    // prefer those with an image first
+    .sort((a, b) => (b.photoUrl ? 1 : -1) - (a.photoUrl ? 1 : -1));
     console.timeEnd("searchByline");
     return NextResponse.json(response);
   } catch (error: any) {
