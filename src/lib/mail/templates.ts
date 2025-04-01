@@ -201,3 +201,11 @@ export function generateSubscriptionDeletedEmail(subscriptionId: string) {
   `;
   return baseEmailTemplate(content);
 }
+
+export function generateInvoicePaymentFailedEmail(invoiceId: string, email: string) {
+  const content = `
+    <h2>Payment Failed</h2>
+    <p>A user with email <strong>${email}</strong> payment for invoice <strong>${invoiceId}</strong> has failed.</p>
+  `;
+  return baseEmailTemplate(content);
+}

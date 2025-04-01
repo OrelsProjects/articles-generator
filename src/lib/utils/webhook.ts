@@ -2,14 +2,14 @@ import prisma from "@/app/api/_db/db";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addUserToList, sendMail } from "@/lib/mail/mail";
 import {
+  generateInvoicePaymentFailedEmail,
   generateSubscriptionDeletedEmail,
   generateSubscriptionTrialEndingEmail,
 } from "@/lib/mail/templates";
 import { creditsPerPlan } from "@/lib/plans-consts";
 import { getStripeInstance } from "@/lib/stripe";
 import loggerServer from "@/loggerServer";
-import { Logger } from "@datadog/browser-logs";
-import { Plan } from "@prisma/client";
+import { Payment, Plan } from "@prisma/client";
 import { Stripe } from "stripe";
 
 async function getUserBySubscription(subscription: Stripe.Subscription) {
@@ -64,6 +64,23 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
     return;
   }
 
+  const userPriorSubscriptions = await prisma.subscription.findMany({
+    where: {
+      userId: user.id,
+    },
+  });
+
+  // Gather all his prior credits
+  const priorCredits = userPriorSubscriptions.reduce((acc, curr) => {
+    return acc + curr.creditsRemaining;
+  }, 0);
+
+  const newCredits = isFreeSubscription
+    ? 10
+    : isTrialing // If the subscription is trialing, we add credits here. If not, we add them after the first payment.
+      ? creditsPerPlan[plan]
+      : 0;
+
   await prisma.subscription.create({
     data: {
       status: "active",
@@ -78,7 +95,7 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
 
       // Credits information
       creditsPerPeriod: creditsPerPlan[plan],
-      creditsRemaining: isFreeSubscription ? 10 : creditsPerPlan[plan],
+      creditsRemaining: newCredits + priorCredits,
       lastCreditReset: new Date(),
 
       currentPeriodStart: new Date(subscription.current_period_start * 1000),
@@ -117,14 +134,14 @@ export async function handleSubscriptionUpdated(event: any) {
     return;
   }
 
-  // await prisma.subscription.update({
-  //   where: {
-  //     id: subscriptionId,
-  //   },
-  //   data: {
-  //     endDate: new Date(subscription.current_period_end * 1000),
-  //   },
-  // });
+  await prisma.subscription.update({
+    where: {
+      id: subscriptionId,
+    },
+    data: {
+      status: subscription.status,
+    },
+  });
 }
 
 export async function handleSubscriptionPaused(event: Stripe.Event) {
@@ -195,9 +212,31 @@ export async function handleSubscriptionDeleted(event: Stripe.Event) {
 
 export async function handleSubscriptionTrialEnding(event: any) {
   const stripe = getStripeInstance();
-  const subscription = event.data.object as any;
-  const customer = await stripe.customers.retrieve(subscription.customer);
-  const userEmail = (customer as any).email;
+  const subscription = event.data.object as Stripe.Subscription;
+  const customerId = subscription.customer as string;
+  const customer = (await stripe.customers.retrieve(
+    customerId,
+  )) as Stripe.Customer;
+  const userEmail = customer.email;
+  if (!userEmail) {
+    loggerServer.error(
+      "No email found for customer" +
+        " " +
+        customerId +
+        " In handleSubscriptionTrialEnding",
+    );
+    return;
+  }
+
+  if (!subscription.trial_end) {
+    loggerServer.error(
+      "No trial end found for subscription" +
+        " " +
+        subscription.id +
+        " In handleSubscriptionTrialEnding",
+    );
+    return;
+  }
 
   // Send email notification about trial ending
   await sendMail({
@@ -209,5 +248,114 @@ export async function handleSubscriptionTrialEnding(event: any) {
       new Date(subscription.trial_end * 1000),
     ),
     cc: ["orelsmail@gmail.com"],
+  });
+}
+
+//
+export async function handleInvoicePaymentSucceeded(event: any) {
+  const invoice = event.data.object as Stripe.Invoice;
+  const customerEmail = invoice.customer_email;
+  const customerId = invoice.customer as string;
+
+  const customer = await getStripeInstance().customers.retrieve(
+    invoice.customer as string,
+  );
+  const userEmail = (customer as any).email || customerEmail;
+  if (!userEmail) {
+    loggerServer.error(
+      "No email found for customer" +
+        " " +
+        customerId +
+        " In handleInvoicePaymentSucceeded",
+    );
+    return;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      email: userEmail,
+    },
+  });
+  if (!user) {
+    loggerServer.error(
+      "No user found for customer" +
+        " " +
+        customerId +
+        " In handleInvoicePaymentSucceeded",
+    );
+    return;
+  }
+
+  const payment: Payment = {
+    id: invoice.id,
+    invoiceId: invoice.id,
+    amountReceived: invoice.amount_paid,
+    currency: invoice.currency,
+    status: "succeeded",
+    createdAt: new Date(invoice.created * 1000),
+    updatedAt: new Date(invoice.created * 1000),
+    userId: user.id,
+    paymentMethodId: null,
+    priceId: null,
+    sessionId: null,
+    productId: null,
+    productName: null,
+  };
+
+  await prisma.payment.create({
+    data: payment,
+  });
+
+  const subscription = await prisma.subscription.findFirst({
+    where: {
+      userId: user.id,
+      status: "active",
+    },
+  });
+
+  if (!subscription) {
+    loggerServer.error(
+      "No active subscription found for user" +
+        " " +
+        user.id +
+        " In handleInvoicePaymentSucceeded",
+    );
+    return;
+  }
+
+  const newCredits = subscription.isTrialing
+    ? subscription.creditsRemaining
+    : subscription.creditsPerPeriod + subscription.creditsRemaining;
+
+  await prisma.subscription.update({
+    where: {
+      id: subscription.id,
+    },
+    data: {
+      creditsRemaining: newCredits,
+      isTrialing: false,
+      lastCreditReset: new Date(),
+    },
+  });
+}
+
+export async function handleInvoicePaymentFailed(event: any) {
+  const invoice = event.data.object as Stripe.Invoice;
+  const customerEmail = invoice.customer_email;
+  if (!customerEmail) {
+    loggerServer.error(
+      "No email found for customer" +
+        " " +
+        invoice.customer +
+        " In handleInvoicePaymentFailed",
+    );
+    return;
+  }
+  await sendMail({
+    to: "orelsmail@gmail.com",
+    from: "orel",
+    subject: "Payment Failed",
+    template: generateInvoicePaymentFailedEmail(invoice.id, customerEmail),
+    cc: [],
   });
 }

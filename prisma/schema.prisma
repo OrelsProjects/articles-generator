@@ -319,11 +319,12 @@ model FreeUsers {
 model Payment {
   id        String @id @default(auto()) @map("_id") @db.ObjectId
   userId    String @map("user_id") @db.ObjectId
-  priceId   String @map("price_id")
-  sessionId String @map("session_id")
-  productId String @map("product_id")
+  priceId   String? @map("price_id")
+  sessionId String? @map("session_id")
+  productId String? @map("product_id")
+  invoiceId String @map("invoice_id") @default("")
 
-  productName     String  @map("product_name")
+  productName     String?  @map("product_name")
   amountReceived  Int     @map("amount_received")
   currency        String  @map("currency")
   status          String  @map("status")

@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { getStripeInstance } from "@/lib/stripe";
 import loggerServer from "@/loggerServer";
 import {
+  handleInvoicePaymentFailed,
+  handleInvoicePaymentSucceeded,
   handleSubscriptionCreated,
   handleSubscriptionDeleted,
   handleSubscriptionPaused,
@@ -10,6 +12,7 @@ import {
   handleSubscriptionTrialEnding,
   handleSubscriptionUpdated,
 } from "@/lib/utils/webhook";
+import Stripe from "stripe";
 
 const relevantEvents = new Set([
   "customer.subscription.updated",
@@ -18,6 +21,8 @@ const relevantEvents = new Set([
   "customer.subscription.paused",
   "customer.subscription.resumed",
   "customer.subscription.trial_will_end",
+  "invoice.payment_succeeded",
+  "invoice.payment_failed",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -62,6 +67,12 @@ export async function POST(req: NextRequest) {
         break;
       case "customer.subscription.resumed":
         await handleSubscriptionResumed(event);
+        break;
+      case "invoice.payment_succeeded":
+        await handleInvoicePaymentSucceeded(event);
+        break;
+      case "invoice.payment_failed":
+        await handleInvoicePaymentFailed(event);
         break;
       default:
     }
