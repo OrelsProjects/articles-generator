@@ -1,15 +1,10 @@
+import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { fetchAuthor } from "@/lib/lambda";
+import { FeatureFlag } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-
-const env = process.env.NODE_ENV;
-
-const authorizedIds =
-  env === "development"
-    ? ["67e250196330c8d4fc88149d"]
-    : ["67a99e3fb9cbc7c7c5da576d", "67d7cff659df3cb90c4e6a77"];
 
 const schema = z.object({
   authorId: z.string(),
@@ -22,9 +17,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!authorizedIds.includes(session.user.id)) {
+  const userMetadata = await prisma.userMetadata.findUnique({
+    where: {
+      userId: session.user.id,
+    },
+  });
+
+  if (!userMetadata?.featureFlags.includes(FeatureFlag.populateNotes)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   try {
     const body = await req.json();
     const { success, data } = schema.safeParse(body);
