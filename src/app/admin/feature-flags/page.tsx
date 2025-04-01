@@ -12,7 +12,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Search, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  Loader2,
+  Search,
+  X,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
@@ -29,6 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSession } from "next-auth/react";
 import moment from "moment-timezone";
+import { cn } from "@/lib/utils";
 
 interface UserMetadata {
   id: string;
@@ -42,6 +50,8 @@ interface User {
   email: string | null;
   plan: string | null;
   latestVisit: Date | null;
+  planEndsAt: Date | null;
+  isFree: boolean;
   userMetadata: UserMetadata | null;
 }
 
@@ -49,8 +59,8 @@ interface User {
 const allFeatureFlags = Object.values(FeatureFlag);
 
 // Sort types
-type SortField = 'name' | 'latestVisit';
-type SortOrder = 'asc' | 'desc';
+type SortField = "name" | "latestVisit" | "planEndsAt";
+type SortOrder = "asc" | "desc";
 
 export default function FeatureFlagsPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -58,9 +68,12 @@ export default function FeatureFlagsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});
-  const [sortConfig, setSortConfig] = useState<{field: SortField, order: SortOrder}>({
-    field: 'name',
-    order: 'asc'
+  const [sortConfig, setSortConfig] = useState<{
+    field: SortField;
+    order: SortOrder;
+  }>({
+    field: "name",
+    order: "asc",
   });
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -104,36 +117,50 @@ export default function FeatureFlagsPage() {
     return name.includes(searchTermLower) || email.includes(searchTermLower);
   });
 
+  const itemsNoNullVisit = [...filteredUsers].filter(user => user.latestVisit);
+  const itemsWithNullVisit = [...filteredUsers].filter(
+    user => !user.latestVisit,
+  );
+
   // Sort users
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    if (sortConfig.field === 'name') {
-      const nameA = a.name?.toLowerCase() || '';
-      const nameB = b.name?.toLowerCase() || '';
-      return sortConfig.order === 'asc' 
+  const sortedUsers = [...itemsNoNullVisit].sort((a, b) => {
+    if (sortConfig.field === "name") {
+      const nameA = a.name?.toLowerCase() || "";
+      const nameB = b.name?.toLowerCase() || "";
+      return sortConfig.order === "asc"
         ? nameA.localeCompare(nameB)
         : nameB.localeCompare(nameA);
-    } else if (sortConfig.field === 'latestVisit') {
+    } else if (sortConfig.field === "latestVisit") {
       // Handle null dates by putting them at the end
       if (!a.latestVisit && !b.latestVisit) return 0;
-      if (!a.latestVisit) return sortConfig.order === 'asc' ? 1 : -1;
-      if (!b.latestVisit) return sortConfig.order === 'asc' ? -1 : 1;
-      
-      return sortConfig.order === 'asc'
+      if (!a.latestVisit) return sortConfig.order === "asc" ? 1 : -1;
+      if (!b.latestVisit) return sortConfig.order === "asc" ? -1 : 1;
+
+      return sortConfig.order === "asc"
         ? new Date(a.latestVisit).getTime() - new Date(b.latestVisit).getTime()
         : new Date(b.latestVisit).getTime() - new Date(a.latestVisit).getTime();
+    } else if (sortConfig.field === "planEndsAt") {
+      // Handle null dates by putting them at the end
+      if (!a.planEndsAt && !b.planEndsAt) return 0;
+      if (!a.planEndsAt) return sortConfig.order === "asc" ? 1 : -1;
+      if (!b.planEndsAt) return sortConfig.order === "asc" ? -1 : 1;
+
+      return sortConfig.order === "asc"
+        ? new Date(a.planEndsAt).getTime() - new Date(b.planEndsAt).getTime()
+        : new Date(b.planEndsAt).getTime() - new Date(a.planEndsAt).getTime();
     }
     return 0;
-  });
-  
+  }).concat(itemsWithNullVisit);
+
   // Toggle sort order
   const handleSort = (field: SortField) => {
     setSortConfig(prevConfig => {
       if (prevConfig.field === field) {
         // Toggle order if the same field
-        return { field, order: prevConfig.order === 'asc' ? 'desc' : 'asc' };
+        return { field, order: prevConfig.order === "asc" ? "desc" : "asc" };
       } else {
         // New field, start with ascending
-        return { field, order: 'asc' };
+        return { field, order: "asc" };
       }
     });
   };
@@ -143,9 +170,11 @@ export default function FeatureFlagsPage() {
     if (sortConfig.field !== field) {
       return <ArrowUpDown className="ml-1 h-4 w-4" />;
     }
-    return sortConfig.order === 'asc' 
-      ? <ArrowUp className="ml-1 h-4 w-4" /> 
-      : <ArrowDown className="ml-1 h-4 w-4" />;
+    return sortConfig.order === "asc" ? (
+      <ArrowUp className="ml-1 h-4 w-4" />
+    ) : (
+      <ArrowDown className="ml-1 h-4 w-4" />
+    );
   };
 
   // Update feature flag for a user
@@ -316,45 +345,75 @@ export default function FeatureFlagsPage() {
       </div>
 
       <div className="bg-card rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-muted/50">
-              <TableRow>
-                <TableHead 
-                  className="w-[250px] cursor-pointer hover:text-primary transition-colors" 
-                  onClick={() => handleSort('name')}
+        <div
+          className="w-full overflow-auto"
+          style={{ maxHeight: "calc(100vh - 220px)" }}
+        >
+          <table className="w-full border-collapse">
+            <thead
+              className="bg-muted sticky top-0"
+              style={{ position: "sticky", top: 0, zIndex: 10 }}
+            >
+              <tr>
+                <th
+                  className="p-3 text-left font-medium text-sm border-b border-border cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => handleSort("name")}
                 >
                   <div className="flex items-center">
                     User
-                    {getSortIcon('name')}
+                    {getSortIcon("name")}
                   </div>
-                </TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => handleSort('latestVisit')}
+                </th>
+                <th className="p-3 text-left font-medium text-sm border-b border-border">
+                  Plan
+                </th>
+                <th
+                  className="p-3 text-left font-medium text-sm border-b border-border cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => handleSort("latestVisit")}
                 >
                   <div className="flex items-center">
                     Latest Visit
-                    {getSortIcon('latestVisit')}
+                    {getSortIcon("latestVisit")}
                   </div>
-                </TableHead>
-                <TableHead className="text-center">Admin</TableHead>
+                </th>
+                <th className="p-3 text-center font-medium text-sm border-b border-border">
+                  Admin
+                </th>
+                <th
+                  className="p-3 text-left font-medium text-sm border-b border-border cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => handleSort("planEndsAt")}
+                >
+                  <div className="flex items-center">
+                    Plan Ends At
+                    {getSortIcon("planEndsAt")}
+                  </div>
+                </th>
                 {allFeatureFlags.map(flag => (
-                  <TableHead key={flag} className="text-center">
+                  <th
+                    key={flag}
+                    className="p-3 text-center font-medium text-sm border-b border-border"
+                  >
                     {flag}
-                  </TableHead>
+                  </th>
                 ))}
-              </TableRow>
-            </TableHeader>
+              </tr>
+            </thead>
 
-            <TableBody>
+            <tbody>
               {sortedUsers.map(user => {
                 const isCurrentUser = user.email === currentUserEmail;
                 return (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      <div>{user.name || "No name"}</div>
+                  <tr
+                    key={user.id}
+                    className={cn(
+                      "border-b border-border hover:bg-muted/60 transition-colors",
+                      !user.isFree ? "bg-green-50 dark:bg-green-950/20" : "",
+                    )}
+                  >
+                    <td className="p-3">
+                      <div className="font-medium">
+                        {user.name || "No name"}
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         {user.email}
                         {isCurrentUser && (
@@ -363,22 +422,24 @@ export default function FeatureFlagsPage() {
                           </span>
                         )}
                       </div>
-                    </TableCell>
+                    </td>
 
-                    <TableCell>
+                    <td className="p-3">
                       {user.plan ? (
-                        <Badge variant="outline" className="capitalize">
+                        <Badge
+                          variant={!user.isFree ? "secondary" : "outline"}
+                          className="capitalize"
+                        >
                           {user.plan}
                         </Badge>
                       ) : (
                         <Badge variant="outline">No plan</Badge>
                       )}
-                    </TableCell>
+                    </td>
 
-                    <TableCell>
+                    <td className="p-3">
                       {user.latestVisit ? (
                         <Badge variant="outline">
-                          {/* Show in DD/MM HH:MM, israel time */}
                           {moment(user.latestVisit)
                             .tz("Asia/Jerusalem")
                             .format("DD/MM, HH:MM")}
@@ -386,9 +447,9 @@ export default function FeatureFlagsPage() {
                       ) : (
                         <Badge variant="outline">No visits</Badge>
                       )}
-                    </TableCell>
+                    </td>
 
-                    <TableCell className="text-center">
+                    <td className="p-3 text-center">
                       <div className="flex justify-center">
                         {updating[`${user.id}-admin`] ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -406,14 +467,26 @@ export default function FeatureFlagsPage() {
                           />
                         )}
                       </div>
-                    </TableCell>
+                    </td>
+
+                    <td className="p-3">
+                      {user.planEndsAt ? (
+                        <Badge variant={!user.isFree ? "secondary" : "outline"}>
+                          {moment(user.planEndsAt)
+                            .tz("Asia/Jerusalem")
+                            .format("DD/MM/YYYY")}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">No end date</Badge>
+                      )}
+                    </td>
 
                     {allFeatureFlags.map(flag => {
                       const updateKey = `${user.id}-${flag}`;
                       const isEnabled = hasFeatureFlag(user, flag);
 
                       return (
-                        <TableCell key={flag} className="text-center">
+                        <td key={flag} className="p-3 text-center">
                           <div className="flex justify-center">
                             {updating[updateKey] ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -427,22 +500,25 @@ export default function FeatureFlagsPage() {
                               />
                             )}
                           </div>
-                        </TableCell>
+                        </td>
                       );
                     })}
-                  </TableRow>
+                  </tr>
                 );
               })}
 
               {sortedUsers.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                <tr>
+                  <td
+                    colSpan={6 + allFeatureFlags.length}
+                    className="p-10 text-center text-muted-foreground"
+                  >
                     No users found.
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               )}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
       </div>
 
