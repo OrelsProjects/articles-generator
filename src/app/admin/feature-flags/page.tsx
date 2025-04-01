@@ -28,10 +28,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useSession } from "next-auth/react";
+import moment from "moment-timezone";
 
 interface UserMetadata {
   id: string;
-  plan: string | null;
   featureFlags: string[];
   isAdmin: boolean;
 }
@@ -40,7 +40,9 @@ interface User {
   id: string;
   name: string | null;
   email: string | null;
-  userMetadata: UserMetadata[] | null;
+  plan: string | null;
+  latestVisit: Date | null;
+  userMetadata: UserMetadata | null;
 }
 
 // All feature flags from the Prisma enum
@@ -73,6 +75,7 @@ export default function FeatureFlagsPage() {
       try {
         setLoading(true);
         const response = await axios.get("/api/admin/feature-flags");
+        debugger;
         setUsers(response.data);
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -113,9 +116,8 @@ export default function FeatureFlagsPage() {
       // Update local state
       setUsers(prevUsers =>
         prevUsers.map(user => {
-          if (user.id === userId && user.userMetadata?.[0]) {
-            const metadata = user.userMetadata[0];
-            const currentFlags = [...metadata.featureFlags];
+          if (user.id === userId && user.userMetadata) {
+            const currentFlags = [...user.userMetadata.featureFlags];
 
             if (enabled && !currentFlags.includes(featureFlag)) {
               currentFlags.push(featureFlag);
@@ -126,12 +128,10 @@ export default function FeatureFlagsPage() {
 
             return {
               ...user,
-              userMetadata: [
-                {
-                  ...metadata,
-                  featureFlags: currentFlags,
-                },
-              ],
+              userMetadata: {
+                ...user.userMetadata,
+                featureFlags: currentFlags,
+              },
             };
           }
           return user;
@@ -182,17 +182,15 @@ export default function FeatureFlagsPage() {
       // Update local state
       setUsers(prevUsers =>
         prevUsers.map(user => {
-          if (user.id === userId && user.userMetadata?.[0]) {
-            const metadata = user.userMetadata[0];
+          if (user.id === userId && user.userMetadata) {
+            const metadata = user.userMetadata;
 
             return {
               ...user,
-              userMetadata: [
-                {
-                  ...metadata,
-                  isAdmin: adminData?.enabled || metadata.isAdmin,
-                },
-              ],
+              userMetadata: {
+                ...metadata,
+                isAdmin: adminData?.enabled || metadata.isAdmin,
+              },
             };
           }
           return user;
@@ -214,8 +212,8 @@ export default function FeatureFlagsPage() {
 
   // Determine if a feature flag is enabled for a user
   const hasFeatureFlag = (user: User, flag: string): boolean => {
-    if (!user.userMetadata?.[0]) return false;
-    return user.userMetadata[0].featureFlags.includes(flag);
+    if (!user.userMetadata) return false;
+    return user.userMetadata.featureFlags.includes(flag);
   };
 
   if (loading) {
@@ -273,6 +271,7 @@ export default function FeatureFlagsPage() {
               <TableRow>
                 <TableHead className="w-[250px]">User</TableHead>
                 <TableHead>Plan</TableHead>
+                <TableHead>Latest Visit</TableHead>
                 <TableHead className="text-center">Admin</TableHead>
                 {allFeatureFlags.map(flag => (
                   <TableHead key={flag} className="text-center">
@@ -300,12 +299,25 @@ export default function FeatureFlagsPage() {
                     </TableCell>
 
                     <TableCell>
-                      {user.userMetadata?.[0]?.plan ? (
+                      {user.plan ? (
                         <Badge variant="outline" className="capitalize">
-                          {user.userMetadata[0].plan}
+                          {user.plan}
                         </Badge>
                       ) : (
                         <Badge variant="outline">No plan</Badge>
+                      )}
+                    </TableCell>
+
+                    <TableCell>
+                      {user.latestVisit ? (
+                        <Badge variant="outline">
+                          {/* Show in DD/MM HH:MM, israel time */}
+                          {moment(user.latestVisit)
+                            .tz("Asia/Jerusalem")
+                            .format("DD/MM, HH:MM")}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">No visits</Badge>
                       )}
                     </TableCell>
 
@@ -315,7 +327,7 @@ export default function FeatureFlagsPage() {
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <Switch
-                            checked={user.userMetadata?.[0]?.isAdmin || false}
+                            checked={user.userMetadata?.isAdmin || false}
                             onCheckedChange={checked =>
                               handleAdminToggle(
                                 user.id,

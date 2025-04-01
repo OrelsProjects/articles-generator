@@ -14,7 +14,7 @@ export async function GET() {
 
   try {
     // Fetch users with their metadata (including feature flags)
-    const users = await prisma.user.findMany({
+    const usersFromDbn   = await prisma.user.findMany({
       select: {
         id: true,
         name: true,
@@ -32,7 +32,20 @@ export async function GET() {
       },
     });
 
+    const users = usersFromDbn.map(user => ({
+      ...user,
+      userMetadata: user.userMetadata[0],
+    }));
+
     const subscriptions = await prisma.subscription.findMany({
+      where: {
+        userId: {
+          in: users.map(user => user.id),
+        },
+      },
+    });
+
+    const visits = await prisma.visits.findMany({
       where: {
         userId: {
           in: users.map(user => user.id),
@@ -44,9 +57,14 @@ export async function GET() {
       const userPlan = subscriptions.find(
         subscription => subscription.userId === user.id,
       );
+      const userVisits = visits.filter(visit => visit.userId === user.id);
+      const latestVisit = userVisits.sort((a, b) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      })[0];
       return {
         ...user,
         plan: userPlan?.plan,
+        latestVisit: latestVisit?.createdAt,
       };
     });
 
