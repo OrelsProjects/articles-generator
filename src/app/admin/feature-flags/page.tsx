@@ -75,7 +75,6 @@ export default function FeatureFlagsPage() {
       try {
         setLoading(true);
         const response = await axios.get("/api/admin/feature-flags");
-        debugger;
         setUsers(response.data);
       } catch (err) {
         console.error("Error fetching users:", err);

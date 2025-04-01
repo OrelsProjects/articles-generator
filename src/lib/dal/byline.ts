@@ -6,12 +6,13 @@ export async function getByline(authorId: number) {
   });
 }
 
-export async function searchByline(query: string) {
+export async function searchByline(query: string, page: number, limit: number) {
   return await prismaArticles.byline.findMany({
     where: {
       OR: [
         { name: { contains: query, mode: "insensitive" } },
         { handle: { contains: query, mode: "insensitive" } },
+        { bio: { contains: query, mode: "insensitive" } },
       ],
     },
     // orderBy: {
@@ -19,6 +20,7 @@ export async function searchByline(query: string) {
     //     _count: "desc",
     //   },
     // },
-    take: 10,
+    take: limit,
+    skip: (page - 1) * limit,
   });
 }

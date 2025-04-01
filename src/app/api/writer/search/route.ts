@@ -8,6 +8,8 @@ import { WriterSearchResult } from "@/types/writer";
 
 const searchBylineSchema = z.object({
   query: z.string().min(1),
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).default(10),
 });
 
 export async function POST(request: NextRequest) {
@@ -17,10 +19,15 @@ export async function POST(request: NextRequest) {
   }
   try {
     const body = await request.json();
-    const { query } = searchBylineSchema.parse(body);
-    console.log("query", query);
+    const parsed = searchBylineSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    const { query, page, limit } = parsed.data;
+
     console.time("searchByline");
-    const results = await searchByline(query);
+    const results = await searchByline(query, page, limit);
     const response: WriterSearchResult[] = results
       .map(result => ({
         id: result.id.toString(),
