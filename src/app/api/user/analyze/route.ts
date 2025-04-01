@@ -18,6 +18,7 @@ import { parseJson } from "@/lib/utils/json";
 import { buildSubstackUrl } from "@/lib/utils/url";
 import { setPublications as scrapePosts } from "@/lib/utils/publication";
 import { z } from "zod";
+import { fetchAuthor } from "@/lib/lambda";
 
 const schema = z.object({
   url: z.string(),
@@ -243,20 +244,10 @@ export async function POST(req: NextRequest) {
         ) || "",
     };
 
-    const scrapeAllArticlesUrl = process.env.TRIGGER_LAMBDAS_LAMBDA_URL;
-    if (scrapeAllArticlesUrl) {
-      // Run the lambda to scrape all articles and forget about it
-      void fetch(scrapeAllArticlesUrl, {
-        method: "POST",
-        body: JSON.stringify({
-          lambdaName: "substack-scraper",
-          body: {
-            url,
-            authorId: byline.authorId,
-          },
-        }),
-      });
-    }
+    await fetchAuthor({
+      authorId: byline.authorId.toString(),
+      publicationUrl: url,
+    });
 
     const generatedDescriptionForSearch = await runPrompt(
       generateVectorSearchOptimizedDescriptionPrompt(publicationMetadata),

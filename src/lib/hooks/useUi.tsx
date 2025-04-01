@@ -38,6 +38,10 @@ export function useUi() {
     FeatureFlag.advancedFiltering,
   );
 
+  const hasPopulateNotes = user?.meta?.featureFlags.includes(
+    FeatureFlag.populateNotes,
+  );
+
   const didShowSaveTooltip = useAppSelector(selectUi).didShowSaveTooltip;
 
   return {
@@ -49,5 +53,6 @@ export function useUi() {
     updateSideBarState,
     updateDidShowSaveTooltip,
     didShowSaveTooltip,
+    hasPopulateNotes,
   };
 }

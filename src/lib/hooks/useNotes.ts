@@ -94,8 +94,21 @@ export const useNotes = () => {
   const selectNote = useCallback(
     (
       note: Note | NoteDraft | string | null,
-      options?: { forceShowEditor?: boolean; isFromInspiration?: boolean },
+      options?: {
+        forceShowEditor?: boolean;
+        isFromInspiration?: boolean;
+        hasChanges?: boolean;
+      },
     ) => {
+      if (options?.hasChanges) {
+        // show alert window
+        const confirm = window.confirm(
+          "You have unsaved changes. Are you sure you want to change note?",
+        );
+        if (!confirm) {
+          return;
+        }
+      }
       EventTracker.track("notes_select_note");
       let noteToUpdate: NoteDraft | Note | null = null;
       if (typeof note === "string") {

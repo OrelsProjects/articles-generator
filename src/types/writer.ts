@@ -7,19 +7,20 @@ import {
 } from "../../prisma/generated/articles";
 
 export interface Writer {
-  topNotes: Note[];
-  topArticles: Article[];
   bio: string;
   handle: string;
   name: string;
   photoUrl: string;
+  authorId: string;
 }
 
-export interface WriterSearchResult {
+export interface WriterWithData extends Writer {
+  topNotes: Note[];
+  topArticles: Article[];
+}
+
+export interface WriterSearchResult extends Writer {
   id: string;
-  name: string;
-  handle: string;
-  photoUrl: string;
 }
 
 export const DBNotesToNotes = (

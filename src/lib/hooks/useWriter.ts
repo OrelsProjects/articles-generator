@@ -1,10 +1,10 @@
-import { Writer } from "@/types/writer";
-import { useEffect, useRef } from "react";
+import { WriterWithData } from "@/types/writer";
+import { useCallback, useEffect, useRef } from "react";
 import axios from "axios";
 import { useState } from "react";
 
 export const useWriter = (handle: string) => {
-  const [writer, setWriter] = useState<Writer | null>(null);
+  const [writer, setWriter] = useState<WriterWithData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -22,13 +22,13 @@ export const useWriter = (handle: string) => {
     }
     try {
       const response = await axios.get<{
-        writer: Writer;
+        writer: WriterWithData;
         hasMore: boolean;
-      }>(`/api/writer/${handle}?page=${page}`);
+      }>(`/api/writer/${handle}`);
       if (page === 1 || !writer) {
         setWriter(response.data.writer);
       } else {
-        const currentWriter = writer as Writer;
+        const currentWriter = writer as WriterWithData;
         const newTopNotes = [
           ...currentWriter.topNotes,
           ...response.data.writer.topNotes,
@@ -60,11 +60,25 @@ export const useWriter = (handle: string) => {
   }, [handle]);
 
   const fetchNextPage = () => {
-    debugger;
     fetchWriter(page + 1).then(() => {
       setPage(page + 1);
     });
   };
 
-  return { writer, isLoading, isLoadingMore, error, fetchNextPage, hasMore };
+  const fetchAuthorNotes = useCallback(
+    async (options: { authorId: string }) => {
+      await axios.post("/api/admin/fetch-writer", options);
+    },
+    [],
+  );
+
+  return {
+    writer,
+    isLoading,
+    isLoadingMore,
+    error,
+    fetchNextPage,
+    hasMore,
+    fetchAuthorNotes,
+  };
 };

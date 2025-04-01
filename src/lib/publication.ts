@@ -2,7 +2,7 @@ import { prismaArticles } from "@/app/api/_db/db";
 import { PostSchema, PublishedBylineSchema } from "@/lib/schema/posts.schema";
 import { getUrlComponents, toValidUrl } from "@/lib/utils/url";
 import { Byline } from "@/types/article";
-import { DBArticlesToArticles, DBNotesToNotes, Writer } from "@/types/writer";
+import { DBArticlesToArticles, DBNotesToNotes, WriterWithData } from "@/types/writer";
 import axios from "axios";
 import { z } from "zod";
 import { Post } from "../../prisma/generated/articles";
@@ -65,7 +65,7 @@ export async function getWriter(
   handle: string,
   page: number,
   take: number,
-): Promise<Writer> {
+): Promise<WriterWithData> {
   const handleNormalized = handle.replace("@", "");
 
   const byline = await prismaArticles.byline.findFirst({
@@ -129,11 +129,12 @@ export async function getWriter(
   );
   const notes = DBNotesToNotes(notesWithAttachments);
 
-  const writer: Writer = {
+  const writer: WriterWithData = {
     handle: byline.handle || "",
     name: byline.name || "",
     photoUrl: byline.photoUrl || "",
     bio: byline.bio || "",
+    authorId: byline.id.toString(),
     topNotes: notes,
     topArticles: articles,
   };

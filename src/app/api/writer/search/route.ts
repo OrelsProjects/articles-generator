@@ -21,14 +21,17 @@ export async function POST(request: NextRequest) {
     console.log("query", query);
     console.time("searchByline");
     const results = await searchByline(query);
-    const response: WriterSearchResult[] = results.map(result => ({
-      id: result.id.toString(),
-      name: result.name || "",
-      handle: result.handle || "",
-      photoUrl: result.photoUrl || "",
-    }))
-    // prefer those with an image first
-    .sort((a, b) => (b.photoUrl ? 1 : -1) - (a.photoUrl ? 1 : -1));
+    const response: WriterSearchResult[] = results
+      .map(result => ({
+        id: result.id.toString(),
+        name: result.name || "",
+        handle: result.handle || "",
+        photoUrl: result.photoUrl || "",
+        bio: result.bio || "",
+        authorId: result.id.toString(),
+      }))
+      // prefer those with an image first
+      .sort((a, b) => (b.photoUrl ? 1 : -1) - (a.photoUrl ? 1 : -1));
     console.timeEnd("searchByline");
     return NextResponse.json(response);
   } catch (error: any) {

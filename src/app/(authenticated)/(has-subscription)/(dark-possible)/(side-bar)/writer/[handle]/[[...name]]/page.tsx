@@ -10,6 +10,7 @@ import {
   MessageCircle,
   ChevronDown,
   RefreshCw,
+  Plus,
 } from "lucide-react";
 import { useWriter } from "@/lib/hooks/useWriter";
 import NoteComponent from "@/components/ui/note-component";
@@ -19,6 +20,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUi } from "@/lib/hooks/useUi";
+import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 
 const LoadingNotes = ({
   notesAndArticlesOnly,
@@ -64,10 +68,18 @@ export default function WriterPage({
 }: {
   params: { handle: string; name?: string };
 }) {
-  const { writer, isLoading, fetchNextPage, hasMore, error, isLoadingMore } =
-    useWriter(params.handle);
+  const {
+    writer,
+    isLoading,
+    fetchNextPage,
+    hasMore,
+    error,
+    isLoadingMore,
+    fetchAuthorNotes,
+  } = useWriter(params.handle);
   const [activeTab, setActiveTab] = useState("notes");
-
+  const [loadingAuthorNotes, setLoadingAuthorNotes] = useState(false);
+  const { hasPopulateNotes } = useUi();
   if (isLoading || (!writer && !error)) {
     return <LoadingNotes />;
   }
@@ -90,11 +102,28 @@ export default function WriterPage({
     // thumbnail: note.thumbnail,
   }));
 
+  const handleFetchAuthorNotes = async () => {
+    setLoadingAuthorNotes(true);
+    try {
+      await fetchAuthorNotes({ authorId: writer.authorId });
+
+      toast.success("Data is being fetched. This can take up to 5 minutes.");
+    } catch (error: any) {
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data.error);
+      } else {
+        toast.error("Failed to fetch author data");
+      }
+    } finally {
+      setLoadingAuthorNotes(false);
+    }
+  };
+
   return (
     <div className="h-screen bg-background">
       {/* Header/Profile Section */}
       <div className="bg-card shadow">
-        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex justify-between">
           <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
             <img
               src={writer.photoUrl}
@@ -111,6 +140,22 @@ export default function WriterPage({
               </p>
             </div>
           </div>
+          {hasPopulateNotes && (
+            <Button
+              variant="neumorphic-primary"
+              size="sm"
+              onClick={handleFetchAuthorNotes}
+              disabled={loadingAuthorNotes}
+              className="flex gap-2 items-center"
+            >
+              {loadingAuthorNotes ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              Populate Notes
+            </Button>
+          )}
         </div>
       </div>
 
