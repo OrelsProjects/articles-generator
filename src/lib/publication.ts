@@ -70,9 +70,7 @@ export async function getWriter(
 
   const byline = await prismaArticles.byline.findFirst({
     where: {
-      handle: {
-        contains: handleNormalized,
-      },
+      handle: handleNormalized,
     },
   });
 
