@@ -164,6 +164,8 @@ model UserMetadata {
   plan         Plan?
   featureFlags FeatureFlag[] @default([])
 
+  isAdmin Boolean @default(false)
+
   publication PublicationMetadata? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
