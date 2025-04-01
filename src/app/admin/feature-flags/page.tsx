@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Search, X } from "lucide-react";
+import { Loader2, Search, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
@@ -48,12 +48,20 @@ interface User {
 // All feature flags from the Prisma enum
 const allFeatureFlags = Object.values(FeatureFlag);
 
+// Sort types
+type SortField = 'name' | 'latestVisit';
+type SortOrder = 'asc' | 'desc';
+
 export default function FeatureFlagsPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});
+  const [sortConfig, setSortConfig] = useState<{field: SortField, order: SortOrder}>({
+    field: 'name',
+    order: 'asc'
+  });
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     userId: string;
@@ -95,6 +103,50 @@ export default function FeatureFlagsPage() {
 
     return name.includes(searchTermLower) || email.includes(searchTermLower);
   });
+
+  // Sort users
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (sortConfig.field === 'name') {
+      const nameA = a.name?.toLowerCase() || '';
+      const nameB = b.name?.toLowerCase() || '';
+      return sortConfig.order === 'asc' 
+        ? nameA.localeCompare(nameB)
+        : nameB.localeCompare(nameA);
+    } else if (sortConfig.field === 'latestVisit') {
+      // Handle null dates by putting them at the end
+      if (!a.latestVisit && !b.latestVisit) return 0;
+      if (!a.latestVisit) return sortConfig.order === 'asc' ? 1 : -1;
+      if (!b.latestVisit) return sortConfig.order === 'asc' ? -1 : 1;
+      
+      return sortConfig.order === 'asc'
+        ? new Date(a.latestVisit).getTime() - new Date(b.latestVisit).getTime()
+        : new Date(b.latestVisit).getTime() - new Date(a.latestVisit).getTime();
+    }
+    return 0;
+  });
+  
+  // Toggle sort order
+  const handleSort = (field: SortField) => {
+    setSortConfig(prevConfig => {
+      if (prevConfig.field === field) {
+        // Toggle order if the same field
+        return { field, order: prevConfig.order === 'asc' ? 'desc' : 'asc' };
+      } else {
+        // New field, start with ascending
+        return { field, order: 'asc' };
+      }
+    });
+  };
+
+  // Get sort icon
+  const getSortIcon = (field: SortField) => {
+    if (sortConfig.field !== field) {
+      return <ArrowUpDown className="ml-1 h-4 w-4" />;
+    }
+    return sortConfig.order === 'asc' 
+      ? <ArrowUp className="ml-1 h-4 w-4" /> 
+      : <ArrowDown className="ml-1 h-4 w-4" />;
+  };
 
   // Update feature flag for a user
   const toggleFeatureFlag = async (
@@ -268,9 +320,25 @@ export default function FeatureFlagsPage() {
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead className="w-[250px]">User</TableHead>
+                <TableHead 
+                  className="w-[250px] cursor-pointer hover:text-primary transition-colors" 
+                  onClick={() => handleSort('name')}
+                >
+                  <div className="flex items-center">
+                    User
+                    {getSortIcon('name')}
+                  </div>
+                </TableHead>
                 <TableHead>Plan</TableHead>
-                <TableHead>Latest Visit</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => handleSort('latestVisit')}
+                >
+                  <div className="flex items-center">
+                    Latest Visit
+                    {getSortIcon('latestVisit')}
+                  </div>
+                </TableHead>
                 <TableHead className="text-center">Admin</TableHead>
                 {allFeatureFlags.map(flag => (
                   <TableHead key={flag} className="text-center">
@@ -281,7 +349,7 @@ export default function FeatureFlagsPage() {
             </TableHeader>
 
             <TableBody>
-              {filteredUsers.map(user => {
+              {sortedUsers.map(user => {
                 const isCurrentUser = user.email === currentUserEmail;
                 return (
                   <TableRow key={user.id}>
@@ -366,7 +434,7 @@ export default function FeatureFlagsPage() {
                 );
               })}
 
-              {filteredUsers.length === 0 && (
+              {sortedUsers.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center">
                     No users found.
