@@ -7,6 +7,7 @@ export interface AppUserMeta {
   cancelAtPeriodEnd: boolean;
   hadSubscription: boolean;
   featureFlags: FeatureFlag[];
+  isAdmin: boolean;
 }
 
 export default interface AppUser {

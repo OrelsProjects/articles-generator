@@ -2,6 +2,8 @@ import prisma from "@/app/api/_db/db";
 import { NextRequest, NextResponse } from "next/server";
 import cuid from "cuid";
 import loggerServer from "@/loggerServer";
+import { authOptions } from "@/auth/authOptions";
+import { getServerSession } from "next-auth";
 
 const ONE_DAY = 1000 * 60 * 60 * 24; // 1 day
 const EXPIRATION_TIME = ONE_DAY * 5; // 5 days
@@ -9,6 +11,10 @@ const EXPIRATION_TIME = ONE_DAY * 5; // 5 days
 const getNewExpiresAt = () => new Date(Date.now() + EXPIRATION_TIME);
 
 export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user.meta?.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const freeUsers = await prisma.freeUsers.findMany({
       orderBy: { createdAt: "desc" },
@@ -24,6 +30,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user.meta?.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { name } = await req.json();
     const code = cuid();

@@ -25,6 +25,7 @@ export const authOptions: AuthOptions = {
           select: {
             publicationId: true,
             featureFlags: true,
+            isAdmin: true,
           },
         }),
         prisma.subscription.findMany({
@@ -43,7 +44,11 @@ export const authOptions: AuthOptions = {
         }),
       ];
       const [userMetadata, subscriptions] = (await Promise.all(promises)) as [
-        { publicationId: string | null; featureFlags: FeatureFlag[] } | null,
+        {
+          publicationId: string | null;
+          featureFlags: FeatureFlag[];
+          isAdmin: boolean;
+        } | null,
         {
           plan: string;
           currentPeriodStart: Date;
@@ -65,6 +70,7 @@ export const authOptions: AuthOptions = {
         cancelAtPeriodEnd: activeSubscription?.cancelAtPeriodEnd || false,
         featureFlags: userMetadata?.featureFlags || [],
         hadSubscription: subscriptions.length > 0,
+        isAdmin: userMetadata?.isAdmin || false,
       };
       session.user.publicationId = userMetadata?.publicationId || "";
       return session;

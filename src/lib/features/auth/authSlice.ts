@@ -58,6 +58,7 @@ const authSlice = createSlice({
           cancelAtPeriodEnd: state.user.meta?.cancelAtPeriodEnd || false,
           featureFlags: state.user.meta?.featureFlags || [],
           hadSubscription: state.user.meta?.hadSubscription || false,
+          isAdmin: state.user.meta?.isAdmin || false,
         };
       }
     },

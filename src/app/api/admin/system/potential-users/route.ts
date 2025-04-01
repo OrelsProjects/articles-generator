@@ -1,6 +1,8 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
+import { authOptions } from "@/auth/authOptions";
 import loggerServer from "@/loggerServer";
 import { PotentialClientStatus } from "@prisma/client";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 async function getPostsWithStatus() {
@@ -89,6 +91,10 @@ async function getPostsWithStatus() {
 
 export async function GET(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user.meta?.isAdmin) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const postsWithStatus = await prisma.potentialClients.findMany({
       where: {
         status: {
