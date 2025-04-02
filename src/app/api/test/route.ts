@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { runPrompt } from "@/lib/open-router";
 import { generateVectorSearchOptimizedDescriptionPrompt } from "@/lib/prompts";
 import { parseJson } from "@/lib/utils/json";
-import { sendMail, testEndpoint } from "@/lib/mail/mail";
+import { addUserToList, sendMail, testEndpoint } from "@/lib/mail/mail";
 import {
   generateSubscriptionTrialEndingEmail,
   welcomeTemplate,
@@ -88,7 +88,7 @@ export async function GET() {
     //   await new Promise(resolve => setTimeout(resolve, 1000));
     // }
 
-    const result = await testEndpoint();
+    // const result = await testEndpoint();
     // const mailResult = await sendMail({
     //   to: "orelsmail@gmail.com",
     //   from: "orel",
@@ -97,21 +97,48 @@ export async function GET() {
     //   cc: ["orelzilberman@gmail.com"],
     // });
 
-    const mailResult = await sendMail({
-      to: "orelsmail@gmail.com",
-      from: "orel",
-      subject: "Your Trial is Ending Soon",
-      template: generateSubscriptionTrialEndingEmail(
-        "subscription.id",
-        new Date(),
-      ),
-      cc: ["orelzilberman@gmail.com"],
-    });
+    // const mailResult = await sendMail({
+    //   to: "orelsmail@gmail.com",
+    //   from: "orel",
+    //   subject: "Your Trial is Ending Soon",
+    //   template: generateSubscriptionTrialEndingEmail(
+    //     "subscription.id",
+    //     new Date(),
+    //   ),
+    //   cc: ["orelzilberman@gmail.com"],
+    // });
+    // const date = new Date("2025-03-27T01:37:20.962+00:00");
+    // const users = await prisma.user.findMany({
+    //   where: {
+    //     createdAt: {
+    //       gte: date,
+    //     },
+    //   },
+    //   select: {
+    //     email: true,
+    //     name: true,
+    //     createdAt: true,
+    //   },
+    // });
 
-    return NextResponse.json({
-      result,
-      mailResult,
-    });
+    // const usersToAdd = users.map(user => ({
+    //   email: user.email || "",
+    //   fullName: user.name || "",
+    // }));
+
+    // usersToAdd.pop();
+
+    // for (const user of usersToAdd) {
+    //   const mailResult = await addUserToList(user);
+    //   console.log(mailResult);
+    // }
+
+    // const mailResult2 = await addUserToList({
+    //   email: "ayodejiawosika@gmail.com",
+    //   fullName: "Ayodeji Awosika",
+    // });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error processing users:", error);
     return NextResponse.json(
