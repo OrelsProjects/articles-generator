@@ -57,7 +57,14 @@ const filterNotes = (
     note => note.body.length < 50,
   );
 
-  return [...notesWithLessThan50Characters, ...newNotes].slice(0, limit + 1); // Take one extra to know if there are more
+  // Differentiate by date
+  const uniqueNotes = notesWithLessThan50Characters.filter(
+    (note, index, self) =>
+      index ===
+      self.findIndex(t => t.date === note.date && t.authorId === note.authorId),
+  );
+
+  return [...uniqueNotes, ...newNotes].slice(0, limit + 1); // Take one extra to know if there are more
 };
 
 export async function POST(req: NextRequest) {

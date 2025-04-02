@@ -46,6 +46,11 @@ export function baseEmailTemplate(content: string) {
           border-radius: 0.5rem;
           margin-top: 20px;
         }
+        .center-button-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
         .footer {
           text-align: center;
           padding: 20px;
@@ -185,8 +190,10 @@ export function generateSubscriptionTrialEndingEmail(
     <p>Your trial for subscription <strong>${subscriptionId}</strong> will end on 
     <strong>${trialEndDate.toLocaleDateString()}</strong>.</p>
     <p>If you find value in WriteRoom, you can safely ignore this email and keep up the amazing writing :).</p>
-    <p>Otherwise, you can cancel your subscription at any time.</p>
-    <a href=${process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL} class="button">Manage Subscription</a>
+    <p>Otherwise, you can cancel your subscription any time.</p>
+    <div class="center-button-container">
+      <a href="https://writeroom.co/settings" class="button">Manage Subscription</a>
+    </div>
   `;
   return baseEmailTemplate(content);
 }
@@ -197,12 +204,17 @@ export function generateSubscriptionDeletedEmail(subscriptionId: string) {
     <p>Your subscription <strong>${subscriptionId}</strong> for WriteRoom has been cancelled.</p>
     <p>If you didn't enjoy using WriteRoom, I'd love to hear from you and improve.</p>
     <p>Should you change your mind and tell me how I can improve, I'll give you a substantial discount for your next subscription :)</p>
-    <a href=${process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL} class="button">Manage Subscription</a>
+    <div class="center-button-container">
+      <a href=${process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL} class="button">Manage Subscription</a>
+    </div>
   `;
   return baseEmailTemplate(content);
 }
 
-export function generateInvoicePaymentFailedEmail(invoiceId: string, email: string) {
+export function generateInvoicePaymentFailedEmail(
+  invoiceId: string,
+  email: string,
+) {
   const content = `
     <h2>Payment Failed</h2>
     <p>A user with email <strong>${email}</strong> payment for invoice <strong>${invoiceId}</strong> has failed.</p>
