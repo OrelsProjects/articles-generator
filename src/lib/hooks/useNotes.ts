@@ -295,7 +295,7 @@ export const useNotes = () => {
   const updateNoteBodyDebounced = useCallback(
     debounce((noteId, body) => {
       editNoteBody(noteId, body);
-    }, 3500),
+    }, 2500),
     [],
   );
 
