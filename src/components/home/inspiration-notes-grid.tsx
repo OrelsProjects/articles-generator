@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
-import { Note } from "@/types/note";
+import { InspirationSortType, Note } from "@/types/note";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { toast } from "react-toastify";
@@ -28,6 +28,13 @@ import { Badge } from "@/components/ui/badge";
 import { InspirationFilters } from "@/types/note";
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // New component to display active filters
 const ActiveFilters = ({
@@ -202,6 +209,8 @@ export default function InspirationGrid() {
     loadMore,
     fetchInspirationNotes,
     hasMoreInspirationNotes,
+    sort,
+    updateSort,
   } = useInspiration();
   const { hasAdvancedFiltering } = useUi();
   const [loadingMore, setLoadingMore] = useState(false);
@@ -315,13 +324,27 @@ export default function InspirationGrid() {
                 </Tooltip>
               </TooltipProvider>
             </div>
-            {hasAdvancedFiltering && (
-              <InspirationFilterDialog
-                filters={filters}
-                onFilterChange={updateFilters}
-                loading={loading}
-              />
-            )}
+            <div className="flex items-center gap-2">
+              <Select value={sort.type} onValueChange={(value) => updateSort(value as InspirationSortType)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="relevance">Relevance</SelectItem>
+                  <SelectItem value="date">Date</SelectItem>
+                  <SelectItem value="likes">Most Liked</SelectItem>
+                  <SelectItem value="comments">Most Commented</SelectItem>
+                  <SelectItem value="restacks">Most Restacked</SelectItem>
+                </SelectContent>
+              </Select>
+              {hasAdvancedFiltering && (
+                <InspirationFilterDialog
+                  filters={filters}
+                  onFilterChange={updateFilters}
+                  loading={loading}
+                />
+              )}
+            </div>
           </div>
           <p className="text-sm text-muted-foreground">
             Use these high-performing posts as inspirations for your next

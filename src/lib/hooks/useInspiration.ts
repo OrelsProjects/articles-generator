@@ -6,10 +6,16 @@ import {
   setInspirationFilters,
   addInspirationNotes,
   setInspirationNotes,
+  setInspirationSort,
 } from "@/lib/features/inspiration/inspirationSlice";
 import axios, { AxiosError } from "axios";
 import { EventTracker } from "@/eventTracker";
-import { InspirationFilters } from "@/types/note";
+import {
+  InspirationFilters,
+  InspirationNote,
+  InspirationSort,
+  InspirationSortType,
+} from "@/types/note";
 import { NotesComments } from "../../../prisma/generated/articles";
 
 export function useInspiration() {
@@ -19,6 +25,7 @@ export function useInspiration() {
     loadingInspiration,
     error,
     filters,
+    sort,
     hasMoreInspirationNotes,
   } = useAppSelector(state => state.inspiration);
   const cancelRef = useRef<AbortController | null>(null);
@@ -41,7 +48,11 @@ export function useInspiration() {
       loadingInspirationRef.current = true;
       dispatch(setLoadingInspiration(true));
 
-      const response = await axios.post(
+      const response = await axios.post<{
+        items: InspirationNote[];
+        nextCursor: string | null;
+        hasMore: boolean;
+      }>(
         "/api/notes/inspiration",
         {
           existingNotesIds: loadMore
@@ -57,17 +68,18 @@ export function useInspiration() {
         { signal: cancelRef.current?.signal },
       );
       dispatch(setError(null));
+      const sortedNotes = sortNotes(sort.type, response.data.items);
       if (loadMore) {
         dispatch(
           addInspirationNotes({
-            items: response.data.items,
+            items: sortedNotes,
             nextCursor: response.data.nextCursor,
             hasMore: response.data.hasMore,
             options: { toStart: false },
           }),
         );
       } else {
-        dispatch(setInspirationNotes(response.data.items));
+        dispatch(setInspirationNotes(sortedNotes));
       }
       dispatch(setLoadingInspiration(false));
       loadingInspirationRef.current = false;
@@ -112,6 +124,45 @@ export function useInspiration() {
     [dispatch, filters, fetchInspirationNotes],
   );
 
+  const sortNotes = (type: InspirationSortType, notes: InspirationNote[]) => {
+    let sortedNotes: InspirationNote[] = [];
+    switch (type) {
+      case "relevance":
+        sortedNotes = [...notes].sort((a, b) => {
+          return b.score - a.score;
+        });
+        break;
+      case "date":
+        sortedNotes = [...notes].sort((a, b) => {
+          return (
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          );
+        });
+        break;
+      case "likes":
+        sortedNotes = [...notes].sort((a, b) => {
+          return b.reactionCount - a.reactionCount;
+        });
+        break;
+      case "comments":
+        sortedNotes = [...notes].sort((a, b) => {
+          return b.commentsCount - a.commentsCount;
+        });
+        break;
+      case "restacks":
+        sortedNotes = [...notes].sort((a, b) => {
+          return b.restacks - a.restacks;
+        });
+        break;
+    }
+    return sortedNotes;
+  };
+
+  const updateSort = (newSort: InspirationSortType) => {
+    dispatch(setInspirationSort({ ...sort, type: newSort }));
+    dispatch(setInspirationNotes(sortNotes(newSort, inspirationNotes)));
+  };
+
   useEffect(() => {
     if (inspirationNotes.length === 0) {
       fetchInspirationNotes();
@@ -123,9 +174,11 @@ export function useInspiration() {
     loading: loadingInspiration,
     error,
     filters,
+    sort,
     updateFilters,
     fetchInspirationNotes,
     loadMore: () => fetchInspirationNotes(true),
     hasMoreInspirationNotes,
+    updateSort,
   };
 }

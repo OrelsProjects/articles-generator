@@ -74,7 +74,6 @@ export function InspirationFilterDialog({
   onFilterChange,
   loading,
 }: InspirationFilterDialogProps) {
-  console.log("Filters in dialog", filters);
   const [newFilters, setNewFilters] =
     useState<Partial<InspirationFilters>>(filters);
   const [dateRange, setDateRange] = useState<DateRange | null | undefined>(
@@ -84,9 +83,6 @@ export function InspirationFilterDialog({
   const [selectedSection, setSelectedSection] = useState<"writer" | "keyword">(
     "keyword",
   );
-
-  const likesFromFilters = useMemo(() => filters?.minLikes || 0, [filters]);
-  console.log("Likes from filters", likesFromFilters);
 
   const likes = newFilters?.minLikes || 0;
   const comments = newFilters?.minComments || 0;

@@ -5,7 +5,7 @@ import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { NotesComments, Prisma } from "@/../prisma/generated/articles";
-import { Note } from "@/types/note";
+import { InspirationNote, Note } from "@/types/note";
 import { z } from "zod";
 
 export const maxDuration = 150;
@@ -41,7 +41,7 @@ const filterNotes = (
     (note, index, self) =>
       index === self.findIndex(t => t.commentId === note.commentId),
   );
-  newNotes = newNotes.sort((a, b) => b.reactionCount - a.reactionCount);
+
   newNotes = newNotes.filter(
     note => !existingNotesBodys.includes(note.body.slice(0, 100)),
   );
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const limit = 16; // Number of items per page
+  const limit = 30; // Number of items per page
 
   try {
     const body = await req.json();
@@ -304,22 +304,27 @@ export async function POST(req: NextRequest) {
       return { ...note, attachment: attachment?.imageUrl };
     });
 
-    const notesResponse: Note[] = filteredNotesWithAttachments.map(note => ({
-      id: note.commentId,
-      content: note.body,
-      jsonBody: note.bodyJson as any[],
-      timestamp: note.date,
-      authorId: note.authorId,
-      authorName: note.name || "",
-      body: note.body,
-      handle: note.handle || "",
-      thumbnail: note.photoUrl || undefined,
-      reactionCount: note.reactionCount,
-      entityKey: note.entityKey,
-      commentsCount: note.commentsCount || 0,
-      restacks: note.restacks,
-      attachment: note.attachment || undefined,
-    }));
+    const maxScore = filteredNotesWithAttachments.length;
+
+    const notesResponse: InspirationNote[] = filteredNotesWithAttachments.map(
+      (note, index) => ({
+        id: note.commentId,
+        content: note.body,
+        jsonBody: note.bodyJson as any[],
+        timestamp: note.date,
+        authorId: note.authorId,
+        authorName: note.name || "",
+        body: note.body,
+        handle: note.handle || "",
+        thumbnail: note.photoUrl || undefined,
+        reactionCount: note.reactionCount,
+        entityKey: note.entityKey,
+        commentsCount: note.commentsCount || 0,
+        restacks: note.restacks,
+        attachment: note.attachment || undefined,
+        score: maxScore - index,
+      }),
+    );
 
     return NextResponse.json({
       items: notesResponse,

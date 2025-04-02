@@ -2,10 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  Bell,
-  Mail,
-  Bookmark,
-  Twitter,
   FileText,
   MessageCircle,
   ChevronDown,
@@ -24,7 +20,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUi } from "@/lib/hooks/useUi";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
-import Link from "next/link";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 
 const LoadingNotes = ({

@@ -1,15 +1,21 @@
 import { marked } from "marked";
 import { DateRange } from "react-day-picker";
 
-
-
 export interface InspirationFilters {
   minLikes?: number | null;
   minComments?: number | null;
   minRestacks?: number | null;
   keyword?: string | null;
   dateRange?: DateRange;
-  type: "all" | "relevant-to-user"
+  type: "all" | "relevant-to-user";
+}
+
+export type InspirationSortType = "relevance" | "date" | "likes" | "comments" | "restacks";
+export type InspirationSortDirection = "asc" | "desc";
+
+export interface InspirationSort {
+  type: InspirationSortType;
+  direction: InspirationSortDirection;
 }
 
 export type NoteStatus = "draft" | "ready" | "published";
@@ -55,6 +61,10 @@ export interface Note {
   commentsCount: number;
   restacks: number;
   attachments?: string[];
+}
+
+export interface InspirationNote extends Note {
+  score: number;
 }
 
 export async function convertMDToHtml(md: string) {

@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { InspirationFilters, Note } from "@/types/note";
+import { InspirationFilters, InspirationNote, InspirationSort, Note } from "@/types/note";
 
 interface InspirationState {
-  inspirationNotes: Note[];
+  inspirationNotes: InspirationNote[];
   loadingInspiration: boolean;
   error: string | null;
   filters: InspirationFilters;
+  sort: InspirationSort;
   hasMore: boolean;
   nextCursor: string | null;
   hasMoreInspirationNotes: boolean;
@@ -17,6 +18,10 @@ const initialState: InspirationState = {
   filters: {
     type: "relevant-to-user",
   },
+  sort: {
+    type: "relevance",
+    direction: "desc",
+  },
   error: null,
   hasMore: true,
   nextCursor: null,
@@ -27,13 +32,13 @@ const inspirationSlice = createSlice({
   name: "inspiration",
   initialState,
   reducers: {
-    setInspirationNotes: (state, action: PayloadAction<Note[]>) => {
+    setInspirationNotes: (state, action: PayloadAction<InspirationNote[]>) => {
       state.inspirationNotes = action.payload;
     },
     addInspirationNotes: (
       state,
       action: PayloadAction<{
-        items: Note[];
+        items: InspirationNote[];
         nextCursor: string | null;
         hasMore: boolean;
         options?: { toStart: boolean };
@@ -63,6 +68,9 @@ const inspirationSlice = createSlice({
     ) => {
       state.filters = action.payload;
     },
+    setInspirationSort: (state, action: PayloadAction<InspirationSort>) => {
+      state.sort = action.payload;
+    },
   },
 });
 
@@ -72,6 +80,7 @@ export const {
   setLoadingInspiration,
   setError,
   setInspirationFilters,
+  setInspirationSort,
 } = inspirationSlice.actions;
 
 export default inspirationSlice.reducer;
