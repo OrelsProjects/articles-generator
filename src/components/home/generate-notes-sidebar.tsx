@@ -199,7 +199,7 @@ export default function GenerateNotesSidebar() {
   const {
     generateNewNotes,
     selectedNote,
-    editNoteBody,
+    updateNoteBody,
     loadingEditNote,
     selectNote,
     improveText,
@@ -216,15 +216,18 @@ export default function GenerateNotesSidebar() {
   const [isTextChanged, setIsTextChanged] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleEditNoteBody = async (noteId: string | null, html: string) => {
-    if (loadingEditNote) return;
+  const handleEditNoteBody = async (
+    noteId: string | null,
+    html: string,
+    options?: { immediate?: boolean },
+  ) => {
     const body = unformatText(html);
     if (!selectedNote && !body) {
       return;
     }
     try {
       setIsTextChanged(false);
-      await editNoteBody(noteId, body);
+      updateNoteBody(noteId, body, options);
     } catch (e: any) {
       setIsTextChanged(true);
       toast.error(e.message);
@@ -236,17 +239,9 @@ export default function GenerateNotesSidebar() {
       const isInspirationNotSaved =
         selectedNote?.isFromInspiration && !selectedNote;
       if (isInspirationNotSaved) {
-        setIsTextChanged(false);
         return;
       }
-      if (isTextChanged && !didShowSaveTooltip) {
-        setShowSaveReminderTooltip(true);
-        updateDidShowSaveTooltip(true);
-        setTimeout(() => {
-          setShowSaveReminderTooltip(false);
-        }, 5500);
-      }
-      setIsTextChanged(true);
+      handleEditNoteBody(selectedNote?.id || null, html);
     }),
   );
 
@@ -365,7 +360,9 @@ export default function GenerateNotesSidebar() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        handleEditNoteBody(selectedNote?.id || null, content);
+        handleEditNoteBody(selectedNote?.id || null, content, {
+          immediate: true,
+        });
       }
     };
 
@@ -625,7 +622,9 @@ export default function GenerateNotesSidebar() {
                     }
                     disabled={loadingEditNote || !canSave}
                     onClick={() => {
-                      handleEditNoteBody(selectedNote?.id || null, content);
+                      handleEditNoteBody(selectedNote?.id || null, content, {
+                        immediate: true,
+                      });
                     }}
                   >
                     {loadingEditNote ? (

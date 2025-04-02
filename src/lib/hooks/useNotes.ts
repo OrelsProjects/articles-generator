@@ -30,7 +30,7 @@ import { useCredits } from "@/lib/hooks/useCredits";
 import { EventTracker } from "@/eventTracker";
 import { decrementUsage } from "@/lib/features/settings/settingsSlice";
 import { ImprovementType } from "@/lib/prompts";
-import { set } from "lodash";
+import { debounce } from "lodash";
 
 export const useNotes = () => {
   const { updateShowGenerateNotesSidebar } = useUi();
@@ -50,6 +50,7 @@ export const useNotes = () => {
 
   const loadingNotesRef = useRef(false);
   const loadingCreateNoteDraftRef = useRef(false);
+  const cancelRef = useRef<AbortController | null>(null);
 
   const fetchNotes = async (limit?: number, loadMore = false) => {
     if (loadingNotesRef.current) return;
@@ -266,21 +267,52 @@ export const useNotes = () => {
   );
 
   const editNoteBody = async (noteId: string | null, body: string) => {
+    const controller = new AbortController();
+    cancelRef.current = controller;
+
     EventTracker.track("notes_edit_note_body");
     setLoadingEditNote(true);
+
     try {
       if (!noteId) {
         await createDraftNote({ body });
         return;
       }
       const partialNote: Partial<NoteDraft> = { body };
-      await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, partialNote);
+      await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, partialNote, {
+        signal: controller.signal,
+      });
       dispatch(updateNote({ id: noteId, note: { body } }));
     } catch (error: any) {
+      if (error instanceof AxiosError && error.code === "ERR_CANCELED") return;
       Logger.error("Error editing note:", error);
       throw error;
     } finally {
       setLoadingEditNote(false);
+    }
+  };
+
+  const updateNoteBodyDebounced = useCallback(
+    debounce((noteId, body) => {
+      editNoteBody(noteId, body);
+    }, 3500),
+    [],
+  );
+
+  const updateNoteBody = (
+    noteId: string | null,
+    body: string,
+    options?: { immediate?: boolean },
+  ) => {
+    // Abort any existing request
+    if (cancelRef.current) {
+      cancelRef.current.abort();
+      cancelRef.current = null;
+    }
+    if (options?.immediate) {
+      editNoteBody(noteId, body);
+    } else {
+      updateNoteBodyDebounced(noteId, body);
     }
   };
 
@@ -364,7 +396,7 @@ export const useNotes = () => {
     updateNoteFeedback,
     hasMoreUserNotes,
     loadMoreUserNotes: () => fetchNotes(),
-    editNoteBody,
+    updateNoteBody,
     loadingEditNote,
     createDraftNote,
     improveText,
