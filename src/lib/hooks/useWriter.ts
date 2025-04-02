@@ -24,7 +24,7 @@ export const useWriter = (handle: string) => {
       const response = await axios.get<{
         writer: WriterWithData;
         hasMore: boolean;
-      }>(`/api/writer/${handle}`);
+      }>(`/api/writer/${handle}?page=${page}`);
       if (page === 1 || !writer) {
         setWriter(response.data.writer);
       } else {
@@ -38,10 +38,20 @@ export const useWriter = (handle: string) => {
           ...response.data.writer.topArticles,
         ];
 
+        const uniqueNotes = newTopNotes.filter(
+          (note, index, self) =>
+            index === self.findIndex(t => t.id === note.id),
+        );
+
+        const uniqueArticles = newTopArticles.filter(
+          (article, index, self) =>
+            index === self.findIndex(t => t.id === article.id),
+        );
+
         setWriter({
           ...currentWriter,
-          topNotes: newTopNotes,
-          topArticles: newTopArticles,
+          topNotes: uniqueNotes,
+          topArticles: uniqueArticles,
         });
       }
       setHasMore(response.data.hasMore);

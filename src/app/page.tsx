@@ -278,6 +278,9 @@ function App() {
               </p>
             </div>
           </div>
+          <span className="w-full h-full flex justify-center items-center text-center text-xs text-muted-foreground z-[50] bg-muted pb-2">
+            This website is not affiliated or partnered with Substack.
+          </span>
         </section>
       </ThemeProvider>
     </div>

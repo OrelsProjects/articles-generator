@@ -6,9 +6,13 @@ import { motion } from "framer-motion";
 
 interface ProviderProps {
   children?: React.ReactNode;
+  className?: string;
 }
 
-const AnimationProvider: React.FC<ProviderProps> = ({ children }) => {
+const AnimationProvider: React.FC<ProviderProps> = ({
+  children,
+  className,
+}) => {
   const previousPathame = useRef<string>("");
   const pathname = usePathname();
 
@@ -35,6 +39,7 @@ const AnimationProvider: React.FC<ProviderProps> = ({ children }) => {
           opacity: 0,
         },
       }}
+      className={className}
     >
       {children}
     </motion.div>

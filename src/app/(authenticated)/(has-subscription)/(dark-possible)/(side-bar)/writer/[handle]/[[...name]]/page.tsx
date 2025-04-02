@@ -39,7 +39,7 @@ const LoadingNotes = ({
         })}
       >
         <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
-          <Skeleton className="w-24 h-24 rounded-full" />
+          <Skeleton className="w-24 h-24 rounded-full flex-shrink-0" />
           <div className="text-center sm:text-left w-full space-y-2">
             <Skeleton className="h-6 w-1/3" />
             <Skeleton className="h-4 w-1/4" />
@@ -207,7 +207,7 @@ export default function WriterPage({
 
         {isLoadingMore && <LoadingNotes notesAndArticlesOnly />}
         {hasMore && (
-          <div className="w-full flex justify-center mt-8">
+          <div className="w-full flex justify-center mt-4 pb-4">
             <Button
               variant="ghost"
               size="sm"
