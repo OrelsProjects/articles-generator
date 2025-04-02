@@ -53,18 +53,16 @@ const filterNotes = (
       !note.body.toLowerCase().includes("to connect"),
   );
 
-  const notesWithLessThan50Characters = newNotes.filter(
-    note => note.body.length < 50,
-  );
+  // newNotes = newNotes.filter(note => note.body.length > 50);
 
-  // Differentiate by date
-  const uniqueNotes = notesWithLessThan50Characters.filter(
+  newNotes = newNotes.filter(
     (note, index, self) =>
       index ===
       self.findIndex(t => t.date === note.date && t.authorId === note.authorId),
   );
+  // Differentiate by date
 
-  return [...uniqueNotes, ...newNotes].slice(0, limit + 1); // Take one extra to know if there are more
+  return [...newNotes].slice(0, limit + 1); // Take one extra to know if there are more
 };
 
 export async function POST(req: NextRequest) {

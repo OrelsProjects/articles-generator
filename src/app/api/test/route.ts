@@ -6,7 +6,10 @@ import { runPrompt } from "@/lib/open-router";
 import { generateVectorSearchOptimizedDescriptionPrompt } from "@/lib/prompts";
 import { parseJson } from "@/lib/utils/json";
 import { sendMail, testEndpoint } from "@/lib/mail/mail";
-import { welcomeTemplate } from "@/lib/mail/templates";
+import {
+  generateSubscriptionTrialEndingEmail,
+  welcomeTemplate,
+} from "@/lib/mail/templates";
 
 // async function processUser(userId: string) {
 //   try {
@@ -86,11 +89,22 @@ export async function GET() {
     // }
 
     const result = await testEndpoint();
+    // const mailResult = await sendMail({
+    //   to: "orelsmail@gmail.com",
+    //   from: "orel",
+    //   subject: "Test",
+    //   template: welcomeTemplate(),
+    //   cc: ["orelzilberman@gmail.com"],
+    // });
+
     const mailResult = await sendMail({
       to: "orelsmail@gmail.com",
       from: "orel",
-      subject: "Test",
-      template: welcomeTemplate(),
+      subject: "Your Trial is Ending Soon",
+      template: generateSubscriptionTrialEndingEmail(
+        "subscription.id",
+        new Date(),
+      ),
       cc: ["orelzilberman@gmail.com"],
     });
 
