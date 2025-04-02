@@ -14,6 +14,7 @@ import {
   InspirationFilters,
   InspirationNote,
   InspirationSort,
+  InspirationSortDirection,
   InspirationSortType,
 } from "@/types/note";
 import { NotesComments } from "../../../prisma/generated/articles";
@@ -68,7 +69,11 @@ export function useInspiration() {
         { signal: cancelRef.current?.signal },
       );
       dispatch(setError(null));
-      const sortedNotes = sortNotes(sort.type, response.data.items);
+      const sortedNotes = sortNotes(
+        response.data.items,
+        sort.type,
+        sort.direction,
+      );
       if (loadMore) {
         dispatch(
           addInspirationNotes({
@@ -124,7 +129,11 @@ export function useInspiration() {
     [dispatch, filters, fetchInspirationNotes],
   );
 
-  const sortNotes = (type: InspirationSortType, notes: InspirationNote[]) => {
+  const sortNotes = (
+    notes: InspirationNote[],
+    type: InspirationSortType,
+    direction: InspirationSortDirection = "desc",
+  ) => {
     let sortedNotes: InspirationNote[] = [];
     switch (type) {
       case "relevance":
@@ -134,34 +143,56 @@ export function useInspiration() {
         break;
       case "date":
         sortedNotes = [...notes].sort((a, b) => {
-          return (
-            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-          );
+          if (direction === "asc") {
+            return (
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+            );
+          } else {
+            return (
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            );
+          }
         });
         break;
       case "likes":
         sortedNotes = [...notes].sort((a, b) => {
-          return b.reactionCount - a.reactionCount;
+          if (direction === "asc") {
+            return a.reactionCount - b.reactionCount;
+          } else {
+            return b.reactionCount - a.reactionCount;
+          }
         });
         break;
       case "comments":
         sortedNotes = [...notes].sort((a, b) => {
-          return b.commentsCount - a.commentsCount;
+          if (direction === "asc") {
+            return a.commentsCount - b.commentsCount;
+          } else {
+            return b.commentsCount - a.commentsCount;
+          }
         });
         break;
       case "restacks":
         sortedNotes = [...notes].sort((a, b) => {
-          return b.restacks - a.restacks;
+          if (direction === "asc") {
+            return a.restacks - b.restacks;
+          } else {
+            return b.restacks - a.restacks;
+          }
         });
         break;
     }
     return sortedNotes;
   };
 
-  const updateSort = (newSort: InspirationSortType) => {
-    dispatch(setInspirationSort({ ...sort, type: newSort }));
-    dispatch(setInspirationNotes(sortNotes(newSort, inspirationNotes)));
-  };
+  const updateSort = useCallback(
+    (newSort: InspirationSort) => {
+      dispatch(setInspirationSort(newSort));
+      const sortedNotes = sortNotes(inspirationNotes, newSort.type, newSort.direction);
+      dispatch(setInspirationNotes(sortedNotes));
+    },
+    [inspirationNotes],
+  );
 
   useEffect(() => {
     if (inspirationNotes.length === 0) {

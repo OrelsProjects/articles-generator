@@ -13,6 +13,14 @@ export interface InspirationFilters {
 export type InspirationSortType = "relevance" | "date" | "likes" | "comments" | "restacks";
 export type InspirationSortDirection = "asc" | "desc";
 
+export const inspirationSortTypeToName = {
+  relevance: "Relevance",
+  date: "Date",
+  likes: "Most Liked",
+  comments: "Most Commented",
+  restacks: "Most Restacked",
+};
+
 export interface InspirationSort {
   type: InspirationSortType;
   direction: InspirationSortDirection;

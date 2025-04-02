@@ -2,9 +2,14 @@
 
 import React, { useState } from "react";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
-import { InspirationSortType, Note } from "@/types/note";
+import {
+  InspirationSortType,
+  Note,
+  InspirationSort,
+  InspirationSortDirection,
+  inspirationSortTypeToName,
+} from "@/types/note";
 import { Skeleton } from "@/components/ui/skeleton";
-import Link from "next/link";
 import { toast } from "react-toastify";
 import NoteComponent from "@/components/ui/note-component";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -19,6 +24,8 @@ import {
   MessageSquare,
   Repeat,
   Heart,
+  ArrowUpNarrowWide,
+  ArrowDownNarrowWide,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspiration } from "@/lib/hooks/useInspiration";
@@ -35,6 +42,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { TooltipButton } from "@/components/ui/tooltip-button";
 
 // New component to display active filters
 const ActiveFilters = ({
@@ -199,6 +208,45 @@ const ActiveFilters = ({
   );
 };
 
+const SortButton = ({
+  sort,
+  updateSort,
+}: {
+  sort: InspirationSort;
+  updateSort: (sort: InspirationSort) => void;
+}) =>
+  sort.type !== "relevance" && (
+    <TooltipButton
+      variant="outline"
+      size="icon"
+      tooltipContent={`Sort ${sort.direction === "asc" ? "ascending" : "descending"}`}
+      className="text-muted-foreground flex"
+      onClick={() => {
+        const newDirection: InspirationSortDirection =
+          sort.direction === "asc" ? "desc" : "asc";
+        const newSort: InspirationSort = {
+          type: sort.type,
+          direction: newDirection,
+        };
+        updateSort(newSort);
+      }}
+    >
+      {sort.direction === "asc" ? (
+        <ArrowUpNarrowWide
+          className={cn("h-4 w-4", {
+            "text-primary": sort.direction === "asc",
+          })}
+        />
+      ) : (
+        <ArrowDownNarrowWide
+          className={cn("h-4 w-4", {
+            "text-primary": sort.direction === "desc",
+          })}
+        />
+      )}
+    </TooltipButton>
+  );
+
 export default function InspirationGrid() {
   const {
     notes,
@@ -214,6 +262,16 @@ export default function InspirationGrid() {
   } = useInspiration();
   const { hasAdvancedFiltering } = useUi();
   const [loadingMore, setLoadingMore] = useState(false);
+
+  const toggleSortDirection = () => {
+    const newDirection: InspirationSortDirection =
+      sort.direction === "asc" ? "desc" : "asc";
+    const newSort: InspirationSort = {
+      type: sort.type,
+      direction: newDirection,
+    };
+    updateSort(newSort);
+  };
 
   if (error) {
     toast.error(error);
@@ -325,18 +383,39 @@ export default function InspirationGrid() {
               </TooltipProvider>
             </div>
             <div className="flex items-center gap-2">
-              <Select value={sort.type} onValueChange={(value) => updateSort(value as InspirationSortType)}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="relevance">Relevance</SelectItem>
-                  <SelectItem value="date">Date</SelectItem>
-                  <SelectItem value="likes">Most Liked</SelectItem>
-                  <SelectItem value="comments">Most Commented</SelectItem>
-                  <SelectItem value="restacks">Most Restacked</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={sort.type}
+                  onValueChange={value => {
+                    const newSort: InspirationSort = {
+                      type: value as InspirationSortType,
+                      direction: sort.direction,
+                    };
+                    updateSort(newSort);
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="relevance">
+                      {inspirationSortTypeToName.relevance}
+                    </SelectItem>
+                    <SelectItem value="date">
+                      {inspirationSortTypeToName.date}
+                    </SelectItem>
+                    <SelectItem value="likes">
+                      {inspirationSortTypeToName.likes}
+                    </SelectItem>
+                    <SelectItem value="comments">
+                      {inspirationSortTypeToName.comments}
+                    </SelectItem>
+                    <SelectItem value="restacks">
+                      {inspirationSortTypeToName.restacks}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               {hasAdvancedFiltering && (
                 <InspirationFilterDialog
                   filters={filters}
@@ -353,9 +432,16 @@ export default function InspirationGrid() {
         </div>
 
         {/* Display active filters */}
-        {hasAdvancedFiltering && (
-          <ActiveFilters filters={filters} updateFilters={updateFilters} />
-        )}
+        <div
+          className={cn("w-full flex justify-end", {
+            "justify-between": hasFilters,
+          })}
+        >
+          {hasAdvancedFiltering && (
+            <ActiveFilters filters={filters} updateFilters={updateFilters} />
+          )}
+          <SortButton sort={sort} updateSort={updateSort} />
+        </div>
 
         {shouldShowLoading ? (
           <Loading />
