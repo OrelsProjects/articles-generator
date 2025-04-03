@@ -71,6 +71,27 @@ export interface Note {
   attachments?: string[];
 }
 
+export interface DBNote {
+  id: string;
+  comment_id: string;
+  type: string;
+  user_id: number;
+  body: string;
+  body_json: any[];
+  date: Date;
+  handle: string;
+  name: string;
+  photo_url: string;
+  reaction_count: number;
+  restacks: number;
+  restacked: boolean;
+  context_type: string;
+  entity_key: string;
+  note_is_restacked: boolean;
+  children_count: number;
+  timestamp: Date;
+}
+
 export interface InspirationNote extends Note {
   score: number;
 }

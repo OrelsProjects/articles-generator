@@ -152,7 +152,7 @@ function App() {
               {" "}
               grow your community
             </span>
-            <br /> faster than ever before.
+            <br /> 2.7x faster.
           </h2>
           <Button
             variant={"outline"}

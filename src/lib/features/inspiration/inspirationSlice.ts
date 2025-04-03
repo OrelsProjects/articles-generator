@@ -8,7 +8,7 @@ interface InspirationState {
   filters: InspirationFilters;
   sort: InspirationSort;
   hasMore: boolean;
-  nextCursor: string | null;
+  currentPage: number;
   hasMoreInspirationNotes: boolean;
 }
 
@@ -24,7 +24,7 @@ const initialState: InspirationState = {
   },
   error: null,
   hasMore: true,
-  nextCursor: null,
+  currentPage: 1,
   hasMoreInspirationNotes: true,
 };
 
@@ -34,12 +34,12 @@ const inspirationSlice = createSlice({
   reducers: {
     setInspirationNotes: (state, action: PayloadAction<InspirationNote[]>) => {
       state.inspirationNotes = action.payload;
+      state.currentPage = 1;
     },
     addInspirationNotes: (
       state,
       action: PayloadAction<{
         items: InspirationNote[];
-        nextCursor: string | null;
         hasMore: boolean;
         options?: { toStart: boolean };
       }>,
@@ -52,8 +52,8 @@ const inspirationSlice = createSlice({
         state.hasMoreInspirationNotes = action.payload.hasMore;
       } else {
         state.inspirationNotes.push(...action.payload.items);
+        state.currentPage += 1;
       }
-      state.nextCursor = action.payload.nextCursor;
       state.hasMore = action.payload.hasMore;
     },
     setLoadingInspiration: (state, action: PayloadAction<boolean>) => {
@@ -71,6 +71,9 @@ const inspirationSlice = createSlice({
     setInspirationSort: (state, action: PayloadAction<InspirationSort>) => {
       state.sort = action.payload;
     },
+    setCurrentPage: (state, action: PayloadAction<number>) => {
+      state.currentPage = action.payload;
+    },
   },
 });
 
@@ -81,6 +84,7 @@ export const {
   setError,
   setInspirationFilters,
   setInspirationSort,
+  setCurrentPage,
 } = inspirationSlice.actions;
 
 export default inspirationSlice.reducer;

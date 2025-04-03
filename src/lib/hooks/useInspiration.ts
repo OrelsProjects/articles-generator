@@ -7,6 +7,7 @@ import {
   addInspirationNotes,
   setInspirationNotes,
   setInspirationSort,
+  setCurrentPage,
 } from "@/lib/features/inspiration/inspirationSlice";
 import axios, { AxiosError } from "axios";
 import { EventTracker } from "@/eventTracker";
@@ -28,21 +29,29 @@ export function useInspiration() {
     filters,
     sort,
     hasMoreInspirationNotes,
+    currentPage,
   } = useAppSelector(state => state.inspiration);
   const cancelRef = useRef<AbortController | null>(null);
 
   const loadingInspirationRef = useRef(false);
 
   const fetchInspirationNotes = async (
-    loadMore = false,
-    newFilters?: Partial<InspirationFilters>,
-    existingNotes?: NotesComments[],
+    options: {
+      page: number;
+      newFilters?: Partial<InspirationFilters>;
+      existingNotes?: NotesComments[];
+    } = {
+      page: 1,
+      newFilters: undefined,
+      existingNotes: undefined,
+    },
   ) => {
     if (cancelRef.current) {
       cancelRef.current.abort();
     }
     cancelRef.current = new AbortController();
     try {
+      const { page, newFilters, existingNotes } = options;
       if (inspirationNotes.length > 0) {
         EventTracker.track("notes_inspiration_load_more");
       }
@@ -51,19 +60,14 @@ export function useInspiration() {
 
       const response = await axios.post<{
         items: InspirationNote[];
-        nextCursor: string | null;
         hasMore: boolean;
       }>(
         "/api/notes/inspiration",
         {
-          existingNotesIds: loadMore
-            ? existingNotes
-              ? existingNotes.map(note => note.id)
-              : inspirationNotes.map(note => note.id)
-            : [],
-          cursor: loadMore
-            ? inspirationNotes[inspirationNotes.length - 1]?.id
-            : null,
+          existingNotesIds: existingNotes
+            ? existingNotes.map(note => note.id)
+            : inspirationNotes.map(note => note.id),
+          page: currentPage,
           filters: newFilters || filters,
         },
         { signal: cancelRef.current?.signal },
@@ -74,11 +78,10 @@ export function useInspiration() {
         sort.type,
         sort.direction,
       );
-      if (loadMore) {
+      if (page > 1) {
         dispatch(
           addInspirationNotes({
             items: sortedNotes,
-            nextCursor: response.data.nextCursor,
             hasMore: response.data.hasMore,
             options: { toStart: false },
           }),
@@ -86,6 +89,7 @@ export function useInspiration() {
       } else {
         dispatch(setInspirationNotes(sortedNotes));
       }
+      dispatch(setCurrentPage(page));
       dispatch(setLoadingInspiration(false));
       loadingInspirationRef.current = false;
     } catch (error) {
@@ -124,7 +128,7 @@ export function useInspiration() {
       dispatch(setInspirationFilters(updatedFilters));
       dispatch(setInspirationNotes([]));
       dispatch(setError(null));
-      fetchInspirationNotes(false, updatedFilters, []);
+      fetchInspirationNotes({ page: 1, newFilters: updatedFilters, existingNotes: [] });
     },
     [dispatch, filters, fetchInspirationNotes],
   );
@@ -188,11 +192,19 @@ export function useInspiration() {
   const updateSort = useCallback(
     (newSort: InspirationSort) => {
       dispatch(setInspirationSort(newSort));
-      const sortedNotes = sortNotes(inspirationNotes, newSort.type, newSort.direction);
+      const sortedNotes = sortNotes(
+        inspirationNotes,
+        newSort.type,
+        newSort.direction,
+      );
       dispatch(setInspirationNotes(sortedNotes));
     },
     [inspirationNotes],
   );
+
+  const loadMore = useCallback(async () => {
+    await fetchInspirationNotes({ page: currentPage + 1 });
+  }, [fetchInspirationNotes]);
 
   useEffect(() => {
     if (inspirationNotes.length === 0) {
@@ -208,7 +220,7 @@ export function useInspiration() {
     sort,
     updateFilters,
     fetchInspirationNotes,
-    loadMore: () => fetchInspirationNotes(true),
+    loadMore,
     hasMoreInspirationNotes,
     updateSort,
   };

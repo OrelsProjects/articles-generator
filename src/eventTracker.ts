@@ -39,7 +39,6 @@ export const initEventTracker = () => {
       api_host: "https://app.posthog.com",
       disable_session_recording: env !== "production",
     });
-    debugger;
     mixpanel.init(mixpanelToken || "", {
       debug: env !== "production",
       track_pageview: true,

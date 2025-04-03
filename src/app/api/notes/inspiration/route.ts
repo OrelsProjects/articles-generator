@@ -1,6 +1,7 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
+import { searchInMeili } from "@/lib/dal/meilisearch";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -27,6 +28,7 @@ const InspirationFiltersSchema = z.object({
 
 const bodySchema = z.object({
   existingNotesIds: z.array(z.string()),
+  page: z.number().optional(),
   filters: InspirationFiltersSchema,
 });
 
@@ -72,12 +74,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const limit = 30; // Number of items per page
-
   try {
     const body = await req.json();
-    const parsedBody = bodySchema.parse(body);
-    const { existingNotesIds, filters } = parsedBody;
+    const { existingNotesIds, page = 1, filters } = bodySchema.parse(body);
+    const limit = 20; // Number of items per page
+
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId: session.user.id,
@@ -196,108 +197,50 @@ export async function POST(req: NextRequest) {
         minMatch: 0.2,
       });
     } else {
-      console.time("prisma - long query");
-      inspirationNotes = await prismaArticles.notesComments.findMany({
-        where: {
-          commentId: {
-            notIn: existingNotesIds,
-          },
-          noteIsRestacked: false,
-          reactionCount: {
-            gte: filters.minLikes || 0,
-          },
-          commentsCount: {
-            gte: filters.minComments || 0,
-          },
-          restacks: {
-            gte: filters.minRestacks || 0,
-          },
-          date: filters.dateRange
-            ? {
-                gte: filters.dateRange.from,
-                lte: filters.dateRange.to,
-              }
-            : undefined,
-          AND: {
-            OR: [
-              {
-                body: filters.keyword
-                  ? {
-                      contains: filters.keyword,
-                      mode: "insensitive", // Case insensitive
-                    }
-                  : undefined,
-              },
-              {
-                name: filters.keyword
-                  ? {
-                      startsWith: filters.keyword,
-                      mode: "insensitive", // Case insensitive
-                    }
-                  : undefined,
-              },
-            ],
-          },
-        },
-        orderBy: {
-          reactionCount: "desc",
-        },
-        take: 500,
-        skip: existingNotesIds.length,
+      const { type, ...filtersNoType } = filters;
+      inspirationNotes = await searchInMeili({
+        keyword: filters.keyword,
+        filters: filtersNoType, 
+        existingNotesIds,
+        limit,
+        page,
       });
 
-      console.time("prisma - long query");
-      // inspirationNotes = await prismaArticles.$queryRaw`
-      //   SELECT * FROM "notes_comments"
-      //   WHERE "note_is_restacked" = false
-      //   ${existingNotesIds.length > 0 ? Prisma.sql`AND "id" NOT IN (${Prisma.join(existingNotesIds)})` : Prisma.empty}
-      //   AND "reaction_count" >= ${filters.minLikes || 0}
-      //   AND "children_count" >= ${filters.minComments || 0}
-      //   AND "restacks" >= ${filters.minRestacks || 0}
-      //   ${filters.dateRange ? Prisma.sql`AND "date" BETWEEN ${filters.dateRange.from} AND ${filters.dateRange.to}` : Prisma.empty}
-      //   ${filters.keyword ? Prisma.sql`AND similarity("body", ${filters.keyword}) > 0.3` : Prisma.empty}
-      //   ORDER BY "reaction_count" ASC
-      //   LIMIT 500;
-      // `;
-      console.timeEnd("prisma - long query");
       inspirationNotes = inspirationNotes
         .sort(() => Math.random() - 0.5)
         .slice(0, limit);
     }
-
-    const existingNotes = await prismaArticles.notesComments.findMany({
-      where: {
-        commentId: {
-          in: existingNotesIds,
+    let existingNotes: NotesComments[] = [];
+    if (existingNotesIds.length > 0) {
+      existingNotes = await prismaArticles.notesComments.findMany({
+        where: {
+          commentId: {
+            in: existingNotesIds,
+          },
+          noteIsRestacked: false,
         },
-        noteIsRestacked: false,
-      },
-      distinct: ["commentId"],
-    });
+        distinct: ["commentId"],
+      });
+    }
 
     const filteredNotes = filterNotes(
       inspirationNotes,
       existingNotes,
       existingNotes.length + limit,
     );
-    let nextCursor: string | undefined = undefined;
 
-    const hasMore = filteredNotes.length > 0;
-
-    if (filteredNotes.length > limit) {
-      const nextItem = filteredNotes.pop(); // Remove the extra item
-      nextCursor = nextItem?.commentId;
-    }
+    const hasMore = filteredNotes.length > limit;
+    const paginatedNotes = filteredNotes.slice(0, limit);
 
     const attachments = await prismaArticles.notesAttachments.findMany({
       where: {
         noteId: {
-          in: filteredNotes.map(note => parseInt(note.commentId)),
+          in: paginatedNotes.map(note => parseInt(note.commentId)),
         },
       },
     });
 
-    const filteredNotesWithAttachments = filteredNotes.map(note => {
+    const filteredNotesWithAttachments = paginatedNotes.map(note => {
       const attachment = attachments.find(
         attachment => attachment.noteId === parseInt(note.commentId),
       );
@@ -328,7 +271,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       items: notesResponse,
-      nextCursor,
       hasMore,
     });
   } catch (error: any) {

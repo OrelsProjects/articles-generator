@@ -53,10 +53,10 @@ import {
 // }
 
 export async function GET() {
-  //   const session = await getServerSession(authOptions);
-  //   if (!session) {
-  //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  //   }
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
   try {
     // Get all users with publications
@@ -97,16 +97,32 @@ export async function GET() {
     //   cc: ["orelzilberman@gmail.com"],
     // });
 
-    // const mailResult = await sendMail({
-    //   to: "orelsmail@gmail.com",
-    //   from: "orel",
-    //   subject: "Your Trial is Ending Soon",
-    //   template: generateSubscriptionTrialEndingEmail(
-    //     "subscription.id",
-    //     new Date(),
-    //   ),
-    //   cc: ["orelzilberman@gmail.com"],
-    // });
+
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        userId: session.user.id,
+        status: "active",
+      }, 
+    });
+
+    if (!subscription) {
+      return NextResponse.json({ error: "No active subscription found" }, { status: 400 });
+    }
+    
+    
+    
+    
+
+    const mailResult = await sendMail({
+      to: "orelsmail@gmail.com",
+      from: "orel",
+      subject: "Your Trial is Ending Soon",
+      template: generateSubscriptionTrialEndingEmail(
+        subscription.plan,
+        new Date(),
+      ),
+      cc: ["orelzilberman@gmail.com"],
+    });
     // const date = new Date("2025-03-27T01:37:20.962+00:00");
     // const users = await prisma.user.findMany({
     //   where: {
