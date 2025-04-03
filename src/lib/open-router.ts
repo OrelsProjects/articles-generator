@@ -3,6 +3,7 @@ import { Model429Error } from "@/types/errors/Model429Error";
 import axios from "axios";
 import { Tiktoken } from "js-tiktoken/lite";
 import o200k_base from "js-tiktoken/ranks/o200k_base";
+import { createParser, EventSourceMessage } from "eventsource-parser";
 
 // const models = ["anthropic/claude-3.5-sonnet", "openai/gpt-4o-mini"];
 export type Model =
@@ -118,4 +119,124 @@ export async function runPrompt(
   console.log("Output tokens:", outputTokens);
   console.log("Actual price:", `$${(priceInput + priceOutput).toFixed(4)}`);
   return llmResponse;
+}
+
+/**
+ * Like runPrompt but returns chunks as they arrive from OpenRouter in stream mode.
+ *
+ * Usage example:
+ *
+ *   for await (const chunk of runPromptStream([...], 'anthropic/claude-3.5-sonnet')) {
+ *     // chunk is a string of newly received text
+ *   }
+ */
+export async function* runPromptStream(
+  messages: { role: string; content: string }[],
+  model: Model,
+): AsyncGenerator<string, string, unknown> {
+  // 1) Precompute input token costs (same as before)
+  const inputText = messages.map(m => m.content).join("\n");
+  let tokenCount = getTokenCount(inputText);
+  const priceInput = getPrice(model, tokenCount);
+  console.log(
+    "About to run prompt on model",
+    model,
+    "Estimated token count:",
+    tokenCount,
+    "Estimated price:",
+    `$${priceInput.toFixed(5)}`,
+  );
+  console.time("runPromptStream");
+
+  // 2) Fire off a streaming POST
+  const response = await axios.post(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      model,
+      messages,
+      stream: true,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      responseType: "stream", // tell axios to give us a Node.js readable stream
+    },
+  );
+
+  console.timeEnd("runPromptStream");
+
+  // Handle top-level error if present (rare with streaming, but let's be safe)
+  if (response.data.error) {
+    loggerServer.error(
+      `Error running prompt ${model}: ${JSON.stringify(response.data)}`,
+    );
+    if (model.includes("openai") && response.data.error.code === "429") {
+      throw new Model429Error(
+        `The model ${model} is currently overloaded. Please try again later.`,
+      );
+    }
+    throw new Error(
+      `Something went wrong with running the prompts. ${JSON.stringify(response.data)}`,
+    );
+  }
+
+  // 3) Setup our parser
+  const stream = response.data; // Node.js Readable from axios
+  const decoder = new TextDecoder();
+
+  let fullResponse = ""; // accumulate final text
+  const chunkBuffer: string[] = []; // buffer for new partial tokens
+
+  const parser = createParser({
+    onEvent: (event: EventSourceMessage) => {
+      if (event.data === "[DONE]") {
+        // indicates the end of stream
+        return;
+      }
+      try {
+        // Typically each chunk is JSON like: { "choices": [ { "delta": { "content": "some text" } } ] }
+        const json = JSON.parse(event.data);
+        const tokenChunk = json?.choices?.[0]?.delta?.content || "";
+        if (tokenChunk) {
+          fullResponse += tokenChunk;
+          // Add it to our buffer so we can yield it in the main loop
+          chunkBuffer.push(tokenChunk);
+        }
+      } catch (err) {
+        console.warn("Could not parse stream chunk as JSON:", event.data, err);
+      }
+    },
+  });
+
+  // 4) Read chunks from the stream in a loop
+  for await (const chunk of stream) {
+    // feed each chunk to the parser
+    parser.feed(decoder.decode(chunk));
+
+    // now yield any newly parsed tokens in chunkBuffer
+    while (chunkBuffer.length > 0) {
+      const nextChunk = chunkBuffer.shift()!;
+      yield nextChunk;
+    }
+  }
+
+  // 5) The stream is done. If you want to strip out markdown fences for non-anthropic, do it here:
+  let finalText = fullResponse;
+  if (!model.includes("anthropic")) {
+    finalText = finalText.replace(/```json|```/g, "").trim();
+  }
+
+  // do final token/cost calculations
+  const outputTokens = getTokenCount(finalText);
+  const priceOutput = getPrice(model, 0, outputTokens);
+  console.log("Output tokens:", outputTokens);
+  console.log("Actual price:", `$${(priceInput + priceOutput).toFixed(4)}`);
+
+  // optionally yield the entire text as the final yield
+  // yield finalText;
+
+  // return value (if you do `await iterator.next()`) will be the final text
+  return finalText;
 }

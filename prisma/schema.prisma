@@ -64,6 +64,7 @@ enum FeatureFlag {
   advancedFiltering
   instantPost
   populateNotes
+  collaborativeNotes
 }
 
 model User {
