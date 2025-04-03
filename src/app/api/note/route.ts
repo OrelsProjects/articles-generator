@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
       isArchived: false,
       ...newNoteDraft,
       authorId: newNoteDraft?.authorId || authorId || 0,
+      postDate: newNoteDraft?.postDate || new Date(),
     };
     const note = await createNote(createNoteBody);
 
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
       handle,
       thumbnail: photoUrl,
       name,
+      postDate: newNoteDraft?.postDate || new Date(),
     };
 
     return NextResponse.json(noteDraft);
