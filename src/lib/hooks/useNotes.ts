@@ -370,6 +370,7 @@ export const useNotes = () => {
     if (noteId) {
       dispatch(updateNote({ id: noteId, note: { body } }));
     }
+    editNoteBody(noteId, body);
     return body
       ? {
           text: body,
