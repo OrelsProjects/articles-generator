@@ -130,7 +130,7 @@ export default function SettingsPage() {
                               .NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
                           }
                         >
-                          Upgrade your plan <ExternalLink className="w-4 h-4 ml-2" />
+                          Manage your plan <ExternalLink className="w-4 h-4 ml-2" />
                         </Link>
                       </Button>
                     </div>
