@@ -52,6 +52,7 @@ export interface NoteDraft {
   authorName: string;
   attachments?: string[];
   isArchived?: boolean;
+  postDate: Date;
 }
 
 export interface Note {
@@ -182,5 +183,6 @@ export function noteToNoteDraft(note: Note | null): NoteDraft | null {
     status: "draft",
     authorName: "",
     attachments: note.attachments ? note.attachments : [],
+    postDate: new Date(),
   };
 }

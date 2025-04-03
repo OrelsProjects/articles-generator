@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
       feedback: note.feedback || undefined,
       name: note.name || undefined,
       handle: note.handle || undefined,
+      postDate: note.postDate || new Date(),
     }));
 
     return NextResponse.json({

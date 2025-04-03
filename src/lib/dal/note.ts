@@ -10,6 +10,8 @@ export const updateableFields = [
   "feedbackComment",
   "body",
   "isArchived",
+  "postDate",
+  "timestamp",
 ] as (keyof NoteDraft)[];
 
 export async function isOwnerOfNote(noteId: string, userId: string) {
@@ -62,13 +64,22 @@ export const getUserNotes = async (
 
 export const updateNote = async (id: string, newNote: Partial<NoteDraft>) => {
   try {
-    const fieldsToUpdate = updateableFields.filter(field => newNote[field]);
-    const data: any = {};
-    fieldsToUpdate.forEach(field => {
-      data[field] = newNote[field];
-    });
+    // Create a copy of newNote to modify
+    const noteToUpdate: Record<string, any> = {};
 
-    await prisma.note.update({ where: { id }, data });
+    // Handle each updateable field
+    for (const field of updateableFields) {
+      if (newNote[field] !== undefined) {
+        // For timestamp, use the postDate field in the database
+        if (field === "postDate") {
+          noteToUpdate.postDate = newNote.postDate;
+        } else {
+          noteToUpdate[field] = newNote[field];
+        }
+      }
+    }
+
+    await prisma.note.update({ where: { id }, data: noteToUpdate });
   } finally {
     await prisma.$disconnect();
   }

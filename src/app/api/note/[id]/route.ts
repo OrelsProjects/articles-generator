@@ -22,6 +22,11 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // If timestamp is provided, ensure it's a Date object
+    if (note.postDate && typeof note.postDate === 'string') {
+      note.postDate = new Date(note.postDate);
+    }
+
     await updateNote(id, note);
 
     return NextResponse.json({}, { status: 200 });

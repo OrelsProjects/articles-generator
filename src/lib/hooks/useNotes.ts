@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import {
   selectNotes,
@@ -382,6 +382,12 @@ export const useNotes = () => {
     useAppSelector(selectNotes).loadingNotesGenerate;
 
   const errorGenerateNotes = useAppSelector(selectNotes).errorGenerateNotes;
+
+  useEffect(() => {
+    if (userNotes.length === 0) {
+      fetchNotes();
+    }
+  }, [userNotes, fetchNotes]);
 
   return {
     userNotes,

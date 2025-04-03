@@ -37,13 +37,23 @@ import { navItems } from "@/types/navbar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUi } from "@/lib/hooks/useUi";
 import { selectUi } from "@/lib/features/ui/uiSlice";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+
 export function AppSidebar({ children }: { children: React.ReactNode }) {
+  const router = useCustomRouter();
   const { updateSideBarState } = useUi();
   const { sideBarState } = useAppSelector(selectUi);
   const [showOpenButton, setShowOpenButton] = useState(false);
   const pathname = usePathname();
   const { user } = useAppSelector(selectAuth);
   const { signOut } = useAuth();
+
+  useEffect(() => {
+    // if the pathname is an admin only and the user is not an admin, redirect to the home page
+    if (navItems.some(item => item.adminOnly && item.href === pathname && !user?.meta?.isAdmin)) {
+      router.push("/home");
+    }
+  }, [pathname, user?.meta?.isAdmin]);
 
   const sidebarCollapsed = useMemo(
     () => sideBarState === "collapsed",
@@ -118,40 +128,42 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
           <nav className="flex-1 py-4 overflow-y-auto">
             <ul className="space-y-2 px-2">
-              {navItems.map(item => (
-                <li key={item.name}>
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Link
-                          key={item.name}
-                          href={item.disabled ? "" : item.href}
-                          target={item.newTab ? "_blank" : "_self"}
-                          className={cn(
-                            "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                            isActive(item.href)
-                              ? "text-primary"
-                              : "hover:bg-muted",
-                            item.disabled && "cursor-not-allowed opacity-50",
-                          )}
-                        >
-                          <item.icon size={20} />
-                          {!sidebarCollapsed && <span>{item.name}</span>}
-                        </Link>
-                      </TooltipTrigger>
-                      {sidebarCollapsed && (
-                        <TooltipContent
-                          side="right"
-                          className="flex items-center gap-2"
-                        >
-                          {item.name}{" "}
-                          {item.newTab ? <ExternalLink size={12} /> : ""}
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                </li>
-              ))}
+              {navItems.map(item =>
+                item.adminOnly && !user?.meta?.isAdmin ? null : (
+                  <li key={item.name}>
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Link
+                            key={item.name}
+                            href={item.disabled ? "" : item.href}
+                            target={item.newTab ? "_blank" : "_self"}
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                              isActive(item.href)
+                                ? "text-primary"
+                                : "hover:bg-muted",
+                              item.disabled && "cursor-not-allowed opacity-50",
+                            )}
+                          >
+                            <item.icon size={20} />
+                            {!sidebarCollapsed && <span>{item.name}</span>}
+                          </Link>
+                        </TooltipTrigger>
+                        {sidebarCollapsed && (
+                          <TooltipContent
+                            side="right"
+                            className="flex items-center gap-2"
+                          >
+                            {item.name}{" "}
+                            {item.newTab ? <ExternalLink size={12} /> : ""}
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                  </li>
+                ),
+              )}
             </ul>
           </nav>
           {/* User profile */}
