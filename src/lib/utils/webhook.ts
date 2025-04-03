@@ -239,13 +239,31 @@ export async function handleSubscriptionTrialEnding(event: any) {
     return;
   }
 
+
+  const subscriptionFromDb = await prisma.subscription.findUnique({
+    where: {
+      stripeSubId: subscription.id,
+    },
+    select: {
+      plan: true,
+    },
+  });
+  if (!subscriptionFromDb) {
+    loggerServer.error(
+      "No subscription found for user" +
+        " " +
+        userEmail +
+        " In handleSubscriptionTrialEnding",
+    );
+    return;
+  }
   // Send email notification about trial ending
   await sendMail({
     to: userEmail,
     from: "orel",
     subject: "Your Trial is Ending Soon",
     template: generateSubscriptionTrialEndingEmail(
-      subscription.id,
+      subscriptionFromDb.plan,
       new Date(subscription.trial_end * 1000),
     ),
     cc: ["orelsmail@gmail.com"],
