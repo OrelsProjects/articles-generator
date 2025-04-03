@@ -56,14 +56,14 @@ export async function GET(req: NextRequest) {
     try {
       await sendMail({
         to: session.customer_email || "",
-        from: "orel",
+        from: "Orel from WriteRoom 👋",
         subject: "Payment confirmation",
         template: welcomeTemplate(),
         cc: [],
       });
       await sendMail({
         to: "orelsmail@gmail.com",
-        from: "orel",
+        from: "Orel from WriteRoom 👋",
         subject: "Payment confirmation - " + session.customer_email,
         template: welcomeTemplate(),
         cc: [],

@@ -115,7 +115,7 @@ export async function GET() {
 
     const mailResult = await sendMail({
       to: "orelsmail@gmail.com",
-      from: "orel",
+      from: "Orel from WriteRoom 👋",
       subject: "Your Trial is Ending Soon",
       template: generateSubscriptionTrialEndingEmail(
         subscription.plan,
