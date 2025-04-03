@@ -1028,8 +1028,10 @@ const improvementPromptTemplates: {
     prompt: `Check the user's text for spelling and grammar errors. If you find any errors, correct them. If you don't find any errors, fix the errors in the text.`,
   },
   "fit-user-style": {
-    task: "fit the user's style",
-    prompt: `Fit the user's writing style in the text. If the user provides examples, use them to fit the style as well.`,
+    task: "fit the your style of writing and description",
+    prompt: `Fit the user's the text to your style of writing and description. If the user provides examples, use them to fit the style as well.
+    The new text should be unique, original and different than the original text, but deliver the same message.
+    `,
   },
   "human-like": {
     task: "make it human-like",
@@ -1038,7 +1040,7 @@ const improvementPromptTemplates: {
   },
   "new-version": {
     task: "create a new version of the text",
-    prompt: `Use the text the user gives you as a base, and create a new note from it. It should be unique and deliver the same message.`,
+    prompt: `Use the text the user gives you as a base, and create a new note from it. It should be unique, original and different than the original text, but deliver the same message.`,
   },
 };
 
