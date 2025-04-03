@@ -187,9 +187,7 @@ export function InspirationFilterDialog({
         <Button
           variant={hasFilters ? "outline-primary" : "outline"}
           className="gap-2"
-          disabled={loading}
         >
-          {loading && <RefreshCw className="h-4 w-4 mr-2 animate-spin" />}
           Filter
         </Button>
       </DialogTrigger>
