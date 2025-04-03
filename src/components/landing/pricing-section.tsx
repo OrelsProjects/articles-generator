@@ -103,7 +103,10 @@ export default function Pricing({
   return (
     <motion.section
       id="pricing"
-      className={cn("w-full h-full py-20 relative z-20", className)}
+      className={cn(
+        "landing-section-container !w-full h-full relative z-20",
+        className,
+      )}
     >
       <div className="max-w-6xl mx-auto px-8 relative z-50">
         {onboarding && (
@@ -120,6 +123,32 @@ export default function Pricing({
             </h3>
           </motion.div>
         )}
+        <div className="py-0 !w-full flex flex-col items-center mb-8 md:mb-16">
+          <h2>
+            {hadSubscription ? (
+              <span>
+                Choose the plan that{" "}
+                <span className="text-primary">fits you!</span>
+              </span>
+            ) : (
+              <span>
+                Start your{" "}
+                <span className="text-primary">7-day free trial</span> now!
+              </span>
+            )}
+          </h2>
+          <p className="mt-4">
+            {hadSubscription ? (
+              "There's a plan for everyone!"
+            ) : (
+              <span>
+                Don&apos;t worry,{" "}
+                <strong>I&apos;ll personally remind you</strong> before your
+                trial ends.
+              </span>
+            )}
+          </p>
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
