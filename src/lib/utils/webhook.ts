@@ -248,6 +248,7 @@ export async function handleSubscriptionTrialEnding(event: any) {
       plan: true,
     },
   });
+  
   if (!subscriptionFromDb) {
     loggerServer.error(
       "No subscription found for user" +

@@ -1,3 +1,5 @@
+import { Plan } from "@prisma/client";
+
 export function baseEmailTemplate(content: string) {
   return `
     <!DOCTYPE html>
@@ -182,12 +184,14 @@ export function generateSubscriptionCanceledEmail(subscriptionId: string) {
 }
 
 export function generateSubscriptionTrialEndingEmail(
-  subscriptionId: string,
+  plan: Plan,
   trialEndDate: Date,
 ) {
+  const planString = plan.charAt(0).toUpperCase() + plan.slice(1);
+
   const content = `
     <h2>Your WriteRoom Trial is Ending Soon</h2>
-    <p>Your trial for subscription <strong>${subscriptionId}</strong> will end on 
+    <p>Your trial for subscription plan: <strong>${planString}</strong> will end on 
     <strong>${trialEndDate.toLocaleDateString()}</strong>.</p>
     <p>If you find value in WriteRoom, you can safely ignore this email and keep up the amazing writing :).</p>
     <p>Otherwise, you can cancel your subscription any time.</p>
