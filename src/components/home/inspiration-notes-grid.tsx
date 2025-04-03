@@ -254,6 +254,7 @@ export default function InspirationGrid() {
     error,
     filters,
     updateFilters,
+    hasMore,
     loadMore,
     fetchInspirationNotes,
     hasMoreInspirationNotes,
@@ -262,16 +263,6 @@ export default function InspirationGrid() {
   } = useInspiration();
   const { hasAdvancedFiltering } = useUi();
   const [loadingMore, setLoadingMore] = useState(false);
-
-  const toggleSortDirection = () => {
-    const newDirection: InspirationSortDirection =
-      sort.direction === "asc" ? "desc" : "asc";
-    const newSort: InspirationSort = {
-      type: sort.type,
-      direction: newDirection,
-    };
-    updateSort(newSort);
-  };
 
   if (error) {
     toast.error(error);

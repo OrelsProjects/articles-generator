@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import {

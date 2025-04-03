@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { existingNotesIds, page = 1, filters } = bodySchema.parse(body);
+    console.log("Page", page);
     const limit = 20; // Number of items per page
 
     const userMetadata = await prisma.userMetadata.findUnique({
@@ -122,7 +123,7 @@ export async function POST(req: NextRequest) {
       randomMinReaction = temp;
     }
 
-    const searchFilters: Filter[] = [
+    let searchFilters: Filter[] = [
       {
         leftSideValue: "reaction_count",
         rightSideValue: randomMinReaction.toString(),
@@ -177,6 +178,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (filters.minLikes) {
+      // Clear the previous reaction_count filter
+      searchFilters = searchFilters.filter(
+        filter => filter.leftSideValue !== "reaction_count",
+      );
       searchFilters.push({
         leftSideValue: "reaction_count",
         rightSideValue: filters.minLikes.toString(),
@@ -200,7 +205,7 @@ export async function POST(req: NextRequest) {
       const { type, ...filtersNoType } = filters;
       inspirationNotes = await searchInMeili({
         keyword: filters.keyword,
-        filters: filtersNoType, 
+        filters: filtersNoType,
         existingNotesIds,
         limit,
         page,
@@ -229,7 +234,7 @@ export async function POST(req: NextRequest) {
       existingNotes.length + limit,
     );
 
-    const hasMore = filteredNotes.length > limit;
+    const hasMore = filteredNotes.length > 0;
     const paginatedNotes = filteredNotes.slice(0, limit);
 
     const attachments = await prismaArticles.notesAttachments.findMany({

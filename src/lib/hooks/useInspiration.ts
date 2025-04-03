@@ -30,6 +30,7 @@ export function useInspiration() {
     sort,
     hasMoreInspirationNotes,
     currentPage,
+    hasMore,
   } = useAppSelector(state => state.inspiration);
   const cancelRef = useRef<AbortController | null>(null);
 
@@ -128,7 +129,12 @@ export function useInspiration() {
       dispatch(setInspirationFilters(updatedFilters));
       dispatch(setInspirationNotes([]));
       dispatch(setError(null));
-      fetchInspirationNotes({ page: 1, newFilters: updatedFilters, existingNotes: [] });
+      dispatch(setCurrentPage(1));
+      fetchInspirationNotes({
+        page: 1,
+        newFilters: updatedFilters,
+        existingNotes: [],
+      });
     },
     [dispatch, filters, fetchInspirationNotes],
   );
@@ -223,5 +229,6 @@ export function useInspiration() {
     loadMore,
     hasMoreInspirationNotes,
     updateSort,
+    hasMore,
   };
 }

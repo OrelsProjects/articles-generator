@@ -1,5 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { InspirationFilters, InspirationNote, InspirationSort, Note } from "@/types/note";
+import {
+  InspirationFilters,
+  InspirationNote,
+  InspirationSort,
+  Note,
+} from "@/types/note";
 
 interface InspirationState {
   inspirationNotes: InspirationNote[];
@@ -35,6 +40,7 @@ const inspirationSlice = createSlice({
     setInspirationNotes: (state, action: PayloadAction<InspirationNote[]>) => {
       state.inspirationNotes = action.payload;
       state.currentPage = 1;
+      state.hasMoreInspirationNotes = true;
     },
     addInspirationNotes: (
       state,
@@ -49,12 +55,11 @@ const inspirationSlice = createSlice({
           ...action.payload.items,
           ...state.inspirationNotes,
         ];
-        state.hasMoreInspirationNotes = action.payload.hasMore;
       } else {
         state.inspirationNotes.push(...action.payload.items);
         state.currentPage += 1;
       }
-      state.hasMore = action.payload.hasMore;
+      state.hasMoreInspirationNotes = action.payload.hasMore;
     },
     setLoadingInspiration: (state, action: PayloadAction<boolean>) => {
       state.loadingInspiration = action.payload;
