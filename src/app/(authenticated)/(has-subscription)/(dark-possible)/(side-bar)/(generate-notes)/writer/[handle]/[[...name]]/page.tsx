@@ -21,6 +21,7 @@ import { useUi } from "@/lib/hooks/useUi";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import { TooltipButton } from "@/components/ui/tooltip-button";
+import { EventTracker } from "@/eventTracker";
 
 const LoadingNotes = ({
   notesAndArticlesOnly,
@@ -180,7 +181,9 @@ export default function WriterPage({
         <Tabs
           defaultValue="notes"
           className="w-fit"
-          onValueChange={setActiveTab}
+          onValueChange={value => {
+            EventTracker.track("writer_tab_change_" + value);
+          }}
         >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="notes" className="flex items-center gap-2">
