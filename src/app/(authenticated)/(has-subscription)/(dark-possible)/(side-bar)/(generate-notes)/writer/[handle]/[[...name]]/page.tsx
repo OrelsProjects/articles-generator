@@ -75,7 +75,7 @@ export default function WriterPage({
     isLoadingMore,
     fetchAuthorNotes,
   } = useWriter(params.handle);
-  const [activeTab, setActiveTab] = useState("notes");
+  const [, setActiveTab] = useState("notes");
   const [loadingAuthorNotes, setLoadingAuthorNotes] = useState(false);
   const { hasPopulateNotes } = useUi();
   if (isLoading || (!writer && !error)) {
@@ -96,8 +96,9 @@ export default function WriterPage({
 
   const noteCards = writer.topNotes.map(note => ({
     id: note.id,
-    content: <NoteComponent note={note} />,
-    // thumbnail: note.thumbnail,
+    content: (
+      <NoteComponent note={note} options={{ allowAuthorClick: false }} />
+    ),
   }));
 
   const handleFetchAuthorNotes = async () => {

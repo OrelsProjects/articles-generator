@@ -1,4 +1,3 @@
-import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
 import { Metadata } from "next";
 
 export let metadata: Metadata = {

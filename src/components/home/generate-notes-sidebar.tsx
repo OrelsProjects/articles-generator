@@ -193,8 +193,6 @@ export default function GenerateNotesSidebar() {
     updateShowGenerateNotesSidebar,
     showGenerateNotesSidebar,
     hasAdvancedGPT,
-    updateDidShowSaveTooltip,
-    didShowSaveTooltip,
   } = useUi();
   const {
     generateNewNotes,
@@ -207,7 +205,6 @@ export default function GenerateNotesSidebar() {
     errorGenerateNotes,
   } = useNotes();
   const [loadingImprovement, setLoadingImprovement] = useState(false);
-  const [showSaveReminderTooltip, setShowSaveReminderTooltip] = useState(false);
   const [selectedModel, setSelectedModel] =
     useState<FrontendModel>("claude-3.7");
   const [useTopTypes, setUseTopTypes] = useState(false);
@@ -611,15 +608,9 @@ export default function GenerateNotesSidebar() {
                   </Popover>
                 </div>
                 <div className="flex items-center gap-1 md:gap-2">
-                  <TooltipButton
-                    tooltipContent={
-                      showSaveReminderTooltip ? "Don't forget to save" : "Save"
-                    }
+                  <Button
                     variant="ghost"
                     className="w-8 h-8 p-0"
-                    forceShowTooltip={
-                      showSaveReminderTooltip ? { length: 5000 } : undefined
-                    }
                     disabled={loadingEditNote || !canSave}
                     onClick={() => {
                       handleEditNoteBody(selectedNote?.id || null, content, {
@@ -637,7 +628,7 @@ export default function GenerateNotesSidebar() {
                         )}
                       />
                     )}
-                  </TooltipButton>
+                  </Button>
                   <TooltipButton
                     tooltipContent="Copy"
                     variant="ghost"

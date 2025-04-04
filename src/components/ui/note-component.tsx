@@ -1,179 +1,43 @@
 import { Button } from "@/components/ui/button";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
-import {
-  convertMDToHtml,
-  Note,
-  NoteDraft,
-  NoteFeedback,
-  NoteStatus,
-} from "@/types/note";
+import { convertMDToHtml, Note, NoteDraft, NoteStatus } from "@/types/note";
 import {
   Heart,
   MessageCircle,
   RefreshCw,
   ThumbsUp,
-  ThumbsDown,
-  X,
   Archive,
+  ExternalLink,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { toast } from "react-toastify";
 import { TooltipButton } from "@/components/ui/tooltip-button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
 import StatusBadgeDropdown from "@/components/notes/status-badge-dropdown";
 import slugify from "slugify";
-
-// Define feedback options
-const FEEDBACK_OPTIONS = [
-  {
-    value: "It has incorrect information about me",
-    label: "It has incorrect information about me",
-  },
-  {
-    value: "The note is irrelevant or false",
-    label: "The note is irrelevant or false",
-  },
-  { value: "The note is boring", label: "The note is boring" },
-];
-
-type DislikeFeedbackPopoverProps = {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: (feedbackText: string) => void;
-  isLoading: boolean;
-  feedback: NoteFeedback | null | undefined;
-  disabled?: boolean;
-};
-
-const DislikeFeedbackPopover = ({
-  isOpen,
-  onOpenChange,
-  onSubmit,
-  isLoading,
-  feedback,
-  disabled,
-}: DislikeFeedbackPopoverProps) => {
-  const [feedbackReason, setFeedbackReason] = useState("");
-
-  const handleSubmit = () => {
-    onSubmit(feedbackReason);
-    setFeedbackReason("");
-  };
-
-  if (feedback === "dislike") {
-    return (
-      <TooltipButton
-        tooltipContent="Dislike - this helps our AI understand what you don't like"
-        variant="ghost"
-        size="sm"
-        disabled={disabled}
-        className={cn("hover:text-primary", "text-primary")}
-        onClick={e => {
-          if (feedback === "dislike") {
-            e.preventDefault();
-            onOpenChange(false);
-            handleSubmit();
-          }
-        }}
-      >
-        {isLoading ? (
-          <RefreshCw className="h-4 w-4 animate-spin" />
-        ) : (
-          <ThumbsDown className="h-4 w-4" />
-        )}
-      </TooltipButton>
-    );
-  }
-
-  return (
-    <Popover open={isOpen} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>
-        <TooltipButton
-          tooltipContent="Dislike - this helps our AI understand what you don't like"
-          disabled={disabled}
-          variant="ghost"
-          size="sm"
-          className={cn("hover:text-primary")}
-        >
-          {isLoading ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <ThumbsDown className="h-4 w-4" />
-          )}
-        </TooltipButton>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" side="top">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-sm">
-              What didn&apos;t you like about this note?
-            </h4>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => onOpenChange(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <Select value={feedbackReason} onValueChange={setFeedbackReason}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a reason" />
-            </SelectTrigger>
-            <SelectContent>
-              {FEEDBACK_OPTIONS.map(option => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleSubmit}
-              disabled={!feedbackReason}
-            >
-              Submit
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-};
+import {
+  DislikeFeedbackPopover,
+  FEEDBACK_OPTIONS,
+} from "@/components/ui/note-component/dislike-button";
 
 export type NoteProps = {
   note: Note | NoteDraft;
+  onAuthorClick?: (handle: string) => void;
+  options?: {
+    allowAuthorClick?: boolean;
+  };
 };
 
-export default function NoteComponent({ note }: NoteProps) {
+export default function NoteComponent({
+  note,
+  onAuthorClick,
+  options = {
+    allowAuthorClick: true,
+  },
+}: NoteProps) {
   const {
     selectImage,
     updateNoteStatus,
@@ -182,6 +46,7 @@ export default function NoteComponent({ note }: NoteProps) {
     selectedNote,
   } = useNotes();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [showExpandButton, setShowExpandButton] = useState(false);
   const [loadingFeedback, setLoadingFeedback] = useState<string | null>(null);
@@ -262,6 +127,22 @@ export default function NoteComponent({ note }: NoteProps) {
     return reactions;
   }, [note]);
 
+  const handleAuthorClick = (handle: string) => {
+    if (!options.allowAuthorClick) return;
+    if (onAuthorClick) {
+      onAuthorClick(handle);
+    } else if (handle && !isUserNote) {
+      let baseUrl = `/writer/${handle}`;
+      if (note.authorName) {
+        baseUrl += `/${slugify(note.authorName, {
+          lower: true,
+          strict: true,
+        })}`;
+      }
+      window.open(baseUrl, "_blank");
+    }
+  };
+
   const Reactions = () =>
     noteReactions && (
       <Link
@@ -290,21 +171,20 @@ export default function NoteComponent({ note }: NoteProps) {
     <div
       onClick={() => {
         if (handle && !isUserNote) {
-          let baseUrl = `/writer/${handle}`;
-          if (note.authorName) {
-            baseUrl += `/${slugify(note.authorName, {
-              lower: true,
-              strict: true,
-            })}`;
-          }
-          window.open(baseUrl, "_blank");
+          handleAuthorClick(handle);
         }
       }}
-      className={cn("flex items-center gap-2", {
-        "cursor-pointer": handle && !isUserNote,
-      })}
+      className={cn(
+        "flex items-center gap-2",
+        {
+          "cursor-pointer": handle && !isUserNote && options.allowAuthorClick,
+        },
+        {
+          "cursor-default": !options.allowAuthorClick,
+        },
+      )}
     >
-      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0 overflow-hidden cursor-pointer">
+      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0 overflow-hidden">
         {thumbnail ? (
           <Image
             src={thumbnail}
@@ -322,7 +202,7 @@ export default function NoteComponent({ note }: NoteProps) {
           {isUserNote ? (
             <p className="font-medium text-sm">{note.authorName}</p>
           ) : (
-            <p className="font-medium text-sm cursor-pointer">
+            <p className="font-medium text-sm">
               {note.authorName}
             </p>
           )}
@@ -480,136 +360,139 @@ export default function NoteComponent({ note }: NoteProps) {
   }, [htmlContent]);
 
   return (
-    <>
-      <div
-        className={cn(
-          "flex flex-col relative rounded-xl shadow-md border border-border/60 bg-card",
-          {
-            "border-primary/80": note.id === selectedNote?.id,
-          },
-        )}
-      >
-        <div className="h-full flex flex-col justify-between gap-4 transition-opacity duration-200">
-          <div className="w-full flex-col items-start gap-4 transition-opacity duration-200">
-            <div
-              className={cn(
-                "w-full flex justify-between border-b border-border/60 p-2 relative",
-                {
-                  "opacity-60": feedback === "dislike",
-                },
-              )}
-            >
-              <Author />
-              <div className="z-30 relative my-auto">
-                {isUserNote && (
-                  <StatusBadgeDropdown
-                    note={note as NoteDraft}
-                    onStatusChange={handleStatusChange}
-                  />
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-muted-foreground">
-                  {new Date(note.timestamp).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </p>
-              </div>
-            </div>
-            <div
-              className={cn("w-full flex-1", {
+    <div
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      className={cn(
+        "flex flex-col relative rounded-xl shadow-md border border-border/60 bg-card",
+        {
+          "border-primary/80": note.id === selectedNote?.id,
+        },
+      )}
+    >
+      <div className="h-full flex flex-col justify-between gap-4 transition-opacity duration-200">
+        <div className="w-full flex-col items-start gap-4 transition-opacity duration-200">
+          <div
+            className={cn(
+              "w-full flex justify-between border-b border-border/60 p-2 relative",
+              {
                 "opacity-60": feedback === "dislike",
-              })}
-            >
-              <div className="w-full relative z-20">
-                {/* Content */}
-                <div
-                  ref={contentRef}
-                  className={cn(
-                    "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 cursor-pointer z-10",
-                    isExpanded ? "max-h-none" : "max-h-[260px]",
-                    isUserNote && "cursor-pointer",
-                  )}
-                  onClick={handleSelectNote}
-                >
-                  <div
-                    className="prose prose-sm max-w-none note-component-content"
-                    dangerouslySetInnerHTML={{
-                      __html: htmlContent,
-                    }}
-                  />
-                </div>
-                {/* Expand Button */}
-                {showExpandButton && (
-                  <div className="relative h-4 w-full z-20">
-                    <Button
-                      variant="link"
-                      onClick={() => setIsExpanded(!isExpanded)}
-                      className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto"
-                    >
-                      {isExpanded ? "less" : "more"}
-                    </Button>
-                    <div
-                      className={cn(
-                        "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent -z-10",
-                        isExpanded ? "opacity-0" : "opacity-100",
-                      )}
-                    />
-                  </div>
-                )}
-              </div>
-              {attachment && (
-                <div
-                  className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200 px-10"
-                  onClick={() =>
-                    selectImage({
-                      url: attachment,
-                      alt: "Note attachment",
-                    })
-                  }
-                >
-                  <Image
-                    src={attachment}
-                    alt="Attachment"
-                    width={300}
-                    height={200}
-                    className=" rounded-lg hover:opacity-90 transition-opacity"
-                  />
-                </div>
+              },
+            )}
+          >
+            <Author />
+            <div className="z-30 relative my-auto">
+              {isUserNote && (
+                <StatusBadgeDropdown
+                  note={note as NoteDraft}
+                  onStatusChange={handleStatusChange}
+                />
               )}
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">
+                {new Date(note.timestamp).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </p>
             </div>
           </div>
-          <div className="w-full flex items-center justify-between border-t border-border/60 py-2">
-            <div className="w-full flex items-center justify-between gap-2">
-              <Reactions />
+          <div
+            className={cn("w-full flex-1", {
+              "opacity-60": feedback === "dislike",
+            })}
+          >
+            <div className="w-full relative z-20">
+              {/* Content */}
               <div
-                className={cn("flex items-center justify-between gap-2 px-2", {
-                  "w-full pr-4": isUserNote,
-                })}
+                ref={contentRef}
+                className={cn(
+                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 cursor-pointer z-10",
+                  isExpanded ? "max-h-none" : "max-h-[260px]",
+                  isUserNote && "cursor-pointer",
+                )}
+                onClick={handleSelectNote}
               >
-                <NotesActions />
-                <Button
-                  onClick={() =>
-                    selectNote(note, {
-                      forceShowEditor: true,
-                      isFromInspiration: true,
-                    })
-                  }
-                  variant="outline-primary"
-                  size="sm"
-                  className={cn("text-xs", {
-                    hidden: isUserNote,
-                  })}
-                >
-                  Edit & post
-                </Button>
+                <div
+                  className="prose prose-sm max-w-none note-component-content"
+                  dangerouslySetInnerHTML={{
+                    __html: htmlContent,
+                  }}
+                />
               </div>
+              {/* Expand Button */}
+              {showExpandButton && (
+                <div className="relative h-4 w-full z-20">
+                  <Button
+                    variant="link"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto"
+                  >
+                    {isExpanded ? "less" : "more"}
+                  </Button>
+                  <div
+                    className={cn(
+                      "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent -z-10",
+                      isExpanded ? "opacity-0" : "opacity-100",
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+            {attachment && (
+              <div
+                className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200 px-10"
+                onClick={() =>
+                  selectImage({
+                    url: attachment,
+                    alt: "Note attachment",
+                  })
+                }
+              >
+                <Image
+                  src={attachment}
+                  alt="Attachment"
+                  width={300}
+                  height={200}
+                  className=" rounded-lg hover:opacity-90 transition-opacity"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="w-full flex items-center justify-between border-t border-border/60 py-2">
+          <div className="w-full flex items-center justify-between gap-2">
+            <Reactions />
+            <div
+              className={cn("flex items-center justify-between gap-2 px-2", {
+                "w-full pr-4": isUserNote,
+              })}
+            >
+              <NotesActions />
+              <Button
+                onClick={() =>
+                  window.open(
+                    `https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`,
+                    "_blank",
+                  )
+                }
+                variant="link"
+                size="sm"
+                className={cn(
+                  "text-xs text-muted-foreground hover:text-foreground",
+                  {
+                    hidden: isUserNote,
+                  },
+                )}
+              >
+                View on Substack <ExternalLink className="w-4 h-4 ml-2" />
+              </Button>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
