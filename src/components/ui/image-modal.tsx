@@ -1,8 +1,8 @@
+"use client";
+
 import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import Image from "next/image";
-import { X } from "lucide-react";
-import { Button } from "./button";
 import { useNotes } from "@/lib/hooks/useNotes";
 
 export function ImageModal() {
