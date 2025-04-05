@@ -53,15 +53,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const isOwner = await isOwnerOfNote(userId, noteId);
+    // const isOwner = await isOwnerOfNote(userId, noteId);
 
-    if (!isOwner) {
-      console.error("User is not the owner of the note");
-      return NextResponse.json(
-        { error: "User is not the owner of the note" },
-        { status: 403 },
-      );
-    }
+    // if (!isOwner) {
+    //   console.error("User is not the owner of the note");
+    //   return NextResponse.json(
+    //     { error: "User is not the owner of the note" },
+    //     { status: 403 },
+    //   );
+    // }
 
     const cookie = await prisma.substackCookie.findUnique({
       where: {
