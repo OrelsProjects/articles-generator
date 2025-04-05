@@ -16,6 +16,7 @@ export const useNotesCalendar = () => {
       setLoadingUpdateNote(true);
 
       try {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         // Update local state first
         dispatch(
           updateNote({
@@ -25,11 +26,11 @@ export const useNotesCalendar = () => {
         );
 
         // Then update on server
-        await axios.patch(`/api/note/${note.id}`, {
-          postDate: note.postDate,
-        });
         await axios.post(`/api/user/notes/${note.id}/schedule`, {
           date: note.postDate,
+        });
+        await axios.patch(`/api/note/${note.id}`, {
+          postDate: note.postDate,
         });
       } catch (error: any) {
         Logger.error("Error updating note date:", error);

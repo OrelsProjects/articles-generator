@@ -14,7 +14,11 @@ const client = new SchedulerClient({
   region: process.env.AWS_REGION as string,
 }); // change region
 
-const roleArn = process.env.AWS_SCHEDULER_ROLE_ARN as string;
+const LAMBDA_FUNCTION_ARN = process.env
+  .AWS_LAMBDA_INVOKE_FUNCTION_ARN as string;
+const SCHEDULER_ROLE_ARN = process.env.AWS_SCHEDULER_ROLE_ARN as string;
+const API_KEY = process.env
+  .AWS_EVENT_BRIDGE_NOTE_SCHEDULE_CONNECTION_API_KEY as string;
 
 // 1. CREATE a schedule with HTTP endpoint
 export async function createEventBridgeSchedule({
@@ -24,6 +28,7 @@ export async function createEventBridgeSchedule({
   method = "POST",
   headers = {},
   body,
+  deleteAfterCompletion = false,
 }: {
   name: string;
   scheduleExpression: string; // e.g. 'rate(5 minutes)' or 'cron(0 12 * * ? *)'
@@ -31,25 +36,31 @@ export async function createEventBridgeSchedule({
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   headers?: Record<string, string>;
   body?: any;
+  deleteAfterCompletion?: boolean;
 }) {
   const command = new CreateScheduleCommand({
     Name: name,
     ScheduleExpression: scheduleExpression,
     Target: {
-      Arn: process.env.AWS_SCHEDULER_NOTE_API_DESTINATION_ARN as string,
-      RoleArn: roleArn,
+      Arn: LAMBDA_FUNCTION_ARN, // This tells AWS to invoke Lambda
+      RoleArn: SCHEDULER_ROLE_ARN,
       Input: JSON.stringify({
-        Endpoint: endpoint,
-        Method: method,
-        HeaderParameters: {
-          ...headers,
-          "x-api-key": process.env
-            .AWS_EVENT_BRIDGE_NOTE_SCHEDULE_CONNECTION_API_KEY as string,
+        Payload: {
+          endpoint,
+          method,
+          headers: {
+            ...headers,
+            "x-api-key": API_KEY,
+          },
+          body: body ? JSON.stringify(body) : undefined,
         },
-        Body: body ? JSON.stringify(body) : undefined,
       }),
+      RetryPolicy: {
+        MaximumRetryAttempts: 2,
+      },
     },
     FlexibleTimeWindow: { Mode: "OFF" },
+    ActionAfterCompletion: deleteAfterCompletion ? "DELETE" : undefined,
   });
 
   return await client.send(command);
@@ -84,12 +95,15 @@ export async function updateEventBridgeSchedule({
     Name: name,
     ScheduleExpression: scheduleExpression,
     Target: {
-      Arn: process.env.AWS_SCHEDULER_NOTE_API_DESTINATION_ARN as string,
-      RoleArn: roleArn,
+      Arn: LAMBDA_FUNCTION_ARN,
+      RoleArn: SCHEDULER_ROLE_ARN,
       Input: JSON.stringify({
         Endpoint: endpoint,
         Method: method,
-        HeaderParameters: headers,
+        HeaderParameters: {
+          ...headers,
+          "x-api-key": API_KEY,
+        },
         Body: input ? JSON.stringify(input) : undefined,
       }),
     },

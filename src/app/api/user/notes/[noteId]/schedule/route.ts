@@ -29,6 +29,7 @@ export async function POST(
     }
 
     await createScheduleForNote(session.user.id, noteId, new Date(date));
+    return NextResponse.json({ message: "Schedule created" }, { status: 200 });
   } catch (error: any) {
     loggerServer.error(error);
     return NextResponse.json(

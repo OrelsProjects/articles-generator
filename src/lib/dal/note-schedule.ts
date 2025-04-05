@@ -18,10 +18,16 @@ export async function createScheduleForNote(
   await createEventBridgeSchedule({
     name: scheduleName,
     scheduleExpression: cronExpression,
-    endpoint: `${process.env.NEXT_PUBLIC_APP_URL}/api/user/${userId}/notes/${noteId}/send`,
+    endpoint: `${process.env.NEXT_PUBLIC_APP_URL}/api/user/notes/send`,
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "x-substack-schedule-secret": process.env
+        .SUBSTACK_SCHEDULE_SECRET as string,
+    },
+    body: {
+      noteId,
+      userId,
     },
   });
 

@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const secret = request.headers.get("x-substack-schedule-secret");
+    console.log("secret", secret);
     if (secret !== process.env.SUBSTACK_SCHEDULE_SECRET) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

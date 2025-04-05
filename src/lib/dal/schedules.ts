@@ -1,7 +1,4 @@
 import prisma from "@/app/api/_db/db";
-import { getNoteById } from "@/lib/dal/note";
-import { getCronExpressionFromDate } from "@/lib/utils/cron";
-import { createEventBridgeSchedule } from "@/lib/utils/event-bridge";
 import { ScheduledNote } from "@prisma/client";
 
 export type CreateScheduledNote = Omit<
