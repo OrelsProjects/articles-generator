@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
     const isOwner = await isOwnerOfNote(userId, noteId);
 
     if (!isOwner) {
+      console.error("User is not the owner of the note");
       return NextResponse.json(
         { error: "User is not the owner of the note" },
         { status: 403 },
@@ -78,12 +79,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!note) {
+      console.error("Note not found");
       await sendFailure("Note not found", noteId, user.email);
       loggerServer.error("Note not found: " + noteId + " for user: " + userId);
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
     if (!cookie) {
+      console.error("Cookie not found");
       await sendFailure(note.body, noteId, user.email);
       loggerServer.error(
         "Cookie not found: " + noteId + " for user: " + userId,

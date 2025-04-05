@@ -212,7 +212,6 @@ export function useExtension(): UseExtension {
               process.env.NEXT_PUBLIC_EXTENSION_ID as string,
               { ...message },
               (response: any) => {
-                console.log("response from extension", response);
                 clearTimeout(timeoutId);
                 if (response.success) {
                   const result = JSON.parse(response.data.result) as T;
