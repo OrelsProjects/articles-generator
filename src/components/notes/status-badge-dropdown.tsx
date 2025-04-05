@@ -8,6 +8,7 @@ import { Check, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { Badge } from "@/components/ui/badge";
 import { EventTracker } from "@/eventTracker";
+import { format } from "date-fns";
 
 const STATUSES: NoteStatus[] = ["draft", "scheduled", "published", "failed"];
 
@@ -57,7 +58,8 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
 
   const currentStatus = useMemo(() => {
     if (note.scheduledTo && !note.wasSentViaSchedule) {
-      return "scheduled";
+      // return DDD, HH:MM (24h format)
+      return format(note.scheduledTo, "ddd, HH:mm");
     }
     return note.status;
   }, [note]);
@@ -92,7 +94,8 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
           {
             "border-green-500/70 text-green-500": currentStatus === "published",
             "border-gray-500/70 text-gray-500": currentStatus === "draft",
-            "border-yellow-500/70 text-yellow-500": currentStatus === "scheduled",
+            "border-yellow-500/70 text-yellow-500":
+              currentStatus === "scheduled",
             "border-red-500/70 text-red-500": note.isArchived,
             "opacity-70": isLoading,
           },
