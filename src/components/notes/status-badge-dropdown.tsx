@@ -59,7 +59,7 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
   const currentStatus = useMemo(() => {
     if (note.scheduledTo && !note.wasSentViaSchedule) {
       // return DDD, HH:MM (24h format)
-      return format(note.scheduledTo, "ddd, HH:mm");
+      return format(note.scheduledTo, "EEE, HH:mm");
     }
     return note.status;
   }, [note]);
