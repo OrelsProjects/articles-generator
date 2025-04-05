@@ -18,13 +18,16 @@ export async function isOwnerOfNote(noteId: string, userId: string) {
   const note = await prisma.note.findUnique({
     where: {
       id: noteId,
+      userId: userId,
     },
     select: {
-      userId: true,
+      id: true,
     },
   });
 
-  return note?.userId === userId;
+  console.log("note", note);
+
+  return !!note;
 }
 
 export const getUserNotes = async (
