@@ -56,7 +56,15 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+
   const currentStatus = useMemo(() => {
+    if (note.scheduledTo && !note.wasSentViaSchedule) {
+      return "scheduled";
+    }
+    return note.status;
+  }, [note]);
+
+  const currentStatusText = useMemo(() => {
     if (note.scheduledTo && !note.wasSentViaSchedule) {
       // return DDD, HH:MM (24h format)
       return format(note.scheduledTo, "EEE, HH:mm");
@@ -67,10 +75,10 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
   const handleStatusChange = async (newStatus: NoteStatus) => {
     EventTracker.track("note_status_change_via_status_badge", {
       note_id: note.id,
-      previous_status: currentStatus,
+      previous_status: currentStatusText,
       new_status: newStatus,
     });
-    if (!onStatusChange || newStatus === currentStatus) return;
+    if (!onStatusChange || newStatus === currentStatusText) return;
     setIsOpen(false);
     setIsLoading(true);
     try {
@@ -92,7 +100,8 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
         className={cn(
           "h-fit text-xs rounded-full !py-0.5 px-4 user-select-none my-auto border opacity-80",
           {
-            "border-green-500/70 !text-green-500": currentStatus === "published",
+            "border-green-500/70 !text-green-500":
+              currentStatus === "published",
             "border-gray-500/70 !text-gray-500": currentStatus === "draft",
             "border-yellow-500/70 !text-yellow-500":
               currentStatus === "scheduled",
@@ -104,12 +113,12 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
         {isLoading && (
           <Loader2 className="h-2 w-2 md:h-3 md:w-3 animate-spin mr-0.5 md:mr-1" />
         )}
-        <span className="hidden md:block">{currentStatus}</span>
+        <span className="hidden md:block">{currentStatusText}</span>
         <span className="block md:hidden">
-          {currentStatus === "scheduled"
-            ? currentStatus
-            : currentStatus.charAt(0).toUpperCase() +
-              currentStatus.charAt(1).toLowerCase()}
+          {currentStatusText === "scheduled"
+            ? currentStatusText
+            : currentStatusText.charAt(0).toUpperCase() +
+              currentStatusText.charAt(1).toLowerCase()}
           .
         </span>
       </Badge>
@@ -147,25 +156,25 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
                         statusOption === "published",
                       "text-green-500":
                         statusOption === "published" &&
-                        statusOption === currentStatus,
+                        statusOption === currentStatusText,
                       "hover:text-gray-500 hover:bg-gray-500/10":
                         statusOption === "draft",
                       "text-gray-500":
                         statusOption === "draft" &&
-                        statusOption === currentStatus,
+                        statusOption === currentStatusText,
                       "hover:text-yellow-500 hover:bg-yellow-500/10":
                         statusOption === "scheduled",
                       "text-yellow-500":
                         statusOption === "scheduled" &&
-                        statusOption === currentStatus,
+                        statusOption === currentStatusText,
                       "text-red-500": note.isArchived,
                       "pointer-events-none":
-                        statusOption === currentStatus || isLoading,
+                        statusOption === currentStatusText || isLoading,
                     },
                   )}
                 >
                   {/* Show checkmark if selected */}
-                  {statusOption === currentStatus && (
+                  {statusOption === currentStatusText && (
                     <Check className="h-4 w-4 mr-0.5 md:mr-1" />
                   )}
                   {statusOption}
