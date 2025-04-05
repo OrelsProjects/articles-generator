@@ -43,15 +43,20 @@ export function ExtensionInstallDialog({
             To post directly to Substack, you need to install WriteRoom&apos;s
             Chrome extension. It only takes a minute and enables one-click
             publishing.
+            <br />
+            <br />
+            <span className="text-foreground">
+              (Sometimes it takes a few moments to update after installation)
+            </span>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-end">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Next time
           </Button>
-          <Button
-          variant="neumorphic-primary"
-          onClick={handleInstall}>Let&apos;s go!</Button>
+          <Button variant="neumorphic-primary" onClick={handleInstall}>
+            Let&apos;s go!
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

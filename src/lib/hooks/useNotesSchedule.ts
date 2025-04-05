@@ -5,35 +5,43 @@ import { NoteDraft } from "@/types/note";
 import axios from "axios";
 import { Logger } from "@/logger";
 
-export const useNotesCalendar = () => {
+export const useNotesSchedule = () => {
   const dispatch = useAppDispatch();
   const { userNotes, loadingNotes, error } = useAppSelector(selectNotes);
 
   const [loadingUpdateNote, setLoadingUpdateNote] = useState(false);
 
-  const updateNoteDate = useCallback(
+  const scheduleNote = useCallback(
     async (note: NoteDraft) => {
       setLoadingUpdateNote(true);
 
+      const previousNote = userNotes.find(n => n.id === note.id);
+
       try {
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        // Update local state first
+        // Then update on server
+        await axios.post(`/api/user/notes/${note.id}/schedule`, {
+          date: note.scheduledTo,
+        });
         dispatch(
           updateNote({
             id: note.id,
-            note: { postDate: note.postDate },
+            note: {
+              scheduledTo: note.scheduledTo,
+              status: "scheduled",
+            },
           }),
         );
-
-        // Then update on server
-        await axios.post(`/api/user/notes/${note.id}/schedule`, {
-          date: note.postDate,
-        });
-        await axios.patch(`/api/note/${note.id}`, {
-          postDate: note.postDate,
-        });
       } catch (error: any) {
         Logger.error("Error updating note date:", error);
+        dispatch(
+          updateNote({
+            id: note.id,
+            note: {
+              scheduledTo: previousNote?.scheduledTo,
+              status: previousNote?.status,
+            },
+          }),
+        );
         throw error;
       } finally {
         setLoadingUpdateNote(false);
@@ -46,7 +54,7 @@ export const useNotesCalendar = () => {
     notes: userNotes,
     loading: loadingNotes,
     error,
-    updateNoteDate,
+    scheduleNote,
     loadingUpdateNote,
   };
 };

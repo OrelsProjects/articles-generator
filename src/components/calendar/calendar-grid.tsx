@@ -185,7 +185,7 @@ export function CalendarGrid({
     const note = notes.find(n => n.id === noteId);
     if (note) {
       // Save the original note date separately
-      setOriginalNoteDate(note.postDate || null);
+      setOriginalNoteDate(note.scheduledTo || null);
       setDraggedNote(note);
     }
   };
@@ -294,7 +294,7 @@ export function CalendarGrid({
         // Restore the note to its original date
         onNoteUpdate({
           ...draggedNote,
-          postDate: originalNoteDate
+          scheduledTo: originalNoteDate
         });
       }
       
@@ -330,12 +330,12 @@ export function CalendarGrid({
     const note = notes.find(n => n.id === noteId);
 
     if (note) {
-      const sourceDate = note.postDate || new Date();
+      const sourceDate = note.scheduledTo || new Date();
       // Only update if the date has changed
       if (!isSameDay(sourceDate, targetDate)) {
         onNoteUpdate({
           ...note,
-          postDate: targetDate,
+          scheduledTo: targetDate,
         });
       }
     }
@@ -550,7 +550,7 @@ export function CalendarGrid({
             <div className="col-span-7 grid grid-cols-7 gap-1 w-full">
               {days.map(day => {
                 const dayNotes = notes.filter(note => 
-                  note.postDate && isSameDay(note.postDate, day)
+                  note.scheduledTo && isSameDay(note.scheduledTo, day)
                 );
                 const dayId = day.toISOString();
                 const isDropTarget = dropTargetId === dayId;
@@ -586,7 +586,7 @@ export function CalendarGrid({
           onDateChange={date => {
             onNoteUpdate({
               ...selectedNote,
-              postDate: date,
+              scheduledTo: date,
             });
           }}
         />

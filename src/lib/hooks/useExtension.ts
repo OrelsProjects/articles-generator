@@ -17,6 +17,8 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { FeatureFlag, Note } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
 
+const LATEST_EXTENSION_VERSION = "1.2.1";
+
 /**
  * Detects the current browser type
  * @returns {BrowserType} The detected browser type
@@ -69,7 +71,7 @@ export function useExtension(): UseExtension {
   }, []);
 
   const verifyExtension = useCallback(async (): Promise<
-    "success" | "error" | "pending"
+    "success" | "error" | "pending" | "outdated"
   > => {
     if (typeof window === "undefined") return "error";
     if (loadingPing.current) return "pending";
@@ -94,7 +96,11 @@ export function useExtension(): UseExtension {
             )
             .then((response: any) => {
               if (response?.success) {
-                resolve("success");
+                if (response?.version !== LATEST_EXTENSION_VERSION) {
+                  resolve("outdated");
+                } else {
+                  resolve("success");
+                }
               } else {
                 Logger.error(
                   "Extension not found in Firefox: " +
@@ -118,8 +124,13 @@ export function useExtension(): UseExtension {
             process.env.NEXT_PUBLIC_EXTENSION_ID as string,
             pingMessage,
             (response: any) => {
+              
               if (response?.success) {
-                resolve("success");
+                if (response?.version !== LATEST_EXTENSION_VERSION) {
+                  resolve("outdated");
+                } else {
+                  resolve("success");
+                }
               } else {
                 Logger.error(
                   "Extension not found in Chrome: " +
@@ -140,6 +151,11 @@ export function useExtension(): UseExtension {
     });
   }, [browserType]);
 
+  const hasExtension = useCallback(async (): Promise<boolean> => {
+    const verificationStatus = await verifyExtension();
+    return verificationStatus === "success";
+  }, [verifyExtension]);
+
   // get substack cookies ("getSubstackCookies") from the extension. The name of the function is getSubstackCookies
   const setUserSubstackCookies = useCallback(async (): Promise<void> => {
     const response = await sendExtensionMessage<GetSubstackCookiesResponse>({
@@ -159,6 +175,7 @@ export function useExtension(): UseExtension {
     async <T>(message: ExtensionMessage): Promise<ExtensionResponse<T>> => {
       return new Promise(async (resolve, reject) => {
         const verificationStatus = await verifyExtension();
+        
         if (verificationStatus === "error") {
           reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
           return;
@@ -246,7 +263,7 @@ export function useExtension(): UseExtension {
    * Create a new Substack post
    * @param {CreatePostParams} params Post parameters
    */
-  const createNote = useCallback(
+  const sendNote = useCallback(
     async (params: CreatePostParams): Promise<CreatePostResponse | null> => {
       setIsLoading(true);
       setError(null);
@@ -268,6 +285,8 @@ export function useExtension(): UseExtension {
           action: "createSubstackPost",
           params: [messageData],
         };
+
+        
 
         // Send message to extension
         const sendMessageResponse =
@@ -304,13 +323,14 @@ export function useExtension(): UseExtension {
   );
 
   return {
-    createNote,
+    sendNote,
     isLoading,
     error,
     postResponse,
     canUseSubstackPost: canUseSubstackPost || false,
     browserType,
     getNoteById,
+    hasExtension,
     setUserSubstackCookies,
   };
 }

@@ -29,10 +29,11 @@ export function InstantPostButton({
   className,
 }: SubstackPostButtonProps) {
   const {
-    createNote,
+    sendNote,
     isLoading: loadingSendNote,
     postResponse,
     getNoteById,
+    hasExtension,
   } = useExtension();
   const { updateNoteStatus } = useNotes();
 
@@ -41,17 +42,19 @@ export function InstantPostButton({
 
   const handleSendNote = async () => {
     EventTracker.track("note_post_button_clicked_" + source);
+    const userHasExtension = await hasExtension();
+    if (!userHasExtension) {
+      setShowExtensionDialog(true);
+      return;
+    }
     if (!note) return;
     const noteObject = typeof note === "string" ? getNoteById(note) : note;
     if (!noteObject) return;
     try {
-      debugger;
-      await createNote({
+      await sendNote({
         message: noteObject.body,
       });
 
-      //   await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log("Post sent successfully");
       setShowSuccessDialog(true);
     } catch (error) {
       console.error("Error sending post:", error);

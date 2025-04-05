@@ -46,7 +46,7 @@ export default function NoteComponent({
     selectedNote,
   } = useNotes();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
+  const [, setIsHovering] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [showExpandButton, setShowExpandButton] = useState(false);
   const [loadingFeedback, setLoadingFeedback] = useState<string | null>(null);
@@ -202,9 +202,7 @@ export default function NoteComponent({
           {isUserNote ? (
             <p className="font-medium text-sm">{note.authorName}</p>
           ) : (
-            <p className="font-medium text-sm">
-              {note.authorName}
-            </p>
+            <p className="font-medium text-sm">{note.authorName}</p>
           )}
           {handle && <p className="text-xs text-muted-foreground">@{handle}</p>}
         </div>
@@ -409,7 +407,7 @@ export default function NoteComponent({
               <div
                 ref={contentRef}
                 className={cn(
-                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 cursor-pointer z-10",
+                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 cursor-pointer z-10  min-h-[180px] md:min-h-[200px]",
                   isExpanded ? "max-h-none" : "max-h-[260px]",
                   isUserNote && "cursor-pointer",
                 )}

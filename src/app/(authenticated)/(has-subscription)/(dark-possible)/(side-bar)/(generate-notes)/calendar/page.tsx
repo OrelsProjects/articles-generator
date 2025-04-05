@@ -1,13 +1,13 @@
 "use client";
 
-import { useNotesCalendar } from "@/lib/hooks/useNotesCalendar";
+import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { useNotes } from "@/lib/hooks/useNotes";
 
 export default function NotesCalendarPage() {
-  const { loading, error, updateNoteDate } = useNotesCalendar();
+  const { loading, error, scheduleNote: updateNoteDate } = useNotesSchedule();
   const { userNotes } = useNotes();
-  
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">

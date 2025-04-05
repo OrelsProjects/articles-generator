@@ -1,7 +1,15 @@
+import prisma from "@/app/api/_db/db";
 import { getNoteById } from "@/lib/dal/note";
-import { createSchedule } from "@/lib/dal/schedules";
+import { createSchedule, deleteSchedule } from "@/lib/dal/schedules";
 import { getCronExpressionFromDate } from "@/lib/utils/cron";
-import { createEventBridgeSchedule } from "@/lib/utils/event-bridge";
+import {
+  createEventBridgeSchedule,
+  deleteEventBridgeSchedule,
+  getEventBridgeSchedule,
+} from "@/lib/utils/event-bridge";
+import { NoteStatus } from "@prisma/client";
+
+export const buildScheduleName = (noteId: string) => `note-scheduled-${noteId}`;
 
 export async function createScheduleForNote(
   userId: string,
@@ -12,8 +20,14 @@ export async function createScheduleForNote(
   if (!note) {
     throw new Error("Note not found");
   }
-  const scheduleName = `note-scheduled-${note.id}`;
+  const scheduleName = buildScheduleName(note.id);
   const cronExpression = getCronExpressionFromDate(date);
+
+  const existingSchedule = await getEventBridgeSchedule({ name: scheduleName });
+  if (existingSchedule) {
+    await deleteEventBridgeSchedule(scheduleName);
+    await deleteSchedule(scheduleName);
+  }
 
   await createEventBridgeSchedule({
     name: scheduleName,
@@ -38,4 +52,42 @@ export async function createScheduleForNote(
     scheduledAt: date,
     scheduleId: scheduleName,
   });
+
+  await prisma.note.update({
+    where: {
+      id: noteId,
+    },
+    data: {
+      sentViaScheduleAt: null,
+      status: "scheduled",
+      scheduledTo: date,
+    },
+  });
+}
+
+export async function deleteScheduleForNote(
+  noteId: string,
+  newStatus?: NoteStatus,
+): Promise<void> {
+  const note = await getNoteById(noteId);
+  if (!note) {
+    throw new Error("Note not found");
+  }
+  const scheduleName = buildScheduleName(note.id);
+  const currentSchedule = await getEventBridgeSchedule({ name: scheduleName });
+  if (currentSchedule) {
+    await deleteEventBridgeSchedule(scheduleName);
+  }
+  await deleteSchedule(scheduleName);
+  if (newStatus) {
+    await prisma.note.update({
+      where: {
+        id: noteId,
+      },
+      data: {
+        status: newStatus,
+        scheduledTo: null,
+      },
+    });
+  }
 }

@@ -23,7 +23,7 @@ export const navItems = [
   },
   {
     name: "My drafts",
-    href: "/notes/status-board",
+    href: "/status-board",
     icon: KanbanSquare,
     locationInMobile: "bottom",
   },

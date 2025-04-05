@@ -3,6 +3,7 @@ import {
   selectUi,
   setDidShowSaveTooltip,
   setShowGenerateNotesSidebar,
+  setShowScheduleModal,
   setSideBarState,
   setUiState,
 } from "@/lib/features/ui/uiSlice";
@@ -30,6 +31,10 @@ export function useUi() {
     dispatch(setDidShowSaveTooltip(didShow));
   };
 
+  const updateShowScheduleModal = (show: boolean) => {
+    dispatch(setShowScheduleModal(show));
+  };
+
   const hasAdvancedGPT = user?.meta?.featureFlags.includes(
     FeatureFlag.advancedGPT,
   );
@@ -44,6 +49,8 @@ export function useUi() {
 
   const didShowSaveTooltip = useAppSelector(selectUi).didShowSaveTooltip;
 
+  const showScheduleModal = useAppSelector(selectUi).showScheduleModal;
+
   return {
     setState,
     hasAdvancedGPT,
@@ -54,5 +61,7 @@ export function useUi() {
     updateDidShowSaveTooltip,
     didShowSaveTooltip,
     hasPopulateNotes,
+    showScheduleModal,
+    updateShowScheduleModal,
   };
 }

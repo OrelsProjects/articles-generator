@@ -243,6 +243,47 @@ export function StatusBoard({
     });
   }
 
+  function undoChanges(
+    activeId: UniqueIdentifier,
+    currentColumnId: UniqueIdentifier,
+    startColumnId: UniqueIdentifier,
+  ) {
+    setColumns(prevColumns => {
+      // Find the active item
+      const activeItem = findItemById(activeId);
+
+      if (!activeItem) return prevColumns;
+
+      return prevColumns.map(column => {
+        // Remove from current column if it's not the starting column
+        if (column.id === currentColumnId && column.id !== startColumnId) {
+          return {
+            ...column,
+            items: column.items.filter(item => item.id !== activeId),
+          };
+        }
+
+        // Add back to original column (scheduled)
+        if (column.id === startColumnId) {
+          // Check if the item already exists in this column
+          const itemExists = column.items.some(item => item.id === activeId);
+          if (itemExists) {
+            return column;
+          }
+          return {
+            ...column,
+            items: [...column.items, { ...activeItem, status: startColumnId }],
+          };
+        }
+
+        return column;
+      });
+    });
+
+    setActiveId(null);
+    setStartColumnId(null);
+  }
+
   // Handle drag end
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -318,6 +359,20 @@ export function StatusBoard({
       // Find the active item
       const activeItem = findItemById(activeId);
 
+      if (startColumnId === "scheduled") {
+        // window alert to verify that the user wants to move the note to the new column
+        if (!window.confirm("Are you sure you want to cancel the schedule?")) {
+          undoChanges(activeId, currentColumnId, startColumnId);
+          return;
+        }
+      }
+
+      if (currentColumnId === "scheduled") {
+        onSelectItem?.(activeId, true);
+        undoChanges(activeId, currentColumnId, startColumnId);
+        return;
+      }
+
       if (activeItem && onStatusChange) {
         // Update the item's status to match the new column
         const updatedItem = { ...activeItem, status: currentColumnId };
@@ -328,32 +383,7 @@ export function StatusBoard({
         } catch (error) {
           log("Error updating status, reverting UI:", error);
           toast.error("Failed to update status. Reverting changes.");
-
-          // Revert the UI change by moving the item back to its original column
-          setColumns(prevColumns => {
-            return prevColumns.map(column => {
-              // Remove from current column
-              if (column.id === currentColumnId) {
-                return {
-                  ...column,
-                  items: column.items.filter(item => item.id !== activeId),
-                };
-              }
-
-              // Add back to original column
-              if (column.id === startColumnId) {
-                return {
-                  ...column,
-                  items: [
-                    ...column.items,
-                    { ...activeItem, status: startColumnId },
-                  ],
-                };
-              }
-
-              return column;
-            });
-          });
+          undoChanges(activeId, currentColumnId, startColumnId);
         }
       }
     } else if (activeId !== overId) {

@@ -1,4 +1,4 @@
-import GenerateNotesSidebar from "@/components/home/generate-notes-sidebar";
+import { NotesEditorDialog } from "@/components/notes/note-editor-dialog";
 import { ImageModal } from "@/components/ui/image-modal";
 
 export default function NotesLayout({
@@ -8,7 +8,7 @@ export default function NotesLayout({
 }) {
   return (
     <div className="w-full h-screen relative">
-      <GenerateNotesSidebar />
+      <NotesEditorDialog />
       <ImageModal />
       {children}
     </div>

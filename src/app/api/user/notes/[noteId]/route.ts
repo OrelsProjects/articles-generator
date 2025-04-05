@@ -43,7 +43,8 @@ export async function GET(
       handle: note.handle || "",
       thumbnail: note.thumbnail || "",
       name: note.name || "",
-      postDate: note.postDate || new Date(),
+      scheduledTo: note.scheduledTo,
+      wasSentViaSchedule: !!note.sentViaScheduleAt,
     };
 
     return NextResponse.json(noteDraft);

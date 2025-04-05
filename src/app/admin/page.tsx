@@ -45,7 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 interface PotentialUser {
   canonicalUrl: string;
   title: string;
-  postDate: string;
+  scheduledTo: string;
   publicationName: string;
   publicationId: number;
   reactionCount: number;
@@ -292,7 +292,7 @@ export default function AdminPage() {
       let valB: any = b[sortColumn];
 
       // Special handling for date, reactionCount, etc.
-      if (sortColumn === "postDate") {
+      if (sortColumn === "scheduledTo") {
         valA = new Date(valA).getTime();
         valB = new Date(valB).getTime();
       }
@@ -392,7 +392,7 @@ export default function AdminPage() {
                 firstMessage: customMessageResponse,
                 canonicalUrl: 'custom',
                 title: '',
-                postDate: '',
+                scheduledTo: '',
                 publicationName: '',
                 publicationId: 0,
                 reactionCount: 0,
@@ -459,11 +459,11 @@ export default function AdminPage() {
 
                 {/* Post Date */}
                 <TableHead
-                  onClick={() => handleSort("postDate")}
+                  onClick={() => handleSort("scheduledTo")}
                   className="font-semibold cursor-pointer select-none text-base"
                 >
                   Post Date
-                  {renderSortIcon("postDate")}
+                  {renderSortIcon("scheduledTo")}
                 </TableHead>
 
                 {/* Reactions */}
@@ -525,7 +525,7 @@ export default function AdminPage() {
 
                   {/* Post Date */}
                   <TableCell>
-                    {format(new Date(user.postDate), "MMM d, yyyy")}
+                    {format(new Date(user.scheduledTo), "MMM d, yyyy")}
                   </TableCell>
 
                   {/* Reaction Count */}

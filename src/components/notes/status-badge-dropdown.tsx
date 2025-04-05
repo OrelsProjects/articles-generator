@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { Badge } from "@/components/ui/badge";
 import { EventTracker } from "@/eventTracker";
 
-const STATUSES: NoteStatus[] = ["draft", "ready", "published"];
+const STATUSES: NoteStatus[] = ["draft", "scheduled", "published", "failed"];
 
 type StatusBadgeProps = {
   note: NoteDraft;
@@ -56,6 +56,9 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
   }, [isOpen]);
 
   const currentStatus = useMemo(() => {
+    if (note.scheduledTo && !note.wasSentViaSchedule) {
+      return "scheduled";
+    }
     return note.status;
   }, [note]);
 
@@ -83,13 +86,13 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
     <div ref={containerRef} className="relative inline-block">
       <Badge
         variant="outline"
-        onClick={toggleDropdown}
+        // onClick={toggleDropdown}
         className={cn(
-          "h-fit text-xs rounded-full !py-0.5 px-4 user-select-none my-auto border cursor-pointer",
+          "h-fit text-xs rounded-full !py-0.5 px-4 user-select-none my-auto border opacity-80",
           {
             "border-green-500/70 text-green-500": currentStatus === "published",
             "border-gray-500/70 text-gray-500": currentStatus === "draft",
-            "border-yellow-500/70 text-yellow-500": currentStatus === "ready",
+            "border-yellow-500/70 text-yellow-500": currentStatus === "scheduled",
             "border-red-500/70 text-red-500": note.isArchived,
             "opacity-70": isLoading,
           },
@@ -146,9 +149,9 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
                         statusOption === "draft" &&
                         statusOption === currentStatus,
                       "hover:text-yellow-500 hover:bg-yellow-500/10":
-                        statusOption === "ready",
+                        statusOption === "scheduled",
                       "text-yellow-500":
-                        statusOption === "ready" &&
+                        statusOption === "scheduled" &&
                         statusOption === currentStatus,
                       "text-red-500": note.isArchived,
                       "pointer-events-none":

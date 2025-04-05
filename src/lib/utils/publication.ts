@@ -154,11 +154,11 @@ function convertPostsToDbRows(post: SubstackPost): {
       id: post.id,
       publicationId: post.publication_id.toString(), // Potential mismatch if not numeric
       title: post.title || "",
+      postDate: post.post_date ? new Date(post.post_date) : null,
       socialTitle: post.social_title || null,
       searchEngineTitle: post.search_engine_title || null,
       searchEngineDescription: post.search_engine_description || null,
       slug: post.slug || null,
-      postDate: post.post_date ? new Date(post.post_date) : null,
       audience: post.audience || null,
       canonicalUrl: post.canonical_url || null,
       reactions: post.reactions || null,

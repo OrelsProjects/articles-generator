@@ -16,7 +16,9 @@ datasource db {
 enum NoteStatus {
   draft
   ready
+  scheduled
   published
+  failed
 }
 
 enum NoteFeedback {
@@ -273,7 +275,7 @@ model Note {
   feedback        NoteFeedback?
   feedbackComment String?
 
-  postDate DateTime?
+  scheduledTo DateTime?
 
   isArchived Boolean @default(false)
 
@@ -285,6 +287,8 @@ model Note {
 
   initialGeneratingModel String?
   generatingModel        String?
+
+  sentViaScheduleAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -362,7 +366,7 @@ model PotentialClients {
 
   canonicalUrl    String  @unique
   title           String
-  postDate        String?
+  scheduledTo     String?
   publicationName String
   publicationId   String
   reactionCount   Int
@@ -475,9 +479,9 @@ model ScheduledNote {
   noteId String @db.ObjectId
   userId String @db.ObjectId
 
-  scheduledAt DateTime
+  scheduledAt    DateTime
   cronExpression String
-  scheduleId  String
+  scheduleId     String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

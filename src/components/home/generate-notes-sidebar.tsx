@@ -4,19 +4,12 @@ import React, {
   useState,
   useRef,
   useEffect,
-  useCallback,
   useMemo,
 } from "react";
 import { cn } from "@/lib/utils";
 import {
   ChevronRight,
   Pencil,
-  Bold,
-  Italic,
-  Strikethrough,
-  Code,
-  List,
-  ListOrdered,
   Sparkles,
   SmilePlus,
   RefreshCw,
@@ -36,9 +29,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
+import { useEditor } from "@tiptap/react";
 import { notesTextEditorOptions, unformatText } from "@/lib/utils/text-editor";
-import { Toggle } from "@/components/ui/toggle";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import {
@@ -50,7 +42,6 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { convertMDToHtml, NoteDraft } from "@/types/note";
 import { toast } from "react-toastify";
 import { useUi } from "@/lib/hooks/useUi";
-import { debounce } from "lodash";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { ToastStepper } from "@/components/ui/toast-stepper";
 import { EventTracker } from "@/eventTracker";
@@ -66,7 +57,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { copyHTMLToClipboard } from "@/lib/utils/copy";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
-import { setDidShowSaveTooltip } from "@/lib/features/ui/uiSlice";
+import NoteEditor from "@/components/notes/note-editor";
 
 // Define frontend model type
 type FrontendModel =
@@ -478,79 +469,7 @@ export default function GenerateNotesSidebar() {
             </div>
             {/* Editor */}
             <div className="min-h-[180px] md:min-h-[200px] w-full border border-border rounded-md relative">
-              {editor && (
-                <BubbleMenu
-                  editor={editor}
-                  tippyOptions={{ duration: 100 }}
-                  className="flex items-center bg-background border border-border rounded-md shadow-md overflow-hidden"
-                >
-                  <Toggle
-                    size="sm"
-                    pressed={editor.isActive("bold")}
-                    onPressedChange={() =>
-                      editor.chain().focus().toggleBold().run()
-                    }
-                    className="data-[state=on]:bg-muted"
-                  >
-                    <Bold className="h-4 w-4" />
-                  </Toggle>
-                  <Toggle
-                    size="sm"
-                    pressed={editor.isActive("italic")}
-                    onPressedChange={() =>
-                      editor.chain().focus().toggleItalic().run()
-                    }
-                    className="data-[state=on]:bg-muted"
-                  >
-                    <Italic className="h-4 w-4" />
-                  </Toggle>
-                  <Toggle
-                    size="sm"
-                    pressed={editor.isActive("strike")}
-                    onPressedChange={() =>
-                      editor.chain().focus().toggleStrike().run()
-                    }
-                    className="data-[state=on]:bg-muted"
-                  >
-                    <Strikethrough className="h-4 w-4" />
-                  </Toggle>
-                  <Toggle
-                    size="sm"
-                    pressed={editor.isActive("code")}
-                    onPressedChange={() =>
-                      editor.chain().focus().toggleCode().run()
-                    }
-                    className="data-[state=on]:bg-muted"
-                  >
-                    <Code className="h-4 w-4" />
-                  </Toggle>
-                  <Toggle
-                    size="sm"
-                    pressed={editor.isActive("bulletList")}
-                    onPressedChange={() =>
-                      editor.chain().focus().toggleBulletList().run()
-                    }
-                    className="data-[state=on]:bg-muted"
-                  >
-                    <List className="h-4 w-4" />
-                  </Toggle>
-                  <Toggle
-                    size="sm"
-                    pressed={editor.isActive("orderedList")}
-                    onPressedChange={() =>
-                      editor.chain().focus().toggleOrderedList().run()
-                    }
-                    className="data-[state=on]:bg-muted"
-                  >
-                    <ListOrdered className="h-4 w-4" />
-                  </Toggle>
-                </BubbleMenu>
-              )}
-              <EditorContent
-                disabled={isLoadingGenerateNotes}
-                editor={editor}
-                className="min-h-[180px] md:min-h-[200px] max-h-[200px] md:max-h-[300px] px-3 prose prose-sm max-w-none focus:outline-none overflow-auto"
-              />
+              <NoteEditor editor={editor} disabled={isLoadingGenerateNotes} />
 
               {/* Toolbar */}
               <div className="border-t border-border p-2 flex items-center justify-between gap-2 md:gap-4 z-20 flex-wrap md:flex-nowrap">

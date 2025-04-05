@@ -10,7 +10,12 @@ export interface InspirationFilters {
   type: "all" | "relevant-to-user";
 }
 
-export type InspirationSortType = "relevance" | "date" | "likes" | "comments" | "restacks";
+export type InspirationSortType =
+  | "relevance"
+  | "date"
+  | "likes"
+  | "comments"
+  | "restacks";
 export type InspirationSortDirection = "asc" | "desc";
 
 export const inspirationSortTypeToName = {
@@ -26,7 +31,7 @@ export interface InspirationSort {
   direction: InspirationSortDirection;
 }
 
-export type NoteStatus = "draft" | "ready" | "published";
+export type NoteStatus = "draft" | "ready" | "scheduled" | "published" | "failed";
 export type NoteFeedback = "dislike" | "like";
 
 export type JsonBody = {
@@ -52,7 +57,8 @@ export interface NoteDraft {
   authorName: string;
   attachments?: string[];
   isArchived?: boolean;
-  postDate: Date;
+  scheduledTo?: Date | null;
+  wasSentViaSchedule: boolean;
 }
 
 export interface Note {
@@ -70,6 +76,8 @@ export interface Note {
   commentsCount: number;
   restacks: number;
   attachments?: string[];
+  scheduledTo?: Date | null;
+  sentViaScheduleAt?: boolean;
 }
 
 export interface DBNote {
@@ -183,6 +191,7 @@ export function noteToNoteDraft(note: Note | null): NoteDraft | null {
     status: "draft",
     authorName: "",
     attachments: note.attachments ? note.attachments : [],
-    postDate: new Date(),
+    scheduledTo: note.scheduledTo,
+    wasSentViaSchedule: !!note.sentViaScheduleAt,
   };
 }

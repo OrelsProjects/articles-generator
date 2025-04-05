@@ -38,7 +38,7 @@ export function NoteCard({ note, onClick }: NoteCardProps) {
       className={cn(
         "p-2 rounded-lg shadow-sm cursor-pointer mb-2",
         "hover:shadow-md transition-shadow",
-        statusColors[note.status],
+        statusColors[note.status as keyof typeof statusColors],
       )}
     >
       {/* <h4 className="font-medium truncate">{note.name || "Untitled Note"}</h4> */}

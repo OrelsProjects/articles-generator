@@ -1,3 +1,5 @@
+import { buildScheduleName } from "@/lib/dal/note-schedule";
+import loggerServer from "@/loggerServer";
 import {
   SchedulerClient,
   CreateScheduleCommand,
@@ -28,7 +30,7 @@ export async function createEventBridgeSchedule({
   method = "POST",
   headers = {},
   body,
-  deleteAfterCompletion = false,
+  deleteAfterCompletion = true,
 }: {
   name: string;
   scheduleExpression: string; // e.g. 'rate(5 minutes)' or 'cron(0 12 * * ? *)'
@@ -56,7 +58,7 @@ export async function createEventBridgeSchedule({
         },
       }),
       RetryPolicy: {
-        MaximumRetryAttempts: 2,
+        MaximumRetryAttempts: 5,
       },
     },
     FlexibleTimeWindow: { Mode: "OFF" },
@@ -67,12 +69,24 @@ export async function createEventBridgeSchedule({
 }
 
 // 2. READ / GET a schedule
-export async function getSchedule(name: string) {
-  const command = new GetScheduleCommand({
-    Name: name,
-  });
+export async function getEventBridgeSchedule(options: {
+  name?: string;
+  id?: string;
+}) {
+  try {
+    let eventName = options.id ? buildScheduleName(options.id) : options.name;
+    const command = new GetScheduleCommand({
+      Name: eventName,
+    });
 
-  return await client.send(command);
+    return await client.send(command);
+  } catch (error: any) {
+    if (error.name === "ResourceNotFoundException") {
+      return null;
+    }
+    loggerServer.error(error);
+    return null;
+  }
 }
 
 // 3. UPDATE a schedule with HTTP endpoint

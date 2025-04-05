@@ -308,7 +308,8 @@ export async function POST(
       handle: note.handle || "",
       status: note.status,
       thumbnail: note.thumbnail || undefined,
-      postDate: note.postDate || new Date(),
+      scheduledTo: null,
+      wasSentViaSchedule: false,
     }));
 
     const response: AIUsageResponse<NoteDraft[]> = {

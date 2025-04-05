@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import {
   selectNotes,
@@ -10,9 +10,12 @@ import {
   setSelectedImage,
   updateNote,
   removeNote,
-  addNote,
   setLoadingNotesGenerate,
   setErrorGenerateNotes,
+  setHandle,
+  setThumbnail,
+  setLoadingFetchingByline,
+  setName,
 } from "@/lib/features/notes/notesSlice";
 import {
   isNoteDraft,
@@ -31,9 +34,10 @@ import { EventTracker } from "@/eventTracker";
 import { decrementUsage } from "@/lib/features/settings/settingsSlice";
 import { ImprovementType } from "@/lib/prompts";
 import { debounce } from "lodash";
+import { Byline } from "@/types/article";
 
 export const useNotes = () => {
-  const { updateShowGenerateNotesSidebar } = useUi();
+  const { updateShowGenerateNotesSidebar, updateShowScheduleModal } = useUi();
   const dispatch = useAppDispatch();
   const {
     userNotes,
@@ -43,6 +47,11 @@ export const useNotes = () => {
     selectedImage,
     hasMoreUserNotes,
     userNotesCursor,
+    handle,
+    thumbnail,
+    loadingFetchingByline,
+    errorGenerateNotes,
+    loadingNotesGenerate,
   } = useAppSelector(selectNotes);
 
   const { consumeCredits } = useCredits();
@@ -99,6 +108,7 @@ export const useNotes = () => {
         forceShowEditor?: boolean;
         isFromInspiration?: boolean;
         hasChanges?: boolean;
+        showScheduleModal?: boolean;
       },
     ) => {
       if (options?.hasChanges) {
@@ -121,15 +131,18 @@ export const useNotes = () => {
       if (!noteDraft) {
         noteDraft = noteToNoteDraft(noteToUpdate as Note);
       }
-      if (options?.forceShowEditor) {
-        updateShowGenerateNotesSidebar(true);
-      }
+      // if (options?.forceShowEditor) {
+      //   updateShowGenerateNotesSidebar(true);
+      // }
       dispatch(
         setSelectedNote({
           note: noteDraft,
           isFromInspiration: options?.isFromInspiration,
         }),
       );
+      if (options?.showScheduleModal) {
+        updateShowScheduleModal(true);
+      }
     },
     [userNotes],
   );
@@ -205,6 +218,7 @@ export const useNotes = () => {
 
   const updateNoteStatus = useCallback(
     async (noteId: string, status: NoteStatus | "archived") => {
+      setLoadingEditNote(true);
       EventTracker.track("notes_update_note_status_" + status);
       const previousStatus = userNotes.find(note => note.id === noteId)?.status;
       if (!previousStatus) {
@@ -221,11 +235,20 @@ export const useNotes = () => {
           dispatch(updateNote({ id: noteId, note: { status } }));
         }
         const body = status === "archived" ? { isArchived: true } : { status };
-        await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
+        
+        if (previousStatus === "scheduled") {
+          await axios.delete(`/api/user/notes/${noteId}/schedule`, {
+            params: { status },
+          });
+        } else {
+          await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
+        }
       } catch (error: any) {
         Logger.error("Error updating status:", error);
         dispatch(updateNote({ id: noteId, note: { status: previousStatus } }));
         throw error;
+      } finally {
+        setLoadingEditNote(false);
       }
     },
     [userNotes, selectedNote, selectNote, dispatch],
@@ -387,16 +410,23 @@ export const useNotes = () => {
     }
   }, []);
 
-  const isLoadingGenerateNotes =
-    useAppSelector(selectNotes).loadingNotesGenerate;
+  const updateByline = useCallback(async () => {
+    if (loadingFetchingByline) return;
 
-  const errorGenerateNotes = useAppSelector(selectNotes).errorGenerateNotes;
-
-  useEffect(() => {
-    if (userNotes.length === 0) {
-      fetchNotes();
+    if (!handle && !thumbnail) {
+      dispatch(setLoadingFetchingByline(true));
+      try {
+        const response = await axios.get<Byline>("/api/user/byline");
+        dispatch(setHandle(response.data.handle));
+        dispatch(setThumbnail(response.data.photoUrl));
+        dispatch(setName(response.data.name));
+        dispatch(setLoadingFetchingByline(false));
+      } catch (error: any) {
+        Logger.error("Error fetching byline:", error);
+        dispatch(setLoadingFetchingByline(false));
+      }
     }
-  }, [userNotes, fetchNotes]);
+  }, [handle, thumbnail]);
 
   return {
     userNotes,
@@ -416,8 +446,10 @@ export const useNotes = () => {
     loadingEditNote,
     createDraftNote,
     improveText,
-    isLoadingGenerateNotes,
+    isLoadingGenerateNotes: loadingNotesGenerate,
     errorGenerateNotes,
     getNoteByNoteId,
+    updateByline,
+    editNoteBody,
   };
 };

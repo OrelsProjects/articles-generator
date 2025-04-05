@@ -43,7 +43,7 @@ async function getPostsWithStatus() {
     ...post,
     publicationId: Number(post.publication_id),
     reactionCount: Number(post.reaction_count),
-    postDate: post.post_date ? new Date(post.post_date).toISOString() : null,
+    scheduledTo: post.post_date ? new Date(post.post_date).toISOString() : null,
     publicationName: post.publication_name,
     canonicalUrl: post.canonical_url,
     title: post.title,
@@ -65,7 +65,7 @@ async function getPostsWithStatus() {
       title: post.title,
       publicationId: `${post.publicationId}`,
       reactionCount: post.reactionCount,
-      postDate: post.postDate,
+      scheduledTo: post.scheduledTo,
       publicationName: post.publicationName,
     }));
 

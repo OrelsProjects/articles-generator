@@ -26,10 +26,34 @@ export async function getSchedulesByUserId(
   return schedules;
 }
 
-export async function deleteSchedule(scheduleId: string): Promise<void> {
-  await prisma.scheduledNote.delete({
-    where: { id: scheduleId },
+export async function getLatestSchedule(
+  noteId: string,
+): Promise<ScheduledNote | null> {
+  const latestSchedule = await prisma.scheduledNote.findFirst({
+    where: {
+      noteId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
+  return latestSchedule;
+}
+
+export async function deleteSchedule(scheduleName: string): Promise<void> {
+  const latestSchedule = await prisma.scheduledNote.findFirst({
+    where: {
+      scheduleId: scheduleName,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  if (latestSchedule) {
+    await prisma.scheduledNote.delete({
+      where: { id: latestSchedule?.id },
+    });
+  }
 }
 
 export async function updateSchedule(

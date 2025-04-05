@@ -5,7 +5,11 @@ import { NoteDraft } from "@/types/note";
  * Supported browser types
  */
 export type BrowserType = "chrome" | "firefox" | "unknown";
-export type CookieSameSite = "no_restriction" | "lax" | "strict" | "unspecified";
+export type CookieSameSite =
+  | "no_restriction"
+  | "lax"
+  | "strict"
+  | "unspecified";
 export type CookieName = "substack.sid" | "substack.lli" | "__cf_bm";
 /**
  * Parameters for creating a Substack post
@@ -79,7 +83,7 @@ export enum SubstackError {
  * Hook return type
  */
 export interface UseSubstackPost {
-  createNote: (params: CreatePostParams) => Promise<CreatePostResponse | null>;
+  sendNote: (params: CreatePostParams) => Promise<CreatePostResponse | null>;
   isLoading: boolean;
   error: string | null;
   postResponse: CreatePostResponse | null;
@@ -87,4 +91,5 @@ export interface UseSubstackPost {
   browserType: BrowserType;
   getNoteById: (noteId: string) => NoteDraft | null;
   setUserSubstackCookies: () => Promise<void>;
+  hasExtension: () => Promise<boolean>;
 }

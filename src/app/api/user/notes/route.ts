@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   const searchParams = req.nextUrl.searchParams;
   const cursor = searchParams.get("cursor");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const limit = parseInt(searchParams.get("limit") || "200");
 
   try {
     const userNotes = await prisma.note.findMany({
@@ -53,7 +53,8 @@ export async function GET(req: NextRequest) {
       feedback: note.feedback || undefined,
       name: note.name || undefined,
       handle: note.handle || undefined,
-      postDate: note.postDate || new Date(),
+      scheduledTo: note.scheduledTo,
+      wasSentViaSchedule: !!note.sentViaScheduleAt,
     }));
 
     return NextResponse.json({

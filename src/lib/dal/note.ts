@@ -10,7 +10,7 @@ export const updateableFields = [
   "feedbackComment",
   "body",
   "isArchived",
-  "postDate",
+  "scheduledTo",
   "timestamp",
 ] as (keyof NoteDraft)[];
 
@@ -74,9 +74,9 @@ export const updateNote = async (id: string, newNote: Partial<NoteDraft>) => {
     // Handle each updateable field
     for (const field of updateableFields) {
       if (newNote[field] !== undefined) {
-        // For timestamp, use the postDate field in the database
-        if (field === "postDate") {
-          noteToUpdate.postDate = newNote.postDate;
+        // For timestamp, use the scheduledTo field in the database
+        if (field === "scheduledTo") {
+          noteToUpdate.scheduledTo = newNote.scheduledTo;
         } else {
           noteToUpdate[field] = newNote[field];
         }

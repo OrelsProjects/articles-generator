@@ -1,5 +1,12 @@
 import { authOptions } from "@/auth/authOptions";
-import { archiveNote, isOwnerOfNote, updateNote } from "@/lib/dal/note";
+import {
+  archiveNote,
+  getNoteById,
+  isOwnerOfNote,
+  updateNote,
+} from "@/lib/dal/note";
+import * as noteSchedule from "@/lib/dal/note-schedule";
+import { getEventBridgeSchedule } from "@/lib/utils/event-bridge";
 import loggerServer from "@/loggerServer";
 import { NoteDraft } from "@/types/note";
 import { getServerSession } from "next-auth";
@@ -16,6 +23,11 @@ export async function PATCH(
   try {
     const { id } = params;
     const note: Partial<NoteDraft> = await req.json();
+
+    if (!note) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
     const isOwner = await isOwnerOfNote(id, session.user.id);
 
     if (!isOwner) {
@@ -23,8 +35,38 @@ export async function PATCH(
     }
 
     // If timestamp is provided, ensure it's a Date object
-    if (note.postDate && typeof note.postDate === 'string') {
-      note.postDate = new Date(note.postDate);
+    if (note.scheduledTo && typeof note.scheduledTo === "string") {
+      note.scheduledTo = new Date(note.scheduledTo);
+    }
+
+    const currentNote = await getNoteById(id);
+
+    const existingSchedule = await getEventBridgeSchedule({
+      id,
+    });
+
+    const isChangingFromScheduled =
+      note.status &&
+      currentNote?.status === "scheduled" &&
+      note.status !== "scheduled";
+
+    const isChangingToScheduled =
+      note.status &&
+      currentNote?.status !== "scheduled" &&
+      note.status === "scheduled";
+
+    if (isChangingFromScheduled) {
+      // If we change from scheduled to not scheduled, the existing schedule has to be null.
+      if (existingSchedule) {
+        throw new Error("Can't change from scheduled to not scheduled");
+      }
+    } else if (isChangingToScheduled) {
+      // If we change to scheduled, we must have a scheduled event.
+      if (!existingSchedule) {
+        throw new Error(
+          "Can't set 'scheduled' status without a scheduled date",
+        );
+      }
     }
 
     await updateNote(id, note);

@@ -37,10 +37,10 @@ export function NoteDialog({
   onDateChange,
 }: NoteDialogProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(
-    new Date(note.postDate || new Date()),
+    new Date(note.scheduledTo || new Date()),
   );
   const [selectedTime, setSelectedTime] = useState<string>(
-    note.postDate ? format(new Date(note.postDate), "HH:mm") : ""
+    note.scheduledTo ? format(new Date(note.scheduledTo), "HH:mm") : ""
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 

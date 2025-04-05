@@ -39,7 +39,7 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
   useEffect(() => {
     // Group notes by status
     const draftNotes = notes.filter(note => note.status === "draft");
-    const generatedNotes = notes.filter(note => note.status === "ready");
+    const scheduledNotes = notes.filter(note => note.status === "scheduled");
     const publishedNotes = notes.filter(note => note.status === "published");
     const archivedNotes = notes.filter(note => note.isArchived);
 
@@ -52,9 +52,9 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
         icon: FileText,
       },
       {
-        id: "ready",
-        title: "Ready",
-        items: convertToStatusItems(generatedNotes),
+        id: "scheduled",
+        title: "Scheduled",
+        items: convertToStatusItems(scheduledNotes),
         color: "amber",
         icon: Clock,
       },
@@ -111,9 +111,10 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
       initialColumns={columns}
       selectedItem={selectedNote?.id}
       onStatusChange={handleStatusChange}
-      onSelectItem={(itemId: UniqueIdentifier) => {
+      onSelectItem={(itemId: UniqueIdentifier, showModal?: boolean) => {
         selectNote(itemId.toString(), {
           forceShowEditor: true,
+          showScheduleModal: showModal,
         });
       }}
       onNewItem={async (status: UniqueIdentifier) => {

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
-import prisma from "@/app/api/_db/db";
 import { SubstackCookie } from "@/types/useSubstack.type";
 import { z } from "zod";
 import { setSubstackCookies } from "@/lib/dal/substackCookies";
 
+export const revalidate = 0;
 
 const schema = z.array(
   z.object({

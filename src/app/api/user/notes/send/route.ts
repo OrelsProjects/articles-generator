@@ -1,5 +1,5 @@
 import prisma from "@/app/api/_db/db";
-import { isOwnerOfNote } from "@/lib/dal/note";
+import { getLatestSchedule } from "@/lib/dal/schedules";
 import { sendMail } from "@/lib/mail/mail";
 import { generateFailedToSendNoteEmail } from "@/lib/mail/templates";
 import { markdownToADF } from "@/lib/utils/adf";
@@ -53,16 +53,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // const isOwner = await isOwnerOfNote(userId, noteId);
-
-    // if (!isOwner) {
-    //   console.error("User is not the owner of the note");
-    //   return NextResponse.json(
-    //     { error: "User is not the owner of the note" },
-    //     { status: 403 },
-    //   );
-    // }
-
     const cookie = await prisma.substackCookie.findUnique({
       where: {
         name_userId: {
@@ -83,6 +73,13 @@ export async function POST(request: NextRequest) {
       await sendFailure("Note not found", noteId, user.email);
       loggerServer.error("Note not found: " + noteId + " for user: " + userId);
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
+    }
+
+    if (note.status === "published") {
+      return NextResponse.json(
+        { error: "Note already published" },
+        { status: 400 },
+      );
     }
 
     if (!cookie) {
@@ -109,21 +106,33 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
+      const errorMessage = await response.json();
       await sendFailure(note.body, note.id, user.email);
       loggerServer.error(
         "Error to send note: " +
           response.statusText +
+          "response: " +
+          errorMessage +
           " for note: " +
           noteId +
           " for user: " +
           userId,
       );
       return NextResponse.json(
-        { error: "Failed to send note" },
+        { error: "Failed to send note: " + errorMessage },
         { status: 500 },
       );
     }
 
+    await prisma.note.update({
+      where: {
+        id: noteId,
+      },
+      data: {
+        sentViaScheduleAt: new Date(),
+        status: "published",
+      },
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     loggerServer.error(

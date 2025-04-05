@@ -1,19 +1,66 @@
 import { unified } from "unified";
 import remarkParse from "remark-parse";
+import { MarkdownTransformer } from "@atlaskit/editor-markdown-transformer";
 
 export async function markdownToADF(markdown: string) {
-  const tree = unified().use(remarkParse).parse(markdown);
+  const transformer = new MarkdownTransformer();
+  const rawADF = transformer.parse(markdown);
 
-  const paragraphs = tree.children
-    .map((node: any) => transformNode(node, []))
-    .filter(Boolean) as ADFNode[];
+  // This part is key — ProseMirror might return Fragment-like structures
+  const contentArray = Array.isArray(rawADF.content)
+    ? rawADF.content
+    : rawADF.content?.toJSON?.() ?? [];
 
-  return {
+  const cleanADF = {
     type: "doc",
-    attrs: { schemaVersion: "v1" },
-    content: paragraphs,
+    attrs: {
+      schemaVersion: "v1",
+    },
+    content: transformContent(contentArray),
   };
+
+  return cleanADF;
 }
+
+function transformContent(content: any[]): any[] {
+  return content.map(node => {
+    if (!node || typeof node !== "object") return node;
+
+    const newNode = { ...node };
+
+    // Fix nested attrs
+    if (newNode.attrs) {
+      delete newNode.attrs.localId;
+      if (Object.keys(newNode.attrs).length === 0) delete newNode.attrs;
+    }
+
+    // Recursively transform children
+    if (newNode.content) {
+      const nested = Array.isArray(newNode.content)
+        ? newNode.content
+        : newNode.content?.toJSON?.() ?? [];
+      newNode.content = transformContent(nested);
+    }
+
+    // Convert marks
+    if (newNode.marks) {
+      newNode.marks = newNode.marks.map((mark: any) => {
+        if (mark.type === "strong") mark.type = "bold";
+        if (mark.type === "em") mark.type = "italic";
+        return mark;
+      });
+    }
+
+    // Fix ordered list attrs
+    if (newNode.type === "orderedList" && newNode.attrs?.order) {
+      newNode.attrs.start = newNode.attrs.order;
+      delete newNode.attrs.order;
+    }
+
+    return newNode;
+  });
+}
+
 export interface ADFNode {
   type: string;
   attrs?: Record<string, any>;
@@ -60,6 +107,36 @@ export function transformNode(
     // TEXT => produce a simple text node with any inherited marks
     // ─────────────────────────────────────────────────────────────────────
     case "text":
+      // Handle explicit newlines in the text content
+      if (node.value && node.value.includes("\n")) {
+        // Split text by newlines and create alternating text and hardBreak nodes
+        const parts = node.value.split("\n");
+        const content: ADFNode[] = [];
+
+        parts.forEach((part: string, index: number) => {
+          // Add text node
+          if (part) {
+            content.push({
+              type: "text",
+              text: part,
+              ...(parentMarks.length ? { marks: parentMarks } : {}),
+            });
+          }
+
+          // Add hard break after each part except the last one
+          if (index < parts.length - 1) {
+            content.push({
+              type: "hardBreak",
+            });
+          }
+        });
+
+        return {
+          type: "paragraph",
+          content,
+        };
+      }
+
       return {
         type: "text",
         text: node.value || "",
@@ -137,6 +214,14 @@ export function transformNode(
         ],
       };
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // BREAK (br, hard line break) => convert to hardBreak node
+    // ─────────────────────────────────────────────────────────────────────
+    case "break":
+      return {
+        type: "hardBreak",
+      };
 
     // ─────────────────────────────────────────────────────────────────────
     // LIST (ordered/unordered)

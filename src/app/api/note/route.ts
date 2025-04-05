@@ -48,7 +48,8 @@ export async function POST(request: NextRequest) {
       isArchived: false,
       ...newNoteDraft,
       authorId: newNoteDraft?.authorId || authorId || 0,
-      postDate: newNoteDraft?.postDate || new Date(),
+      scheduledTo: newNoteDraft?.scheduledTo || null,
+      sentViaScheduleAt: null,
     };
     const note = await createNote(createNoteBody);
 
@@ -62,7 +63,8 @@ export async function POST(request: NextRequest) {
       handle,
       thumbnail: photoUrl,
       name,
-      postDate: newNoteDraft?.postDate || new Date(),
+      scheduledTo: newNoteDraft?.scheduledTo || undefined,
+      wasSentViaSchedule: false,
     };
 
     return NextResponse.json(noteDraft);

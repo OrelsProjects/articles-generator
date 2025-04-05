@@ -12,6 +12,7 @@ export interface NotesState {
   loadingNotes: boolean;
   loadingNotesGenerate: boolean;
   loadingInspiration: boolean;
+  loadingFetchingByline: boolean;
   error: string | null;
   errorGenerateNotes: string | null;
   hasMoreUserNotes: boolean;
@@ -19,6 +20,9 @@ export interface NotesState {
   userNotesCursor: string | null;
   inspirationNotesCursor: string | null;
   hasNewNotes: boolean;
+  handle: string | null;
+  thumbnail: string | null;
+  name: string | null;
 }
 
 export const initialState: NotesState = {
@@ -30,6 +34,7 @@ export const initialState: NotesState = {
   loadingNotes: false,
   loadingNotesGenerate: false,
   loadingInspiration: false,
+  loadingFetchingByline: false,
   error: null,
   errorGenerateNotes: null,
   hasMoreUserNotes: true,
@@ -37,6 +42,9 @@ export const initialState: NotesState = {
   userNotesCursor: null,
   inspirationNotesCursor: null,
   hasNewNotes: false,
+  handle: null,
+  thumbnail: null,
+  name: null,
 };
 
 const notesSlice = createSlice({
@@ -60,6 +68,8 @@ const notesSlice = createSlice({
       state,
       action: PayloadAction<{ id: string; note: Partial<NoteDraft> }>,
     ) => {
+      
+
       const { id, note } = action.payload;
       let newNote = state.userNotes.find(userNote => userNote.id === id);
       if (newNote) {
@@ -176,6 +186,18 @@ const notesSlice = createSlice({
         state.errorGenerateNotes = null;
       }, action.payload.hideAfter);
     },
+    setLoadingFetchingByline: (state, action: PayloadAction<boolean>) => {
+      state.loadingFetchingByline = action.payload;
+    },
+    setHandle: (state, action: PayloadAction<string | null>) => {
+      state.handle = action.payload;
+    },
+    setThumbnail: (state, action: PayloadAction<string | null>) => {
+      state.thumbnail = action.payload;
+    },
+    setName: (state, action: PayloadAction<string | null>) => {
+      state.name = action.payload;
+    },
   },
 });
 
@@ -196,6 +218,10 @@ export const {
   setInspirationFilters,
   setLoadingNotesGenerate,
   setErrorGenerateNotes,
+  setLoadingFetchingByline,
+  setHandle,
+  setThumbnail,
+  setName,
 } = notesSlice.actions;
 
 export const selectNotes = (state: RootState) => state.notes;

@@ -9,6 +9,7 @@ export interface UiState {
   showGenerateIdeasDialog: boolean;
   sideBarState: "collapsed" | "expanded";
   didShowSaveTooltip: boolean;
+  showScheduleModal: boolean;
 }
 
 export const initialState: UiState = {
@@ -19,6 +20,7 @@ export const initialState: UiState = {
   showGenerateIdeasDialog: false,
   sideBarState: "expanded",
   didShowSaveTooltip: false,
+  showScheduleModal: false,
 };
 
 const uiSlice = createSlice({
@@ -46,6 +48,9 @@ const uiSlice = createSlice({
     setDidShowSaveTooltip: (state, action) => {
       state.didShowSaveTooltip = action.payload;
     },
+    setShowScheduleModal: (state, action) => {
+      state.showScheduleModal = action.payload;
+    },
   },
 });
 
@@ -57,6 +62,7 @@ export const {
   setShowGenerateNotesSidebar,
   setSideBarState,
   setDidShowSaveTooltip,
+  setShowScheduleModal,
 } = uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;
