@@ -16,7 +16,7 @@ export const checkAndResetCredits = async (
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        Subscription: {
+        subscription: {
           where: { status: "active" },
           orderBy: { createdAt: "desc" },
           take: 1,
@@ -28,7 +28,7 @@ export const checkAndResetCredits = async (
       return { credits: 0 };
     }
 
-    const subscription = user.Subscription?.[0];
+    const subscription = user.subscription?.[0];
 
     // Check if credits need to be reset
     let shouldReset = false;

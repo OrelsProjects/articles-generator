@@ -8,6 +8,7 @@ import {
   SubstackError,
   UseSubstackPost as UseExtension,
   BrowserType,
+  GetSubstackCookiesResponse,
 } from "@/types/useSubstack.type";
 import axios from "axios";
 import { CreatePostResponse } from "@/types/createPostResponse";
@@ -22,18 +23,20 @@ import { NoteDraft } from "@/types/note";
  */
 const detectBrowser = (): BrowserType => {
   if (typeof window === "undefined") return "unknown";
-  
+
   // Check for Firefox
-  if (typeof window.browser !== "undefined" || 
-      (navigator.userAgent.indexOf("Firefox") !== -1)) {
+  if (
+    typeof window.browser !== "undefined" ||
+    navigator.userAgent.indexOf("Firefox") !== -1
+  ) {
     return "firefox";
   }
-  
+
   // Check for Chrome
   if (typeof chrome !== "undefined" && !!chrome.runtime) {
     return "chrome";
   }
-  
+
   return "unknown";
 };
 
@@ -43,21 +46,21 @@ const detectBrowser = (): BrowserType => {
  */
 export function useExtension(): UseExtension {
   const { user } = useAppSelector(state => state.auth);
-  const {userNotes} = useAppSelector(state => state.notes);
+  const { userNotes } = useAppSelector(state => state.notes);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [postResponse, setPostResponse] = useState<CreatePostResponse | null>(
     null,
   );
   const [browserType, setBrowserType] = useState<BrowserType>("unknown");
-  
+
   const loadingPing = useRef(false);
 
   const canUseSubstackPost = useMemo(
     () => user?.meta?.featureFlags.includes(FeatureFlag.instantPost),
     [user?.meta?.featureFlags],
   );
-  
+
   // Set browser type on client side
   useMemo(() => {
     if (typeof window !== "undefined") {
@@ -70,37 +73,47 @@ export function useExtension(): UseExtension {
   > => {
     if (typeof window === "undefined") return "error";
     if (loadingPing.current) return "pending";
-    
+
     loadingPing.current = true;
     const pingMessage: ExtensionMessage = {
       type: "PING",
     };
-    
+
     setTimeout(() => {
       loadingPing.current = false;
     }, 5000);
-    
-    return new Promise((resolve) => {
+
+    return new Promise(resolve => {
       try {
         // Firefox implementation
         if (browserType === "firefox" && typeof browser !== "undefined") {
-          browser.runtime.sendMessage(
-            process.env.NEXT_PUBLIC_EXTENSION_ID as string,
-            pingMessage
-          ).then((response: any) => {
-            if (response?.success) {
-              resolve("success");
-            } else {
-              Logger.error("Extension not found in Firefox: " + JSON.stringify(response || ""));
+          browser.runtime
+            .sendMessage(
+              process.env.NEXT_PUBLIC_EXTENSION_ID as string,
+              pingMessage,
+            )
+            .then((response: any) => {
+              if (response?.success) {
+                resolve("success");
+              } else {
+                Logger.error(
+                  "Extension not found in Firefox: " +
+                    JSON.stringify(response || ""),
+                );
+                resolve("error");
+              }
+            })
+            .catch((err: unknown) => {
+              Logger.error("Firefox extension error: " + JSON.stringify(err));
               resolve("error");
-            }
-          }).catch((err: unknown) => {
-            Logger.error("Firefox extension error: " + JSON.stringify(err));
-            resolve("error");
-          });
-        } 
+            });
+        }
         // Chrome implementation
-        else if (browserType === "chrome" && typeof chrome !== "undefined" && chrome.runtime) {
+        else if (
+          browserType === "chrome" &&
+          typeof chrome !== "undefined" &&
+          chrome.runtime
+        ) {
           chrome.runtime.sendMessage(
             process.env.NEXT_PUBLIC_EXTENSION_ID as string,
             pingMessage,
@@ -108,10 +121,13 @@ export function useExtension(): UseExtension {
               if (response?.success) {
                 resolve("success");
               } else {
-                Logger.error("Extension not found in Chrome: " + JSON.stringify(response || ""));
+                Logger.error(
+                  "Extension not found in Chrome: " +
+                    JSON.stringify(response || ""),
+                );
                 resolve("error");
               }
-            }
+            },
           );
         } else {
           Logger.error("Unsupported browser or extension API not available");
@@ -124,10 +140,23 @@ export function useExtension(): UseExtension {
     });
   }, [browserType]);
 
+  // get substack cookies ("getSubstackCookies") from the extension. The name of the function is getSubstackCookies
+  const setUserSubstackCookies = useCallback(async (): Promise<void> => {
+    const response = await sendExtensionMessage<GetSubstackCookiesResponse>({
+      type: "API_REQUEST",
+      action: "getSubstackCookies",
+    });
+    try {
+      await axios.post("/api/user/cookies", response.result);
+    } catch (error) {
+      Logger.error(
+        "Error setting user substack cookies: " + JSON.stringify(error),
+      );
+    }
+  }, [browserType]);
+
   const sendExtensionMessage = useCallback(
-    async (
-      message: ExtensionMessage,
-    ): Promise<ExtensionResponse<CreatePostResponse>> => {
+    async <T>(message: ExtensionMessage): Promise<ExtensionResponse<T>> => {
       return new Promise(async (resolve, reject) => {
         const verificationStatus = await verifyExtension();
         if (verificationStatus === "error") {
@@ -138,7 +167,7 @@ export function useExtension(): UseExtension {
           reject(new Error(SubstackError.PENDING));
           return;
         }
-        
+
         // Set timeout for response
         const timeoutId = setTimeout(() => {
           reject(new Error(SubstackError.NETWORK_ERROR));
@@ -147,37 +176,14 @@ export function useExtension(): UseExtension {
         try {
           // Firefox implementation
           if (browserType === "firefox" && typeof browser !== "undefined") {
-            browser.runtime.sendMessage(
-              process.env.NEXT_PUBLIC_EXTENSION_ID as string,
-              { ...message }
-            ).then((response: any) => {
-              clearTimeout(timeoutId);
-              if (response.success) {
-                const result = JSON.parse(response.data.result) as CreatePostResponse;
-                resolve({
-                  success: response.success,
-                  result,
-                  message: response.message,
-                  action: response.action,
-                  error: response.error,
-                });
-              } else {
-                reject(new Error(response.error || SubstackError.UNKNOWN_ERROR));
-              }
-            }).catch((error: unknown) => {
-              clearTimeout(timeoutId);
-              reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
-            });
-          } 
-          // Chrome implementation
-          else if (browserType === "chrome" && typeof chrome !== "undefined" && chrome.runtime) {
-            chrome.runtime.sendMessage(
-              process.env.NEXT_PUBLIC_EXTENSION_ID as string,
-              { ...message },
-              (response: any) => {
+            browser.runtime
+              .sendMessage(process.env.NEXT_PUBLIC_EXTENSION_ID as string, {
+                ...message,
+              })
+              .then((response: any) => {
                 clearTimeout(timeoutId);
                 if (response.success) {
-                  const result = JSON.parse(response.data.result) as CreatePostResponse;
+                  const result = JSON.parse(response.data.result) as T;
                   resolve({
                     success: response.success,
                     result,
@@ -186,9 +192,42 @@ export function useExtension(): UseExtension {
                     error: response.error,
                   });
                 } else {
-                  reject(new Error(response.error || SubstackError.UNKNOWN_ERROR));
+                  reject(
+                    new Error(response.error || SubstackError.UNKNOWN_ERROR),
+                  );
                 }
-              }
+              })
+              .catch((error: unknown) => {
+                clearTimeout(timeoutId);
+                reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
+              });
+          }
+          // Chrome implementation
+          else if (
+            browserType === "chrome" &&
+            typeof chrome !== "undefined" &&
+            chrome.runtime
+          ) {
+            chrome.runtime.sendMessage(
+              process.env.NEXT_PUBLIC_EXTENSION_ID as string,
+              { ...message },
+              (response: any) => {
+                clearTimeout(timeoutId);
+                if (response.success) {
+                  const result = JSON.parse(response.data.result) as T;
+                  resolve({
+                    success: response.success,
+                    result,
+                    message: response.message,
+                    action: response.action,
+                    error: response.error,
+                  });
+                } else {
+                  reject(
+                    new Error(response.error || SubstackError.UNKNOWN_ERROR),
+                  );
+                }
+              },
             );
           } else {
             clearTimeout(timeoutId);
@@ -207,7 +246,7 @@ export function useExtension(): UseExtension {
    * Create a new Substack post
    * @param {CreatePostParams} params Post parameters
    */
-  const createPost = useCallback(
+  const createNote = useCallback(
     async (params: CreatePostParams): Promise<CreatePostResponse | null> => {
       setIsLoading(true);
       setError(null);
@@ -231,7 +270,8 @@ export function useExtension(): UseExtension {
         };
 
         // Send message to extension
-        const sendMessageResponse = await sendExtensionMessage(message);
+        const sendMessageResponse =
+          await sendExtensionMessage<CreatePostResponse>(message);
 
         if (sendMessageResponse.success && sendMessageResponse.result) {
           setPostResponse(sendMessageResponse.result);
@@ -243,7 +283,7 @@ export function useExtension(): UseExtension {
           );
         }
       } catch (error) {
-        console.log("Error in createPost", error);
+        console.log("Error in createNote", error);
         if (error instanceof Error) {
           setError(error.message);
         } else {
@@ -256,17 +296,21 @@ export function useExtension(): UseExtension {
     [sendExtensionMessage],
   );
 
-  const getNoteById = useCallback((noteId: string): NoteDraft | null => {
-    return userNotes.find(note => note.id === noteId) || null;
-  }, [userNotes]);
+  const getNoteById = useCallback(
+    (noteId: string): NoteDraft | null => {
+      return userNotes.find(note => note.id === noteId) || null;
+    },
+    [userNotes],
+  );
 
   return {
-    createPost,
+    createNote,
     isLoading,
     error,
     postResponse,
     canUseSubstackPost: canUseSubstackPost || false,
     browserType,
     getNoteById,
+    setUserSubstackCookies,
   };
 }

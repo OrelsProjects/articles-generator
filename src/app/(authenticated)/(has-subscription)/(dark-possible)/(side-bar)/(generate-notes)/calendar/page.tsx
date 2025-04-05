@@ -7,6 +7,7 @@ import { useNotes } from "@/lib/hooks/useNotes";
 export default function NotesCalendarPage() {
   const { loading, error, updateNoteDate } = useNotesCalendar();
   const { userNotes } = useNotes();
+  
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">

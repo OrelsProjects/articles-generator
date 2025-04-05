@@ -11,6 +11,7 @@ import useAuth from "@/lib/hooks/useAuth";
 import { useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
+import Link from "next/link";
 
 const Auth = () => {
   const { signInWithGoogle } = useAuth();
@@ -43,7 +44,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col justify-center items-center bg-gradient-to-b from-primary/5 to-secondary/5 p-4">
-      <Card className="w-full max-w-md shadow-lg">
+      <Card className="w-full max-w-md shadow-lg relative">
         <CardHeader className="space-y-1">
           <CardTitle className="text-3xl font-bold text-center">
             Welcome
@@ -70,6 +71,18 @@ const Auth = () => {
             ))}
           </div>
         </CardContent>
+        <div className="w-full flex justify-end absolute -bottom-8 right-0">
+          <Button
+            variant="link"
+            size="sm"
+            asChild
+            className="text-muted-foreground text-xs"
+          >
+            <Link href="/tos" target="_blank">
+              Terms of Service
+            </Link>
+          </Button>
+        </div>
       </Card>
     </div>
   );

@@ -8,9 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
-import { useUi } from "@/lib/hooks/useUi";
+import { useExtension } from "@/lib/hooks/useExtension";
+import { useSearchParams } from "next/navigation";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { NoteDraft } from "@/types/note";
 
 export default function NotesPage() {
+  const router = useCustomRouter();
   const {
     fetchNotes,
     userNotes,
@@ -19,9 +23,36 @@ export default function NotesPage() {
     createDraftNote,
     isLoadingGenerateNotes,
     errorGenerateNotes,
+    getNoteByNoteId,
   } = useNotes();
 
+  const searchParams = useSearchParams();
+  const sendNoteId = searchParams.get("sendNoteId");
+
+  const { createNote } = useExtension();
+
   useEffect(() => {
+    if (sendNoteId) {
+      getNoteByNoteId(sendNoteId)
+        .then((note: NoteDraft | null) => {
+          if (note) {
+            createNote({
+              message: note.body,
+              moveNoteToPublished: {
+                noteId: note.id,
+              },
+            });
+          }
+        })
+        .catch(() => {
+          toast.error("Failed to send note");
+        })
+        .finally(() => {
+          router.push("/notes", {
+            paramsToRemove: ["sendNoteId"],
+          });
+        });
+    }
     fetchNotes();
   }, []);
 

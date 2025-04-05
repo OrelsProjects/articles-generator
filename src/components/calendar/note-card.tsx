@@ -11,9 +11,10 @@ interface NoteCardProps {
 }
 
 const statusColors = {
-  draft: "bg-card",
-  ready: "bg-amber-100 dark:bg-amber-900",
-  published: "bg-green-100 dark:bg-green-900",
+  draft:
+    "bg-gray-500/10 dark:bg-gray-500/20 text-slate-900 dark:text-slate-200",
+  ready: "bg-amber-100 dark:bg-amber-500  text-foreground dark:text-slate-100",
+  published: "bg-green-100 dark:bg-green-500 text-foreground dark:text-slate-100",
 };
 
 export function NoteCard({ note, onClick }: NoteCardProps) {
@@ -40,8 +41,8 @@ export function NoteCard({ note, onClick }: NoteCardProps) {
         statusColors[note.status],
       )}
     >
-      <h4 className="font-medium truncate">{note.name || "Untitled Note"}</h4>
-      <p className="text-sm text-muted-foreground truncate">{note.body}</p>
+      {/* <h4 className="font-medium truncate">{note.name || "Untitled Note"}</h4> */}
+      <p className="text-xs line-clamp-2">{note.body}</p>
     </div>
   );
 }

@@ -378,6 +378,15 @@ export const useNotes = () => {
       : null;
   };
 
+  const getNoteByNoteId = useCallback(async (noteId: string) => {
+    try {
+      const response = await axios.get<NoteDraft>(`/api/user/notes/${noteId}`);
+      return response.data;
+    } catch (error: any) {
+      return null;
+    }
+  }, []);
+
   const isLoadingGenerateNotes =
     useAppSelector(selectNotes).loadingNotesGenerate;
 
@@ -409,5 +418,6 @@ export const useNotes = () => {
     improveText,
     isLoadingGenerateNotes,
     errorGenerateNotes,
+    getNoteByNoteId,
   };
 };

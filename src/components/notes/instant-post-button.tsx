@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Send, RefreshCw } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
-import { useExtension } from "@/lib/hooks/useSubstackPost";
+import { useExtension } from "@/lib/hooks/useExtension";
 import { SuccessDialog } from "@/components/notes/success-dialog";
 import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
 import { Note, NoteDraft } from "@/types/note";
@@ -29,7 +29,7 @@ export function InstantPostButton({
   className,
 }: SubstackPostButtonProps) {
   const {
-    createPost,
+    createNote,
     isLoading: loadingSendNote,
     postResponse,
     getNoteById,
@@ -45,7 +45,8 @@ export function InstantPostButton({
     const noteObject = typeof note === "string" ? getNoteById(note) : note;
     if (!noteObject) return;
     try {
-      await createPost({
+      debugger;
+      await createNote({
         message: noteObject.body,
       });
 

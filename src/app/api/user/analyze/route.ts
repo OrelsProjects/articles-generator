@@ -18,7 +18,7 @@ import { parseJson } from "@/lib/utils/json";
 import { buildSubstackUrl } from "@/lib/utils/url";
 import { setPublications as scrapePosts } from "@/lib/utils/publication";
 import { z } from "zod";
-import { fetchAuthor } from "@/lib/lambda";
+import { fetchAuthor } from "@/lib/utils/lambda";
 
 const schema = z.object({
   url: z.string(),

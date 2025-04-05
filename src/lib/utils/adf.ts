@@ -1,3 +1,19 @@
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+
+export async function markdownToADF(markdown: string) {
+  const tree = unified().use(remarkParse).parse(markdown);
+
+  const paragraphs = tree.children
+    .map((node: any) => transformNode(node, []))
+    .filter(Boolean) as ADFNode[];
+
+  return {
+    type: "doc",
+    attrs: { schemaVersion: "v1" },
+    content: paragraphs,
+  };
+}
 export interface ADFNode {
   type: string;
   attrs?: Record<string, any>;

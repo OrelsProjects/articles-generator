@@ -111,7 +111,7 @@ export default function AuthProvider({
           paramsToRemove: ["redirect"],
         });
       } else if (pathname.includes("login")) {
-        router.push("/home", { preserveQuery: true });
+        // router.push("/home", { preserveQuery: true });
       }
     }
   };

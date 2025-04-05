@@ -10,21 +10,12 @@ import { Button } from "@/components/ui/button";
 import { ImprovementType } from "@/lib/prompts";
 import { formatText, textEditorOptions } from "@/lib/utils/text-editor";
 import { EditorContent, useEditor } from "@tiptap/react";
-import {
-  ArrowRight,
-  BrainCircuit,
-  Edit3,
-  FileEdit,
-  Lightbulb,
-  Loader2,
-} from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { motion, Variants } from "framer-motion";
-import { Product } from "@/types/payment";
+import { motion } from "framer-motion";
 import { initialTextForEnhancement, textByType } from "@/lib/landing-consts";
 import { appName } from "@/lib/consts";
-import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { cn } from "@/lib/utils";
 import { HeroSection } from "@/components/landing/hero-section";
 import Header from "@/components/landing/header";

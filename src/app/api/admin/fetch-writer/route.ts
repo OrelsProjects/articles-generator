@@ -1,6 +1,6 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
-import { fetchAuthor } from "@/lib/lambda";
+import { fetchAuthor } from "@/lib/utils/lambda";
 import { FeatureFlag } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";

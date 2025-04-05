@@ -1,21 +1,5 @@
+import { markdownToADF } from "@/lib/utils/adf";
 import { NextRequest, NextResponse } from "next/server";
-import { unified } from "unified";
-import remarkParse from "remark-parse";
-import { ADFNode, transformNode } from "@/lib/utils/adf";
-
-function markdownToADF(markdown: string) {
-  const tree = unified().use(remarkParse).parse(markdown);
-
-  const paragraphs = tree.children
-    .map((node: any) => transformNode(node, []))
-    .filter(Boolean) as ADFNode[];
-
-  return {
-    type: "doc",
-    attrs: { schemaVersion: "v1" },
-    content: paragraphs,
-  };
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,7 +12,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const adf = markdownToADF(markdown);
+    const adf = await markdownToADF(markdown);
 
     return NextResponse.json(adf);
   } catch (err: any) {

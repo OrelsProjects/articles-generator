@@ -1,6 +1,6 @@
 "use client";
 
-import {  useState } from "react";
+import { useState } from "react";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import {
@@ -130,7 +130,8 @@ export default function SettingsPage() {
                               .NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
                           }
                         >
-                          Manage your plan <ExternalLink className="w-4 h-4 ml-2" />
+                          Manage your plan{" "}
+                          <ExternalLink className="w-4 h-4 ml-2" />
                         </Link>
                       </Button>
                     </div>
@@ -277,6 +278,18 @@ export default function SettingsPage() {
             </div>
           </DialogContent>
         </Dialog>
+        <div className="w-full flex justify-end mt-2">
+          <Button
+            variant="link"
+            size="sm"
+            asChild
+            className="text-muted-foreground text-sm"
+          >
+            <Link href="/tos" target="_blank">
+              Terms of Service
+            </Link>
+          </Button>
+        </div>
       </div>
       <StepSliderDialog
         open={showGetTokensDialog}

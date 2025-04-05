@@ -120,8 +120,6 @@ export function CalendarGrid({
     useState<NodeJS.Timeout | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [edgeDetection, setEdgeDetection] = useState<"left" | "right" | null>(null);
-  const [isChangingMonth, setIsChangingMonth] = useState(false);
-  const [transitionDirection, setTransitionDirection] = useState<"left" | "right" | null>(null);
   const [edgeProgress, setEdgeProgress] = useState(0);
   const edgeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);

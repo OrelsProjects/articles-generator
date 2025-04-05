@@ -99,3 +99,10 @@ export const archiveNote = async (noteId: string) => {
     data: { isArchived: true },
   });
 };
+
+export const getNoteById = async (noteId: string): Promise<Note | null> => {
+  const note = await prisma.note.findUnique({
+    where: { id: noteId },
+  });
+  return note;
+};
