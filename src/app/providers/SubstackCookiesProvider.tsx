@@ -1,6 +1,5 @@
 "use client";
 
-import { setSubstackCookies } from "@/lib/dal/substackCookies";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { useExtension } from "@/lib/hooks/useExtension";
 import { Logger } from "@/logger";
@@ -33,23 +32,23 @@ export function SubstackCookiesProvider({
   }, [user]);
 
   useEffect(() => {
-    // if (!user || loading.current) return;
-    // loading.current = true;
-    // testSendNote().catch(e => {
-    //   debugger;
-    // });
-    // setUserSubstackCookies()
-    //   .then(() => {
-    //     Logger.info("User substack cookies set");
-    //   })
-    //   .catch(error => {
-    //     Logger.error(
-    //       "Error setting user substack cookies: " + JSON.stringify(error),
-    //     );
-    //   })
-    //   .finally(() => {
-    //     loading.current = false;
-    //   });
+    if (!user || loading.current) return;
+    loading.current = true;
+    testSendNote().catch(e => {
+      debugger;
+    });
+    setUserSubstackCookies()
+      .then(() => {
+        Logger.info("User substack cookies set");
+      })
+      .catch(error => {
+        Logger.error(
+          "Error setting user substack cookies: " + JSON.stringify(error),
+        );
+      })
+      .finally(() => {
+        loading.current = false;
+      });
   }, [user]);
 
   return <>{children}</>;
