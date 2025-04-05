@@ -1,13 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  NoteFeedback,
-} from "@/types/note";
-import {
-  RefreshCw,
-  ThumbsDown,
-  X,
-} from "lucide-react";
+import { NoteFeedback } from "@/types/note";
+import { RefreshCw, ThumbsDown, X } from "lucide-react";
 import { useState } from "react";
 import {
   Popover,
@@ -102,7 +96,7 @@ export const DislikeFeedbackPopover = ({
           )}
         </TooltipButton>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" side="top">
+      <PopoverContent hideCloseButton className="w-80 p-4" side="top">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-medium text-sm">

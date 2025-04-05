@@ -109,7 +109,7 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
             "opacity-70": isLoading,
           },
         )}
-      >
+      > 
         {isLoading && (
           <Loader2 className="h-2 w-2 md:h-3 md:w-3 animate-spin mr-0.5 md:mr-1" />
         )}

@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
-import { convertMDToHtml, Note, NoteDraft, NoteStatus } from "@/types/note";
+import {
+  convertMDToHtml,
+  Note,
+  NoteDraft,
+  NoteFeedback,
+  NoteStatus,
+} from "@/types/note";
 import {
   Heart,
   MessageCircle,
@@ -30,6 +36,88 @@ export type NoteProps = {
     allowAuthorClick?: boolean;
   };
 };
+
+const NotesActions = ({
+  isUserNote,
+  loadingFeedback,
+  loadingArchive,
+  feedback,
+  isDislikePopoverOpen,
+  setIsDislikePopoverOpen,
+  handleFeedbackChange,
+  handleArchive,
+  note,
+  extraFeedbackText,
+}: {
+  isUserNote: boolean;
+  loadingFeedback: string | null;
+  loadingArchive: boolean;
+  extraFeedbackText: string;
+  feedback: NoteFeedback | null | undefined;
+  isDislikePopoverOpen: boolean;
+  setIsDislikePopoverOpen: (open: boolean) => void;
+  handleFeedbackChange: (
+    type: "like" | "dislike",
+    feedbackReason?: string,
+  ) => void;
+  handleArchive: () => void;
+  note: Note | NoteDraft;
+}) =>
+  isUserNote && (
+    <div className={cn("w-full flex items-center justify-between")}>
+      <div className={cn("w-full flex items-center gap-0")}>
+        <TooltipButton
+          tooltipContent="Like - this helps our AI understand what you like"
+          disabled={loadingFeedback === "like" || loadingArchive}
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFeedbackChange("like")}
+          className={cn(
+            "hover:text-primary",
+            feedback === "like" && "text-primary",
+          )}
+        >
+          {loadingFeedback === "like" ? (
+            <RefreshCw className="h-4 w-4 animate-spin" />
+          ) : (
+            <ThumbsUp className="h-4 w-4" />
+          )}
+        </TooltipButton>
+        <DislikeFeedbackPopover
+          disabled={loadingFeedback === "dislike" || loadingArchive}
+          isOpen={isDislikePopoverOpen}
+          onOpenChange={setIsDislikePopoverOpen}
+          onSubmit={text => handleFeedbackChange("dislike", text)}
+          isLoading={loadingFeedback === "dislike"}
+          feedback={feedback}
+        />
+      </div>
+      <TooltipButton
+        tooltipContent={
+          "Archive note" + (extraFeedbackText ? ` (${extraFeedbackText})` : "")
+        }
+        variant="ghost"
+        size="sm"
+        className="hover:text-red-500"
+        disabled={loadingArchive}
+        onClick={handleArchive}
+      >
+        {loadingArchive ? (
+          <RefreshCw className="h-4 w-4 animate-spin" />
+        ) : (
+          <Archive className="h-4 w-4" />
+        )}
+      </TooltipButton>
+
+      {/* Replace the Substack posting button with the new component */}
+      <InstantPostButton
+        note={note}
+        size="sm"
+        variant="ghost"
+        source="note_component"
+      />
+    </div>
+  );
 
 export default function NoteComponent({
   note,
@@ -284,64 +372,6 @@ export default function NoteComponent({
     });
   };
 
-  const NotesActions = () =>
-    isUserNote && (
-      <div className={cn("w-full flex items-center justify-between")}>
-        <div className={cn("w-full flex items-center gap-0")}>
-          <TooltipButton
-            tooltipContent="Like - this helps our AI understand what you like"
-            disabled={loadingFeedback === "like" || loadingArchive}
-            variant="ghost"
-            size="sm"
-            onClick={() => handleFeedbackChange("like")}
-            className={cn(
-              "hover:text-primary",
-              feedback === "like" && "text-primary",
-            )}
-          >
-            {loadingFeedback === "like" ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <ThumbsUp className="h-4 w-4" />
-            )}
-          </TooltipButton>
-          <DislikeFeedbackPopover
-            disabled={loadingFeedback === "dislike" || loadingArchive}
-            isOpen={isDislikePopoverOpen}
-            onOpenChange={setIsDislikePopoverOpen}
-            onSubmit={text => handleFeedbackChange("dislike", text)}
-            isLoading={loadingFeedback === "dislike"}
-            feedback={feedback}
-          />
-        </div>
-        <TooltipButton
-          tooltipContent={
-            "Archive note" +
-            (extraFeedbackText ? ` (${extraFeedbackText})` : "")
-          }
-          variant="ghost"
-          size="sm"
-          className="hover:text-red-500"
-          disabled={loadingArchive}
-          onClick={handleArchive}
-        >
-          {loadingArchive ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <Archive className="h-4 w-4" />
-          )}
-        </TooltipButton>
-
-        {/* Replace the Substack posting button with the new component */}
-        <InstantPostButton
-          note={note}
-          size="sm"
-          variant="ghost"
-          source="note_component"
-        />
-      </div>
-    );
-
   useEffect(() => {
     convertMDToHtml(note.body).then(html => {
       setHtmlContent(html);
@@ -468,7 +498,18 @@ export default function NoteComponent({
                 "w-full pr-4": isUserNote,
               })}
             >
-              <NotesActions />
+              <NotesActions
+                isUserNote={isUserNote}
+                loadingFeedback={loadingFeedback}
+                loadingArchive={loadingArchive}
+                feedback={feedback}
+                isDislikePopoverOpen={isDislikePopoverOpen}
+                setIsDislikePopoverOpen={setIsDislikePopoverOpen}
+                handleFeedbackChange={handleFeedbackChange}
+                handleArchive={handleArchive}
+                note={note}
+                extraFeedbackText={extraFeedbackText}
+              />
               <Button
                 onClick={() =>
                   window.open(

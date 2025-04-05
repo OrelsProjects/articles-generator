@@ -774,6 +774,8 @@ export const generateNotesPrompt = (
     The inspiration for new notes have to be from the user's notes and description, not from random things on the internet.
     Avoid repeating the same notes as the user's previously written notes or inspiration notes,
     or writing something that is the opposite of what the user wrote.
+    Make sure to not repeat the same topics as the user's previously written notes. Be very unique and creative.
+    The notes must be different from the user's previously written notes.
     Each note should have a great hook, that will entice the user to read it from the get-go.
     ${
       noteTemplates.length > 0
