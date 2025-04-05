@@ -15,6 +15,7 @@ export const updateableFields = [
 ] as (keyof NoteDraft)[];
 
 export async function isOwnerOfNote(noteId: string, userId: string) {
+  console.log("About to check owner of note", noteId, userId);
   const note = await prisma.note.findUnique({
     where: {
       id: noteId,
