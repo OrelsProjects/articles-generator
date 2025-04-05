@@ -92,11 +92,11 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
         className={cn(
           "h-fit text-xs rounded-full !py-0.5 px-4 user-select-none my-auto border opacity-80",
           {
-            "border-green-500/70 text-green-500": currentStatus === "published",
-            "border-gray-500/70 text-gray-500": currentStatus === "draft",
-            "border-yellow-500/70 text-yellow-500":
+            "border-green-500/70 !text-green-500": currentStatus === "published",
+            "border-gray-500/70 !text-gray-500": currentStatus === "draft",
+            "border-yellow-500/70 !text-yellow-500":
               currentStatus === "scheduled",
-            "border-red-500/70 text-red-500": note.isArchived,
+            "border-red-500/70 !text-red-500": note.isArchived,
             "opacity-70": isLoading,
           },
         )}
@@ -106,8 +106,10 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
         )}
         <span className="hidden md:block">{currentStatus}</span>
         <span className="block md:hidden">
-          {currentStatus.charAt(0).toUpperCase() +
-            currentStatus.charAt(1).toLowerCase()}
+          {currentStatus === "scheduled"
+            ? currentStatus
+            : currentStatus.charAt(0).toUpperCase() +
+              currentStatus.charAt(1).toLowerCase()}
           .
         </span>
       </Badge>
