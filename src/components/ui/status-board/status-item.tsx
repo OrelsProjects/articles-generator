@@ -6,9 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { StatusItem as StatusItemType } from "./types";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { InstantPostButton } from "@/components/notes/instant-post-button";
-import { useState, CSSProperties } from "react";
+import { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
+import StatusBadgeDropdown from "@/components/notes/status-badge-dropdown";
 interface StatusItemProps {
   item: StatusItemType;
   onSelectItem: (itemId: UniqueIdentifier, content: string) => void;
@@ -24,8 +24,6 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
     transition,
     isDragging,
   } = useSortable({ id: item.id });
-
-  const [isHovering, setIsHovering] = useState(false);
 
   const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -43,7 +41,7 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
         "cursor-pointer active:cursor-grabbing",
         isDragging ? "z-10" : "",
         selected ? "border-primary/60" : "",
-        "touch-none"
+        "touch-none",
       )}
       onClick={e => {
         e.stopPropagation();
@@ -51,14 +49,6 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
       }}
       {...attributes}
       {...listeners}
-      onMouseEnter={() => {
-        setIsHovering(true);
-        listeners?.onMouseEnter?.();
-      }}
-      onMouseLeave={() => {
-        setIsHovering(false);
-        listeners?.onMouseLeave?.();
-      }}
     >
       <CardContent className="p-3">
         <div className="flex items-start gap-2">
@@ -73,14 +63,9 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
             {item.author && (
               <div className="w-full flex justify-between">
                 <div className="font-medium text-sm pt-1.5">{item.author}</div>
-                <InstantPostButton
-                  note={item.id.toString()}
-                  source="status-board"
-                  className={cn(
-                    "hidden lg:flex opacity-0 transition-opacity duration-200",
-                    isHovering && "opacity-100",
-                  )}
-                />
+                {item.noteDraft && item.status === "scheduled" && (
+                  <StatusBadgeDropdown note={item.noteDraft} />
+                )}
               </div>
             )}
             <div className="text-sm break-words">{item.content}</div>

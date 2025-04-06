@@ -402,30 +402,21 @@ export default function NoteComponent({
         <div className="w-full flex-col items-start gap-4 transition-opacity duration-200">
           <div
             className={cn(
-              "w-full flex justify-between border-b border-border/60 p-2 relative",
+              "w-full flex justify-between items-center border-b border-border/60 p-2 relative",
               {
                 "opacity-60": feedback === "dislike",
               },
             )}
           >
             <Author />
-            <div className="z-30 relative my-auto">
+            <div className=" flex items-center gap-2  top-0">
               {isUserNote && (
                 <StatusBadgeDropdown
                   note={note as NoteDraft}
-                  onStatusChange={handleStatusChange}
                 />
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-muted-foreground">
-                {new Date(note.createdAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
+            {/* <div className="flex items-center gap-2" /> */}
           </div>
           <div
             className={cn("w-full flex-1", {

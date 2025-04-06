@@ -6,9 +6,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, RefreshCw } from "lucide-react";
 import { StatusItem } from "./status-item";
-import { Button } from "@/components/ui/button";
 import type { UniqueIdentifier } from "@dnd-kit/core";
 import type { StatusItem as StatusItemType } from "./types";
 import { cn } from "@/lib/utils";

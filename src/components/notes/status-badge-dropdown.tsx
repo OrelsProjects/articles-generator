@@ -14,10 +14,11 @@ const STATUSES: NoteStatus[] = ["draft", "scheduled", "published", "failed"];
 
 type StatusBadgeProps = {
   note: NoteDraft;
+  showOnlySchedule?: boolean;
   onStatusChange?: (newStatus: NoteStatus) => Promise<void>;
 };
 
-const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
+const StatusBadgeDropdown = ({ note, onStatusChange, showOnlySchedule }: StatusBadgeProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
@@ -56,7 +57,6 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-
   const currentStatus = useMemo(() => {
     if (note.scheduledTo && !note.wasSentViaSchedule) {
       return "scheduled";
@@ -66,8 +66,8 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
 
   const currentStatusText = useMemo(() => {
     if (note.scheduledTo && !note.wasSentViaSchedule) {
-      // return DDD, HH:MM (24h format)
-      return format(note.scheduledTo, "EEE, HH:mm");
+      // return DD/MM, HH:MM (24h format)
+      return format(note.scheduledTo, "dd/MM, HH:mm");
     }
     return note.status;
   }, [note]);
@@ -100,16 +100,18 @@ const StatusBadgeDropdown = ({ note, onStatusChange }: StatusBadgeProps) => {
         className={cn(
           "h-fit text-xs rounded-full !py-0.5 px-4 user-select-none my-auto border opacity-80",
           {
-            "border-green-500/70 !text-green-500":
+            "border-green-500/70 !text-green-500 dark:border-green-400/70 dark:!text-green-400":
               currentStatus === "published",
-            "border-gray-500/70 !text-gray-500": currentStatus === "draft",
-            "border-yellow-500/70 !text-yellow-500":
+            "border-gray-500/70 !text-gray-500 dark:border-gray-400/70 dark:!text-gray-400":
+              currentStatus === "draft",
+            "border-yellow-500/70 !text-yellow-500 dark:border-yellow-400/70 dark:!text-yellow-400":
               currentStatus === "scheduled",
-            "border-red-500/70 !text-red-500": note.isArchived,
+            "border-red-500/70 !text-red-500 dark:border-red-400/70 dark:!text-red-400":
+              note.isArchived,
             "opacity-70": isLoading,
           },
         )}
-      > 
+      >
         {isLoading && (
           <Loader2 className="h-2 w-2 md:h-3 md:w-3 animate-spin mr-0.5 md:mr-1" />
         )}

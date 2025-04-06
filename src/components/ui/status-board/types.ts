@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react"
 import type { UniqueIdentifier } from "@dnd-kit/core"
+import { NoteDraft } from "@/types/note"
 
 export interface StatusItem {
   id: UniqueIdentifier
@@ -8,6 +9,7 @@ export interface StatusItem {
   author?: string
   avatar?: string
   createdAt: string
+  noteDraft?: NoteDraft
 }
 
 export interface StatusColumn {
