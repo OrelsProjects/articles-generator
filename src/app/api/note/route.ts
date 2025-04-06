@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       id: note.id,
       body: note.body,
       status: note.status,
-      timestamp: note.createdAt,
+      createdAt: note.createdAt,
       authorId: authorId || 0,
       authorName: name,
       handle,

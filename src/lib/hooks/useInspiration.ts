@@ -155,11 +155,11 @@ export function useInspiration() {
         sortedNotes = [...notes].sort((a, b) => {
           if (direction === "asc") {
             return (
-              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
             );
           } else {
             return (
-              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
           }
         });

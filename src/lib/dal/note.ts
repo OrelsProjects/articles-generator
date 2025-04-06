@@ -11,7 +11,7 @@ export const updateableFields = [
   "body",
   "isArchived",
   "scheduledTo",
-  "timestamp",
+  "createdAt",
 ] as (keyof NoteDraft)[];
 
 export async function isOwnerOfNote(noteId: string, userId: string) {

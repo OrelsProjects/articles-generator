@@ -73,8 +73,8 @@ export const HeroSection = () => {
               {/* Feature list */}
               <ul className="w-full flex flex-col lg:flex-row gap-2 justify-center items-center">
                 {[
+                  "NOTES SCHEDULING",
                   "VIRAL NOTES RESEARCH TOOL",
-                  "PERSONALIZED GENERATED NOTES",
                   "2.7X MORE SUBSCRIBERS",
                 ].map((feature, index) => (
                   <li

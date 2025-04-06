@@ -180,6 +180,7 @@ export const generateSessionId = async (options: {
 
   const stripeSession = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
+    
     line_items: [
       {
         price: priceId,
@@ -193,6 +194,7 @@ export const generateSessionId = async (options: {
     client_reference_id: options.referralCode || userId,
     customer_email: email || "",
     allow_promotion_codes: options.allowCoupon || false,
+
     metadata: {
       clientName: name || "",
       productId,

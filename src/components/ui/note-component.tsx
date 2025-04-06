@@ -419,7 +419,7 @@ export default function NoteComponent({
             </div>
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">
-                {new Date(note.timestamp).toLocaleDateString("en-US", {
+                {new Date(note.createdAt).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",

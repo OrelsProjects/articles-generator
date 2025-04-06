@@ -47,7 +47,7 @@ export interface NoteDraft {
   thumbnail?: string;
   body: string;
   jsonBody?: any[];
-  timestamp: Date;
+  createdAt: Date;
   authorId: number | null;
   name?: string;
   handle?: string;
@@ -68,7 +68,7 @@ export interface Note {
   thumbnail?: string;
   body: string;
   jsonBody: any[];
-  timestamp: Date;
+  createdAt: Date;
   authorId: number;
   authorName: string;
   handle: string;
@@ -186,7 +186,7 @@ export function noteToNoteDraft(note: Note | null): NoteDraft | null {
     thumbnail: "",
     body: note.body,
     jsonBody: note.jsonBody,
-    timestamp: new Date(),
+    createdAt: new Date(),
     authorId: null,
     status: "draft",
     authorName: "",

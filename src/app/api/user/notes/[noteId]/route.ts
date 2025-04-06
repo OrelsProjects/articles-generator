@@ -37,7 +37,7 @@ export async function GET(
       id: note.id,
       body: note.body,
       status: note.status,
-      timestamp: note.createdAt,
+      createdAt: note.createdAt,
       authorId: note.authorId || 0,
       authorName: note.name || "",
       handle: note.handle || "",

@@ -302,7 +302,7 @@ export async function POST(
       id: note.id,
       body: note.body,
       jsonBody: note.bodyJson as any[],
-      timestamp: note.createdAt,
+      createdAt: note.createdAt,
       authorId: parseInt(authorId.toString()),
       authorName: note.name || "",
       handle: note.handle || "",

@@ -29,7 +29,7 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
         status: note.status,
         author: note.authorName,
         avatar: note.thumbnail,
-        createdAt: new Date(note.timestamp).toLocaleDateString(),
+        createdAt: new Date(note.createdAt).toLocaleDateString(),
       }));
     },
     [],

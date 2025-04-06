@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
       id: note.id,
       thumbnail: note.thumbnail || session.user.image || undefined,
       body: note.body,
-      timestamp: note.createdAt,
+      createdAt: note.createdAt,
       authorId: note.authorId,
       authorName: note.name || session.user.name || "",
       status: note.status,

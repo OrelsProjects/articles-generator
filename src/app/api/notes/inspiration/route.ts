@@ -259,7 +259,7 @@ export async function POST(req: NextRequest) {
         id: note.commentId,
         content: note.body,
         jsonBody: note.bodyJson as any[],
-        timestamp: note.date,
+        createdAt: note.date,
         authorId: note.authorId,
         authorName: note.name || "",
         body: note.body,
