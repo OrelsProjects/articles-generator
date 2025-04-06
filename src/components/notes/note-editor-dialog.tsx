@@ -50,6 +50,8 @@ import { useUi } from "@/lib/hooks/useUi";
 import { useExtension } from "@/lib/hooks/useExtension";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
 import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
+import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";
+import NoSubstackCookiesDialog from "@/components/notes/no-substack-cookies-dialog";
 export function NotesEditorDialog() {
   const { selectedNote } = useAppSelector(selectNotes);
   const { showScheduleModal, updateShowScheduleModal } = useUi();
@@ -60,10 +62,15 @@ export function NotesEditorDialog() {
     loadingEditNote,
     updateNoteStatus,
   } = useNotes();
-  const { scheduleNote, loadingUpdateNote } = useNotesSchedule();
+  const {
+    scheduleNote,
+    loadingUpdateNote,
+    initCanUserScheduleInterval,
+    isIntervalRunning,
+    cancelCanUserScheduleInterval,
+  } = useNotesSchedule();
 
   const { isLoading: isSendingNote, hasExtension } = useExtension();
-
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
 
   const [open, setOpen] = useState(false);
@@ -75,6 +82,8 @@ export function NotesEditorDialog() {
   const [confirmedSchedule, setConfirmedSchedule] = useState(false);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [timeError, setTimeError] = useState<string | null>(null);
+  const [showNoSubstackCookiesDialog, setShowNoSubstackCookiesDialog] =
+    useState(false);
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
@@ -289,7 +298,11 @@ export function NotesEditorDialog() {
           },
         );
       } catch (e: any) {
-        toast.error("Failed to schedule note");
+        if (e instanceof NoSubstackCookiesError) {
+          setShowNoSubstackCookiesDialog(true);
+        } else {
+          toast.error("Failed to schedule note");
+        }
       }
     } else if (selectedNote?.status === "scheduled") {
       setUnscheduling(true);
@@ -304,312 +317,324 @@ export function NotesEditorDialog() {
     }
   };
 
+  const handleSubstackLogin = () => {
+    initCanUserScheduleInterval()
+      ?.then(() => {
+        setShowNoSubstackCookiesDialog(false);
+      })
+      .catch(() => {
+        toast.error("Didn't find any Substack login. Try again please.");
+      });
+  };
+
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        hideCloseButton
-        className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl"
-      >
-        <div className="flex flex-col w-full">
-          <div className="flex items-start p-4 gap-3">
-            <Avatar className="h-10 w-10 border">
-              <AvatarImage src={thumbnail || ""} alt="User" />
-              <AvatarFallback>{userInitials}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h3 className="font-medium text-foreground">
-                {name || userName}
-              </h3>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent
+          hideCloseButton
+          className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl"
+        >
+          <div className="flex flex-col w-full">
+            <div className="flex items-start p-4 gap-3">
+              <Avatar className="h-10 w-10 border">
+                <AvatarImage src={thumbnail || ""} alt="User" />
+                <AvatarFallback>{userInitials}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h3 className="font-medium text-foreground">
+                  {name || userName}
+                </h3>
 
-              {editor && (
-                <NoteEditor
-                  editor={editor}
-                  className="w-full h-full"
-                  textEditorClassName="!px-0"
-                />
-              )}
+                {editor && (
+                  <NoteEditor
+                    editor={editor}
+                    className="w-full h-full"
+                    textEditorClassName="!px-0"
+                  />
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center justify-between p-4 border-t border-border">
-            <div className="flex gap-4">
-              <Dialog
-                open={scheduleDialogOpen}
-                onOpenChange={setScheduleDialogOpen}
-              >
-                <DialogTrigger asChild>
-                  <TooltipButton
-                    tooltipContent="Schedule note"
-                    variant="ghost"
-                    size="icon"
-                    className={`rounded-full ${confirmedSchedule ? "text-primary/95 hover:text-primary" : "text-muted-foreground hover:text-foreground"} `}
-                  >
-                    <CalendarClock className="h-5 w-5" />
-                  </TooltipButton>
-                </DialogTrigger>
-                <DialogContent
-                  hideCloseButton
-                  className="max-w-[550px] p-0 gap-0 border-border bg-background rounded-xl"
+            <div className="flex items-center justify-between p-4 border-t border-border">
+              <div className="flex gap-4">
+                <Dialog
+                  open={scheduleDialogOpen}
+                  onOpenChange={setScheduleDialogOpen}
                 >
-                  <div className="p-6 flex flex-col gap-6">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-bold text-foreground">
-                        Schedule
-                      </h2>
-                      <div className="flex gap-3">
-                        <Button
-                          variant="ghost"
-                          className="hover:bg-accent hover:text-accent-foreground transition-colors"
-                          onClick={handleClearSchedule}
-                        >
-                          Clear
-                        </Button>
-                        <Button
-                          className="rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90"
-                          onClick={handleConfirmSchedule}
-                          disabled={!isTimeValid}
-                        >
-                          Confirm
-                        </Button>
+                  <DialogTrigger asChild>
+                    <TooltipButton
+                      tooltipContent="Schedule note"
+                      variant="ghost"
+                      size="icon"
+                      className={`rounded-full ${confirmedSchedule ? "text-primary/95 hover:text-primary" : "text-muted-foreground hover:text-foreground"} `}
+                    >
+                      <CalendarClock className="h-5 w-5" />
+                    </TooltipButton>
+                  </DialogTrigger>
+                  <DialogContent
+                    hideCloseButton
+                    className="max-w-[550px] p-0 gap-0 border-border bg-background rounded-xl"
+                  >
+                    <div className="p-6 flex flex-col gap-6">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-bold text-foreground">
+                          Schedule
+                        </h2>
+                        <div className="flex gap-3">
+                          <Button
+                            variant="ghost"
+                            className="hover:bg-accent hover:text-accent-foreground transition-colors"
+                            onClick={handleClearSchedule}
+                          >
+                            Clear
+                          </Button>
+                          <Button
+                            className="rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90"
+                            onClick={handleConfirmSchedule}
+                            disabled={!isTimeValid}
+                          >
+                            Confirm
+                          </Button>
+                        </div>
+                      </div>
+
+                      {scheduleIsSet && (
+                        <div className="py-2 px-4 bg-accent/30 rounded-md">
+                          {renderScheduleTimeText()}
+                        </div>
+                      )}
+
+                      {timeError && (
+                        <div className="py-2 px-4 bg-destructive/20 text-destructive rounded-md text-sm">
+                          {timeError}
+                        </div>
+                      )}
+
+                      <div className="space-y-8">
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium text-foreground">
+                            Date
+                          </h3>
+                          <div className="grid grid-cols-3 gap-4">
+                            <Select
+                              value={
+                                scheduledDate
+                                  ? getMonthValue(scheduledDate)
+                                  : undefined
+                              }
+                              onValueChange={value =>
+                                handleDateUpdate("month", value)
+                              }
+                            >
+                              <SelectTrigger className="h-11 bg-background border-border">
+                                <SelectValue placeholder="Month" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border-border">
+                                {months.map(month => (
+                                  <SelectItem
+                                    key={month}
+                                    value={month}
+                                    className="focus:bg-accent focus:text-accent-foreground"
+                                  >
+                                    {month}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            <Select
+                              value={
+                                scheduledDate
+                                  ? getDayValue(scheduledDate)
+                                  : undefined
+                              }
+                              onValueChange={value =>
+                                handleDateUpdate("day", value)
+                              }
+                            >
+                              <SelectTrigger className="h-11 bg-background border-border">
+                                <SelectValue placeholder="Day" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border-border">
+                                {generateDays(scheduledDate).map(day => (
+                                  <SelectItem
+                                    key={day}
+                                    value={day}
+                                    className="focus:bg-accent focus:text-accent-foreground"
+                                  >
+                                    {day}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            <Select
+                              value={
+                                scheduledDate
+                                  ? getYearValue(scheduledDate)
+                                  : undefined
+                              }
+                              onValueChange={value =>
+                                handleDateUpdate("year", value)
+                              }
+                            >
+                              <SelectTrigger className="h-11 bg-background border-border">
+                                <SelectValue placeholder="Year" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border-border">
+                                {generateYears().map(year => (
+                                  <SelectItem
+                                    key={year}
+                                    value={year}
+                                    className="focus:bg-accent focus:text-accent-foreground"
+                                  >
+                                    {year}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium text-foreground">
+                            Time
+                          </h3>
+                          <div className="grid grid-cols-3 gap-4">
+                            <Select
+                              value={
+                                scheduledDate
+                                  ? getHourValue(scheduledDate)
+                                  : undefined
+                              }
+                              onValueChange={value =>
+                                handleTimeUpdate("hour", value)
+                              }
+                            >
+                              <SelectTrigger className="h-11 bg-background border-border">
+                                <SelectValue placeholder="Hour" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border-border">
+                                {generateHours().map(hour => (
+                                  <SelectItem
+                                    key={hour}
+                                    value={hour}
+                                    className="focus:bg-accent focus:text-accent-foreground"
+                                  >
+                                    {hour}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            <Select
+                              value={
+                                scheduledDate
+                                  ? getMinuteValue(scheduledDate)
+                                  : undefined
+                              }
+                              onValueChange={value =>
+                                handleTimeUpdate("minute", value)
+                              }
+                            >
+                              <SelectTrigger className="h-11 bg-background border-border">
+                                <SelectValue placeholder="Minute" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border-border h-[200px]">
+                                {generateMinutes().map(minute => (
+                                  <SelectItem
+                                    key={minute}
+                                    value={minute}
+                                    className="focus:bg-accent focus:text-accent-foreground"
+                                  >
+                                    {minute}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            <Select
+                              value={
+                                scheduledDate
+                                  ? getAmPmValue(scheduledDate)
+                                  : undefined
+                              }
+                              onValueChange={value =>
+                                handleTimeUpdate("ampm", value)
+                              }
+                            >
+                              <SelectTrigger className="h-11 bg-background border-border">
+                                <SelectValue placeholder="AM/PM" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border-border">
+                                <SelectItem
+                                  value="AM"
+                                  className="focus:bg-accent focus:text-accent-foreground"
+                                >
+                                  AM
+                                </SelectItem>
+                                <SelectItem
+                                  value="PM"
+                                  className="focus:bg-accent focus:text-accent-foreground"
+                                >
+                                  PM
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 bg-muted/10 p-4 py-2 rounded-md">
+                          <div className="text-muted-foreground text-lg font-medium">
+                            {timezone}
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    {scheduleIsSet && (
-                      <div className="py-2 px-4 bg-accent/30 rounded-md">
-                        {renderScheduleTimeText()}
-                      </div>
-                    )}
-
-                    {timeError && (
-                      <div className="py-2 px-4 bg-destructive/20 text-destructive rounded-md text-sm">
-                        {timeError}
-                      </div>
-                    )}
-
-                    <div className="space-y-8">
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-medium text-foreground">
-                          Date
-                        </h3>
-                        <div className="grid grid-cols-3 gap-4">
-                          <Select
-                            value={
-                              scheduledDate
-                                ? getMonthValue(scheduledDate)
-                                : undefined
-                            }
-                            onValueChange={value =>
-                              handleDateUpdate("month", value)
-                            }
-                          >
-                            <SelectTrigger className="h-11 bg-background border-border">
-                              <SelectValue placeholder="Month" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background border-border">
-                              {months.map(month => (
-                                <SelectItem
-                                  key={month}
-                                  value={month}
-                                  className="focus:bg-accent focus:text-accent-foreground"
-                                >
-                                  {month}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          <Select
-                            value={
-                              scheduledDate
-                                ? getDayValue(scheduledDate)
-                                : undefined
-                            }
-                            onValueChange={value =>
-                              handleDateUpdate("day", value)
-                            }
-                          >
-                            <SelectTrigger className="h-11 bg-background border-border">
-                              <SelectValue placeholder="Day" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background border-border">
-                              {generateDays(scheduledDate).map(day => (
-                                <SelectItem
-                                  key={day}
-                                  value={day}
-                                  className="focus:bg-accent focus:text-accent-foreground"
-                                >
-                                  {day}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          <Select
-                            value={
-                              scheduledDate
-                                ? getYearValue(scheduledDate)
-                                : undefined
-                            }
-                            onValueChange={value =>
-                              handleDateUpdate("year", value)
-                            }
-                          >
-                            <SelectTrigger className="h-11 bg-background border-border">
-                              <SelectValue placeholder="Year" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background border-border">
-                              {generateYears().map(year => (
-                                <SelectItem
-                                  key={year}
-                                  value={year}
-                                  className="focus:bg-accent focus:text-accent-foreground"
-                                >
-                                  {year}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-medium text-foreground">
-                          Time
-                        </h3>
-                        <div className="grid grid-cols-3 gap-4">
-                          <Select
-                            value={
-                              scheduledDate
-                                ? getHourValue(scheduledDate)
-                                : undefined
-                            }
-                            onValueChange={value =>
-                              handleTimeUpdate("hour", value)
-                            }
-                          >
-                            <SelectTrigger className="h-11 bg-background border-border">
-                              <SelectValue placeholder="Hour" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background border-border">
-                              {generateHours().map(hour => (
-                                <SelectItem
-                                  key={hour}
-                                  value={hour}
-                                  className="focus:bg-accent focus:text-accent-foreground"
-                                >
-                                  {hour}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          <Select
-                            value={
-                              scheduledDate
-                                ? getMinuteValue(scheduledDate)
-                                : undefined
-                            }
-                            onValueChange={value =>
-                              handleTimeUpdate("minute", value)
-                            }
-                          >
-                            <SelectTrigger className="h-11 bg-background border-border">
-                              <SelectValue placeholder="Minute" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background border-border h-[200px]">
-                              {generateMinutes().map(minute => (
-                                <SelectItem
-                                  key={minute}
-                                  value={minute}
-                                  className="focus:bg-accent focus:text-accent-foreground"
-                                >
-                                  {minute}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          <Select
-                            value={
-                              scheduledDate
-                                ? getAmPmValue(scheduledDate)
-                                : undefined
-                            }
-                            onValueChange={value =>
-                              handleTimeUpdate("ampm", value)
-                            }
-                          >
-                            <SelectTrigger className="h-11 bg-background border-border">
-                              <SelectValue placeholder="AM/PM" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background border-border">
-                              <SelectItem
-                                value="AM"
-                                className="focus:bg-accent focus:text-accent-foreground"
-                              >
-                                AM
-                              </SelectItem>
-                              <SelectItem
-                                value="PM"
-                                className="focus:bg-accent focus:text-accent-foreground"
-                              >
-                                PM
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 bg-muted/10 p-4 py-2 rounded-md">
-                        <div className="text-muted-foreground text-lg font-medium">
-                          {timezone}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-            <div className="flex gap-3">
-              <InstantPostButton
-                note={selectedNote}
-                source="note-editor-dialog"
-                includeText
-              />
-              <TooltipButton
-                tooltipContent={
-                  confirmedSchedule
-                    ? "Schedule"
-                    : selectedNote?.status === "scheduled"
-                      ? ""
-                      : "Save"
-                }
-                variant="default"
-                className="rounded-full px-6"
-                onClick={handleSave}
-                disabled={
-                  editor?.getText().trim().length === 0 ||
-                  loadingEditNote ||
-                  loadingUpdateNote ||
-                  isSendingNote
-                }
-              >
-                {loadingEditNote
-                  ? unscheduling
-                    ? "Unscheduling note..."
-                    : "Saving note..."
-                  : loadingUpdateNote
-                    ? "Scheduling note..."
-                    : confirmedSchedule
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <div className="flex gap-3">
+                <InstantPostButton
+                  note={selectedNote}
+                  source="note-editor-dialog"
+                  includeText
+                />
+                <TooltipButton
+                  tooltipContent={
+                    confirmedSchedule
                       ? "Schedule"
                       : selectedNote?.status === "scheduled"
-                        ? "Unschedule"
-                        : "Save"}
-              </TooltipButton>
+                        ? ""
+                        : "Save"
+                  }
+                  variant="default"
+                  className="rounded-full px-6"
+                  onClick={handleSave}
+                  disabled={
+                    editor?.getText().trim().length === 0 ||
+                    loadingEditNote ||
+                    loadingUpdateNote ||
+                    isSendingNote
+                  }
+                >
+                  {loadingEditNote
+                    ? unscheduling
+                      ? "Unscheduling note..."
+                      : "Saving note..."
+                    : loadingUpdateNote
+                      ? "Scheduling note..."
+                      : confirmedSchedule
+                        ? "Schedule"
+                        : selectedNote?.status === "scheduled"
+                          ? "Unschedule"
+                          : "Save"}
+                </TooltipButton>
+              </div>
             </div>
           </div>
-        </div>
-      </DialogContent>
+        </DialogContent>
+      </Dialog>
       <ExtensionInstallDialog
         open={showExtensionDialog}
         onOpenChange={setShowExtensionDialog}
@@ -617,6 +642,16 @@ export function NotesEditorDialog() {
           setShowExtensionDialog(false);
         }}
       />
-    </Dialog>
+      <NoSubstackCookiesDialog
+        open={showNoSubstackCookiesDialog}
+        onOpenChange={setShowNoSubstackCookiesDialog}
+        onSubstackLogin={handleSubstackLogin}
+        onCancel={() => {
+          setShowNoSubstackCookiesDialog(false);
+          cancelCanUserScheduleInterval();
+        }}
+        loading={isIntervalRunning}
+      />
+    </>
   );
 }

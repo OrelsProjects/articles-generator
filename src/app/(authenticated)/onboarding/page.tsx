@@ -64,7 +64,9 @@ export default function OnboardingPage() {
       <Dialog open={showPaymentDialog} onOpenChange={handlePaymentDialogChange}>
         <DialogContent closeOnOutsideClick={false}>
           <DialogHeader>
-            <DialogTitle>Almost done!</DialogTitle>
+            <DialogTitle
+              aria-label="Almost done!"
+            >Almost done!</DialogTitle>
             <DialogDescription>
               The last step is to{" "}
               {plan && interval ? "confirm your payment" : "choose a plan"} and

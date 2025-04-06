@@ -388,16 +388,18 @@ export default function AdminPage() {
               variant="ghost"
               size="icon"
               className="h-9 w-9"
-              onClick={() => setMessageDialogUser({
-                firstMessage: customMessageResponse,
-                canonicalUrl: 'custom',
-                title: '',
-                scheduledTo: '',
-                publicationName: '',
-                publicationId: 0,
-                reactionCount: 0,
-                status: PotentialClientStatus.new,
-              })}
+              onClick={() =>
+                setMessageDialogUser({
+                  firstMessage: customMessageResponse,
+                  canonicalUrl: "custom",
+                  title: "",
+                  scheduledTo: "",
+                  publicationName: "",
+                  publicationId: 0,
+                  reactionCount: 0,
+                  status: PotentialClientStatus.new,
+                })
+              }
             >
               <MessageCircle className="h-5 w-5 text-primary" />
             </TooltipButton>
@@ -604,7 +606,7 @@ export default function AdminPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>First Message</DialogTitle>
+            <DialogTitle aria-label="First Message">First Message</DialogTitle>
             {messageDialogUser?.authorName && (
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                 <span>For:</span>
@@ -667,7 +669,9 @@ export default function AdminPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Generate Custom Message</DialogTitle>
+            <DialogTitle aria-label="Generate Custom Message">
+              Generate Custom Message
+            </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">

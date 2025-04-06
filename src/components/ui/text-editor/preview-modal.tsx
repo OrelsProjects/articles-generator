@@ -34,7 +34,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
         className="sm:max-w-[90vw] md:max-w-[60vw] max-h-[80vh] z-[9999]"
       >
         <DialogHeader>
-          <DialogTitle>Preview</DialogTitle>
+          <DialogTitle aria-label="Preview">Preview</DialogTitle>
           <DialogDescription>
             You can make additional edits before accepting
           </DialogDescription>
@@ -58,4 +58,4 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
   );
 };
 
-export default PreviewModal; 
+export default PreviewModal;

@@ -68,7 +68,7 @@ export const generateYears = (): string[] => {
 
 export const generateHours = (): string[] => {
   return Array.from({ length: 12 }, (_, i) =>
-    i === 0 ? "12" : (i + 1).toString(),
+    (i + 1).toString(),
   );
 };
 

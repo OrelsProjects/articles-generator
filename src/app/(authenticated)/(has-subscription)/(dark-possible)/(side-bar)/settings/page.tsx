@@ -224,7 +224,10 @@ export default function SettingsPage() {
         <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-xl">
+              <DialogTitle
+                aria-label="Cancel subscription confirmation"
+                className="text-xl"
+              >
                 Wait! Are you sure you want to cancel?
               </DialogTitle>
               <DialogDescription className="pt-4 text-base">

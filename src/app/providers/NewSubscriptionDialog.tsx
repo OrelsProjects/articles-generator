@@ -39,7 +39,7 @@ import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
         <DialogHeader className="flex flex-col items-center">
           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-          <DialogTitle className="text-3xl font-bold">
+          <DialogTitle aria-label="Purchase Successful" className="text-3xl font-bold">
             <p className="text-2xl">Purchase Successful!</p>
           </DialogTitle>
         </DialogHeader>

@@ -204,7 +204,9 @@ export function AnalyzePublicationDialog({
           onOpenAutoFocus={e => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle>Connect your Substack</DialogTitle>
+            <DialogTitle aria-label="Connect your Substack">
+              Connect your Substack
+            </DialogTitle>
             <DialogDescription>
               Enter your Substack URL to connect your newsletter. We&apos;ll
               analyze your content and writing style.

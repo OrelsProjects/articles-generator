@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { StatusItem as StatusItemType } from "./types";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
-import { useState } from "react";
+import { useState, CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 interface StatusItemProps {
   item: StatusItemType;
@@ -27,17 +27,24 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
 
   const [isHovering, setIsHovering] = useState(false);
 
-  const style = {
+  const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    touchAction: "none",
+    userSelect: "none",
   };
 
   return (
     <Card
       ref={setNodeRef}
       style={style}
-      className={`${isDragging ? "z-10" : ""} cursor-pointer active:cursor-grabbing ${selected ? "border-primary/60" : ""}`}
+      className={cn(
+        "cursor-pointer active:cursor-grabbing",
+        isDragging ? "z-10" : "",
+        selected ? "border-primary/60" : "",
+        "touch-none"
+      )}
       onClick={e => {
         e.stopPropagation();
         onSelectItem(item.id, item.content);

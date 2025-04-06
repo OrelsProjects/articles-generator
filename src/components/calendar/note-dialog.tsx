@@ -73,7 +73,7 @@ export function NoteDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">{note.name || "Note"}</DialogTitle>
+          <DialogTitle aria-label="Note" className="text-xl">{note.name || "Note"}</DialogTitle>
           <DialogDescription className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">From:</span>
             <span className="font-medium">{note.authorName}</span>

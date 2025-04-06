@@ -56,19 +56,6 @@ export function StatusColumn({
         color === "green" && "bg-green-100/20 dark:bg-green-500/20",
       )}
     >
-      <Button
-        variant="ghost"
-        className="mt-2 justify-start text-muted-foreground"
-        onClick={handleNewItem}
-        disabled={loadingNewItem}
-      >
-        {loadingNewItem ? (
-          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-        ) : (
-          <Plus className="h-4 w-4 mr-2" />
-        )}
-        Write a note
-      </Button>
       <SortableContext
         items={items.map(item => item.id)}
         strategy={verticalListSortingStrategy}

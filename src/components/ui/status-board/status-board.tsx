@@ -135,17 +135,17 @@ export function StatusBoard({
     const activeColumnId = findColumnOfItem(activeId);
     const overColumnId = findColumnOfItem(overId);
 
-    log(
-      "Drag over:",
-      "activeId:",
-      activeId,
-      "overId:",
-      overId,
-      "activeColumnId:",
-      activeColumnId,
-      "overColumnId:",
-      overColumnId,
-    );
+    // log(
+    //   "Drag over:",
+    //   "activeId:",
+    //   activeId,
+    //   "overId:",
+    //   overId,
+    //   "activeColumnId:",
+    //   activeColumnId,
+    //   "overColumnId:",
+    //   overColumnId,
+    // );
 
     // If no column is found, do nothing
     if (!activeColumnId || !overColumnId) return;
@@ -154,8 +154,6 @@ export function StatusBoard({
     if (overColumnId === overId) {
       // If the item is already in this column, do nothing
       if (activeColumnId === overColumnId) return;
-
-      log("Dragging over column:", overColumnId);
 
       // Move the item to the end of the column
       setColumns(prevColumns => {
@@ -194,8 +192,6 @@ export function StatusBoard({
 
     // If the columns are the same, do nothing (handled by sortable)
     if (activeColumnId === overColumnId) return;
-
-    log("Dragging over item in different column:", overId);
 
     // If the item is being dragged over another item in a different column
     setColumns(prevColumns => {
@@ -321,7 +317,7 @@ export function StatusBoard({
           const updatedItem = { ...activeItem, status: "archived" };
           // if it's
           // Call the onStatusChange callback with the updated item
-          await onStatusChange(updatedItem, "archived");
+          await onStatusChange(updatedItem, "archived", startColumnId);
         } catch (error) {
           log("Error archiving item:", error);
           toast.error("Failed to archive note");
@@ -379,7 +375,7 @@ export function StatusBoard({
 
         try {
           // Call the onStatusChange callback with the updated item
-          await onStatusChange(updatedItem, currentColumnId);
+          await onStatusChange(updatedItem, currentColumnId, startColumnId);
         } catch (error) {
           log("Error updating status, reverting UI:", error);
           toast.error("Failed to update status. Reverting changes.");

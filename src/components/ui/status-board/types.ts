@@ -20,7 +20,7 @@ export interface StatusColumn {
 
 export interface StatusBoardProps {
   initialColumns: StatusColumn[]
-  onStatusChange?: (item: StatusItem, newStatus: UniqueIdentifier) => Promise<void> | void
+  onStatusChange?: (item: StatusItem, newStatus: UniqueIdentifier, previousStatus: UniqueIdentifier | null) => Promise<void> | void
   onSelectItem?: (itemId: UniqueIdentifier, showModal?: boolean) => void
   onNewItem?: (columnId: UniqueIdentifier) => void | Promise<unknown>
   selectedItem?: UniqueIdentifier

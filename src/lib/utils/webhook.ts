@@ -6,11 +6,12 @@ import {
   generateInvoicePaymentFailedEmail,
   generateSubscriptionDeletedEmail,
   generateSubscriptionTrialEndingEmail,
+  welcomeTemplate,
 } from "@/lib/mail/templates";
 import { creditsPerPlan } from "@/lib/plans-consts";
 import { getStripeInstance } from "@/lib/stripe";
 import loggerServer from "@/loggerServer";
-import { Payment, Plan } from "@prisma/client";
+import { Payment, Plan, Subscription } from "@prisma/client";
 import { Stripe } from "stripe";
 
 async function getUserBySubscription(subscription: Stripe.Subscription) {
@@ -135,14 +136,59 @@ export async function handleSubscriptionUpdated(event: any) {
     return;
   }
 
+  const currentSubscription = await getSubscription(user.id);
+
+  if (!currentSubscription) {
+    loggerServer.error("No subscription found for user", {
+      userId: user.id,
+    });
+    return;
+  }
+
+  const newSubscription: Subscription = {
+    ...currentSubscription,
+    trialEnd: subscription.trial_end
+      ? new Date(subscription.trial_end * 1000)
+      : currentSubscription.trialEnd,
+    status: subscription.status,
+    cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    currentPeriodStart: new Date(subscription.current_period_start * 1000),
+    startDate: currentSubscription.startDate,
+    endDate: currentSubscription.endDate,
+    isTrialing: subscription.trial_end !== null,
+    trialStart: subscription.trial_end
+      ? new Date(subscription.trial_end * 1000)
+      : currentSubscription.trialStart,
+  };
+
+  await prisma.subscription.update({
+    where: {
+      stripeSubId: subscriptionId,
+    },
+    data: newSubscription,
+  });
+
   await prisma.subscription.update({
     where: {
       stripeSubId: subscriptionId,
     },
     data: {
       status: subscription.status,
+      trialEnd: subscription.trial_end
+        ? new Date(subscription.trial_end * 1000)
+        : null,
     },
   });
+  if (user.email) {
+    await sendMail({
+      to: user.email!,
+      from: "Orel from WriteRoom 👋",
+      subject: "Subscription Updated",
+      template: welcomeTemplate(user.name || undefined),
+      cc: [],
+    });
+  }
 }
 
 export async function handleSubscriptionPaused(event: Stripe.Event) {
@@ -238,7 +284,6 @@ export async function handleSubscriptionTrialEnding(event: any) {
     );
     return;
   }
-
 
   const subscriptionFromDb = await prisma.subscription.findUnique({
     where: {

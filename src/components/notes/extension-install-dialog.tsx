@@ -35,7 +35,7 @@ export function ExtensionInstallDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle aria-label="Chrome Extension Required" className="flex items-center gap-2">
             <PuzzleIcon className="h-5 w-5 text-primary" />
             Chrome Extension Required
           </DialogTitle>

@@ -17,7 +17,7 @@ export const checkAndResetCredits = async (
       where: { id: userId },
       include: {
         subscription: {
-          where: { status: "active" },
+          where: { OR: [{ status: "active" }, { status: "trialing" }] },
           orderBy: { createdAt: "desc" },
           take: 1,
         },

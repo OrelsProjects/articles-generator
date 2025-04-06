@@ -64,7 +64,9 @@ export default function GenerateIdeasDialog() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Specify a topic</DialogTitle>
+            <DialogTitle aria-label="Specify a topic">
+              Specify a topic
+            </DialogTitle>
           </DialogHeader>
           <Input
             type="text"

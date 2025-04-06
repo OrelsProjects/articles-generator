@@ -78,7 +78,7 @@ export function baseEmailTemplate(content: string) {
   `;
 }
 
-export const welcomeTemplate = () => `<!DOCTYPE html>
+export const welcomeTemplate = (name?: string) => `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -135,7 +135,7 @@ export const welcomeTemplate = () => `<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <h1 class="title">Welcome to WriteRoom!</h1>
+        <h1 class="title">Hey ${name || "there"}, Welcome to WriteRoom!</h1>
         
         <p><strong>Payment Confirmation:</strong> We appreciate your support and are thrilled to have you on board!</p>
 

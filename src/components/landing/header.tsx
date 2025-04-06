@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
+import { useSession } from "next-auth/react";
 
 export default function Header() {
+  const { data: session, status } = useSession();
+  console.log("session", session);
   return (
     <header className="w-full flex justify-center bg-background backdrop-blur border-b border-border">
       <div className="container flex items-center justify-between py-4 px-6 md:px-0 md:py-6 xl:px-20 mx-auto">

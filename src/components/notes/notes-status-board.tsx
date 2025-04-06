@@ -77,7 +77,11 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
 
   // Handle status change
   const handleStatusChange = useCallback(
-    async (item: StatusItem, newStatus: UniqueIdentifier) => {
+    async (
+      item: StatusItem,
+      newStatus: UniqueIdentifier,
+      previousStatus: UniqueIdentifier | null,
+    ) => {
       if (isUpdating) return;
 
       console.log("Status change requested:", item.id, "to", newStatus);
@@ -95,6 +99,9 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
 
         // Update the note status
         await updateNoteStatus(note.id, newStatus as NoteStatus);
+        if (previousStatus === "scheduled") {
+          toast.info("Schedule was canceled");
+        }
       } catch (error) {
         console.error("Error updating note status:", error);
         toast.error("Failed to update note status");

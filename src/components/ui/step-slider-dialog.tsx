@@ -43,7 +43,9 @@ export function StepSliderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] p-6">
         <div className="flex items-center justify-center mb-6">
-          <DialogTitle className="text-xl">Add Credits</DialogTitle>
+          <DialogTitle aria-label="Add Credits" className="text-xl">
+            Add Credits
+          </DialogTitle>
         </div>
 
         <div className="space-y-6">

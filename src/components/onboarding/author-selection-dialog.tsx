@@ -31,7 +31,7 @@ export function AuthorSelectionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle aria-label={isSingleByline ? "Is it you?" : "Who are you?"}>
             {isSingleByline ? "Is it you?" : "Who are you?"}
           </DialogTitle>
         </DialogHeader>

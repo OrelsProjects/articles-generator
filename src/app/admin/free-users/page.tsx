@@ -313,7 +313,9 @@ export default function FreeUsersPage() {
       <Dialog open={newUserDialogOpen} onOpenChange={setNewUserDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Generate New User</DialogTitle>
+            <DialogTitle aria-label="Generate New User">
+              Generate New User
+            </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">

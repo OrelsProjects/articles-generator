@@ -22,7 +22,14 @@ export async function GET() {
         userId: {
           in: visits.map(visit => visit.userId),
         },
-        status: "active",
+        OR: [
+          {
+            status: "active",
+          },
+          {
+            status: "trialing",
+          },
+        ],
       },
     });
 
