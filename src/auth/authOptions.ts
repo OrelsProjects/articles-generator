@@ -40,6 +40,7 @@ export const authOptions: AuthOptions = {
             currentPeriodStart: true,
             currentPeriodEnd: true,
             cancelAtPeriodEnd: true,
+            status: true,
           },
         }),
       ];
@@ -54,11 +55,12 @@ export const authOptions: AuthOptions = {
           currentPeriodStart: Date;
           currentPeriodEnd: Date;
           cancelAtPeriodEnd: boolean;
+          status: string;
         }[],
       ];
 
       const activeSubscription = subscriptions.find(
-        subscription => subscription.currentPeriodEnd > new Date(),
+        subscription => subscription.status === "active" || subscription.status === "trialing",
       );
 
       session.user.meta = {

@@ -4,10 +4,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
 import { useSession } from "next-auth/react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 export default function Header() {
   const { data: session, status } = useSession();
-  console.log("session", session);
+
   return (
     <header className="w-full flex justify-center bg-background backdrop-blur border-b border-border">
       <div className="container flex items-center justify-between py-4 px-6 md:px-0 md:py-6 xl:px-20 mx-auto">
@@ -35,10 +37,34 @@ export default function Header() {
           <Button
             size="lg"
             variant="default"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            className={cn(
+              "bg-primary hover:bg-primary/90 text-primary-foreground rounded-full",
+              {
+                "px-3": status === "authenticated",
+              },
+            )}
             asChild
           >
-            <Link href="/login">Login</Link>
+            {status === "authenticated" ? (
+              <Link href="/home">
+                <div className="flex items-center gap-2">
+                  <Avatar>
+                    <AvatarImage
+                      src={session?.user?.image || ""}
+                      height={10}
+                      width={10}
+                      className="p-1 rounded-full"
+                    />
+                    <AvatarFallback>
+                      {session?.user?.name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  Go to app
+                </div>
+              </Link>
+            ) : (
+              <Link href="/login">Login</Link>
+            )}
           </Button>
         </div>
       </div>

@@ -18,7 +18,6 @@ import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { addPublication } from "@/lib/features/publications/publicationSlice";
 import axios from "axios";
 import { Session } from "next-auth";
-import { Loader2 } from "lucide-react";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { useSettings } from "@/lib/hooks/useSettings";
 import Loading from "@/components/ui/loading";

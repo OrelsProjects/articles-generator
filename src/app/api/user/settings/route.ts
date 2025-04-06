@@ -1,5 +1,6 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
+import { getActiveSubscription } from "@/lib/dal/subscription";
 import loggerServer from "@/loggerServer";
 import { AllUsages } from "@/types/settings";
 import { getServerSession } from "next-auth";
@@ -11,15 +12,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
-    const subscription = await prisma.subscription.findFirst({
-      where: {
-        userId: session.user.id,
-        status: "active",
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const subscription = await getActiveSubscription(session.user.id);
 
     if (!subscription) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

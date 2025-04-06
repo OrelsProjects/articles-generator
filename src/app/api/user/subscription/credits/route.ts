@@ -5,7 +5,7 @@ import { z } from "zod";
 import prisma from "@/app/api/_db/db";
 import { NextResponse } from "next/server";
 import { getStripeInstance } from "@/lib/stripe";
-import { getSubscription } from "@/lib/dal/subscription";
+import { getActiveSubscription } from "@/lib/dal/subscription";
 
 const bodySchema = z.object({
   credits: z.number(),
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       },
     });
 
-    const subscription = await getSubscription(session.user.id);
+    const subscription = await getActiveSubscription(session.user.id);
 
     if (!subscription) {
       return new Response("No subscription found", { status: 400 });

@@ -10,6 +10,7 @@ import {
   generateSubscriptionTrialEndingEmail,
   welcomeTemplate,
 } from "@/lib/mail/templates";
+import { getActiveSubscription } from "@/lib/dal/subscription";
 
 // async function processUser(userId: string) {
 //   try {
@@ -98,12 +99,7 @@ export async function GET() {
     // });
 
 
-    const subscription = await prisma.subscription.findFirst({
-      where: {
-        userId: session.user.id,
-        status: "active",
-      }, 
-    });
+    const subscription = await getActiveSubscription(session.user.id);
 
     if (!subscription) {
       return NextResponse.json({ error: "No active subscription found" }, { status: 400 });

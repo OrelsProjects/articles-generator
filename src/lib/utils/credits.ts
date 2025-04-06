@@ -1,5 +1,5 @@
 import prisma from "@/app/api/_db/db";
-import { getSubscription } from "@/lib/dal/subscription";
+import { getActiveSubscription } from "@/lib/dal/subscription";
 import { creditCosts } from "@/lib/plans-consts";
 import { getNextRefillDate } from "@/lib/services/creditService";
 import loggerServer from "@/loggerServer";
@@ -17,7 +17,7 @@ export async function canUseAI(
   userId: string,
   usageType: AIUsageType,
 ): Promise<{ result: boolean; status: number; nextRefill?: Date }> {
-  const subscription = await getSubscription(userId);
+  const subscription = await getActiveSubscription(userId);
 
   if (!subscription) {
     loggerServer.error("Failed to check canUseAI due to subscription null");
@@ -61,7 +61,7 @@ export async function useCredits(
   userId: string,
   usageType: AIUsageType,
 ): Promise<{ creditsUsed: number; creditsRemaining: number }> {
-  const subscription = await getSubscription(userId);
+  const subscription = await getActiveSubscription(userId);
 
   if (!subscription) {
     loggerServer.error("Subscription not found when trying to use credits", {
@@ -93,7 +93,7 @@ export async function useCredits(
 
 export async function undoUseCredits(userId: string, usageType: AIUsageType) {
   try {
-    const subscription = await getSubscription(userId);
+    const subscription = await getActiveSubscription(userId);
 
     if (!subscription) {
       loggerServer.error("Subscription not found when trying to use credits", {

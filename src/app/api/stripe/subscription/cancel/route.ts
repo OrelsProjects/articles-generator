@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/api/_db/db";
 import loggerServer from "@/loggerServer";
 import { getStripeInstance } from "@/lib/stripe";
-import { getSubscription } from "@/lib/dal/subscription";
+import { getActiveSubscription } from "@/lib/dal/subscription";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Find user's active subscription
-    const subscription = await getSubscription(userId);
+    const subscription = await getActiveSubscription(userId);
     if (!subscription) {
       return NextResponse.json({ error: "No active subscription found" }, { status: 404 });
     }
