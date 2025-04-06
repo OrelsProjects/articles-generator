@@ -72,7 +72,7 @@ export function InstantPostButton({
   };
 
   return (
-    <>
+    <div className="hidden md:flex">
       <TooltipButton
         tooltipContent={tooltipContent}
         variant={variant}
@@ -112,6 +112,6 @@ export function InstantPostButton({
           setShowExtensionDialog(false);
         }}
       />
-    </>
+    </div>
   );
 }

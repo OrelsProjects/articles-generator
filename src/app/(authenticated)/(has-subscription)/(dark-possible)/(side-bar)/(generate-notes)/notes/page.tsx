@@ -154,7 +154,19 @@ export default function NotesPage() {
       <div className="container mx-auto py-8">
         <div className="border-b pb-4">
           <div className="md:container">
-            <h1 className="text-3xl font-bold mb-4">Notes</h1>
+            <div className="flex justify-between items-center mb-4">
+              <h1 className="text-3xl font-bold">Notes</h1>
+              <TooltipButton
+                tooltipContent="Start writing"
+                variant="outline"
+                onClick={handleCreateDraftNote}
+                disabled={isLoadingGenerateNotes}
+                className="flex md:hidden items-center gap-2"
+              >
+                <Plus size={16} />
+                New draft
+              </TooltipButton>
+            </div>
             <div className="flex justify-between items-center">
               <Tabs
                 defaultValue="draft"

@@ -646,7 +646,7 @@ export function NotesEditorDialog() {
                   tooltipContent="Copy"
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 "
+                  className="h-8 w-8 p-0 hidden md:flex"
                   disabled={!body}
                   onClick={handleCopy}
                 >

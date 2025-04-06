@@ -27,7 +27,7 @@ export default function StatusBoardPage() {
     return (
       <div className="w-full py-8 flex justify-center items-start">
         <div className="container px-4 md:px-16 lg:px-24">
-          <h1 className="text-3xl font-bold mb-8">Notes status board</h1>
+          <h1 className="text-3xl font-bold mb-8">Kanban</h1>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="flex flex-col h-full">
@@ -45,7 +45,18 @@ export default function StatusBoardPage() {
     <div className="w-full py-8 flex justify-center items-start">
       <div className="container px-4 md:px-16 lg:px-24">
         <div className="flex justify-between items-center mb-12">
-          <h1 className="text-3xl font-bold">Notes status board</h1>
+          <div className="w-full flex justify-between items-center gap-2">
+            <h1 className="text-3xl font-bold">Kanban</h1>
+            <TooltipButton
+              tooltipContent="Start writing"
+              variant="outline"
+              onClick={handleCreateDraftNote}
+              className="flex md:hidden items-center gap-2"
+            >
+              <Plus size={16} />
+              New draft
+            </TooltipButton>
+          </div>
           <div className="flex justify-end items-center gap-2">
             <TooltipButton
               tooltipContent="Start writing"
