@@ -137,7 +137,7 @@ export async function handleSubscriptionUpdated(event: any) {
 
   await prisma.subscription.update({
     where: {
-      id: subscriptionId,
+      stripeSubId: subscriptionId,
     },
     data: {
       status: subscription.status,
@@ -157,7 +157,7 @@ export async function handleSubscriptionPaused(event: Stripe.Event) {
   }
   await prisma.subscription.update({
     where: {
-      id: subscriptionId,
+      stripeSubId: subscriptionId,
     },
     data: {
       status: "paused",
@@ -177,7 +177,7 @@ export async function handleSubscriptionResumed(event: Stripe.Event) {
   }
   await prisma.subscription.update({
     where: {
-      id: subscriptionId,
+      stripeSubId: subscriptionId,
     },
     data: {
       status: "active",
@@ -194,7 +194,7 @@ export async function handleSubscriptionDeleted(event: Stripe.Event) {
   );
   await prisma.subscription.update({
     where: {
-      id: subscriptionId,
+      stripeSubId: subscriptionId,
     },
     data: {
       status: "inactive",
