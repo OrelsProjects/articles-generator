@@ -6,15 +6,22 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { resetNotification } from "@/lib/features/notes/notesSlice";
+import { TooltipButton } from "@/components/ui/tooltip-button";
+import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
+import { Plus } from "lucide-react";
 
 export default function StatusBoardPage() {
   const dispatch = useAppDispatch();
-  const { fetchNotes, userNotes, loadingNotes } = useNotes();
+  const { fetchNotes, userNotes, loadingNotes, createDraftNote } = useNotes();
 
   useEffect(() => {
     dispatch(resetNotification());
     fetchNotes(30);
   }, []);
+
+  const handleCreateDraftNote = () => {
+    createDraftNote();
+  };
 
   if (loadingNotes && userNotes.length === 0) {
     return (
@@ -37,7 +44,21 @@ export default function StatusBoardPage() {
   return (
     <div className="w-full py-8 flex justify-center items-start">
       <div className="container px-4 md:px-16 lg:px-24">
-        <h1 className="text-3xl font-bold mb-8">Notes status board</h1>
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="text-3xl font-bold">Notes status board</h1>
+          <div className="flex justify-end items-center gap-2">
+            <TooltipButton
+              tooltipContent="Start writing"
+              variant="outline"
+              onClick={handleCreateDraftNote}
+              className="hidden md:flex items-center gap-2"
+            >
+              <Plus size={16} />
+              New draft
+            </TooltipButton>
+            <GenerateNotesDialog />
+          </div>
+        </div>
         <NotesStatusBoard notes={userNotes} />
       </div>
     </div>

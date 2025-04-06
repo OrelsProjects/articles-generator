@@ -424,12 +424,12 @@ export const notesTextEditorOptions = (
       HTMLAttributes: { class: "my-3" },
     }),
     Text,
-    CustomImage.configure({
-      inline: true,
-      HTMLAttributes: {
-        class: "max-w-full h-auto rounded-md my-2",
-      },
-    }),
+    // CustomImage.configure({
+    //   inline: true,
+    //   HTMLAttributes: {
+    //     class: "max-w-full h-auto rounded-md my-2",
+    //   },
+    // }),
     Link.configure({
       HTMLAttributes: {
         class:
