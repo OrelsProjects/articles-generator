@@ -52,6 +52,7 @@ import { InstantPostButton } from "@/components/notes/instant-post-button";
 import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
 import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";
 import NoSubstackCookiesDialog from "@/components/notes/no-substack-cookies-dialog";
+import AIImproveDropdown from "@/components/notes/ai-improve-dropdown";
 export function NotesEditorDialog() {
   const { selectedNote } = useAppSelector(selectNotes);
   const { showScheduleModal, updateShowScheduleModal } = useUi();
@@ -111,6 +112,8 @@ export function NotesEditorDialog() {
         const presetDate = new Date(selectedNote.scheduledTo);
         setScheduledDate(presetDate);
         setConfirmedSchedule(true);
+      } else {
+        setConfirmedSchedule(false);
       }
     }
   }, [selectedNote]);
@@ -327,6 +330,10 @@ export function NotesEditorDialog() {
       });
   };
 
+  const handleImprovement = (improvedText: string) => {
+    editor?.chain().focus().setContent(improvedText).run();
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -356,7 +363,7 @@ export function NotesEditorDialog() {
             </div>
 
             <div className="flex items-center justify-between p-4 border-t border-border">
-              <div className="flex gap-4">
+              <div className="flex gap-2 items-center">
                 <Dialog
                   open={scheduleDialogOpen}
                   onOpenChange={setScheduleDialogOpen}
@@ -366,11 +373,12 @@ export function NotesEditorDialog() {
                       tooltipContent="Schedule note"
                       variant="ghost"
                       size="icon"
-                      className={`rounded-full ${confirmedSchedule ? "text-primary/95 hover:text-primary" : "text-muted-foreground hover:text-foreground"} `}
+                      className={`${confirmedSchedule ? "text-primary/95 hover:text-primary" : "text-muted-foreground hover:text-foreground"} `}
                     >
                       <CalendarClock className="h-5 w-5" />
                     </TooltipButton>
                   </DialogTrigger>
+
                   <DialogContent
                     hideCloseButton
                     className="max-w-[550px] p-0 gap-0 border-border bg-background rounded-xl"
@@ -593,6 +601,11 @@ export function NotesEditorDialog() {
                     </div>
                   </DialogContent>
                 </Dialog>
+                <AIImproveDropdown
+                  note={selectedNote}
+                  selectedModel={"anthropic/claude-3.7-sonnet"}
+                  onImprovement={handleImprovement}
+                />
               </div>
               <div className="flex gap-3">
                 <InstantPostButton
