@@ -1,5 +1,5 @@
 import prisma from "@/app/api/_db/db";
-import { getSubscription } from "@/lib/dal/subscription";
+import { getActiveSubscription } from "@/lib/dal/subscription";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addUserToList, sendMail } from "@/lib/mail/mail";
 import {
@@ -136,7 +136,7 @@ export async function handleSubscriptionUpdated(event: any) {
     return;
   }
 
-  const currentSubscription = await getSubscription(user.id);
+  const currentSubscription = await getActiveSubscription(user.id);
 
   if (!currentSubscription) {
     loggerServer.error("No subscription found for user", {
@@ -145,8 +145,10 @@ export async function handleSubscriptionUpdated(event: any) {
     return;
   }
 
-  const newSubscription: Subscription = {
-    ...currentSubscription,
+  const { id, ...currentSubscriptionNoId } = currentSubscription;
+
+  const newSubscription: Omit<Subscription, "id"> = {
+    ...currentSubscriptionNoId,
     trialEnd: subscription.trial_end
       ? new Date(subscription.trial_end * 1000)
       : currentSubscription.trialEnd,
@@ -443,7 +445,7 @@ export async function handleCheckoutSessionCompleted(event: any) {
     return;
   }
 
-  const subscription = await getSubscription(userId);
+  const subscription = await getActiveSubscription(userId);
   if (!subscription) {
     loggerServer.error(
       "No subscription found for user" +
