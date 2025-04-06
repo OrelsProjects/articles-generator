@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, Copy } from "lucide-react";
 import { selectNotes } from "@/lib/features/notes/notesSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { TooltipButton } from "@/components/ui/tooltip-button";
@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { notesTextEditorOptions, unformatText } from "@/lib/utils/text-editor";
+import { formatText, notesTextEditorOptions, unformatText } from "@/lib/utils/text-editor";
 import { useEditor } from "@tiptap/react";
 import NoteEditor from "@/components/notes/note-editor";
 import { useNotes } from "@/lib/hooks/useNotes";
@@ -53,6 +53,9 @@ import { ExtensionInstallDialog } from "@/components/notes/extension-install-dia
 import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";
 import NoSubstackCookiesDialog from "@/components/notes/no-substack-cookies-dialog";
 import AIImproveDropdown from "@/components/notes/ai-improve-dropdown";
+import EmojiPopover from "@/components/notes/emoji-popover";
+import { Skin } from "@emoji-mart/data";
+import { copyHTMLToClipboard } from "@/lib/utils/copy";
 export function NotesEditorDialog() {
   const { selectedNote } = useAppSelector(selectNotes);
   const { showScheduleModal, updateShowScheduleModal } = useUi();
@@ -331,7 +334,22 @@ export function NotesEditorDialog() {
   };
 
   const handleImprovement = (improvedText: string) => {
-    editor?.chain().focus().setContent(improvedText).run();
+    const formattedText = formatText(improvedText);
+    editor?.chain().focus().setContent(formattedText).run();
+  };
+
+  const handleEmojiSelect = (emoji: Skin) => {
+    editor?.chain().focus().insertContent(emoji.native).run();
+  };
+
+  const handleCopy = async () => {
+    const html = editor?.getHTML();
+    if (!html) {
+      toast.error("No content to copy");
+      return;
+    }
+    await copyHTMLToClipboard(html);
+    toast.success("Copied to clipboard");
   };
 
   return (
@@ -606,6 +624,17 @@ export function NotesEditorDialog() {
                   selectedModel={"anthropic/claude-3.7-sonnet"}
                   onImprovement={handleImprovement}
                 />
+                <EmojiPopover onEmojiSelect={handleEmojiSelect} />
+                <TooltipButton
+                  tooltipContent="Copy"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  disabled={!body}
+                  onClick={handleCopy}
+                >
+                  <Copy className="h-5 w-5 text-muted-foreground" />
+                </TooltipButton>
               </div>
               <div className="flex gap-3">
                 <InstantPostButton

@@ -179,9 +179,6 @@ export const useNotes = () => {
             options: { toStart: true },
           }),
         );
-        if (!selectedNote) {
-          selectNote(body[0]);
-        }
       } catch (error) {
         // if error is 429, set errorGenerateNotes
         if (error instanceof AxiosError) {
@@ -235,7 +232,7 @@ export const useNotes = () => {
           dispatch(updateNote({ id: noteId, note: { status } }));
         }
         const body = status === "archived" ? { isArchived: true } : { status };
-        
+
         if (previousStatus === "scheduled") {
           await axios.delete(`/api/user/notes/${noteId}/schedule`, {
             params: { status },

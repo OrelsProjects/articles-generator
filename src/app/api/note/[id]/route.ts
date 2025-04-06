@@ -5,7 +5,6 @@ import {
   isOwnerOfNote,
   updateNote,
 } from "@/lib/dal/note";
-import * as noteSchedule from "@/lib/dal/note-schedule";
 import { getEventBridgeSchedule } from "@/lib/utils/event-bridge";
 import loggerServer from "@/loggerServer";
 import { NoteDraft } from "@/types/note";

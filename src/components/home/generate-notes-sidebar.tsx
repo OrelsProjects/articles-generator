@@ -31,13 +31,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@tiptap/react";
 import { notesTextEditorOptions, unformatText } from "@/lib/utils/text-editor";
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { convertMDToHtml, NoteDraft } from "@/types/note";
 import { toast } from "react-toastify";
@@ -264,10 +257,6 @@ export default function GenerateNotesSidebar() {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const addEmoji = (emoji: any) => {
-    editor?.chain().focus().insertContent(emoji.native).run();
   };
 
   const handleGenerateNewNote = async () => {
@@ -505,26 +494,7 @@ export default function GenerateNotesSidebar() {
                       </TooltipButton>
                     }
                   />
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <SmilePlus className="h-5 w-5 text-muted-foreground" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-full p-0 border-none"
-                      side="top"
-                      align="start"
-                    >
-                      <Picker
-                        data={data}
-                        onEmojiSelect={addEmoji}
-                        theme="light"
-                        previewPosition="none"
-                        skinTonePosition="none"
-                      />
-                    </PopoverContent>
-                  </Popover>
+
                 </div>
                 <div className="flex items-center gap-1 md:gap-2">
                   <Button

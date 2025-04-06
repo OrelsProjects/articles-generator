@@ -492,7 +492,7 @@ const improvementPromptSystemNote = (
         - The writing must feel completely human and authentic
         - The note should read as if written by the original author, just improved
         - Return only the improved note text, with no explanations or comments
-        - I can't stress this enough - Return only the improved note text, with no explanations or comments
+        - I can't stress this enough - *Return only the improved note text, with no explanations or comments like 'Here is your improved ....'.* This is mission critical.
   `;
 
   return {
