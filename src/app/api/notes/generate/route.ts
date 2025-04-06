@@ -37,8 +37,9 @@ export async function POST(
   const countString = body.count;
   const requestedModel = body.model;
   const useTopTypes = body.useTopTypes || false;
+  const topic = body.topic;
   const featureFlags = session.user.meta?.featureFlags || [];
-  let initialGeneratingModel: Model = "openai/gpt-4o";
+  let initialGeneratingModel: Model = "anthropic/claude-3.7-sonnet";
   let model: Model = "anthropic/claude-3.7-sonnet";
 
   if (requestedModel && featureFlags.includes(FeatureFlag.advancedGPT)) {
@@ -54,7 +55,6 @@ export async function POST(
       model = "google/gemini-2.5-pro-exp-03-25:free";
     }
   }
-
   if (model !== "openai/gpt-4.5-preview") {
     initialGeneratingModel = model;
   }
@@ -231,6 +231,7 @@ export async function POST(
         noteCount: count,
         maxLength: 280,
         noteTemplates: useTopTypes ? noteTemplates : [],
+        topic,
       },
     );
 

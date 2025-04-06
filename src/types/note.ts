@@ -195,3 +195,17 @@ export function noteToNoteDraft(note: Note | null): NoteDraft | null {
     wasSentViaSchedule: !!note.sentViaScheduleAt,
   };
 }
+
+export const NOTE_EMPTY: NoteDraft = {
+  id: "empty",
+  thumbnail: "",
+  body: "",
+  jsonBody: [],
+  createdAt: new Date(),
+  authorId: null,
+  status: "draft",
+  authorName: "",
+  attachments: [],
+  scheduledTo: null,
+  wasSentViaSchedule: false,
+};

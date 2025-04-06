@@ -19,6 +19,7 @@ import { EventTracker } from "@/eventTracker";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { Model } from "@/lib/open-router";
 import { toast } from "react-toastify";
+import { FrontendModel } from "@/components/notes/ai-models-dropdown";
 
 // Define format options for the dropdown
 const formatOptions: {
@@ -113,7 +114,7 @@ const formatOptions: {
 
 export interface AIImproveDropdownProps {
   note: Note | NoteDraft | null;
-  selectedModel: Model;
+  selectedModel: FrontendModel;
   onImprovement?: (improvedText: string) => void;
 }
 export default function AIImproveDropdown({
@@ -172,7 +173,7 @@ export default function AIImproveDropdown({
           tooltipContent="Improve selected text (1 credit)"
           variant="ghost"
           size="icon"
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="text-muted-foreground transition-colors"
         >
           {loadingImprovement ? (
             <RefreshCw className="h-5 w-5 animate-spin" />

@@ -50,7 +50,12 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // if the pathname is an admin only and the user is not an admin, redirect to the home page
-    if (navItems.some(item => item.adminOnly && item.href === pathname && !user?.meta?.isAdmin)) {
+    if (
+      navItems.some(
+        item =>
+          item.adminOnly && item.href === pathname && !user?.meta?.isAdmin,
+      )
+    ) {
       router.push("/home");
     }
   }, [pathname, user?.meta?.isAdmin]);
@@ -223,7 +228,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden h-16 w-full border-t border-border flex items-center justify-around bg-background fixed bottom-0 left-0 right-0 z-50">
+      <div className="md:hidden h-16 w-full border-t border-border flex items-center justify-around bg-background absolute bottom-0 left-0 right-0 z-50">
         {bottomNavItems.map(item => (
           <Link
             key={item.name}
@@ -269,7 +274,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                         )}
                       >
                         <item.icon size={20} />
-                        <span>{item.name}</span>
+                        <span>{item.mobileName}</span>
                         {item.newTab && (
                           <ExternalLink size={12} className="ml-auto" />
                         )}

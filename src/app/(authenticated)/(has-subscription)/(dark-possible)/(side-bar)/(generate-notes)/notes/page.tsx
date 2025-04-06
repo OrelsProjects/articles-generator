@@ -13,6 +13,8 @@ import { useSearchParams } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { NoteDraft, NoteStatus } from "@/types/note";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TooltipButton } from "@/components/ui/tooltip-button";
+import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
 
 export default function NotesPage() {
   const router = useCustomRouter();
@@ -121,7 +123,7 @@ export default function NotesPage() {
       <div className="w-full min-h-screen bg-transparent py-8 pb-28 md:py-16 flex justify-center items-start">
         <div className="container py-2 md:py-6 pb-6">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Posts</h1>
+            <h1 className="text-3xl font-bold">Notes</h1>
             <Button
               onClick={handleCreateDraftNote}
               disabled={isLoadingGenerateNotes}
@@ -148,16 +150,17 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-transparent py-8 pb-28 md:py-16 flex justify-center items-start">
+    <div className="w-full min-h-screen bg-transparent pb-28 md:py-16 flex justify-center items-start">
       <div className="container mx-auto py-8">
         <div className="border-b pb-4">
-          <div className="container">
+          <div className="md:container">
             <h1 className="text-3xl font-bold mb-4">Notes</h1>
             <div className="flex justify-between items-center">
               <Tabs
                 defaultValue="draft"
                 value={activeTab}
                 onValueChange={value => setActiveTab(value as NoteStatus)}
+                className="w-full overflow-x-auto"
               >
                 <TabsList className="bg-transparent p-0 space-x-6">
                   <TabsTrigger
@@ -183,29 +186,25 @@ export default function NotesPage() {
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-              <div className="flex justify-end items-center">
-                <Button
-                  variant="neumorphic-primary"
+              <div className="flex justify-end items-center gap-2">
+                <TooltipButton
+                  tooltipContent="Start writing"
+                  variant="outline"
                   onClick={handleCreateDraftNote}
                   disabled={isLoadingGenerateNotes}
-                  className={cn("flex items-center gap-2", {
-                    hidden: userNotes.length === 0,
-                  })}
+                  className="hidden md:flex items-center gap-2"
                 >
-                  {isLoadingGenerateNotes ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus size={16} />
-                  )}
+                  <Plus size={16} />
                   New draft
-                </Button>
+                </TooltipButton>
+                <GenerateNotesDialog />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 py-8 pb-28">
-          <div className="container">
+        <div className="flex-1 py-8 pb-0 md:pb-28">
+          <div className="md:container">
             {userNotes.length === 0 ? (
               <div className="text-center py-20">
                 <h3 className="text-2xl font-medium mb-4 text-foreground">
@@ -214,16 +213,7 @@ export default function NotesPage() {
                 <p className="text-muted-foreground mb-8">
                   Generate your first notes to get started!
                 </p>
-                <Button
-                  variant="neumorphic-primary"
-                  onClick={handleCreateNote}
-                  disabled={isLoadingGenerateNotes}
-                >
-                  {isLoadingGenerateNotes && (
-                    <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  )}
-                  Generate notes (3)
-                </Button>
+                <GenerateNotesDialog />
               </div>
             ) : filteredNotes.length === 0 ? (
               <div className="text-center py-20">

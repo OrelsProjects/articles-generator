@@ -20,6 +20,7 @@ import {
 import {
   isNoteDraft,
   Note,
+  NOTE_EMPTY,
   NoteDraft,
   NoteFeedback,
   NoteStatus,
@@ -37,7 +38,7 @@ import { debounce } from "lodash";
 import { Byline } from "@/types/article";
 
 export const useNotes = () => {
-  const { updateShowGenerateNotesSidebar, updateShowScheduleModal } = useUi();
+  const { updateShowScheduleModal, hasAdvancedGPT } = useUi();
   const dispatch = useAppDispatch();
   const {
     userNotes,
@@ -56,9 +57,9 @@ export const useNotes = () => {
 
   const { consumeCredits } = useCredits();
   const [loadingEditNote, setLoadingEditNote] = useState(false);
+  const [shouldCancelUpdate, setShouldCancelUpdate] = useState(false);
 
   const loadingNotesRef = useRef(false);
-  const loadingCreateNoteDraftRef = useRef(false);
   const cancelRef = useRef<AbortController | null>(null);
 
   const fetchNotes = async (limit?: number, loadMore = false) => {
@@ -131,9 +132,6 @@ export const useNotes = () => {
       if (!noteDraft) {
         noteDraft = noteToNoteDraft(noteToUpdate as Note);
       }
-      // if (options?.forceShowEditor) {
-      //   updateShowGenerateNotesSidebar(true);
-      // }
       dispatch(
         setSelectedNote({
           note: noteDraft,
@@ -148,16 +146,23 @@ export const useNotes = () => {
   );
 
   const generateNewNotes = useCallback(
-    async (model?: string, options?: { useTopTypes?: boolean }) => {
+    async (
+      model?: string,
+      options?: { useTopTypes?: boolean; topic?: string },
+    ) => {
       try {
         dispatch(setLoadingNotesGenerate(true));
+        const validOptions = {
+          ...options,
+          useTopTypes: hasAdvancedGPT ? options?.useTopTypes : false,
+          model: hasAdvancedGPT ? model : undefined,
+        };
         EventTracker.track("notes_generate_new_notes", { model });
         const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
           "/api/notes/generate",
           {
             existingNotesIds: userNotes.map(note => note.id),
-            model,
-            ...options,
+            ...validOptions,
           },
         );
         const { responseBody } = response.data;
@@ -287,6 +292,13 @@ export const useNotes = () => {
   );
 
   const editNoteBody = async (noteId: string | null, body: string) => {
+    const oldBody = selectedNote?.body;
+    console.log("oldBody", oldBody);
+    console.log("body", body);
+    if (oldBody === body || (!oldBody && !body)) {
+      return;
+    }
+    cancelRef.current?.abort();
     const controller = new AbortController();
     cancelRef.current = controller;
 
@@ -294,10 +306,18 @@ export const useNotes = () => {
     setLoadingEditNote(true);
 
     try {
-      if (!noteId) {
-        await createDraftNote({ body });
-        return;
+      if (!noteId || noteId === "empty") {
+        const response = await axios.post<NoteDraft>(
+          "/api/note",
+          { body },
+          { signal: controller.signal },
+        );
+        dispatch(addNotes({ items: [response.data], nextCursor: null }));
+        debugger;
+        dispatch(setSelectedNote({ note: response.data }));
+        noteId = response.data.id;
       }
+
       const partialNote: Partial<NoteDraft> = { body };
       await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, partialNote, {
         signal: controller.signal,
@@ -328,6 +348,7 @@ export const useNotes = () => {
     if (cancelRef.current) {
       cancelRef.current.abort();
       cancelRef.current = null;
+      setShouldCancelUpdate(false);
     }
     if (options?.immediate) {
       editNoteBody(noteId, body);
@@ -336,32 +357,13 @@ export const useNotes = () => {
     }
   };
 
-  const createDraftNote = async (
-    draft?: Partial<NoteDraft>,
-  ): Promise<string | undefined> => {
+  const cancelUpdateNoteBody = () => {
+    setShouldCancelUpdate(true);
+  };
+
+  const createDraftNote = async (draft?: Partial<NoteDraft>): Promise<void> => {
     EventTracker.track("notes_create_draft_note");
-    if (loadingCreateNoteDraftRef.current) return;
-    loadingCreateNoteDraftRef.current = true;
-    try {
-      const response = await axios.post<NoteDraft>(
-        "/api/note",
-        draft || { body: "" },
-      );
-      dispatch(
-        addNotes({
-          items: [response.data],
-          nextCursor: null,
-          options: { toStart: true },
-        }),
-      );
-      selectNote(response.data);
-      return response.data.id;
-    } catch (error: any) {
-      Logger.error("Error creating draft note:", error);
-      throw error;
-    } finally {
-      loadingCreateNoteDraftRef.current = false;
-    }
+    selectNote({ ...NOTE_EMPTY, ...draft });
   };
 
   const improveText = async (
@@ -448,5 +450,6 @@ export const useNotes = () => {
     getNoteByNoteId,
     updateByline,
     editNoteBody,
+    cancelUpdateNoteBody,
   };
 };

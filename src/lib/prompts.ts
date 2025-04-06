@@ -734,14 +734,16 @@ export const generateNotesPrompt = (
     noteCount: number;
     maxLength: number;
     noteTemplates: { description: string }[];
+    topic?: string;
   } = {
     noteCount: 3,
     maxLength: 280,
     noteTemplates: [],
+    topic: "",
   },
 ) => {
   const allTopics = [...userNotes.map(note => note.topics).flat()];
-  const { noteCount, maxLength, noteTemplates } = options;
+  const { noteCount, maxLength, noteTemplates, topic } = options;
   // Topics count, json of topic to count
   const topicsCount = allTopics.reduce((acc: Record<string, number>, topic) => {
     acc[topic] = (acc[topic] || 0) + 1;
@@ -767,7 +769,9 @@ export const generateNotesPrompt = (
     Help user write a note with your description, writing style and highlights.
     Think about unique ideas and use the user's provided notes as inspiration only. Be original.
     Notes are like tweets. They need to have one core idea, very impactful and engaging with an amazing hook.
-
+      ${topic ? `
+        The topic of the notes MUST BE ${topic}. Do not deviate from it.
+        ` : ""}
     Each note to have as little cliches as possible and have insightful information that is not obvious.
     Make the note very non-obvious, so it's almost a clickbait.
     **Don't come up with numbers and facts about the user. Stick to the facts they provide. Rely on the user's description and notes that they posted.**

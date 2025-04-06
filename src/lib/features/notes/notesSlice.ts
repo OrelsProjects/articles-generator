@@ -68,8 +68,6 @@ const notesSlice = createSlice({
       state,
       action: PayloadAction<{ id: string; note: Partial<NoteDraft> }>,
     ) => {
-      
-
       const { id, note } = action.payload;
       let newNote = state.userNotes.find(userNote => userNote.id === id);
       if (newNote) {

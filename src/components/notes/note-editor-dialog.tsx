@@ -16,7 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatText, notesTextEditorOptions, unformatText } from "@/lib/utils/text-editor";
+import {
+  formatText,
+  notesTextEditorOptions,
+  unformatText,
+} from "@/lib/utils/text-editor";
 import { useEditor } from "@tiptap/react";
 import NoteEditor from "@/components/notes/note-editor";
 import { useNotes } from "@/lib/hooks/useNotes";
@@ -56,8 +60,14 @@ import AIImproveDropdown from "@/components/notes/ai-improve-dropdown";
 import EmojiPopover from "@/components/notes/emoji-popover";
 import { Skin } from "@emoji-mart/data";
 import { copyHTMLToClipboard } from "@/lib/utils/copy";
+import { selectAuth } from "@/lib/features/auth/authSlice";
+import {
+  AiModelsDropdown,
+  FrontendModel,
+} from "@/components/notes/ai-models-dropdown";
 export function NotesEditorDialog() {
-  const { selectedNote } = useAppSelector(selectNotes);
+  const { user } = useAppSelector(selectAuth);
+  const { selectedNote, thumbnail } = useAppSelector(selectNotes);
   const { showScheduleModal, updateShowScheduleModal } = useUi();
   const {
     updateNoteBody,
@@ -65,6 +75,7 @@ export function NotesEditorDialog() {
     selectNote,
     loadingEditNote,
     updateNoteStatus,
+    cancelUpdateNoteBody,
   } = useNotes();
   const {
     scheduleNote,
@@ -76,6 +87,8 @@ export function NotesEditorDialog() {
 
   const { isLoading: isSendingNote, hasExtension } = useExtension();
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
+  const [selectedModel, setSelectedModel] =
+    useState<FrontendModel>("claude-3.7");
 
   const [open, setOpen] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(
@@ -147,6 +160,7 @@ export function NotesEditorDialog() {
     options?: { immediate?: boolean },
   ) {
     const newBody = unformatText(html);
+
     setBody(newBody);
     try {
       if (selectedNote) {
@@ -161,20 +175,16 @@ export function NotesEditorDialog() {
     }
   }
 
-  const thumbnail = useMemo(() => {
-    if (!selectedNote) return "";
-    return selectedNote.thumbnail;
-  }, [selectedNote]);
-
   const name = useMemo(() => {
     if (!selectedNote) return "";
     return selectedNote.authorName;
   }, [selectedNote]);
 
   const userInitials = useMemo(() => {
-    if (!name) return "OZ";
+    let writerName = name || user?.displayName || "";
+    if (!writerName) return "OZ";
     return (
-      name
+      writerName
         ?.split(" ")
         .map(name => name[0])
         .join("") || "OZ"
@@ -182,7 +192,7 @@ export function NotesEditorDialog() {
   }, [name]);
 
   const userName = useMemo(() => {
-    return name || "Unknown";
+    return name || user?.displayName || "Unknown";
   }, [name]);
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -362,7 +372,7 @@ export function NotesEditorDialog() {
           <div className="flex flex-col w-full">
             <div className="flex items-start p-4 gap-3">
               <Avatar className="h-10 w-10 border">
-                <AvatarImage src={thumbnail || ""} alt="User" />
+                <AvatarImage src={thumbnail || user?.image || ""} alt="User" />
                 <AvatarFallback>{userInitials}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
@@ -391,7 +401,7 @@ export function NotesEditorDialog() {
                       tooltipContent="Schedule note"
                       variant="ghost"
                       size="icon"
-                      className={`${confirmedSchedule ? "text-primary/95 hover:text-primary" : "text-muted-foreground hover:text-foreground"} `}
+                      className={`${confirmedSchedule ? "text-primary/95 hover:text-primary" : "text-muted-foreground"} `}
                     >
                       <CalendarClock className="h-5 w-5" />
                     </TooltipButton>
@@ -619,17 +629,24 @@ export function NotesEditorDialog() {
                     </div>
                   </DialogContent>
                 </Dialog>
-                <AIImproveDropdown
-                  note={selectedNote}
-                  selectedModel={"anthropic/claude-3.7-sonnet"}
-                  onImprovement={handleImprovement}
-                />
+                <div className="flex items-center gap-0.5 border border-border/40 rounded-lg">
+                  <AiModelsDropdown
+                    onModelChange={setSelectedModel}
+                    size="md"
+                    classNameTrigger="!text-muted-foreground"
+                  />
+                  <AIImproveDropdown
+                    note={selectedNote}
+                    selectedModel={selectedModel}
+                    onImprovement={handleImprovement}
+                  />
+                </div>
                 <EmojiPopover onEmojiSelect={handleEmojiSelect} />
                 <TooltipButton
                   tooltipContent="Copy"
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 "
                   disabled={!body}
                   onClick={handleCopy}
                 >
