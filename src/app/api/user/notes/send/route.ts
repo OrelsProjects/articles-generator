@@ -1,15 +1,16 @@
 import prisma from "@/app/api/_db/db";
-import { getLatestSchedule } from "@/lib/dal/schedules";
+import { authOptions } from "@/auth/authOptions";
 import { sendMail } from "@/lib/mail/mail";
 import { generateFailedToSendNoteEmail } from "@/lib/mail/templates";
 import { markdownToADF } from "@/lib/utils/adf";
 import loggerServer from "@/loggerServer";
 import { CookieName } from "@prisma/client";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const schema = z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
   noteId: z.string(),
 });
 
@@ -28,19 +29,27 @@ const sendFailure = async (noteBody: string, noteId: string, email: string) => {
 };
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
   const body = await request.json();
   console.log(body);
   const parse = schema.safeParse(body);
   if (!parse.success) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
-  const { userId, noteId } = parse.data;
+  let { userId, noteId } = parse.data;
 
   try {
-    const secret = request.headers.get("x-substack-schedule-secret");
-    console.log("secret", secret);
-    if (secret !== process.env.SUBSTACK_SCHEDULE_SECRET) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session) {
+      const secret = request.headers.get("x-substack-schedule-secret");
+      if (secret !== process.env.SUBSTACK_SCHEDULE_SECRET) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    } else {
+      userId = session.user.id;
+    }
+
+    if (!userId) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const user = await prisma.user.findUnique({
@@ -66,6 +75,9 @@ export async function POST(request: NextRequest) {
       where: {
         id: noteId,
       },
+      include: {
+        substackImage: true,
+      },
     });
 
     if (!note) {
@@ -75,7 +87,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    if (note.status === "published") {
+    // If session is not null, it means that the note is being sent from the web app
+    // and we don't want to prevent it
+    if (note.status === "published" && !session) {
       return NextResponse.json(
         { error: "Note already published" },
         { status: 400 },
@@ -92,7 +106,17 @@ export async function POST(request: NextRequest) {
     }
 
     const adf = await markdownToADF(note.body);
-    const messageData = { bodyJson: adf };
+    let messageData: {
+      bodyJson: any;
+      attachmentIds?: string[];
+    } = {
+      bodyJson: adf,
+    };
+    if (note.substackImage.length > 0) {
+      messageData.attachmentIds = note.substackImage.map(
+        image => image.imageId,
+      );
+    }
 
     const response = await fetch("https://substack.com/api/v1/comment/feed", {
       headers: {
@@ -124,6 +148,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const data = await response.json();
+
     await prisma.note.update({
       where: {
         id: noteId,
@@ -133,7 +159,8 @@ export async function POST(request: NextRequest) {
         status: "published",
       },
     });
-    return NextResponse.json({ success: true });
+
+    return NextResponse.json({ success: true, result: data });
   } catch (error) {
     loggerServer.error(
       "Error to send note: " +
