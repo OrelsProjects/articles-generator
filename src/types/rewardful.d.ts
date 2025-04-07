@@ -8,9 +8,9 @@ declare global {
   interface Window {
     Rewardful: RewardfulInstance;
   }
-  
+
   function rewardful(event: string, callback: () => void): void;
   var Rewardful: RewardfulInstance;
 }
 
-export {}; 
+export {};

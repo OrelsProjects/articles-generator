@@ -1,21 +1,12 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { CalendarClock, Copy } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Copy, Image as ImageIcon } from "lucide-react";
 import { selectNotes } from "@/lib/features/notes/notesSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { TooltipButton } from "@/components/ui/tooltip-button";
-import { addHours } from "date-fns";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   formatText,
   notesTextEditorOptions,
@@ -25,32 +16,9 @@ import { useEditor } from "@tiptap/react";
 import NoteEditor from "@/components/notes/note-editor";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { toast } from "react-toastify";
-import { convertMDToHtml } from "@/types/note";
-import {
-  getMonthValue,
-  getDayValue,
-  getYearValue,
-  getHourValue,
-  getMinuteValue,
-  getAmPmValue,
-  generateDays,
-  generateHours,
-  generateMinutes,
-  generateYears,
-  isScheduled,
-  getScheduleTimeText,
-  months,
-  updateMonth,
-  updateDay,
-  updateYear,
-  updateHour,
-  updateMinute,
-  updateAmPm,
-  isValidScheduleTime,
-  getInvalidTimeMessage,
-} from "@/lib/utils/date/schedule";
+import { convertMDToHtml, NoteDraftImage } from "@/types/note";
+import { isScheduled, getScheduleTimeText } from "@/lib/utils/date/schedule";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
-import { useUi } from "@/lib/hooks/useUi";
 import { useExtension } from "@/lib/hooks/useExtension";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
 import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
@@ -65,17 +33,25 @@ import {
   AiModelsDropdown,
   FrontendModel,
 } from "@/components/notes/ai-models-dropdown";
+import ScheduleNote from "@/components/notes/schedule-note";
+import ImageDropOverlay from "@/components/notes/image-drop-overlay";
+import { NoteImageContainer } from "@/components/notes/note-image-container";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AIToolsDropdown } from "@/components/notes/ai-tools-dropdown";
+
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
   const { selectedNote, thumbnail } = useAppSelector(selectNotes);
-  const { showScheduleModal, updateShowScheduleModal } = useUi();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     updateNoteBody,
     editNoteBody,
     selectNote,
     loadingEditNote,
     updateNoteStatus,
+    uploadingFile,
     uploadFile,
+    deleteImage,
   } = useNotes();
   const {
     scheduleNote,
@@ -97,10 +73,9 @@ export function NotesEditorDialog() {
   const [body, setBody] = useState("");
   const [unscheduling, setUnscheduling] = useState(false);
   const [confirmedSchedule, setConfirmedSchedule] = useState(false);
-  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
-  const [timeError, setTimeError] = useState<string | null>(null);
-  const [showNoSubstackCookiesDialog, setShowNoSubstackCookiesDialog] =
-    useState(false);
+
+  // State for drag and drop
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
@@ -109,13 +84,6 @@ export function NotesEditorDialog() {
       selectNote(null);
     }
   };
-
-  useEffect(() => {
-    if (showScheduleModal) {
-      setScheduleDialogOpen(true);
-      updateShowScheduleModal(false);
-    }
-  }, [open]);
 
   useEffect(() => {
     if (selectedNote && !body) {
@@ -133,25 +101,6 @@ export function NotesEditorDialog() {
       }
     }
   }, [selectedNote]);
-
-  // Set default time to one hour from now when opening the schedule dialog
-  useEffect(() => {
-    if (scheduleDialogOpen && !scheduledDate) {
-      const defaultDate = addHours(new Date(), 1);
-      setScheduledDate(defaultDate);
-    }
-  }, [scheduleDialogOpen, scheduledDate]);
-
-  // Validate the schedule time whenever it changes
-  useEffect(() => {
-    if (scheduledDate) {
-      setTimeError(
-        isValidScheduleTime(scheduledDate) ? null : getInvalidTimeMessage(),
-      );
-    } else {
-      setTimeError(null);
-    }
-  }, [scheduledDate]);
 
   const editor = useEditor(notesTextEditorOptions(handleBodyChange));
 
@@ -198,97 +147,15 @@ export function NotesEditorDialog() {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const scheduleIsSet = isScheduled(scheduledDate) && confirmedSchedule;
-  const isTimeValid = !timeError;
 
   const handleClearSchedule = () => {
     setScheduledDate(undefined);
-    setScheduleDialogOpen(false);
     setConfirmedSchedule(false);
-    setTimeError(null);
   };
 
-  // Handle confirming the schedule
-  const handleConfirmSchedule = async () => {
-    const userHasExtension = await hasExtension();
-    if (!userHasExtension) {
-      setShowExtensionDialog(true);
-      return;
-    }
-    if (scheduledDate && isValidScheduleTime(scheduledDate)) {
-      setConfirmedSchedule(true);
-      setScheduleDialogOpen(false);
-    } else {
-      setTimeError(getInvalidTimeMessage());
-    }
-  };
-
-  // Update a date field
-  const handleDateUpdate = (type: "month" | "day" | "year", value: string) => {
-    if (!scheduledDate) {
-      const now = new Date();
-      setScheduledDate(now);
-      return;
-    }
-
-    let updatedDate: Date;
-
-    switch (type) {
-      case "month":
-        updatedDate = updateMonth(scheduledDate, value);
-        break;
-      case "day":
-        updatedDate = updateDay(scheduledDate, value);
-        break;
-      case "year":
-        updatedDate = updateYear(scheduledDate, value);
-        break;
-      default:
-        return;
-    }
-
-    setScheduledDate(updatedDate);
-  };
-
-  // Update a time field
-  const handleTimeUpdate = (
-    type: "hour" | "minute" | "ampm",
-    value: string,
-  ) => {
-    if (!scheduledDate) {
-      const now = new Date();
-      setScheduledDate(now);
-      return;
-    }
-
-    let updatedDate: Date;
-
-    switch (type) {
-      case "hour":
-        updatedDate = updateHour(scheduledDate, value);
-        break;
-      case "minute":
-        updatedDate = updateMinute(scheduledDate, value);
-        break;
-      case "ampm":
-        updatedDate = updateAmPm(scheduledDate, value);
-        break;
-      default:
-        return;
-    }
-
-    setScheduledDate(updatedDate);
-  };
-
-  // Render the scheduled time text with a CalendarClock icon
-  const renderScheduleTimeText = () => {
-    if (!scheduledDate) return null;
-
-    return (
-      <div className="flex items-center gap-2 text-base text-foreground">
-        <CalendarClock className="h-5 w-5" />
-        {getScheduleTimeText(scheduledDate)}
-      </div>
-    );
+  const handleConfirmSchedule = async (date: Date) => {
+    setScheduledDate(date);
+    setConfirmedSchedule(true);
   };
 
   const handleSave = async () => {
@@ -362,6 +229,129 @@ export function NotesEditorDialog() {
     toast.success("Copied to clipboard");
   };
 
+  const [showNoSubstackCookiesDialog, setShowNoSubstackCookiesDialog] =
+    useState(false);
+
+  // Determine button text based on current state
+  const saveButtonText = useMemo(() => {
+    if (loadingEditNote) {
+      return unscheduling ? "Unscheduling note..." : "Saving note...";
+    }
+
+    if (loadingUpdateNote) {
+      return "Scheduling note...";
+    }
+
+    if (confirmedSchedule) {
+      return "Schedule";
+    }
+
+    if (selectedNote?.status === "scheduled") {
+      return "Unschedule";
+    }
+
+    return "Save";
+  }, [
+    loadingEditNote,
+    loadingUpdateNote,
+    unscheduling,
+    confirmedSchedule,
+    selectedNote?.status,
+  ]);
+
+  // Determine button tooltip based on current state
+  const saveButtonTooltip = useMemo(() => {
+    if (confirmedSchedule) {
+      return "Schedule";
+    }
+
+    if (selectedNote?.status === "scheduled") {
+      return "";
+    }
+
+    return "Save";
+  }, [confirmedSchedule, selectedNote?.status]);
+
+  // Handle file upload when an image is dropped
+  const handleFileDrop = useCallback(
+    async (file: File) => {
+      if (!selectedNote) return;
+
+      // Check if there's already an image
+      if (selectedNote.attachments && selectedNote.attachments.length > 0) {
+        setIsDraggingOver(false);
+        toast.error("Only one image is allowed");
+        return;
+      }
+
+      try {
+        setIsDraggingOver(false);
+        await uploadFile(file, selectedNote.id);
+      } catch (error) {
+        toast.error("Failed to upload image");
+        console.error(error);
+      }
+    },
+    [selectedNote, uploadFile],
+  );
+
+  // Handle drag events
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Check if files are being dragged
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDraggingOver(true);
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Check if the drag leave is from the editor area
+    if (e.currentTarget.contains(e.relatedTarget as Node)) {
+      return;
+    }
+
+    setIsDraggingOver(false);
+  }, []);
+
+  const handleImageSelect = useCallback(
+    async (file: File) => {
+      if (!selectedNote) return;
+
+      // Check if there's already an image
+      if (selectedNote.attachments && selectedNote.attachments.length > 0) {
+        toast.error("Only one image is allowed");
+        return;
+      }
+
+      try {
+        await uploadFile(file, selectedNote.id);
+      } catch (error) {
+        toast.error("Failed to upload image");
+        console.error(error);
+      }
+    },
+    [selectedNote, uploadFile],
+  );
+
+  const handleImageDelete = useCallback(
+    async (attachment: NoteDraftImage) => {
+      if (!selectedNote) return;
+
+      try {
+        await deleteImage(selectedNote.id, attachment);
+      } catch (error) {
+        toast.error("Failed to delete image");
+        console.error(error);
+      }
+    },
+    [selectedNote],
+  );
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -369,7 +359,18 @@ export function NotesEditorDialog() {
           hideCloseButton
           className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl"
         >
-          <div className="flex flex-col w-full">
+          <div
+            className="flex flex-col w-full relative"
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+          >
+            <ImageDropOverlay
+              isVisible={isDraggingOver}
+              onFileDrop={handleFileDrop}
+              disabled={(selectedNote?.attachments?.length || 0) > 0}
+              onHide={() => setIsDraggingOver(false)}
+            />
+
             <div className="flex items-start p-4 gap-3">
               <Avatar className="h-10 w-10 border">
                 <AvatarImage src={thumbnail || user?.image || ""} alt="User" />
@@ -379,7 +380,6 @@ export function NotesEditorDialog() {
                 <h3 className="font-medium text-foreground">
                   {name || userName}
                 </h3>
-
                 {editor && (
                   <NoteEditor
                     editor={editor}
@@ -387,261 +387,73 @@ export function NotesEditorDialog() {
                     textEditorClassName="!px-0"
                   />
                 )}
+                {selectedNote?.attachments &&
+                  selectedNote.attachments.length > 0 && (
+                    <div className="mt-4 mb-4 flex flex-wrap gap-2">
+                      {selectedNote.attachments.map(attachment => (
+                        <NoteImageContainer
+                          key={attachment.id}
+                          imageUrl={attachment.url}
+                          onImageSelect={handleImageSelect}
+                          onImageDelete={handleImageDelete}
+                          attachment={attachment}
+                        />
+                      ))}
+                    </div>
+                  )}
+                {uploadingFile && (
+                  <Skeleton className="w-[180px] h-[96px] rounded-md" />
+                )}
               </div>
             </div>
 
             <div className="flex items-center justify-between p-4 border-t border-border">
               <div className="flex gap-2 items-center">
-                <Dialog
-                  open={scheduleDialogOpen}
-                  onOpenChange={setScheduleDialogOpen}
-                >
-                  <DialogTrigger asChild>
-                    <TooltipButton
-                      tooltipContent="Schedule note"
-                      variant="ghost"
-                      size="icon"
-                      className={`${confirmedSchedule ? "text-primary/95 hover:text-primary" : "text-muted-foreground"} `}
-                    >
-                      <CalendarClock className="h-5 w-5" />
-                    </TooltipButton>
-                  </DialogTrigger>
-
-                  <DialogContent
-                    hideCloseButton
-                    className="max-w-[550px] p-0 gap-0 border-border bg-background rounded-xl"
-                  >
-                    <div className="p-6 flex flex-col gap-6">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-foreground">
-                          Schedule
-                        </h2>
-                        <div className="flex gap-3">
-                          <Button
-                            variant="ghost"
-                            className="hover:bg-accent hover:text-accent-foreground transition-colors"
-                            onClick={handleClearSchedule}
-                          >
-                            Clear
-                          </Button>
-                          <Button
-                            className="rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={handleConfirmSchedule}
-                            disabled={!isTimeValid}
-                          >
-                            Confirm
-                          </Button>
-                        </div>
-                      </div>
-
-                      {scheduleIsSet && (
-                        <div className="py-2 px-4 bg-accent/30 rounded-md">
-                          {renderScheduleTimeText()}
-                        </div>
-                      )}
-
-                      {timeError && (
-                        <div className="py-2 px-4 bg-destructive/20 text-destructive rounded-md text-sm">
-                          {timeError}
-                        </div>
-                      )}
-
-                      <div className="space-y-8">
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-medium text-foreground">
-                            Date
-                          </h3>
-                          <div className="grid grid-cols-3 gap-4">
-                            <Select
-                              value={
-                                scheduledDate
-                                  ? getMonthValue(scheduledDate)
-                                  : undefined
-                              }
-                              onValueChange={value =>
-                                handleDateUpdate("month", value)
-                              }
-                            >
-                              <SelectTrigger className="h-11 bg-background border-border">
-                                <SelectValue placeholder="Month" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-background border-border">
-                                {months.map(month => (
-                                  <SelectItem
-                                    key={month}
-                                    value={month}
-                                    className="focus:bg-accent focus:text-accent-foreground"
-                                  >
-                                    {month}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-
-                            <Select
-                              value={
-                                scheduledDate
-                                  ? getDayValue(scheduledDate)
-                                  : undefined
-                              }
-                              onValueChange={value =>
-                                handleDateUpdate("day", value)
-                              }
-                            >
-                              <SelectTrigger className="h-11 bg-background border-border">
-                                <SelectValue placeholder="Day" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-background border-border">
-                                {generateDays(scheduledDate).map(day => (
-                                  <SelectItem
-                                    key={day}
-                                    value={day}
-                                    className="focus:bg-accent focus:text-accent-foreground"
-                                  >
-                                    {day}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-
-                            <Select
-                              value={
-                                scheduledDate
-                                  ? getYearValue(scheduledDate)
-                                  : undefined
-                              }
-                              onValueChange={value =>
-                                handleDateUpdate("year", value)
-                              }
-                            >
-                              <SelectTrigger className="h-11 bg-background border-border">
-                                <SelectValue placeholder="Year" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-background border-border">
-                                {generateYears().map(year => (
-                                  <SelectItem
-                                    key={year}
-                                    value={year}
-                                    className="focus:bg-accent focus:text-accent-foreground"
-                                  >
-                                    {year}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-medium text-foreground">
-                            Time
-                          </h3>
-                          <div className="grid grid-cols-3 gap-4">
-                            <Select
-                              value={
-                                scheduledDate
-                                  ? getHourValue(scheduledDate)
-                                  : undefined
-                              }
-                              onValueChange={value =>
-                                handleTimeUpdate("hour", value)
-                              }
-                            >
-                              <SelectTrigger className="h-11 bg-background border-border">
-                                <SelectValue placeholder="Hour" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-background border-border">
-                                {generateHours().map(hour => (
-                                  <SelectItem
-                                    key={hour}
-                                    value={hour}
-                                    className="focus:bg-accent focus:text-accent-foreground"
-                                  >
-                                    {hour}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-
-                            <Select
-                              value={
-                                scheduledDate
-                                  ? getMinuteValue(scheduledDate)
-                                  : undefined
-                              }
-                              onValueChange={value =>
-                                handleTimeUpdate("minute", value)
-                              }
-                            >
-                              <SelectTrigger className="h-11 bg-background border-border">
-                                <SelectValue placeholder="Minute" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-background border-border h-[200px]">
-                                {generateMinutes().map(minute => (
-                                  <SelectItem
-                                    key={minute}
-                                    value={minute}
-                                    className="focus:bg-accent focus:text-accent-foreground"
-                                  >
-                                    {minute}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-
-                            <Select
-                              value={
-                                scheduledDate
-                                  ? getAmPmValue(scheduledDate)
-                                  : undefined
-                              }
-                              onValueChange={value =>
-                                handleTimeUpdate("ampm", value)
-                              }
-                            >
-                              <SelectTrigger className="h-11 bg-background border-border">
-                                <SelectValue placeholder="AM/PM" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-background border-border">
-                                <SelectItem
-                                  value="AM"
-                                  className="focus:bg-accent focus:text-accent-foreground"
-                                >
-                                  AM
-                                </SelectItem>
-                                <SelectItem
-                                  value="PM"
-                                  className="focus:bg-accent focus:text-accent-foreground"
-                                >
-                                  PM
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2 bg-muted/10 p-4 py-2 rounded-md">
-                          <div className="text-muted-foreground text-lg font-medium">
-                            {timezone}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-                <div className="flex items-center gap-0.5 border border-border/40 rounded-lg">
-                  <AiModelsDropdown
-                    onModelChange={setSelectedModel}
-                    size="md"
-                    classNameTrigger="!text-muted-foreground"
-                  />
-                  <AIImproveDropdown
-                    note={selectedNote}
-                    selectedModel={selectedModel}
-                    onImprovement={handleImprovement}
-                  />
-                </div>
+                <ScheduleNote
+                  initialScheduledDate={scheduledDate}
+                  confirmedSchedule={confirmedSchedule}
+                  onScheduleConfirm={handleConfirmSchedule}
+                  onScheduleClear={handleClearSchedule}
+                  disabled={
+                    isSendingNote || loadingEditNote || loadingUpdateNote
+                  }
+                />
+                <AIToolsDropdown
+                  note={selectedNote}
+                  onImprovement={handleImprovement}
+                />
                 <EmojiPopover onEmojiSelect={handleEmojiSelect} />
+                <TooltipButton
+                  tooltipContent={
+                    selectedNote?.attachments?.length
+                      ? "Only one image allowed"
+                      : "Add image"
+                  }
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  disabled={uploadingFile}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                </TooltipButton>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleImageSelect(file);
+                    }
+                    e.target.value = "";
+                  }}
+                  disabled={
+                    uploadingFile ||
+                    (selectedNote?.attachments?.length ?? 0) > 0
+                  }
+                />
                 <TooltipButton
                   tooltipContent="Copy"
                   variant="ghost"
@@ -660,13 +472,7 @@ export function NotesEditorDialog() {
                   includeText
                 />
                 <TooltipButton
-                  tooltipContent={
-                    confirmedSchedule
-                      ? "Schedule"
-                      : selectedNote?.status === "scheduled"
-                        ? ""
-                        : "Save"
-                  }
+                  tooltipContent={saveButtonTooltip}
                   variant="default"
                   className="rounded-full px-6"
                   onClick={handleSave}
@@ -677,17 +483,7 @@ export function NotesEditorDialog() {
                     isSendingNote
                   }
                 >
-                  {loadingEditNote
-                    ? unscheduling
-                      ? "Unscheduling note..."
-                      : "Saving note..."
-                    : loadingUpdateNote
-                      ? "Scheduling note..."
-                      : confirmedSchedule
-                        ? "Schedule"
-                        : selectedNote?.status === "scheduled"
-                          ? "Unschedule"
-                          : "Save"}
+                  {saveButtonText}
                 </TooltipButton>
               </div>
             </div>

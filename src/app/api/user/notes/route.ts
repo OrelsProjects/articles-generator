@@ -34,6 +34,15 @@ export async function GET(req: NextRequest) {
             skip: 1, // Skip the cursor
           }
         : {}),
+      include: {
+        S3Attachment: {
+          select: {
+            id: true,
+            s3Url: true,
+            fileName: true,
+          },
+        },
+      },
     });
 
     let nextCursor: string | undefined = undefined;
@@ -55,6 +64,10 @@ export async function GET(req: NextRequest) {
       handle: note.handle || undefined,
       scheduledTo: note.scheduledTo,
       wasSentViaSchedule: !!note.sentViaScheduleAt,
+      attachments: note.S3Attachment.map(attachment => ({
+        id: attachment.id,
+        url: attachment.s3Url,
+      })),
     }));
 
     return NextResponse.json({

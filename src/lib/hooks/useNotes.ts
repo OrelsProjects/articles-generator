@@ -16,12 +16,15 @@ import {
   setThumbnail,
   setLoadingFetchingByline,
   setName,
+  removeAttachmentFromNote,
+  addAttachmentToNote,
 } from "@/lib/features/notes/notesSlice";
 import {
   isNoteDraft,
   Note,
   NOTE_EMPTY,
   NoteDraft,
+  NoteDraftImage,
   NoteFeedback,
   NoteStatus,
   noteToNoteDraft,
@@ -36,8 +39,11 @@ import { decrementUsage } from "@/lib/features/settings/settingsSlice";
 import { ImprovementType } from "@/lib/prompts";
 import { debounce } from "lodash";
 import { Byline } from "@/types/article";
+import { selectAuth } from "@/lib/features/auth/authSlice";
+import { CreatePostResponse } from "@/types/createPostResponse";
 
 export const useNotes = () => {
+  const { user } = useAppSelector(selectAuth);
   const { updateShowScheduleModal, hasAdvancedGPT } = useUi();
   const dispatch = useAppDispatch();
   const {
@@ -57,7 +63,10 @@ export const useNotes = () => {
 
   const { consumeCredits } = useCredits();
   const [loadingEditNote, setLoadingEditNote] = useState(false);
+  // Don't delete, it works for some reason and allows user to save on click. TODO: Check why
+  const [shouldCancelUpdate, setShouldCancelUpdate] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [loadingSendNote, setLoadingSendNote] = useState(false);
 
   const loadingNotesRef = useRef(false);
   const cancelRef = useRef<AbortController | null>(null);
@@ -346,12 +355,17 @@ export const useNotes = () => {
     if (cancelRef.current) {
       cancelRef.current.abort();
       cancelRef.current = null;
+      setShouldCancelUpdate(false);
     }
     if (options?.immediate) {
       editNoteBody(noteId, body);
     } else {
       updateNoteBodyDebounced(noteId, body);
     }
+  };
+
+  const cancelUpdateNoteBody = () => {
+    setShouldCancelUpdate(true);
   };
 
   const createDraftNote = async (draft?: Partial<NoteDraft>): Promise<void> => {
@@ -420,27 +434,96 @@ export const useNotes = () => {
     }
   }, [handle, thumbnail]);
 
+  const deleteImage = useCallback(
+    async (noteId: string, attachment: NoteDraftImage) => {
+      try {
+        dispatch(
+          removeAttachmentFromNote({
+            noteId,
+            attachmentId: attachment.id,
+          }),
+        );
+        await axios.delete(`/api/note/${noteId}/image/${attachment.id}`);
+      } catch (error) {
+        dispatch(addAttachmentToNote({ noteId, attachment }));
+        console.error("Error deleting image:", error);
+        throw error;
+      }
+    },
+    [dispatch],
+  );
+
   const uploadFile = async (file: File, noteId: string) => {
     if (uploadingFile) return;
     try {
+      const existingNote = userNotes.find(note => note.id === noteId);
+      if (
+        existingNote?.attachments?.length &&
+        existingNote.attachments.length >= 1
+      ) {
+        const shouldDelete = window.confirm(
+          "Are you sure you want to delete the existing image?",
+        );
+        if (shouldDelete) {
+          const existingNote = userNotes.find(note => note.id === noteId);
+          if (
+            existingNote?.attachments?.length &&
+            existingNote.attachments.length >= 1
+          ) {
+            await deleteImage(noteId, existingNote.attachments[0]);
+          }
+        } else {
+          return;
+        }
+      }
+
+      // make data to send to the server
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fileName", file.name);
+
       setUploadingFile(true);
-      const response = await axios.post(
+      const response = await axios.post<NoteDraftImage>(
         `/api/note/${noteId}/image`,
-        {
-          file,
-        },
+        formData,
         {
           headers: {
-            "Content-Type": file.type,
+            "Content-Type": "multipart/form-data",
           },
         },
       );
-      console.log("response", response);
+      // Update the note with the image URL from the response
+      dispatch(addAttachmentToNote({ noteId, attachment: response.data }));
     } catch (error: any) {
       Logger.error("Error uploading file:", error);
+      throw error;
     } finally {
+      setUploadingFile(false);
     }
   };
+
+  const sendNote = useCallback(
+    async (noteId: string) => {
+      if (!user) return;
+      try {
+        setLoadingSendNote(true);
+        const response = await axios.post<{ result: CreatePostResponse }>(
+          `/api/user/notes/send`,
+          {
+            noteId,
+            userId: user.userId,
+          },
+        );
+        return response.data.result;
+      } catch (error: any) {
+        Logger.error("Error sending note:", error);
+        throw error;
+      } finally {
+        setLoadingSendNote(false);
+      }
+    },
+    [user],
+  );
 
   return {
     userNotes,
@@ -466,5 +549,10 @@ export const useNotes = () => {
     updateByline,
     editNoteBody,
     uploadFile,
+    uploadingFile,
+    cancelUpdateNoteBody,
+    deleteImage,
+    sendNote,
+    loadingSendNote,
   };
 };

@@ -34,13 +34,10 @@ export async function OPTIONS(): Promise<NextResponse> {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const session = await getServerSession(authOptions);
-
+  console.log(session);
   if (!session) {
     return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
     });
   }
 

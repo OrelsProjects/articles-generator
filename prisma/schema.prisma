@@ -292,6 +292,7 @@ model Note {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   substackImage SubstackImage[]
+  S3Attachment  S3Attachment[]
 
   @@map("note")
 }
@@ -497,6 +498,7 @@ model SubstackImage {
   explicit    Boolean @default(false)
 
   noteId String @db.ObjectId
+  s3AttachmentId String @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -504,4 +506,19 @@ model SubstackImage {
   note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
   @@map("substackImages")
+}
+
+model S3Attachment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  s3Url    String @unique
+  noteId String @db.ObjectId
+  fileName String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@map("s3Attachments")
 }

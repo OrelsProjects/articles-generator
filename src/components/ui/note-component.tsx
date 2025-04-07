@@ -28,6 +28,7 @@ import {
   DislikeFeedbackPopover,
   FEEDBACK_OPTIONS,
 } from "@/components/ui/note-component/dislike-button";
+import { NoteImageContainer } from "@/components/notes/note-image-container";
 
 export type NoteProps = {
   note: Note | NoteDraft;
@@ -477,12 +478,10 @@ export default function NoteComponent({
                   })
                 }
               >
-                <Image
-                  src={attachment}
-                  alt="Attachment"
-                  width={300}
-                  height={200}
-                  className=" rounded-lg hover:opacity-90 transition-opacity"
+                <NoteImageContainer
+                  key={attachment.id}
+                  imageUrl={attachment.url}
+                  attachment={attachment}
                 />
               </div>
             )}

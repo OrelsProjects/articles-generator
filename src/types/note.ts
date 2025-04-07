@@ -31,7 +31,12 @@ export interface InspirationSort {
   direction: InspirationSortDirection;
 }
 
-export type NoteStatus = "draft" | "ready" | "scheduled" | "published" | "failed";
+export type NoteStatus =
+  | "draft"
+  | "ready"
+  | "scheduled"
+  | "published"
+  | "failed";
 export type NoteFeedback = "dislike" | "like";
 
 export type JsonBody = {
@@ -41,6 +46,22 @@ export type JsonBody = {
     type: string;
   }[];
 };
+
+export interface SubstackImageResponse {
+  id: string;
+  type: string;
+  imageUrl: string;
+  imageWidth: number;
+  imageHeight: number;
+  explicit: boolean;
+}
+
+export interface NoteDraftImage {
+  id: string;
+  url: string;
+  // width: number;
+  // height: number;
+}
 
 export interface NoteDraft {
   id: string;
@@ -55,10 +76,10 @@ export interface NoteDraft {
   feedback?: NoteFeedback;
   feedbackComment?: string;
   authorName: string;
-  attachments?: string[];
   isArchived?: boolean;
   scheduledTo?: Date | null;
   wasSentViaSchedule: boolean;
+  attachments?: NoteDraftImage[] | null;
 }
 
 export interface Note {
@@ -190,7 +211,6 @@ export function noteToNoteDraft(note: Note | null): NoteDraft | null {
     authorId: null,
     status: "draft",
     authorName: "",
-    attachments: note.attachments ? note.attachments : [],
     scheduledTo: note.scheduledTo,
     wasSentViaSchedule: !!note.sentViaScheduleAt,
   };
@@ -205,7 +225,7 @@ export const NOTE_EMPTY: NoteDraft = {
   authorId: null,
   status: "draft",
   authorName: "",
-  attachments: [],
   scheduledTo: null,
   wasSentViaSchedule: false,
+  attachments: [],
 };

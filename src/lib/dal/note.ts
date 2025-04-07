@@ -1,6 +1,6 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { NoteDraft } from "@/types/note";
-import { Note } from "@prisma/client";
+import { Note, SubstackImage } from "@prisma/client";
 
 export type CreateNote = Omit<Note, "id" | "createdAt" | "updatedAt">;
 
@@ -110,3 +110,13 @@ export const getNoteById = async (noteId: string): Promise<Note | null> => {
   });
   return note;
 };
+
+// export const getNoteImages = async (
+//   noteId: string,
+// ): Promise<SubstackImage[]> => {
+//   const note = await prisma.note.findUnique({
+//     where: { id: noteId },
+//     select: { substackImage: true },
+//   });
+//   return note?.substackImage || [];
+// };

@@ -3,6 +3,7 @@ import { authOptions } from "@/auth/authOptions";
 import { sendMail } from "@/lib/mail/mail";
 import { generateFailedToSendNoteEmail } from "@/lib/mail/templates";
 import { markdownToADF } from "@/lib/utils/adf";
+import { prepareAttachmentsForNote } from "@/lib/substack";
 import loggerServer from "@/loggerServer";
 import { CookieName } from "@prisma/client";
 import { getServerSession } from "next-auth";
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
         id: noteId,
       },
       include: {
-        substackImage: true,
+        S3Attachment: true,
       },
     });
 
@@ -112,10 +113,10 @@ export async function POST(request: NextRequest) {
     } = {
       bodyJson: adf,
     };
-    if (note.substackImage.length > 0) {
-      messageData.attachmentIds = note.substackImage.map(
-        image => image.imageId,
-      );
+
+    if (note.S3Attachment.length > 0) {
+      const attachments = await prepareAttachmentsForNote(noteId);
+      messageData.attachmentIds = attachments.map(attachment => attachment.id);
     }
 
     const response = await fetch("https://substack.com/api/v1/comment/feed", {

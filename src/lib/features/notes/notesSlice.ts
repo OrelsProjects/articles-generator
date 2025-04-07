@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
-import { Note, NoteDraft } from "@/types/note";
+import { Note, NoteDraft, NoteDraftImage } from "@/types/note";
 import { Filter } from "@/lib/dal/milvus";
 
 export interface NotesState {
@@ -201,6 +201,49 @@ const notesSlice = createSlice({
     setName: (state, action: PayloadAction<string | null>) => {
       state.name = action.payload;
     },
+    addAttachmentToNote: (
+      state,
+      action: PayloadAction<{ noteId: string; attachment: NoteDraftImage }>,
+    ) => {
+      const { noteId, attachment } = action.payload;
+      const note = state.userNotes.find(note => note.id === noteId);
+      if (note) {
+        note.attachments = note.attachments
+          ? [...note.attachments, attachment]
+          : [attachment];
+      }
+      state.userNotes = state.userNotes.map(note =>
+        note.id === noteId ? { ...note, attachments: note.attachments } : note,
+      );
+      if (noteId === state.selectedNote?.id) {
+        state.selectedNote = {
+          ...state.selectedNote,
+          attachments: note?.attachments,
+        };
+      }
+    },
+    removeAttachmentFromNote: (
+      state,
+      action: PayloadAction<{ noteId: string; attachmentId: string }>,
+    ) => {
+      const { noteId, attachmentId } = action.payload;
+      debugger;
+      const note = state.userNotes.find(note => note.id === noteId);
+      if (note) {
+        note.attachments = note.attachments?.filter(
+          attachment => attachment.id !== attachmentId,
+        );
+      }
+      state.userNotes = state.userNotes.map(note =>
+        note.id === noteId ? { ...note, attachments: note.attachments } : note,
+      );
+      if (noteId === state.selectedNote?.id) {
+        state.selectedNote = {
+          ...state.selectedNote,
+          attachments: note?.attachments,
+        };
+      }
+    },
   },
 });
 
@@ -225,6 +268,8 @@ export const {
   setHandle,
   setThumbnail,
   setName,
+  addAttachmentToNote,
+  removeAttachmentFromNote,
 } = notesSlice.actions;
 
 export const selectNotes = (state: RootState) => state.notes;

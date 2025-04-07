@@ -4,7 +4,7 @@ import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import cuid from "cuid";
-import { deleteFile, uploadFile } from "@/lib/files";
+import { deleteFile, uploadFile } from "@/lib/files-article";
 
 export async function POST(
   req: NextRequest,
