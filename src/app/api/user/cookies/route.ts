@@ -39,8 +39,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: {
-        "Access-Control-Allow-Origin":
-          "chrome-extension://bmkhkeelhgcnpmemdmlfjfndcolhhkaj",
+        "Access-Control-Allow-Origin": "*",
       },
     });
   }
