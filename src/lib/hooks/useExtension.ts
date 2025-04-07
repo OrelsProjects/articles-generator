@@ -17,8 +17,6 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { FeatureFlag, Note } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
 
-const LATEST_EXTENSION_VERSION = "1.2.1";
-
 /**
  * Detects the current browser type
  * @returns {BrowserType} The detected browser type
@@ -96,11 +94,7 @@ export function useExtension(): UseExtension {
             )
             .then((response: any) => {
               if (response?.success) {
-                if (response?.version !== LATEST_EXTENSION_VERSION) {
-                  resolve("outdated");
-                } else {
-                  resolve("success");
-                }
+                resolve("success");
               } else {
                 Logger.error(
                   "Extension not found in Firefox: " +
@@ -124,13 +118,8 @@ export function useExtension(): UseExtension {
             process.env.NEXT_PUBLIC_EXTENSION_ID as string,
             pingMessage,
             (response: any) => {
-              
               if (response?.success) {
-                if (response?.version !== LATEST_EXTENSION_VERSION) {
-                  resolve("outdated");
-                } else {
-                  resolve("success");
-                }
+                resolve("success");
               } else {
                 Logger.error(
                   "Extension not found in Chrome: " +
@@ -175,7 +164,7 @@ export function useExtension(): UseExtension {
     async <T>(message: ExtensionMessage): Promise<ExtensionResponse<T>> => {
       return new Promise(async (resolve, reject) => {
         const verificationStatus = await verifyExtension();
-        
+
         if (verificationStatus === "error") {
           reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
           return;
@@ -285,8 +274,6 @@ export function useExtension(): UseExtension {
           action: "createSubstackPost",
           params: [messageData],
         };
-
-        
 
         // Send message to extension
         const sendMessageResponse =
