@@ -8,6 +8,7 @@ import { Note, NoteDraft } from "@/types/note";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
 import { EventTracker } from "@/eventTracker";
+import { CreatePostResponse } from "@/types/createPostResponse";
 
 interface SubstackPostButtonProps {
   note: Note | NoteDraft | string | null;
@@ -28,15 +29,12 @@ export function InstantPostButton({
   source,
   className,
 }: SubstackPostButtonProps) {
-  const {
-    sendNote,
-    isLoading: loadingSendNote,
-    postResponse,
-    getNoteById,
-    hasExtension,
-  } = useExtension();
-  const { updateNoteStatus } = useNotes();
+  const { getNoteById, hasExtension } = useExtension();
+  const { updateNoteStatus, sendNote, loadingSendNote } = useNotes();
 
+  const [postResponse, setPostResponse] = useState<CreatePostResponse | null>(
+    null,
+  );
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
 
@@ -51,11 +49,13 @@ export function InstantPostButton({
     const noteObject = typeof note === "string" ? getNoteById(note) : note;
     if (!noteObject) return;
     try {
-      await sendNote({
-        message: noteObject.body,
-      });
-
-      setShowSuccessDialog(true);
+      const response = await sendNote(noteObject.id);
+      if (response) {
+        setPostResponse(response);
+        setShowSuccessDialog(true);
+      } else {
+        setShowExtensionDialog(true);
+      }
     } catch (error) {
       console.error("Error sending post:", error);
       setShowExtensionDialog(true);
