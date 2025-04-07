@@ -75,7 +75,7 @@ export function NotesEditorDialog() {
     selectNote,
     loadingEditNote,
     updateNoteStatus,
-    cancelUpdateNoteBody,
+    uploadFile,
   } = useNotes();
   const {
     scheduleNote,

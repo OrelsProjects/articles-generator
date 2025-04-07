@@ -57,7 +57,7 @@ export const useNotes = () => {
 
   const { consumeCredits } = useCredits();
   const [loadingEditNote, setLoadingEditNote] = useState(false);
-  const [shouldCancelUpdate, setShouldCancelUpdate] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   const loadingNotesRef = useRef(false);
   const cancelRef = useRef<AbortController | null>(null);
@@ -220,7 +220,6 @@ export const useNotes = () => {
 
   const updateNoteStatus = useCallback(
     async (noteId: string, status: NoteStatus | "archived") => {
-      setLoadingEditNote(true);
       EventTracker.track("notes_update_note_status_" + status);
       const previousStatus = userNotes.find(note => note.id === noteId)?.status;
       if (!previousStatus) {
@@ -250,7 +249,6 @@ export const useNotes = () => {
         dispatch(updateNote({ id: noteId, note: { status: previousStatus } }));
         throw error;
       } finally {
-        setLoadingEditNote(false);
       }
     },
     [userNotes, selectedNote, selectNote, dispatch],
@@ -348,17 +346,12 @@ export const useNotes = () => {
     if (cancelRef.current) {
       cancelRef.current.abort();
       cancelRef.current = null;
-      setShouldCancelUpdate(false);
     }
     if (options?.immediate) {
       editNoteBody(noteId, body);
     } else {
       updateNoteBodyDebounced(noteId, body);
     }
-  };
-
-  const cancelUpdateNoteBody = () => {
-    setShouldCancelUpdate(true);
   };
 
   const createDraftNote = async (draft?: Partial<NoteDraft>): Promise<void> => {
@@ -427,6 +420,28 @@ export const useNotes = () => {
     }
   }, [handle, thumbnail]);
 
+  const uploadFile = async (file: File, noteId: string) => {
+    if (uploadingFile) return;
+    try {
+      setUploadingFile(true);
+      const response = await axios.post(
+        `/api/note/${noteId}/image`,
+        {
+          file,
+        },
+        {
+          headers: {
+            "Content-Type": file.type,
+          },
+        },
+      );
+      console.log("response", response);
+    } catch (error: any) {
+      Logger.error("Error uploading file:", error);
+    } finally {
+    }
+  };
+
   return {
     userNotes,
     selectedNote,
@@ -450,6 +465,6 @@ export const useNotes = () => {
     getNoteByNoteId,
     updateByline,
     editNoteBody,
-    cancelUpdateNoteBody,
+    uploadFile,
   };
 };

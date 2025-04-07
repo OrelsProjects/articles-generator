@@ -315,9 +315,17 @@ export function StatusBoard({
         try {
           // Update the item's status to archived
           const updatedItem = { ...activeItem, status: "archived" };
-          // if it's
-          // Call the onStatusChange callback with the updated item
+
           await onStatusChange(updatedItem, "archived", startColumnId);
+          // remove the item from the list.
+          setColumns(prevColumns => {
+            return prevColumns.map(column => {
+              return {
+                ...column,
+                items: column.items.filter(item => item.id !== activeId),
+              };
+            });
+          });
         } catch (error) {
           log("Error archiving item:", error);
           toast.error("Failed to archive note");

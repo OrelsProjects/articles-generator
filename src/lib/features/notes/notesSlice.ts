@@ -84,9 +84,14 @@ const notesSlice = createSlice({
       }
     },
     removeNote: (state, action: PayloadAction<string>) => {
-      state.userNotes = state.userNotes.filter(
-        userNote => userNote.id !== action.payload,
+      const existingNote = state.userNotes.find(
+        userNote => userNote.id === action.payload,
       );
+      if (existingNote) {
+        state.userNotes = state.userNotes.filter(
+          userNote => userNote.id !== action.payload,
+        );
+      }
     },
     setInspirationNotes: (
       state,
