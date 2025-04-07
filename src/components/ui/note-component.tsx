@@ -486,23 +486,25 @@ export default function NoteComponent({
                   />
                 </div>
               ) : (
-                <div
-                  className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200 px-10"
-                  onClick={() =>
-                    selectImage({
-                      url: attachment,
-                      alt: "Note attachment",
-                    })
-                  }
-                >
-                  <Image
-                    src={attachment}
-                    alt="Attachment"
-                    width={300}
-                    height={200}
-                    className=" rounded-lg hover:opacity-90 transition-opacity"
-                  />
-                </div>
+                !attachment.includes("heic") && (
+                  <div
+                    className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200 px-10"
+                    onClick={() =>
+                      selectImage({
+                        url: attachment,
+                        alt: "Note attachment",
+                      })
+                    }
+                  >
+                    <Image
+                      src={attachment}
+                      alt="Attachment"
+                      width={300}
+                      height={200}
+                      className=" rounded-lg hover:opacity-90 transition-opacity"
+                    />
+                  </div>
+                )
               ))}
           </div>
         </div>
