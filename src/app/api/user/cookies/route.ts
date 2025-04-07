@@ -20,23 +20,55 @@ const schema = z.array(
   }),
 );
 
-export async function POST(request: NextRequest) {
+export async function OPTIONS(): Promise<NextResponse> {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin":
+        "chrome-extension://bmkhkeelhgcnpmemdmlfjfndcolhhkaj",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
   const session = await getServerSession(authOptions);
+
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: {
+        "Access-Control-Allow-Origin":
+          "chrome-extension://bmkhkeelhgcnpmemdmlfjfndcolhhkaj",
+      },
+    });
   }
+
   try {
     const body = await request.json();
     const cookies: SubstackCookie[] = schema.parse(body);
 
     await setSubstackCookies(session.user.id, cookies);
 
-    return NextResponse.json({ success: true });
+    return new NextResponse(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin":
+          "chrome-extension://bmkhkeelhgcnpmemdmlfjfndcolhhkaj",
+      },
+    });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+    console.error("Error saving cookies:", error);
+    return new NextResponse(
+      JSON.stringify({ error: "Internal server error" }),
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin":
+            "chrome-extension://bmkhkeelhgcnpmemdmlfjfndcolhhkaj",
+        },
+      },
     );
   }
 }
