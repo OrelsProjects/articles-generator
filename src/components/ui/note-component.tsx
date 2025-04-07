@@ -409,14 +409,21 @@ export default function NoteComponent({
             )}
           >
             <Author />
-            <div className=" flex items-center gap-2  top-0">
-              {isUserNote && (
-                <StatusBadgeDropdown
-                  note={note as NoteDraft}
-                />
-              )}
+            <div className=" flex items-center gap-2 top-0">
+              {isUserNote && <StatusBadgeDropdown note={note as NoteDraft} />}
             </div>
             {/* <div className="flex items-center gap-2" /> */}
+            {!isUserNote && (
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-muted-foreground">
+                  {new Date(note.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+            )}
           </div>
           <div
             className={cn("w-full flex-1", {
