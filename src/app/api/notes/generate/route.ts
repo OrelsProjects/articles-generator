@@ -125,7 +125,7 @@ export async function POST(
     );
     didConsumeCredits = true;
 
-    const authorId = publication.authorId;
+    const authorId = userMetadata.publication.authorId;
 
     console.log("Author ID: ", authorId);
 
