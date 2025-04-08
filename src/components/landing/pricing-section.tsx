@@ -23,12 +23,12 @@ const basicFeatures = (credits: number) => [
 ];
 
 const advancedFeatures = [
-  "Advanced Notes Research Tools",
   "Choose your LLM (Includes GPT-4.5)",
   "Access to The Best Notes Templates",
 ];
 
 const premiumFeatures = [
+  "<span class='text-primary'>Advanced Notes Research Tools on 5m+ notes</span>",
   "<span class='text-primary'>Can ask for a feature that will be implemented</span>",
   "<span class='text-primary'>Same price forever</span>",
 ];
@@ -38,31 +38,30 @@ const pricingPlans = [
     name: "Hobbyist",
     description:
       "The essentials to start building your Substack business today.",
-    monthlyPrice: 12.99,
-    yearlyPlanPrice: 9.99,
+    monthlyPrice: 20.0,
+    yearlyPlanPrice: 16.0,
     features: [...basicFeatures(50)],
-    annualSavings: 35.98,
+    annualSavings: 47.98,
     popular: false,
   },
   {
     name: "Standard",
     description:
       "Scale your Substack presence and business.<br/>Ideal for accounts looking to grow.",
-    monthlyPrice: 29.99,
-    yearlyPlanPrice: 23.99,
+    monthlyPrice: 40.0,
+    yearlyPlanPrice: 32.0,
     features: [...basicFeatures(200), ...advancedFeatures],
-
-    annualSavings: 71.98,
+    annualSavings: 95.98,
     popular: true,
   },
   {
     name: "Premium",
     description:
       "Supercharge your Substack activity.<br/>Ideal for large, active accounts.",
-    monthlyPrice: 49.99,
-    yearlyPlanPrice: 39.99,
+    monthlyPrice: 120.0,
+    yearlyPlanPrice: 98.0,
     features: [...basicFeatures(350), ...advancedFeatures, ...premiumFeatures],
-    annualSavings: 119.98,
+    annualSavings: 263.98,
     popular: false,
   },
 ];

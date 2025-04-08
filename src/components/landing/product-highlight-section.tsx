@@ -163,31 +163,35 @@ export default function FeatureSection() {
         </p>
         <div className="flex flex-col gap-12">
           <FeatureSectionCard
-            src="/landing/features/notes-editor.png"
+            src="/landing/features/schedule-notes.png"
+            title="<span class='highlight-feature-text'>Schedule your notes</span>"
+            description="Schedule your notes to publish at the best time for your audience.<br/><span class='text-foreground font-medium'> No need to keep your browser open (or you computer on).</span>"
+            direction="ltr"
+          />
+          <FeatureSectionCard
+            src="/landing/features/notes-editor-doggo.png"
             title="Use WriteRoom's AI to outline and write <span class='highlight-feature-text'>100% of your note</span>"
             description="Generate notes that are tailored exactly to your audience with WriteRoom's AI that's trained on millions of notes and post them instantly from WriteRoom."
-            longImage
-            rotateImage
-            direction="ltr"
+            direction="rtl"
           />
           <FeatureSectionCard
             src="/landing/features/inspirations.png"
             title="<span class='highlight-feature-text'>Get inspired</span> by top viral posts in your specific niche"
             description="WriteRoom curates the top viral posts in your specific niche and shows you the best of them so you never run out of ideas."
-            direction="rtl"
+            direction="ltr"
           />
           <FeatureSectionCard
             src="/landing/features/kanban-board.png"
             title="Organize your notes in a <span class='highlight-feature-text'>Kanban board</span>"
             description="The Kanban view lets you visually organize and track your notes in columns. Easily manage posts by status—drafts, ready or published—all at a glance."
-            direction="ltr"
+            direction="rtl"
             sideViewImage
           />
           <FeatureSectionCard
             src="/landing/features/advanced-filtering.png"
             title="Run your research on <span class='highlight-feature-text'>millions of notes</span>"
             description="Use advanced filtering to research through millions of updating notes and stay update-to-date with the latest trends."
-            direction="rtl"
+            direction="ltr"
           />
         </div>
       </motion.div>

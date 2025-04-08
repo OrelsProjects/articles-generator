@@ -120,8 +120,8 @@ function FeatureCard({
     <div
       ref={cardRef}
       className={cn(
-        "w-full overflow-clip flex flex-col lg:flex-row lg:justify-between items-center gap-8 p-6 rounded-2xl relative",
-        isReversed ? "lg:flex-row-reverse bg-gradient-to-tr" : "",
+        "w-full overflow-clip flex flex-col lg:flex-row lg:justify-between items-center gap-8 rounded-2xl relative",
+        isReversed ? "lg:flex-row-reverse bg-gradient-to-tr pr-6" : "pl-6",
       )}
     >
       {isReversed ? (

@@ -5,19 +5,24 @@ import { NoteDraft } from "@/types/note";
 import axios from "axios";
 import { Logger } from "@/logger";
 import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";
+import { useExtension } from "@/lib/hooks/useExtension";
 
 export const useNotesSchedule = () => {
   const dispatch = useAppDispatch();
   const { userNotes, loadingNotes, error } = useAppSelector(selectNotes);
+  const { setUserSubstackCookies } = useExtension();
 
   const [loadingScheduleNote, setLoadingScheduleNote] = useState(false);
   const [isIntervalRunning, setIsIntervalRunning] = useState(false);
   const checkScheduleInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const canSchedule = async () => {
+  const canSchedule = async (options: { setCookiesIfVerified: boolean }) => {
     try {
       const canScheduleResponse = await axios.get("/api/user/schedule");
       const { canSchedule } = canScheduleResponse.data;
+      if (options.setCookiesIfVerified && canSchedule) {
+        await setUserSubstackCookies();
+      }
       return canSchedule;
     } catch (error) {
       return false;
@@ -34,11 +39,13 @@ export const useNotesSchedule = () => {
   const initCanUserScheduleInterval = () => {
     if (isIntervalRunning) return;
     setIsIntervalRunning(true);
-    const maxTries = 10;
+    const maxTries = 15;
     let tries = 0;
     return new Promise((resolve, reject) => {
       checkScheduleInterval.current = setInterval(async () => {
-        const canUserSchedule = await canSchedule();
+        const canUserSchedule = await canSchedule({
+          setCookiesIfVerified: true,
+        });
         if (canUserSchedule) {
           resolve(canUserSchedule);
           if (checkScheduleInterval.current) {
@@ -62,7 +69,9 @@ export const useNotesSchedule = () => {
       const previousNote = userNotes.find(n => n.id === note.id);
 
       try {
-        const canUserSchedule = await canSchedule();
+        const canUserSchedule = await canSchedule({
+          setCookiesIfVerified: false,
+        });
 
         if (!canUserSchedule) {
           throw new NoSubstackCookiesError("User cannot schedule notes");

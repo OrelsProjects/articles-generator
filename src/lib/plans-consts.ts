@@ -19,7 +19,6 @@ export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
     FeatureFlag.articles,
     FeatureFlag.instantPost,
     FeatureFlag.advancedGPT,
-    FeatureFlag.advancedFiltering,
   ],
   premium: [
     FeatureFlag.articles,

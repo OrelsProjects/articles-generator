@@ -100,7 +100,15 @@ const EnhancmentDemo = () => {
 
 const faq = [
   {
-    question: `Can I specify the outline and let ${appName} work with it?`,
+    question: `Do I need to leave my computer running to schedule notes?`,
+    answer: `No! ${appName} will automatically publish your notes at anytime you choose!`,
+  },
+  {
+    question: `Can I tell WriteRoom's AI on which topic I want to generate notes?`,
+    answer: `Absolutely! You can tell WriteRoom's AI on which topic you want to generate notes and it will generate 3 unique and original notes for you.`,
+  },
+  {
+    question: `Can I specify the outline and let ${appName} work with it for my articles?`,
     answer: `Yes! Create a new, empty draft, fill up your outline and ask the AI to elaborate on it.`,
   },
   {
@@ -108,18 +116,8 @@ const faq = [
     answer: `Yes! In the settings you can write your own description and even the topics you want to write about.`,
   },
   {
-    question: `Does ${appName} write for me?`,
-    answer: `No! ${appName} enhances your writing, but you are always in control. We provide tools and suggestions to improve your newsletter while maintaining your unique voice.`,
-  },
-  {
-    question: `Is this just another AI ghostwriter?`,
-    answer: `No! ${appName} provides research, structure, and enhancement
-    tools—not AI-generated newsletters. We believe in augmenting human
-    creativity, not replacing it.`,
-  },
-  {
     question: `Can I cancel anytime?`,
-    answer: `Yes. No contracts, no tricks—just smarter writing. You can cancel your subscription at any time with no questions asked.`,
+    answer: `Yes. No contracts, no tricks.`,
   },
 ];
 
