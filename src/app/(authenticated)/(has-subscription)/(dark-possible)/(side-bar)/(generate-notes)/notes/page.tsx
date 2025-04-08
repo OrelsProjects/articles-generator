@@ -175,14 +175,14 @@ export default function NotesPage() {
                 className="w-full overflow-x-auto"
               >
                 <TabsList className="bg-transparent p-0 space-x-6">
+                  <TabsTrigger value="draft" className="rounded-none px-0 py-2">
+                    Drafts ({noteCountsByStatus.draft})
+                  </TabsTrigger>
                   <TabsTrigger
                     value="scheduled"
                     className="rounded-none px-0 py-2"
                   >
                     Scheduled ({noteCountsByStatus.scheduled})
-                  </TabsTrigger>
-                  <TabsTrigger value="draft" className="rounded-none px-0 py-2">
-                    Drafts ({noteCountsByStatus.draft})
                   </TabsTrigger>
                   <TabsTrigger
                     value="published"

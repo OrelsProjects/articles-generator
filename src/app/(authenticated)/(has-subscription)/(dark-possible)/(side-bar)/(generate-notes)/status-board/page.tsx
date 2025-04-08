@@ -10,6 +10,8 @@ import { TooltipButton } from "@/components/ui/tooltip-button";
 import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
 import { Plus } from "lucide-react";
 
+const TITLE = "Your notes (Kanban)";
+
 export default function StatusBoardPage() {
   const dispatch = useAppDispatch();
   const { fetchNotes, userNotes, loadingNotes, createDraftNote } = useNotes();
@@ -27,7 +29,7 @@ export default function StatusBoardPage() {
     return (
       <div className="w-full py-8 flex justify-center items-start">
         <div className="container px-4 md:px-16 lg:px-24">
-          <h1 className="text-3xl font-bold mb-8">Kanban</h1>
+          <h1 className="text-3xl font-bold mb-8">{TITLE}</h1>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="flex flex-col h-full">
@@ -46,7 +48,7 @@ export default function StatusBoardPage() {
       <div className="container px-4 md:px-16 lg:px-24">
         <div className="flex justify-between items-center mb-12">
           <div className="w-full flex justify-between items-center gap-2">
-            <h1 className="text-3xl font-bold">Kanban</h1>
+            <h1 className="text-3xl font-bold">{TITLE}</h1>
             <TooltipButton
               tooltipContent="Start writing"
               variant="outline"

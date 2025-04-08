@@ -150,12 +150,14 @@ const notesSlice = createSlice({
         isFromInspiration?: boolean;
       }>,
     ) => {
-      state.selectedNote = action.payload.note;
-      if (action.payload.isFromInspiration && state.selectedNote) {
+      if (state.selectedNote && action.payload.note) {
         state.selectedNote = {
           ...state.selectedNote,
-          isFromInspiration: true,
+          ...action.payload.note,
+          isFromInspiration: action.payload.isFromInspiration,
         };
+      } else {
+        state.selectedNote = action.payload.note;
       }
     },
     setSelectedImage: (
@@ -227,7 +229,6 @@ const notesSlice = createSlice({
       action: PayloadAction<{ noteId: string; attachmentId: string }>,
     ) => {
       const { noteId, attachmentId } = action.payload;
-      debugger;
       const note = state.userNotes.find(note => note.id === noteId);
       if (note) {
         note.attachments = note.attachments?.filter(

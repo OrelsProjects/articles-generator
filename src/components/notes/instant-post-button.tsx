@@ -9,6 +9,7 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
 import { EventTracker } from "@/eventTracker";
 import { CreatePostResponse } from "@/types/createPostResponse";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SubstackPostButtonProps {
   note: Note | NoteDraft | string | null;
@@ -37,6 +38,7 @@ export function InstantPostButton({
   );
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleSendNote = async () => {
     EventTracker.track("note_post_button_clicked_" + source);
@@ -73,26 +75,43 @@ export function InstantPostButton({
 
   return (
     <div className="hidden md:flex">
-      <TooltipButton
-        tooltipContent={tooltipContent}
-        variant={variant}
-        size={size}
-        disabled={loadingSendNote || !note}
-        onClick={handleSendNote}
-        className={cn(
-          {
-            "flex gap-2": includeText,
-          },
-          className,
-        )}
+      <div
+        className="relative"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {loadingSendNote ? (
-          <RefreshCw className="h-4 w-4 animate-spin" />
-        ) : (
-          <Send className="h-4 w-4" />
-        )}
-        {includeText && "Post note"}
-      </TooltipButton>
+        <div className="flex items-center gap-0.5 rounded-lg">
+          <TooltipButton
+            // tooltipContent={tooltipContent}
+            variant={variant}
+            size={size}
+            disabled={loadingSendNote || !note}
+            onClick={handleSendNote}
+            className={cn("flex items-center gap-2", {
+              "text-muted-foreground": !isHovered,
+            }, className)}
+          >
+            <AnimatePresence>
+              {isHovered && (
+                <motion.span
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: "auto", opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden whitespace-nowrap"
+                >
+                  Post note
+                </motion.span>
+              )}
+            </AnimatePresence>
+            {loadingSendNote ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </TooltipButton>
+        </div>
+      </div>
 
       <SuccessDialog
         open={showSuccessDialog}

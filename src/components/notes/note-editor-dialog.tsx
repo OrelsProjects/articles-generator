@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Copy, Image as ImageIcon } from "lucide-react";
+import { Check, Copy, Image as ImageIcon } from "lucide-react";
 import { selectNotes } from "@/lib/features/notes/notesSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { TooltipButton } from "@/components/ui/tooltip-button";
@@ -16,7 +16,7 @@ import { useEditor } from "@tiptap/react";
 import NoteEditor from "@/components/notes/note-editor";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { toast } from "react-toastify";
-import { convertMDToHtml, NoteDraftImage } from "@/types/note";
+import { convertMDToHtml, isEmptyNote, NoteDraftImage } from "@/types/note";
 import { isScheduled, getScheduleTimeText } from "@/lib/utils/date/schedule";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { useExtension } from "@/lib/hooks/useExtension";
@@ -24,20 +24,17 @@ import { InstantPostButton } from "@/components/notes/instant-post-button";
 import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
 import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";
 import NoSubstackCookiesDialog from "@/components/notes/no-substack-cookies-dialog";
-import AIImproveDropdown from "@/components/notes/ai-improve-dropdown";
 import EmojiPopover from "@/components/notes/emoji-popover";
 import { Skin } from "@emoji-mart/data";
 import { copyHTMLToClipboard } from "@/lib/utils/copy";
 import { selectAuth } from "@/lib/features/auth/authSlice";
-import {
-  AiModelsDropdown,
-  FrontendModel,
-} from "@/components/notes/ai-models-dropdown";
+import { FrontendModel } from "@/components/notes/ai-models-dropdown";
 import ScheduleNote from "@/components/notes/schedule-note";
 import ImageDropOverlay from "@/components/notes/image-drop-overlay";
 import { NoteImageContainer } from "@/components/notes/note-image-container";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AIToolsDropdown } from "@/components/notes/ai-tools-dropdown";
+import { Button } from "@/components/ui/button";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
@@ -63,9 +60,7 @@ export function NotesEditorDialog() {
 
   const { isLoading: isSendingNote, hasExtension } = useExtension();
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
-  const [selectedModel, setSelectedModel] =
-    useState<FrontendModel>("claude-3.7");
-
+  // setOpen MUST be called only from handleOpenChange to avoid logic bugs, like setting body to ''.
   const [open, setOpen] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(
     undefined,
@@ -73,21 +68,23 @@ export function NotesEditorDialog() {
   const [body, setBody] = useState("");
   const [unscheduling, setUnscheduling] = useState(false);
   const [confirmedSchedule, setConfirmedSchedule] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
 
   // State for drag and drop
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
-  const handleOpenChange = (open: boolean) => {
+  const handleOpenChange = (open: boolean, caller: string) => {
     setOpen(open);
     if (!open) {
       setBody("");
       selectNote(null);
     }
+    console.log("handleOpenChange", open, caller);
   };
 
   useEffect(() => {
     if (selectedNote && !body) {
-      handleOpenChange(true);
+      handleOpenChange(true, "useEffect selectedNote && !body");
       convertMDToHtml(selectedNote.body).then(html => {
         setBody(selectedNote.body);
         editor?.commands.setContent(html);
@@ -109,7 +106,6 @@ export function NotesEditorDialog() {
     options?: { immediate?: boolean },
   ) {
     const newBody = unformatText(html);
-
     setBody(newBody);
     try {
       if (selectedNote) {
@@ -160,20 +156,21 @@ export function NotesEditorDialog() {
 
   const handleSave = async () => {
     if (!selectedNote) return;
+    const shouldSchedule = scheduleIsSet && scheduledDate;
     try {
       await handleBodyChange(editor?.getHTML() || "", { immediate: true });
     } catch (e: any) {
       toast.error("Failed to save note");
       return;
     }
-    if (scheduleIsSet && scheduledDate) {
+    if (shouldSchedule) {
       try {
         const newNote = {
           ...selectedNote,
           scheduledTo: scheduledDate,
         };
         await scheduleNote(newNote);
-        handleOpenChange(false);
+        handleOpenChange(false, "handleSave scheduleNote");
         toast.success(
           "Note scheduled to: " + getScheduleTimeText(scheduledDate, false),
           {
@@ -186,18 +183,24 @@ export function NotesEditorDialog() {
         } else {
           toast.error("Failed to schedule note");
         }
+        return;
       }
     } else if (selectedNote?.status === "scheduled") {
       setUnscheduling(true);
       try {
         await updateNoteStatus(selectedNote.id, "draft");
-        handleOpenChange(false);
+        handleOpenChange(false, "handleSave unscheduleNote");
       } catch (e: any) {
         toast.error("Failed to unschedule note");
+        return;
       } finally {
         setUnscheduling(false);
       }
     }
+    setNoteSaved(true);
+    setTimeout(() => {
+      setNoteSaved(false);
+    }, 1000);
   };
 
   const handleSubstackLogin = () => {
@@ -234,43 +237,50 @@ export function NotesEditorDialog() {
 
   // Determine button text based on current state
   const saveButtonText = useMemo(() => {
+    let text = "Save";
+    const textComponent = (text: string) => <span>{text}</span>;
+    if (isEmptyNote(selectedNote)) {
+      if (confirmedSchedule) {
+        return textComponent("Save and schedule");
+      } else {
+        return textComponent("Save to drafts");
+      }
+    }
+    if (noteSaved) {
+      // [checkmark] saved
+      return (
+        <div className="flex items-center gap-2">
+          <Check className="h-4 w-4 text-foreground" />
+          <span>Saved</span>
+        </div>
+      );
+    }
+
     if (loadingEditNote) {
-      return unscheduling ? "Unscheduling note..." : "Saving note...";
+      text = unscheduling ? "Unscheduling note..." : "Saving note...";
     }
 
     if (loadingUpdateNote) {
-      return "Scheduling note...";
+      text = "Scheduling note...";
     }
 
     if (confirmedSchedule) {
-      return "Schedule";
+      text = "Schedule";
     }
 
     if (selectedNote?.status === "scheduled") {
-      return "Unschedule";
+      text = "Unschedule";
     }
 
-    return "Save";
+    return textComponent(text);
   }, [
+    noteSaved,
     loadingEditNote,
     loadingUpdateNote,
     unscheduling,
     confirmedSchedule,
     selectedNote?.status,
   ]);
-
-  // Determine button tooltip based on current state
-  const saveButtonTooltip = useMemo(() => {
-    if (confirmedSchedule) {
-      return "Schedule";
-    }
-
-    if (selectedNote?.status === "scheduled") {
-      return "";
-    }
-
-    return "Save";
-  }, [confirmedSchedule, selectedNote?.status]);
 
   // Handle file upload when an image is dropped
   const handleFileDrop = useCallback(
@@ -354,7 +364,12 @@ export function NotesEditorDialog() {
 
   return (
     <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
+      <Dialog
+        open={open}
+        onOpenChange={open => {
+          handleOpenChange(open, "Dialog");
+        }}
+      >
         <DialogContent
           hideCloseButton
           className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl"
@@ -407,7 +422,7 @@ export function NotesEditorDialog() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 border-t border-border">
+            <div className="flex flex-col md:flex-row items-center justify-between p-4 border-t border-border gap-4 md:gap-0">
               <div className="flex gap-2 items-center">
                 <ScheduleNote
                   initialScheduledDate={scheduledDate}
@@ -471,8 +486,7 @@ export function NotesEditorDialog() {
                   source="note-editor-dialog"
                   includeText
                 />
-                <TooltipButton
-                  tooltipContent={saveButtonTooltip}
+                <Button
                   variant="default"
                   className="rounded-full px-6"
                   onClick={handleSave}
@@ -480,11 +494,12 @@ export function NotesEditorDialog() {
                     editor?.getText().trim().length === 0 ||
                     loadingEditNote ||
                     loadingUpdateNote ||
-                    isSendingNote
+                    isSendingNote ||
+                    noteSaved
                   }
                 >
                   {saveButtonText}
-                </TooltipButton>
+                </Button>
               </div>
             </div>
           </div>

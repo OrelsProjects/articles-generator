@@ -20,6 +20,7 @@ import {
   addAttachmentToNote,
 } from "@/lib/features/notes/notesSlice";
 import {
+  isEmptyNote,
   isNoteDraft,
   Note,
   NOTE_EMPTY,
@@ -117,19 +118,10 @@ export const useNotes = () => {
       options?: {
         forceShowEditor?: boolean;
         isFromInspiration?: boolean;
-        hasChanges?: boolean;
         showScheduleModal?: boolean;
       },
     ) => {
-      if (options?.hasChanges) {
-        // show alert window
-        const confirm = window.confirm(
-          "You have unsaved changes. Are you sure you want to change note?",
-        );
-        if (!confirm) {
-          return;
-        }
-      }
+      debugger;
       EventTracker.track("notes_select_note");
       let noteToUpdate: NoteDraft | Note | null = null;
       if (typeof note === "string") {
@@ -299,12 +291,13 @@ export const useNotes = () => {
   );
 
   const editNoteBody = async (noteId: string | null, body: string) => {
-    const oldBody = selectedNote?.body;
-    console.log("oldBody", oldBody);
-    console.log("body", body);
-    if (oldBody === body || (!oldBody && !body)) {
-      return;
-    }
+    // const oldBody = selectedNote?.body;
+    // const isSameBody = oldBody === body;
+    // User note has id, inspiration note doesn't
+
+    // if (isUserNote) {
+    //   return;
+    // }
     cancelRef.current?.abort();
     const controller = new AbortController();
     cancelRef.current = controller;
@@ -313,14 +306,14 @@ export const useNotes = () => {
     setLoadingEditNote(true);
 
     try {
-      if (!noteId || noteId === "empty") {
+      if (isEmptyNote(selectedNote)) {
+        // It's a note from the inspiration apge, we need to create a user note first.
         const response = await axios.post<NoteDraft>(
           "/api/note",
           { body },
           { signal: controller.signal },
         );
         dispatch(addNotes({ items: [response.data], nextCursor: null }));
-        debugger;
         dispatch(setSelectedNote({ note: response.data }));
         noteId = response.data.id;
       }
@@ -329,7 +322,7 @@ export const useNotes = () => {
       await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, partialNote, {
         signal: controller.signal,
       });
-      dispatch(updateNote({ id: noteId, note: { body } }));
+      dispatch(updateNote({ id: noteId!, note: { body } }));
     } catch (error: any) {
       if (error instanceof AxiosError && error.code === "ERR_CANCELED") return;
       Logger.error("Error editing note:", error);
