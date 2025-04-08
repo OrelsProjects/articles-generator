@@ -79,16 +79,16 @@ export default function Pricing({
   const { upgradeSubscription, goToCheckout } = usePayments();
   const [loading, setLoading] = useState(false);
 
-  const handleGetStarted = (plan: string) => {
+  const handleGetStarted = async (plan: string) => {
     if (onboarding) {
       setLoading(true);
-      goToCheckout(billingCycle, plan)
-        .catch(() => {
-          toast.error("Something went wrong. Please try again.");
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      try {
+        await goToCheckout(billingCycle, plan);
+      } catch (error) {
+        toast.error("Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     } else {
       if (!user) {
         router.push(`/login?plan=${plan}&interval=${billingCycle}`);
