@@ -31,7 +31,7 @@ const schema = z.object({
   }),
 });
 
-export const maxDuration = 300; // This function can run for a maximum of 5 minutes
+export const maxDuration = 600; // This function can run for a maximum of 10 minutes
 
 const MAX_ARTICLES_TO_GET_BODY = 30;
 
