@@ -452,6 +452,7 @@ const improvementPromptSystemNote = (
         - Use formatting to make the note as clear as possible.
         - The final result has to pass the Flesch-Kincaid readability test with a score of 70 or higher.
         - If you create a list of items, make sure to add a line break between each item and add -> at the beginning of each item.
+        - Mark a new line with double '\\n' (blackslash n). No hard line breaks.
 
         ${
           type === "elaborate"
@@ -769,9 +770,13 @@ export const generateNotesPrompt = (
     Help user write a note with your description, writing style and highlights.
     Think about unique ideas and use the user's provided notes as inspiration only. Be original.
     Notes are like tweets. They need to have one core idea, very impactful and engaging with an amazing hook.
-      ${topic ? `
+      ${
+        topic
+          ? `
         The topic of the notes MUST BE ${topic}. Do not deviate from it.
-        ` : ""}
+        `
+          : ""
+      }
     Each note to have as little cliches as possible and have insightful information that is not obvious.
     Make the note very non-obvious, so it's almost a clickbait.
     **Don't come up with numbers and facts about the user. Stick to the facts they provide. Rely on the user's description and notes that they posted.**
@@ -798,6 +803,7 @@ export const generateNotesPrompt = (
   - Include emojis ONLY if the user's past written notes include them.
   - Make sure it passes the flesch-kincaid test with a score of 70 or higher.
   - ${avoidWordsPrompt}
+  - Mark a new line with double '\\n' (blackslash n). No hard line breaks.
   
   The response **must** be an array of notes in the following JSON format, without additional text:
   [
