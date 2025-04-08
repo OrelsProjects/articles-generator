@@ -38,7 +38,8 @@ export function GenerateNotesDialog() {
   const { generateNewNotes, isLoadingGenerateNotes, errorGenerateNotes } =
     useNotes();
 
-  const [selectedModel, setSelectedModel] = useState<FrontendModel>("claude-3.7");
+  const [selectedModel, setSelectedModel] =
+    useState<FrontendModel>("claude-3.7");
 
   useEffect(() => {
     if (errorGenerateNotes) {
@@ -90,8 +91,7 @@ export function GenerateNotesDialog() {
         <DialogContent className="sm:max-w-[425px]">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>Generate new idea</DialogTitle>
-              <DialogDescription>Generate 3 new notes</DialogDescription>
+              <DialogTitle>Generate new notes</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
