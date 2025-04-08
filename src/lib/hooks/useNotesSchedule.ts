@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { selectNotes, updateNote } from "@/lib/features/notes/notesSlice";
-import { NoteDraft } from "@/types/note";
+import { isEmptyNote, NoteDraft } from "@/types/note";
 import axios from "axios";
 import { Logger } from "@/logger";
 import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";

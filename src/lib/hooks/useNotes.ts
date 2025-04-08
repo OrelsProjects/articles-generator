@@ -291,7 +291,10 @@ export const useNotes = () => {
     [userNotes, dispatch],
   );
 
-  const editNoteBody = async (noteId: string | null, body: string) => {
+  const editNoteBody = async (
+    noteId: string | null,
+    body: string,
+  ): Promise<NoteDraft | null> => {
     // const oldBody = selectedNote?.body;
     // const isSameBody = oldBody === body;
     // User note has id, inspiration note doesn't
@@ -300,10 +303,10 @@ export const useNotes = () => {
     //   return;
     // }
     if (selectedNote?.id !== noteId) {
-      return;
+      return null;
     }
     if (loadingCreateNote.current) {
-      return;
+      return null;
     }
     cancelRef.current?.abort();
     const controller = new AbortController();
@@ -326,7 +329,7 @@ export const useNotes = () => {
           dispatch(addNotes({ items: [response.data], nextCursor: null }));
           dispatch(setSelectedNote({ note: response.data }));
           cancelRef.current = null;
-          return;
+          return response.data;
         } catch (error: any) {
           debugger;
           throw error;
@@ -341,8 +344,15 @@ export const useNotes = () => {
         await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, partialNote, {
           signal: controller.signal,
         });
+        const note = userNotes.find(note => note.id === noteId);
         dispatch(updateNote({ id: noteId, note: { body } }));
         cancelRef.current = null;
+        return note
+          ? {
+              ...note,
+              body,
+            }
+          : null;
       }
     } catch (error: any) {
       debugger;

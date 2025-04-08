@@ -16,7 +16,12 @@ import { useEditor } from "@tiptap/react";
 import NoteEditor from "@/components/notes/note-editor";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { toast } from "react-toastify";
-import { convertMDToHtml, isEmptyNote, NoteDraftImage } from "@/types/note";
+import {
+  convertMDToHtml,
+  isEmptyNote,
+  NoteDraft,
+  NoteDraftImage,
+} from "@/types/note";
 import { isScheduled, getScheduleTimeText } from "@/lib/utils/date/schedule";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { useExtension } from "@/lib/hooks/useExtension";
@@ -105,16 +110,19 @@ export function NotesEditorDialog() {
   async function handleBodyChange(
     html: string,
     options?: { immediate?: boolean },
-  ) {
+  ): Promise<NoteDraft | null> {
     const newBody = unformatText(html);
     setBody(newBody);
     if (selectedNote) {
       if (options?.immediate) {
-        await editNoteBody(selectedNote.id, newBody);
+        const note = await editNoteBody(selectedNote.id, newBody);
+        return note;
       } else {
         updateNoteBody(selectedNote.id, newBody);
+        return null;
       }
     }
+    return null;
   }
 
   const name = useMemo(() => {
@@ -151,9 +159,22 @@ export function NotesEditorDialog() {
 
   const handleSave = async () => {
     if (!selectedNote) return;
+    let newNote = {
+      ...selectedNote,
+      scheduledTo: scheduledDate,
+    };
     const shouldSchedule = scheduleIsSet && scheduledDate;
     try {
-      await handleBodyChange(editor?.getHTML() || "", { immediate: true });
+      const note = await handleBodyChange(editor?.getHTML() || "", {
+        immediate: true,
+      });
+      if (note) {
+        newNote = {
+          ...newNote,
+          ...note,
+          scheduledTo: scheduledDate,
+        };
+      }
     } catch (e: any) {
       if (e instanceof CancelError) {
         return;
@@ -163,10 +184,6 @@ export function NotesEditorDialog() {
     }
     if (shouldSchedule) {
       try {
-        const newNote = {
-          ...selectedNote,
-          scheduledTo: scheduledDate,
-        };
         await scheduleNote(newNote);
         handleOpenChange(false, "handleSave scheduleNote");
         toast.success(
@@ -182,7 +199,7 @@ export function NotesEditorDialog() {
         if (e instanceof NoSubstackCookiesError) {
           setShowNoSubstackCookiesDialog(true);
         } else {
-          toast.error("Failed to schedule note");
+          toast.error("Failed to schedule note. Try again please.");
         }
         return;
       }
