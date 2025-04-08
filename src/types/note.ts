@@ -216,7 +216,7 @@ export function noteToNoteDraft(note: Note | null): NoteDraft | null {
   };
 }
 
-const EMPTY_ID = "empty";
+const EMPTY_ID = "";
 
 export const isEmptyNote = (note: NoteDraft | Note | null) =>
   !note || !note.id || note.id === EMPTY_ID;

@@ -9,6 +9,14 @@ import { UniqueIdentifier } from "@dnd-kit/core";
 import { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import StatusBadgeDropdown from "@/components/notes/status-badge-dropdown";
+import { formatText } from "@/lib/utils/text-editor";
+import { ImageIcon } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@radix-ui/react-tooltip";
 interface StatusItemProps {
   item: StatusItemType;
   onSelectItem: (itemId: UniqueIdentifier, content: string) => void;
@@ -33,12 +41,24 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
     userSelect: "none",
   };
 
+  const Body = ({ text }: { text: string }) => {
+    const formattedText = formatText(text);
+    return (
+      <div
+        className="prose prose-sm max-w-none note-component-content"
+        dangerouslySetInnerHTML={{
+          __html: formattedText,
+        }}
+      />
+    );
+  };
+
   return (
     <Card
       ref={setNodeRef}
       style={style}
       className={cn(
-        "cursor-pointer active:cursor-grabbing",
+        "cursor-pointer active:cursor-grabbing relative",
         isDragging ? "z-10" : "",
         selected ? "border-primary/60" : "",
         "touch-none",
@@ -50,7 +70,7 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
       {...attributes}
       {...listeners}
     >
-      <CardContent className="p-3">
+      <CardContent className="p-3 relative">
         <div className="flex items-start gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src={item.avatar} alt={item.author || "User"} />
@@ -58,6 +78,18 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
               {(item.author?.[0] || "U").toUpperCase()}
             </AvatarFallback>
           </Avatar>
+          {item.hasAttachment && (
+            <TooltipProvider>
+              <Tooltip delayDuration={150}>
+                <TooltipTrigger>
+                  <ImageIcon className="w-4 h-4 text-muted-foreground absolute top-3 right-3" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Note has an image</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
 
           <div className="flex-1 min-w-0 space-y-2.5">
             {item.author && (
@@ -68,7 +100,7 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
                 )}
               </div>
             )}
-            <div className="text-sm break-words">{item.content}</div>
+            <Body text={item.content} />
           </div>
         </div>
       </CardContent>

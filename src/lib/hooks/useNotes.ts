@@ -42,6 +42,7 @@ import { debounce } from "lodash";
 import { Byline } from "@/types/article";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { CreatePostResponse } from "@/types/createPostResponse";
+import { CancelError } from "@/types/errors/CancelError";
 
 export const useNotes = () => {
   const { user } = useAppSelector(selectAuth);
@@ -69,6 +70,7 @@ export const useNotes = () => {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [loadingSendNote, setLoadingSendNote] = useState(false);
 
+  const loadingCreateNote = useRef(false);
   const loadingNotesRef = useRef(false);
   const cancelRef = useRef<AbortController | null>(null);
 
@@ -121,7 +123,6 @@ export const useNotes = () => {
         showScheduleModal?: boolean;
       },
     ) => {
-      debugger;
       EventTracker.track("notes_select_note");
       let noteToUpdate: NoteDraft | Note | null = null;
       if (typeof note === "string") {
@@ -298,6 +299,9 @@ export const useNotes = () => {
     // if (isUserNote) {
     //   return;
     // }
+    if (loadingCreateNote.current) {
+      return;
+    }
     cancelRef.current?.abort();
     const controller = new AbortController();
     cancelRef.current = controller;
@@ -306,25 +310,41 @@ export const useNotes = () => {
     setLoadingEditNote(true);
 
     try {
-      if (isEmptyNote(selectedNote)) {
+      const isEmpty = isEmptyNote(selectedNote);
+      if (isEmpty) {
+        loadingCreateNote.current = true;
         // It's a note from the inspiration apge, we need to create a user note first.
-        const response = await axios.post<NoteDraft>(
-          "/api/note",
-          { body },
-          { signal: controller.signal },
-        );
-        dispatch(addNotes({ items: [response.data], nextCursor: null }));
-        dispatch(setSelectedNote({ note: response.data }));
-        noteId = response.data.id;
+        try {
+          const response = await axios.post<NoteDraft>(
+            "/api/note",
+            { body },
+            { signal: controller.signal },
+          );
+          dispatch(addNotes({ items: [response.data], nextCursor: null }));
+          dispatch(setSelectedNote({ note: response.data }));
+          cancelRef.current = null;
+          return;
+        } catch (error: any) {
+          debugger;
+          throw error;
+        } finally {
+          loadingCreateNote.current = false;
+        }
+      } else {
+        if (!noteId) {
+          throw new Error("Note ID is null");
+        }
+        const partialNote: Partial<NoteDraft> = { body };
+        await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, partialNote, {
+          signal: controller.signal,
+        });
+        dispatch(updateNote({ id: noteId, note: { body } }));
+        cancelRef.current = null;
       }
-
-      const partialNote: Partial<NoteDraft> = { body };
-      await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, partialNote, {
-        signal: controller.signal,
-      });
-      dispatch(updateNote({ id: noteId!, note: { body } }));
     } catch (error: any) {
-      if (error instanceof AxiosError && error.code === "ERR_CANCELED") return;
+      debugger;
+      if (error instanceof AxiosError && error.code === "ERR_CANCELED")
+        throw new CancelError("Cancelled");
       Logger.error("Error editing note:", error);
       throw error;
     } finally {
@@ -392,7 +412,14 @@ export const useNotes = () => {
     if (noteId) {
       dispatch(updateNote({ id: noteId, note: { body } }));
     }
-    editNoteBody(noteId, body);
+    try {
+      editNoteBody(noteId, body);
+    } catch (error: any) {
+      if (error instanceof CancelError) {
+        return null;
+      }
+      throw error;
+    }
     return body
       ? {
           text: body,

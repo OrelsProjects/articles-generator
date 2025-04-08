@@ -35,6 +35,7 @@ import { NoteImageContainer } from "@/components/notes/note-image-container";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AIToolsDropdown } from "@/components/notes/ai-tools-dropdown";
 import { Button } from "@/components/ui/button";
+import { CancelError } from "@/types/errors/CancelError";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
@@ -52,7 +53,7 @@ export function NotesEditorDialog() {
   } = useNotes();
   const {
     scheduleNote,
-    loadingUpdateNote,
+    loadingScheduleNote,
     initCanUserScheduleInterval,
     isIntervalRunning,
     cancelCanUserScheduleInterval,
@@ -107,16 +108,12 @@ export function NotesEditorDialog() {
   ) {
     const newBody = unformatText(html);
     setBody(newBody);
-    try {
-      if (selectedNote) {
-        if (options?.immediate) {
-          await editNoteBody(selectedNote.id, newBody);
-        } else {
-          updateNoteBody(selectedNote.id, newBody);
-        }
+    if (selectedNote) {
+      if (options?.immediate) {
+        await editNoteBody(selectedNote.id, newBody);
+      } else {
+        updateNoteBody(selectedNote.id, newBody);
       }
-    } catch (e: any) {
-      toast.error(e.message);
     }
   }
 
@@ -140,8 +137,6 @@ export function NotesEditorDialog() {
     return name || user?.displayName || "Unknown";
   }, [name]);
 
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
   const scheduleIsSet = isScheduled(scheduledDate) && confirmedSchedule;
 
   const handleClearSchedule = () => {
@@ -160,6 +155,9 @@ export function NotesEditorDialog() {
     try {
       await handleBodyChange(editor?.getHTML() || "", { immediate: true });
     } catch (e: any) {
+      if (e instanceof CancelError) {
+        return;
+      }
       toast.error("Failed to save note");
       return;
     }
@@ -178,6 +176,9 @@ export function NotesEditorDialog() {
           },
         );
       } catch (e: any) {
+        if (e instanceof CancelError) {
+          return;
+        }
         if (e instanceof NoSubstackCookiesError) {
           setShowNoSubstackCookiesDialog(true);
         } else {
@@ -191,16 +192,15 @@ export function NotesEditorDialog() {
         await updateNoteStatus(selectedNote.id, "draft");
         handleOpenChange(false, "handleSave unscheduleNote");
       } catch (e: any) {
+        if (e instanceof CancelError) {
+          return;
+        }
         toast.error("Failed to unschedule note");
         return;
       } finally {
         setUnscheduling(false);
       }
     }
-    setNoteSaved(true);
-    setTimeout(() => {
-      setNoteSaved(false);
-    }, 1000);
   };
 
   const handleSubstackLogin = () => {
@@ -240,10 +240,16 @@ export function NotesEditorDialog() {
     let text = "Save";
     const textComponent = (text: string) => <span>{text}</span>;
     if (isEmptyNote(selectedNote)) {
+      if (loadingScheduleNote) {
+        return textComponent("Scheduling note...");
+      }
+      if (loadingEditNote) {
+        return textComponent("Creating note...");
+      }
       if (confirmedSchedule) {
         return textComponent("Save and schedule");
       } else {
-        return textComponent("Save to drafts");
+        return textComponent("Create new draft");
       }
     }
     if (noteSaved) {
@@ -260,7 +266,7 @@ export function NotesEditorDialog() {
       text = unscheduling ? "Unscheduling note..." : "Saving note...";
     }
 
-    if (loadingUpdateNote) {
+    if (loadingScheduleNote) {
       text = "Scheduling note...";
     }
 
@@ -276,7 +282,7 @@ export function NotesEditorDialog() {
   }, [
     noteSaved,
     loadingEditNote,
-    loadingUpdateNote,
+    loadingScheduleNote,
     unscheduling,
     confirmedSchedule,
     selectedNote?.status,
@@ -430,7 +436,7 @@ export function NotesEditorDialog() {
                   onScheduleConfirm={handleConfirmSchedule}
                   onScheduleClear={handleClearSchedule}
                   disabled={
-                    isSendingNote || loadingEditNote || loadingUpdateNote
+                    isSendingNote || loadingEditNote || loadingScheduleNote
                   }
                 />
                 <AIToolsDropdown
@@ -493,7 +499,7 @@ export function NotesEditorDialog() {
                   disabled={
                     editor?.getText().trim().length === 0 ||
                     loadingEditNote ||
-                    loadingUpdateNote ||
+                    loadingScheduleNote ||
                     isSendingNote ||
                     noteSaved
                   }

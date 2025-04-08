@@ -10,6 +10,7 @@ export interface StatusItem {
   avatar?: string
   createdAt: string
   noteDraft?: NoteDraft
+  hasAttachment?: boolean
 }
 
 export interface StatusColumn {

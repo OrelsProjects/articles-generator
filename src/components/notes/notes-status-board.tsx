@@ -31,6 +31,7 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
         avatar: note.thumbnail,
         createdAt: new Date(note.createdAt).toLocaleDateString(),
         noteDraft: note,
+        hasAttachment: (note.attachments?.length || 0) > 0,
       }));
     },
     [],

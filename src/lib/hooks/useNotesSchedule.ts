@@ -10,7 +10,7 @@ export const useNotesSchedule = () => {
   const dispatch = useAppDispatch();
   const { userNotes, loadingNotes, error } = useAppSelector(selectNotes);
 
-  const [loadingUpdateNote, setLoadingUpdateNote] = useState(false);
+  const [loadingScheduleNote, setLoadingScheduleNote] = useState(false);
   const [isIntervalRunning, setIsIntervalRunning] = useState(false);
   const checkScheduleInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -57,7 +57,7 @@ export const useNotesSchedule = () => {
 
   const scheduleNote = useCallback(
     async (note: NoteDraft) => {
-      setLoadingUpdateNote(true);
+      setLoadingScheduleNote(true);
 
       const previousNote = userNotes.find(n => n.id === note.id);
 
@@ -94,7 +94,7 @@ export const useNotesSchedule = () => {
         );
         throw error;
       } finally {
-        setLoadingUpdateNote(false);
+        setLoadingScheduleNote(false);
       }
     },
     [dispatch],
@@ -105,7 +105,7 @@ export const useNotesSchedule = () => {
     loading: loadingNotes,
     error,
     scheduleNote,
-    loadingUpdateNote,
+    loadingScheduleNote,
     initCanUserScheduleInterval,
     isIntervalRunning,
     cancelCanUserScheduleInterval,
