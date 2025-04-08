@@ -218,7 +218,7 @@ export default function NotesPage() {
         <div className="flex-1 py-8 pb-0 md:pb-28">
           <div className="md:container">
             {userNotes.length === 0 ? (
-              <div className="text-center py-20">
+              <div className="text-center py-20 flex flex-col items-center">
                 <h3 className="text-2xl font-medium mb-4 text-foreground">
                   No notes found
                 </h3>
@@ -228,7 +228,7 @@ export default function NotesPage() {
                 <GenerateNotesDialog />
               </div>
             ) : filteredNotes.length === 0 ? (
-              <div className="text-center py-20">
+              <div className="text-center py-20 flex flex-col items-center">
                 <h3 className="text-2xl font-medium mb-4 text-foreground">
                   No {activeTab} notes found
                 </h3>

@@ -488,6 +488,7 @@ export function NotesEditorDialog() {
               </div>
               <div className="flex gap-3">
                 <InstantPostButton
+                  onPreSend={handleSave}
                   note={selectedNote}
                   source="note-editor-dialog"
                   includeText

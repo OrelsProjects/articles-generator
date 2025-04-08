@@ -299,6 +299,9 @@ export const useNotes = () => {
     // if (isUserNote) {
     //   return;
     // }
+    if (selectedNote?.id !== noteId) {
+      return;
+    }
     if (loadingCreateNote.current) {
       return;
     }

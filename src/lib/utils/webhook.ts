@@ -35,6 +35,7 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
   const existingSubscription = await prisma.subscription.findUnique({
     where: {
       stripeSubId: subscription.id,
+      status: "active",
     },
   });
 

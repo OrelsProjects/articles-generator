@@ -129,7 +129,7 @@ export interface InspirationNote extends Note {
 export async function convertMDToHtml(md: string) {
   marked.setOptions({
     breaks: true, // Enable line breaks
-    gfm: true, // Enable GitHub Flavored Markdown
+    // gfm: true, // Enable GitHub Flavored Markdown
   });
 
   // Replace arrow characters with HTML entities

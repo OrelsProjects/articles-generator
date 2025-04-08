@@ -12,6 +12,7 @@ import { CreatePostResponse } from "@/types/createPostResponse";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SubstackPostButtonProps {
+  onPreSend?: () => Promise<void>;
   note: Note | NoteDraft | string | null;
   size?: "sm" | "lg" | "default" | "icon";
   variant?: "ghost" | "default" | "outline";
@@ -23,6 +24,7 @@ interface SubstackPostButtonProps {
 
 export function InstantPostButton({
   note,
+  onPreSend,
   size = "sm",
   variant = "ghost",
   tooltipContent = "Post to Substack instantly",
@@ -51,6 +53,7 @@ export function InstantPostButton({
     const noteObject = typeof note === "string" ? getNoteById(note) : note;
     if (!noteObject) return;
     try {
+      await onPreSend?.();
       const response = await sendNote(noteObject.id);
       if (response) {
         setPostResponse(response);
@@ -87,9 +90,13 @@ export function InstantPostButton({
             size={size}
             disabled={loadingSendNote || !note}
             onClick={handleSendNote}
-            className={cn("flex items-center gap-2", {
-              "text-muted-foreground": !isHovered,
-            }, className)}
+            className={cn(
+              "flex items-center gap-2",
+              {
+                "text-muted-foreground": !isHovered,
+              },
+              className,
+            )}
           >
             <AnimatePresence>
               {isHovered && (

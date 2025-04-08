@@ -388,6 +388,32 @@ const SkeletonPlugin = Extension.create({
   },
 });
 
+// export const HardBreakButNotInList = HardBreak.extend({
+//   // Let the extension know we want to keep marks on a hard break
+//   addOptions() {
+//     return {
+//       ...this.parent?.(),
+//       keepMarks: true,
+//     };
+//   },
+
+//   addKeyboardShortcuts() {
+//     return {
+//       "Shift-Enter": () => {
+//         // If we're in a bullet list or ordered list, block the break
+//         if (
+//           this.editor.isActive("bulletList") ||
+//           this.editor.isActive("orderedList")
+//         ) {
+//           return true; // "true" = do nothing
+//         }
+//         // Otherwise, call setHardBreak with no arguments
+//         return this.editor.commands.setHardBreak();
+//       },
+//     };
+//   },
+// });
+
 // Allow bold/italic/underline/strikethrough/code/list (numbers/dots)/blockquote
 // <p> has margin top-bottom of 6px.
 // images
@@ -396,6 +422,7 @@ export const notesTextEditorOptions = (
   onUpdate?: (html: string) => void,
   options: {
     disabled?: boolean;
+    disabledClass?: string;
   } = {},
 ): UseEditorOptions => ({
   onUpdate: ({ editor }) => {
@@ -406,6 +433,7 @@ export const notesTextEditorOptions = (
   editable: !options.disabled,
   extensions: [
     StarterKit.configure({
+      hardBreak: false,
       paragraph: {
         HTMLAttributes: { class: cn("mb-5 leading-8", Lora.className) },
       },
@@ -416,9 +444,9 @@ export const notesTextEditorOptions = (
     Document,
     CustomBlockquote,
     CodeBlock,
-    HardBreak.configure({
-      keepMarks: true, // Preserves formatting on new lines
-    }),
+    // HardBreak.configure({
+    //   keepMarks: true, // Preserves formatting on new lines
+    // }),
     Paragraph.configure({
       HTMLAttributes: { class: "my-3" },
     }),
@@ -437,7 +465,11 @@ export const notesTextEditorOptions = (
     attributes: {
       class: cn(
         "prose prose-sm max-w-none focus:outline-none transition-opacity",
-        options.disabled ? "opacity-50 cursor-not-allowed" : "",
+        options.disabled
+          ? options.disabledClass
+            ? options.disabledClass
+            : "opacity-50 cursor-not-allowed"
+          : "",
       ),
     },
   },
