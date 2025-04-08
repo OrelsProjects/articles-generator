@@ -314,7 +314,7 @@ export function StatusBoard({
       if (activeItem && onStatusChange) {
         try {
           // Update the item's status to archived
-          const updatedItem = { ...activeItem, status: "archived" };
+          const updatedItem = { ...activeItem, isArchived: true };
 
           await onStatusChange(updatedItem, "archived", startColumnId);
           // remove the item from the list.

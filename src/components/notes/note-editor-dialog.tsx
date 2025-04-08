@@ -190,6 +190,7 @@ export function NotesEditorDialog() {
       setUnscheduling(true);
       try {
         await updateNoteStatus(selectedNote.id, "draft");
+        toast.info("Note unscheduled");
         handleOpenChange(false, "handleSave unscheduleNote");
       } catch (e: any) {
         if (e instanceof CancelError) {
