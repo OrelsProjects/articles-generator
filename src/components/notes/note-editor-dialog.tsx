@@ -264,17 +264,11 @@ export function NotesEditorDialog() {
 
     if (loadingEditNote) {
       text = unscheduling ? "Unscheduling note..." : "Saving note...";
-    }
-
-    if (loadingScheduleNote) {
+    } else if (loadingScheduleNote) {
       text = "Scheduling note...";
-    }
-
-    if (confirmedSchedule) {
+    } else if (confirmedSchedule) {
       text = "Schedule";
-    }
-
-    if (selectedNote?.status === "scheduled") {
+    } else if (selectedNote?.status === "scheduled") {
       text = "Unschedule";
     }
 
