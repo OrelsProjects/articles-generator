@@ -89,28 +89,9 @@ export async function POST(
       "About to generate notes for userMetadata: ",
       JSON.stringify(userMetadata.publication.authorId),
     );
-    const [publication, canUseAIResult] = await Promise.all([
-      prismaArticles.publication.findFirst({
-        where: {
-          id: parseInt(publicationId.toString()),
-        },
-        select: {
-          authorId: true,
-        },
-      }),
+    const [canUseAIResult] = await Promise.all([
       canUseAI(session.user.id, "notesGeneration"),
     ]);
-
-    if (!publication || !publication.authorId) {
-      loggerServer.error("Publication not found", {
-        userId: session.user.id,
-        publication,
-      });
-      return NextResponse.json(
-        { success: false, error: "Publication not found" },
-        { status: 404 },
-      );
-    }
 
     if (!canUseAIResult.result) {
       return NextResponse.json(
