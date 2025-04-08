@@ -85,6 +85,10 @@ export async function POST(
       );
     }
 
+    console.log(
+      "About to generate notes for userMetadata: ",
+      JSON.stringify(userMetadata.publication),
+    );
     const [publication, canUseAIResult] = await Promise.all([
       prismaArticles.publication.findFirst({
         where: {
@@ -115,6 +119,8 @@ export async function POST(
       );
     }
 
+    console.log("Publication found: ", JSON.stringify(publication));
+
     const { creditsUsed, creditsRemaining } = await useCredits(
       session.user.id,
       "notesGeneration",
@@ -122,6 +128,8 @@ export async function POST(
     didConsumeCredits = true;
 
     const authorId = publication.authorId;
+
+    console.log("Author ID: ", authorId);
 
     const query = `${userMetadata.publication.preferredTopics || ""}, ${userMetadata.noteTopics}.`;
 
@@ -272,10 +280,16 @@ export async function POST(
     // const newNotes3: any[] = await parseJson(promptResponse3);
     // newNotes = [...newNotes, ...newNotes2, ...newNotes3];
 
+    console.log("New notes: ", JSON.stringify(newNotes));
+
     const handle = byline?.handle || notesFromAuthor[0]?.handle;
     const name = byline?.name || notesFromAuthor[0]?.name;
     const thumbnail =
       byline?.photoUrl || notesFromAuthor[0]?.photoUrl || session.user.image;
+
+    console.log("Handle: ", handle);
+    console.log("Name: ", name);
+    console.log("Thumbnail: ", thumbnail);
 
     const notesCreated: Note[] = [];
     for (const note of newNotes) {
@@ -312,6 +326,8 @@ export async function POST(
       scheduledTo: null,
       wasSentViaSchedule: false,
     }));
+
+    console.log("Notes created: ", JSON.stringify(notesCreated));
 
     const response: AIUsageResponse<NoteDraft[]> = {
       responseBody: {
