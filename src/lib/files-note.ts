@@ -40,7 +40,7 @@ export async function uploadImage(
   params: UploadImageParams,
 ): Promise<{ url: string; fileName: string }> {
   const random = Math.random().toString(36).substring(2, 10);
-  const fileName = `${params.fileName}-${random}`;
+  const fileName = `${random}-${params.fileName}`;
   const path = buildPath({ ...params, fileName });
 
   const command = new PutObjectCommand({
