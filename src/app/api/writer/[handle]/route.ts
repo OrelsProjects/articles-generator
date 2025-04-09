@@ -2,6 +2,7 @@ import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { canUseFeature } from "@/lib/plans-consts";
 import { getWriter } from "@/lib/publication";
+import loggerServer from "@/loggerServer";
 import { FeatureFlag } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -38,6 +39,10 @@ export async function GET(
     );
 
     if (!isAllowed) {
+      loggerServer.error("User is not allowed to use advanced filtering", {
+        userId: session.user.id,
+        userMetadata,
+      });
       return NextResponse.json({ error: "Not allowed" }, { status: 403 });
     }
 
