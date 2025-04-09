@@ -18,6 +18,7 @@ import {
   setName,
   removeAttachmentFromNote,
   addAttachmentToNote,
+  addNote,
 } from "@/lib/features/notes/notesSlice";
 import {
   isEmptyNote,
@@ -227,8 +228,9 @@ export const useNotes = () => {
   const updateNoteStatus = useCallback(
     async (noteId: string, status: NoteStatus | "archived") => {
       EventTracker.track("notes_update_note_status_" + status);
-      const previousStatus = userNotes.find(note => note.id === noteId)?.status;
-      if (!previousStatus) {
+      const previousNote = userNotes.find(note => note.id === noteId);
+      const previousStatus = previousNote?.status;
+      if (!previousNote) {
         Logger.error("Note not found");
         throw new Error("Note not found");
       }
@@ -245,14 +247,20 @@ export const useNotes = () => {
 
         if (previousStatus === "scheduled") {
           await axios.delete(`/api/user/notes/${noteId}/schedule`, {
-            params: { status },
+            params: body,
           });
         } else {
           await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
         }
       } catch (error: any) {
         Logger.error("Error updating status:", error);
-        dispatch(updateNote({ id: noteId, note: { status: previousStatus } }));
+        if (status === "archived") {
+          dispatch(addNote(previousNote));
+        } else {
+          dispatch(
+            updateNote({ id: noteId, note: { status: previousStatus } }),
+          );
+        }
         throw error;
       } finally {
       }

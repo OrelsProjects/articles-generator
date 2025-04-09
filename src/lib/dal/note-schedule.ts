@@ -67,7 +67,7 @@ export async function createScheduleForNote(
 
 export async function deleteScheduleForNote(
   noteId: string,
-  newStatus?: NoteStatus,
+  newStatus?: NoteStatus | "archived",
 ): Promise<void> {
   const note = await getNoteById(noteId);
   if (!note) {
@@ -79,13 +79,15 @@ export async function deleteScheduleForNote(
     await deleteEventBridgeSchedule(scheduleName);
   }
   await deleteSchedule(scheduleName);
+  let data =
+    newStatus === "archived" ? { isArchived: true } : { status: newStatus };
   if (newStatus) {
     await prisma.note.update({
       where: {
         id: noteId,
       },
       data: {
-        status: newStatus,
+        ...data,
         scheduledTo: null,
       },
     });
