@@ -30,14 +30,14 @@ export const navItems = [
     icon: KanbanSquare,
     locationInMobile: "bottom",
   },
-  // {
-  //   name: "Notes calendar",
-  //   mobileName: "Calendar",
-  //   href: "/calendar",
-  //   icon: Calendar,
-  //   locationInMobile: "bottom",
-  //   adminOnly: true,
-  // },
+  {
+    name: "Notes calendar",
+    mobileName: "Calendar",
+    href: "/calendar",
+    icon: Calendar,
+    locationInMobile: "bottom",
+    adminOnly: true,
+  },
   {
     name: "Editor",
     mobileName: "Editor",

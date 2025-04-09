@@ -260,27 +260,29 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               <Logo withText className="mb-4" />
               <nav className="py-4">
                 <ul className="space-y-2">
-                  {sidebarNavItems.map(item => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.disabled ? "" : item.href}
-                        target={item.newTab ? "_blank" : "_self"}
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                          isActive(item.href)
-                            ? "text-primary"
-                            : "text-foreground hover:bg-muted",
-                          item.disabled && "cursor-not-allowed opacity-50",
-                        )}
-                      >
-                        <item.icon size={20} />
-                        <span>{item.mobileName}</span>
-                        {item.newTab && (
-                          <ExternalLink size={12} className="ml-auto" />
-                        )}
-                      </Link>
-                    </li>
-                  ))}
+                  {sidebarNavItems.map(item =>
+                    item.adminOnly && !user?.meta?.isAdmin ? null : (
+                      <li key={item.name}>
+                        <Link
+                          href={item.disabled ? "" : item.href}
+                          target={item.newTab ? "_blank" : "_self"}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                            isActive(item.href)
+                              ? "text-primary"
+                              : "text-foreground hover:bg-muted",
+                            item.disabled && "cursor-not-allowed opacity-50",
+                          )}
+                        >
+                          <item.icon size={20} />
+                          <span>{item.mobileName}</span>
+                          {item.newTab && (
+                            <ExternalLink size={12} className="ml-auto" />
+                          )}
+                        </Link>
+                      </li>
+                    ),
+                  )}
                 </ul>
               </nav>
             </div>
