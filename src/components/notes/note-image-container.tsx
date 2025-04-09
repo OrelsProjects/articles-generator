@@ -13,6 +13,7 @@ interface NoteImageContainerProps {
   onImageDelete?: (attachment: NoteDraftImage) => void;
   attachment?: NoteDraftImage;
   disabled?: boolean;
+  allowDelete?: boolean;
 }
 
 export function NoteImageContainer({
@@ -21,6 +22,7 @@ export function NoteImageContainer({
   onImageDelete,
   attachment,
   disabled = false,
+  allowDelete = true,
 }: NoteImageContainerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageDimensions, setImageDimensions] = useState<{
@@ -96,7 +98,7 @@ export function NoteImageContainer({
             className="object-contain w-full h-full"
             onLoad={handleImageLoad}
           />
-          {onImageDelete && (
+          {onImageDelete && allowDelete && (
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               {/* <TooltipButton
               tooltipContent="Change image"

@@ -508,7 +508,7 @@ export const useNotes = () => {
     if (uploadingFile) return;
     try {
       const existingNote = userNotes.find(note => note.id === noteId);
-
+      debugger;
       if (
         existingNote?.attachments?.length &&
         existingNote.attachments.length >= 1

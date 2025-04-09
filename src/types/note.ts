@@ -103,6 +103,7 @@ export interface Note {
   commentsCount: number;
   restacks: number;
   attachments?: string[];
+  attachment?: string;
   scheduledTo?: Date | null;
   sentViaScheduleAt?: boolean;
 }
@@ -210,6 +211,7 @@ export function inspirationNoteToNoteDraft(
     return null;
   }
 
+  const attachment = note.attachments?.pop() || note.attachment;
   return {
     id: "",
     thumbnail: "",
@@ -221,6 +223,14 @@ export function inspirationNoteToNoteDraft(
     authorName: "",
     scheduledTo: note.scheduledTo,
     wasSentViaSchedule: !!note.sentViaScheduleAt,
+    attachments: attachment
+      ? [
+          {
+            id: "",
+            url: attachment,
+          },
+        ]
+      : [],
   };
 }
 

@@ -42,6 +42,7 @@ import { AIToolsDropdown } from "@/components/notes/ai-tools-dropdown";
 import { Button } from "@/components/ui/button";
 import { CancelError } from "@/types/errors/CancelError";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { urlToFile } from "@/lib/utils/file";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
@@ -82,6 +83,7 @@ export function NotesEditorDialog() {
   const [unscheduling, setUnscheduling] = useState(false);
   const [confirmedSchedule, setConfirmedSchedule] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
 
   // State for drag and drop
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -110,7 +112,6 @@ export function NotesEditorDialog() {
   };
 
   const handleOpenChange = (open: boolean) => {
-    debugger;
     setOpen(open);
     if (!open) {
       if (!isInspiration) {
@@ -131,6 +132,10 @@ export function NotesEditorDialog() {
       cancelUpdateNoteBody(selectedNote?.id || "", false);
     }
   };
+
+  useEffect(() => {
+    setIsUploadingFile(uploadingFile);
+  }, [uploadingFile]);
 
   useEffect(() => {
     if (!editor) return;
@@ -196,7 +201,6 @@ export function NotesEditorDialog() {
         });
       }
     }
-    debugger;
 
     if (selectedNote) {
       if (options?.immediate) {
@@ -237,11 +241,10 @@ export function NotesEditorDialog() {
   };
 
   const handleSave = async () => {
-    debugger;
-
     if (!selectedNote) return;
+    const currentSelectedNote = selectedNote;
     let newNote = {
-      ...selectedNote,
+      ...currentSelectedNote,
       scheduledTo: scheduledDate,
     };
     const shouldSchedule = scheduleIsSet && scheduledDate;
@@ -250,6 +253,19 @@ export function NotesEditorDialog() {
         immediate: true,
       });
       if (note) {
+        if (currentSelectedNote.status === "inspiration") {
+          if (
+            currentSelectedNote.attachments &&
+            currentSelectedNote.attachments.length > 0
+          ) {
+            const url = currentSelectedNote.attachments?.[0].url;
+            if (url) {
+              setIsUploadingFile(true);
+              const file = await urlToFile(url);
+              await uploadFile(file, note.id);
+            }
+          }
+        }
         newNote = {
           ...newNote,
           ...note,
@@ -483,6 +499,13 @@ export function NotesEditorDialog() {
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
+          closeOnOutsideClick={
+            !loadingEditNote &&
+            !loadingScheduleNote &&
+            !isSendingNote &&
+            !isUploadingFile &&
+            !isSendingNote
+          }
           hideCloseButton
           className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl"
         >
@@ -515,21 +538,23 @@ export function NotesEditorDialog() {
                   />
                 )}
                 {selectedNote?.attachments &&
-                  selectedNote.attachments.length > 0 && (
+                  selectedNote.attachments.length > 0 &&
+                  !isUploadingFile && (
                     <div className="mt-4 mb-4 flex flex-wrap gap-2">
                       {selectedNote.attachments.map(attachment => (
                         <NoteImageContainer
-                          key={attachment.id}
+                          key={attachment.id || attachment.url}
                           imageUrl={attachment.url}
                           onImageSelect={handleImageSelect}
                           onImageDelete={handleImageDelete}
                           attachment={attachment}
+                          allowDelete={attachment.id !== ""}
                         />
                       ))}
                     </div>
                   )}
-                {uploadingFile && (
-                  <Skeleton className="w-[180px] h-[96px] rounded-md" />
+                {isUploadingFile && (
+                  <Skeleton className="mt-4 mb-4 w-[180px] h-[96px] rounded-md" />
                 )}
               </div>
             </div>
