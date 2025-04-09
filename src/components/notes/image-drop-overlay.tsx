@@ -31,9 +31,11 @@ export function ImageDropOverlay({
 
       if (imageFiles.length > 0) {
         onFileDrop(imageFiles[0]);
+      } else {
+        onHide();
       }
     },
-    [onFileDrop],
+    [onFileDrop, disabled, onHide],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -64,7 +66,7 @@ export function ImageDropOverlay({
             <ArrowDown className="h-10 w-10 text-primary/80" />
           </div>
           <p className="text-lg font-medium text-foreground">
-            Drop file here to upload
+            Drop image here to upload
           </p>
         </>
       )}

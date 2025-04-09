@@ -84,7 +84,6 @@ export default function AuthProvider({
     state: "authenticated" | "unauthenticated",
     hasPublication: boolean,
   ) => {
-    debugger;
     if (state === "unauthenticated") {
       if (!pathname.includes("login")) {
         router.push("/", { preserveQuery: true });

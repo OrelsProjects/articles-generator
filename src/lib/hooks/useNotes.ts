@@ -295,13 +295,6 @@ export const useNotes = () => {
     noteId: string | null,
     body: string,
   ): Promise<NoteDraft | null> => {
-    // const oldBody = selectedNote?.body;
-    // const isSameBody = oldBody === body;
-    // User note has id, inspiration note doesn't
-
-    // if (isUserNote) {
-    //   return;
-    // }
     if (selectedNote?.id !== noteId) {
       return null;
     }
@@ -331,7 +324,6 @@ export const useNotes = () => {
           cancelRef.current = null;
           return response.data;
         } catch (error: any) {
-          debugger;
           throw error;
         } finally {
           loadingCreateNote.current = false;
@@ -355,7 +347,6 @@ export const useNotes = () => {
           : null;
       }
     } catch (error: any) {
-      debugger;
       if (error instanceof AxiosError && error.code === "ERR_CANCELED")
         throw new CancelError("Cancelled");
       Logger.error("Error editing note:", error);
@@ -490,12 +481,13 @@ export const useNotes = () => {
     if (uploadingFile) return;
     try {
       const existingNote = userNotes.find(note => note.id === noteId);
+
       if (
         existingNote?.attachments?.length &&
         existingNote.attachments.length >= 1
       ) {
         const shouldDelete = window.confirm(
-          "Are you sure you want to delete the existing image?",
+          "Are you sure you want to replace the existing image?",
         );
         if (shouldDelete) {
           const existingNote = userNotes.find(note => note.id === noteId);
@@ -516,6 +508,7 @@ export const useNotes = () => {
       formData.append("fileName", file.name);
 
       setUploadingFile(true);
+
       const response = await axios.post<NoteDraftImage>(
         `/api/note/${noteId}/image`,
         formData,
@@ -525,8 +518,16 @@ export const useNotes = () => {
           },
         },
       );
-      // Update the note with the image URL from the response
-      dispatch(addAttachmentToNote({ noteId, attachment: response.data }));
+      if (noteId) {
+        // Update the note with the image URL from the response
+        dispatch(
+          addAttachmentToNote({
+            noteId,
+            attachment: response.data,
+          }),
+        );
+      }
+      return response.data;
     } catch (error: any) {
       Logger.error("Error uploading file:", error);
       throw error;

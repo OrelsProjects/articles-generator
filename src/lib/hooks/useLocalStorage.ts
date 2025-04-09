@@ -4,7 +4,8 @@ export type LocalStorageKey =
   | "lastUsedIdea"
   | "features"
   | "referral"
-  | "subscription";
+  | "subscription"
+  | "last_note";
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue

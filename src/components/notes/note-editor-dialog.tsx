@@ -19,6 +19,7 @@ import { toast } from "react-toastify";
 import {
   convertMDToHtml,
   isEmptyNote,
+  NOTE_EMPTY,
   NoteDraft,
   NoteDraftImage,
 } from "@/types/note";
@@ -33,7 +34,6 @@ import EmojiPopover from "@/components/notes/emoji-popover";
 import { Skin } from "@emoji-mart/data";
 import { copyHTMLToClipboard } from "@/lib/utils/copy";
 import { selectAuth } from "@/lib/features/auth/authSlice";
-import { FrontendModel } from "@/components/notes/ai-models-dropdown";
 import ScheduleNote from "@/components/notes/schedule-note";
 import ImageDropOverlay from "@/components/notes/image-drop-overlay";
 import { NoteImageContainer } from "@/components/notes/note-image-container";
@@ -41,6 +41,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AIToolsDropdown } from "@/components/notes/ai-tools-dropdown";
 import { Button } from "@/components/ui/button";
 import { CancelError } from "@/types/errors/CancelError";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
@@ -64,7 +65,12 @@ export function NotesEditorDialog() {
     cancelCanUserScheduleInterval,
   } = useNotesSchedule();
 
-  const { isLoading: isSendingNote, hasExtension } = useExtension();
+  const [lastNote, setLastNote] = useLocalStorage<NoteDraft | null>(
+    "last_note",
+    null,
+  );
+
+  const { isLoading: isSendingNote } = useExtension();
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
   // setOpen MUST be called only from handleOpenChange to avoid logic bugs, like setting body to ''.
   const [open, setOpen] = useState(false);
@@ -82,19 +88,33 @@ export function NotesEditorDialog() {
   const handleOpenChange = (open: boolean, caller: string) => {
     setOpen(open);
     if (!open) {
+      if (!isEmptyNote(selectedNote)) {
+        setLastNote(null);
+      } else {
+        setLastNote({
+          ...(selectedNote || NOTE_EMPTY),
+          body,
+        });
+      }
       setBody("");
       selectNote(null);
     }
-    console.log("handleOpenChange", open, caller);
   };
 
   useEffect(() => {
     if (selectedNote && !body) {
       handleOpenChange(true, "useEffect selectedNote && !body");
-      convertMDToHtml(selectedNote.body).then(html => {
-        setBody(selectedNote.body);
-        editor?.commands.setContent(html);
-      });
+      if (lastNote) {
+        convertMDToHtml(lastNote.body).then(html => {
+          setBody(lastNote.body);
+          editor?.commands.setContent(html);
+        });
+      } else {
+        convertMDToHtml(selectedNote.body).then(html => {
+          setBody(selectedNote.body);
+          editor?.commands.setContent(html);
+        });
+      }
       if (selectedNote.status === "scheduled" && selectedNote.scheduledTo) {
         const presetDate = new Date(selectedNote.scheduledTo);
         setScheduledDate(presetDate);
@@ -106,24 +126,6 @@ export function NotesEditorDialog() {
   }, [selectedNote]);
 
   const editor = useEditor(notesTextEditorOptions(handleBodyChange));
-
-  async function handleBodyChange(
-    html: string,
-    options?: { immediate?: boolean },
-  ): Promise<NoteDraft | null> {
-    const newBody = unformatText(html);
-    setBody(newBody);
-    if (selectedNote) {
-      if (options?.immediate) {
-        const note = await editNoteBody(selectedNote.id, newBody);
-        return note;
-      } else {
-        updateNoteBody(selectedNote.id, newBody);
-        return null;
-      }
-    }
-    return null;
-  }
 
   const name = useMemo(() => {
     if (!selectedNote) return "";
@@ -140,6 +142,47 @@ export function NotesEditorDialog() {
         .join("") || "OZ"
     );
   }, [name]);
+
+  async function handleBodyChange(
+    html: string,
+    options?: { immediate?: boolean },
+  ): Promise<NoteDraft | null> {
+    const newBody = unformatText(html);
+    setBody(newBody);
+    if (!lastNote) {
+      setLastNote({
+        ...NOTE_EMPTY,
+        body: newBody,
+      });
+    } else {
+      setLastNote({
+        ...lastNote,
+        body: newBody,
+      });
+    }
+
+    const isEmpty = isEmptyNote(selectedNote);
+    if (selectedNote) {
+      if (options?.immediate) {
+        const note = await editNoteBody(selectedNote.id, newBody);
+        return note;
+      } else if (!isEmpty) {
+        updateNoteBody(selectedNote.id, newBody);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  const handleCreateNewDraft = async (): Promise<NoteDraft | null> => {
+    const html = editor?.getHTML();
+    if (!html) return null;
+    const note = await handleBodyChange(html, { immediate: true });
+    if (note) {
+      setLastNote(null);
+    }
+    return note;
+  };
 
   const userName = useMemo(() => {
     return name || user?.displayName || "Unknown";
@@ -300,28 +343,47 @@ export function NotesEditorDialog() {
     selectedNote?.status,
   ]);
 
-  // Handle file upload when an image is dropped
-  const handleFileDrop = useCallback(
-    async (file: File) => {
-      if (!selectedNote) return;
-
-      // Check if there's already an image
-      if (selectedNote.attachments && selectedNote.attachments.length > 0) {
-        setIsDraggingOver(false);
-        toast.error("Only one image is allowed");
-        return;
+  const handleFileUpload = async (file: File) => {
+    if (!selectedNote) return;
+    try {
+      const isEmpty = isEmptyNote(selectedNote);
+      let noteId = "";
+      if (isEmpty) {
+        const note = await handleCreateNewDraft();
+        if (note) {
+          noteId = note.id;
+        }
       }
-
-      try {
-        setIsDraggingOver(false);
-        await uploadFile(file, selectedNote.id);
-      } catch (error) {
+      if (noteId) {
+        await uploadFile(file, noteId);
+      } else {
         toast.error("Failed to upload image");
-        console.error(error);
       }
-    },
-    [selectedNote, uploadFile],
-  );
+    } catch (error) {
+      toast.error("Failed to upload image");
+      console.error(error);
+    }
+  };
+
+  // Handle file upload when an image is dropped
+  const handleFileDrop = async (file: File) => {
+    if (!selectedNote) return;
+
+    // Check if there's already an image
+    if (selectedNote.attachments && selectedNote.attachments.length > 0) {
+      setIsDraggingOver(false);
+      toast.error("Only one image is allowed");
+      return;
+    }
+
+    try {
+      setIsDraggingOver(false);
+      await handleFileUpload(file);
+    } catch (error) {
+      toast.error("Failed to upload image");
+      console.error(error);
+    }
+  };
 
   // Handle drag events
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -346,25 +408,22 @@ export function NotesEditorDialog() {
     setIsDraggingOver(false);
   }, []);
 
-  const handleImageSelect = useCallback(
-    async (file: File) => {
-      if (!selectedNote) return;
+  const handleImageSelect = async (file: File) => {
+    if (!selectedNote) return;
 
-      // Check if there's already an image
-      if (selectedNote.attachments && selectedNote.attachments.length > 0) {
-        toast.error("Only one image is allowed");
-        return;
-      }
+    // Check if there's already an image
+    if (selectedNote.attachments && selectedNote.attachments.length > 0) {
+      toast.error("Only one image is allowed");
+      return;
+    }
 
-      try {
-        await uploadFile(file, selectedNote.id);
-      } catch (error) {
-        toast.error("Failed to upload image");
-        console.error(error);
-      }
-    },
-    [selectedNote, uploadFile],
-  );
+    try {
+      await handleFileUpload(file);
+    } catch (error) {
+      toast.error("Failed to upload image");
+      console.error(error);
+    }
+  };
 
   const handleImageDelete = useCallback(
     async (attachment: NoteDraftImage) => {

@@ -216,13 +216,15 @@ export function noteToNoteDraft(note: Note | null): NoteDraft | null {
   };
 }
 
-const EMPTY_ID = "";
+const NOTE_EMPTY_ID = "empty";
 
-export const isEmptyNote = (note: NoteDraft | Note | null) =>
-  !note || !note.id || note.id === EMPTY_ID;
+export const isEmptyNote = (note: NoteDraft | Note | string | null ) => {
+  const id = typeof note === "string" ? note : note?.id;
+  return !id || id === NOTE_EMPTY_ID;
+}
 
 export const NOTE_EMPTY: NoteDraft = {
-  id: EMPTY_ID,
+  id: NOTE_EMPTY_ID,
   thumbnail: "",
   body: "",
   jsonBody: [],
