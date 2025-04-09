@@ -247,7 +247,7 @@ export const useNotes = () => {
 
         if (previousStatus === "scheduled") {
           await axios.delete(`/api/user/notes/${noteId}/schedule`, {
-            params: body,
+            params: { status },
           });
         } else {
           await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);

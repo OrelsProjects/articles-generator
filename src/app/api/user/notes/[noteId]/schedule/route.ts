@@ -54,17 +54,14 @@ export async function DELETE(
   const { noteId } = params;
   try {
     const newStatus = request.nextUrl.searchParams.get("status");
-    const isArchived = request.nextUrl.searchParams.get("isArchived");
 
     const isOwner = await isOwnerOfNote(noteId, session.user.id);
     if (!isOwner) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    if (isArchived) {
-      await deleteScheduleForNote(noteId, "archived");
-    } else {
-      await deleteScheduleForNote(noteId, newStatus as NoteStatus);
-    }
+
+    await deleteScheduleForNote(noteId, newStatus as NoteStatus | "archived");
+
     return NextResponse.json({ message: "Schedule deleted" }, { status: 200 });
   } catch (error: any) {
     loggerServer.error(error);
