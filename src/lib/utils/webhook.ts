@@ -354,21 +354,20 @@ export async function handleInvoicePaymentSucceeded(event: any) {
     return;
   }
 
-  const payment: Payment = {
-    id: invoice.id,
+  const payment = {
     invoiceId: invoice.id,
     amountReceived: invoice.amount_paid,
     currency: invoice.currency,
     status: "succeeded",
-    createdAt: new Date(invoice.created * 1000),
-    updatedAt: new Date(invoice.created * 1000),
     userId: user.id,
     paymentMethodId: null,
     priceId: null,
     sessionId: null,
     productId: null,
     productName: null,
-  };
+    createdAt: new Date(),
+    updatedAt: new Date()
+  } as Payment;
 
   await prisma.payment.create({
     data: payment,
