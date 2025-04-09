@@ -1,6 +1,8 @@
 import { marked } from "marked";
 import { DateRange } from "react-day-picker";
 
+export type NoteId = string;
+
 export interface InspirationFilters {
   minLikes?: number | null;
   minComments?: number | null;
@@ -64,7 +66,7 @@ export interface NoteDraftImage {
 }
 
 export interface NoteDraft {
-  id: string;
+  id: NoteId;
   thumbnail?: string;
   body: string;
   jsonBody?: any[];
@@ -72,7 +74,7 @@ export interface NoteDraft {
   authorId: number | null;
   name?: string;
   handle?: string;
-  status: NoteStatus;
+  status: NoteStatus | "inspiration";
   feedback?: NoteFeedback;
   feedbackComment?: string;
   authorName: string;
@@ -82,8 +84,12 @@ export interface NoteDraft {
   attachments?: NoteDraftImage[] | null;
 }
 
+export interface NoteDraftBody extends Omit<NoteDraft, "status"> {
+  status: NoteStatus;
+}
+
 export interface Note {
-  id: string;
+  id: NoteId;
   entityKey: string;
   content: string;
   thumbnail?: string;
@@ -197,7 +203,9 @@ export function isNoteDraft(note: Note | NoteDraft | null): NoteDraft | null {
   return !note?.hasOwnProperty("reactionCount") ? (note as NoteDraft) : null;
 }
 
-export function noteToNoteDraft(note: Note | null): NoteDraft | null {
+export function inspirationNoteToNoteDraft(
+  note: Note | null,
+): NoteDraft | null {
   if (!note) {
     return null;
   }
@@ -209,7 +217,7 @@ export function noteToNoteDraft(note: Note | null): NoteDraft | null {
     jsonBody: note.jsonBody,
     createdAt: new Date(),
     authorId: null,
-    status: "draft",
+    status: "inspiration",
     authorName: "",
     scheduledTo: note.scheduledTo,
     wasSentViaSchedule: !!note.sentViaScheduleAt,
@@ -218,10 +226,10 @@ export function noteToNoteDraft(note: Note | null): NoteDraft | null {
 
 const NOTE_EMPTY_ID = "empty";
 
-export const isEmptyNote = (note: NoteDraft | Note | string | null ) => {
+export const isEmptyNote = (note: NoteDraft | Note | string | null) => {
   const id = typeof note === "string" ? note : note?.id;
   return !id || id === NOTE_EMPTY_ID;
-}
+};
 
 export const NOTE_EMPTY: NoteDraft = {
   id: NOTE_EMPTY_ID,

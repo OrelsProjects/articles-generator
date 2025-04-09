@@ -357,16 +357,9 @@ export default function NoteComponent({
     }
   };
 
-  const handleStatusChange = async (newStatus: NoteStatus) => {
-    try {
-      await updateNoteStatus(note.id, newStatus);
-      return Promise.resolve();
-    } catch (error) {
-      return Promise.reject(error);
-    }
-  };
 
   const handleSelectNote = () => {
+    debugger
     selectNote(note, {
       forceShowEditor: true,
       isFromInspiration: !isUserNote,

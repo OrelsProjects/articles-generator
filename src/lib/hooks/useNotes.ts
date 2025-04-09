@@ -28,7 +28,9 @@ import {
   NoteDraftImage,
   NoteFeedback,
   NoteStatus,
-  noteToNoteDraft,
+  inspirationNoteToNoteDraft,
+  NoteDraftBody,
+  NoteId,
 } from "@/types/note";
 import axios, { AxiosError } from "axios";
 import { Logger } from "@/logger";
@@ -43,6 +45,7 @@ import { Byline } from "@/types/article";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { CreatePostResponse } from "@/types/createPostResponse";
 import { CancelError } from "@/types/errors/CancelError";
+import { createNoteDraft, updateNoteDraft } from "@/lib/api/api";
 
 export const useNotes = () => {
   const { user } = useAppSelector(selectAuth);
@@ -73,6 +76,7 @@ export const useNotes = () => {
   const loadingCreateNote = useRef(false);
   const loadingNotesRef = useRef(false);
   const cancelRef = useRef<AbortController | null>(null);
+  const cancelUpdateBody = useRef<NoteId[]>([]);
 
   const fetchNotes = async (limit?: number, loadMore = false) => {
     if (loadingNotesRef.current) return;
@@ -132,7 +136,7 @@ export const useNotes = () => {
       }
       let noteDraft = isNoteDraft(noteToUpdate);
       if (!noteDraft) {
-        noteDraft = noteToNoteDraft(noteToUpdate as Note);
+        noteDraft = inspirationNoteToNoteDraft(noteToUpdate as Note);
       }
       dispatch(
         setSelectedNote({
@@ -295,12 +299,19 @@ export const useNotes = () => {
     noteId: string | null,
     body: string,
   ): Promise<NoteDraft | null> => {
-    if (selectedNote?.id !== noteId) {
+    if (noteId && cancelUpdateBody.current.includes(noteId)) {
+      cancelUpdateBody.current = cancelUpdateBody.current.filter(
+        id => id !== noteId,
+      );
       return null;
     }
-    if (loadingCreateNote.current) {
+
+    const canUpdate = selectedNote?.id === noteId && !loadingCreateNote.current;
+
+    if (!canUpdate) {
       return null;
     }
+
     cancelRef.current?.abort();
     const controller = new AbortController();
     cancelRef.current = controller;
@@ -314,15 +325,20 @@ export const useNotes = () => {
         loadingCreateNote.current = true;
         // It's a note from the inspiration apge, we need to create a user note first.
         try {
-          const response = await axios.post<NoteDraft>(
-            "/api/note",
-            { body },
+          const data = await createNoteDraft(
+            {
+              body,
+              status:
+                selectedNote?.status === "inspiration"
+                  ? "draft"
+                  : selectedNote?.status,
+            },
             { signal: controller.signal },
           );
-          dispatch(addNotes({ items: [response.data], nextCursor: null }));
-          dispatch(setSelectedNote({ note: response.data }));
+          dispatch(addNotes({ items: [data], nextCursor: null }));
+          dispatch(setSelectedNote({ note: data }));
           cancelRef.current = null;
-          return response.data;
+          return data;
         } catch (error: any) {
           throw error;
         } finally {
@@ -332,8 +348,8 @@ export const useNotes = () => {
         if (!noteId) {
           throw new Error("Note ID is null");
         }
-        const partialNote: Partial<NoteDraft> = { body };
-        await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, partialNote, {
+        const partialNote: Partial<NoteDraftBody> = { body };
+        await updateNoteDraft(noteId, partialNote, {
           signal: controller.signal,
         });
         const note = userNotes.find(note => note.id === noteId);
@@ -348,8 +364,8 @@ export const useNotes = () => {
       }
     } catch (error: any) {
       if (error instanceof AxiosError && error.code === "ERR_CANCELED")
-        throw new CancelError("Cancelled");
-      Logger.error("Error editing note:", error);
+        // throw new CancelError("Cancelled");
+        Logger.error("Error editing note:", error);
       throw error;
     } finally {
       setLoadingEditNote(false);
@@ -360,7 +376,7 @@ export const useNotes = () => {
     debounce((noteId, body) => {
       editNoteBody(noteId, body);
     }, 2500),
-    [],
+    [selectedNote],
   );
 
   const updateNoteBody = (
@@ -369,10 +385,15 @@ export const useNotes = () => {
     options?: { immediate?: boolean },
   ) => {
     // Abort any existing request
-    if (cancelRef.current) {
-      cancelRef.current.abort();
-      cancelRef.current = null;
-      setShouldCancelUpdate(false);
+    try {
+      if (cancelRef.current) {
+        cancelRef.current.abort();
+        cancelRef.current = null;
+        setShouldCancelUpdate(false);
+      }
+    } catch (error: any) {
+      Logger.error("Error updating note body:", error);
+      return;
     }
     if (options?.immediate) {
       editNoteBody(noteId, body);
@@ -381,8 +402,14 @@ export const useNotes = () => {
     }
   };
 
-  const cancelUpdateNoteBody = () => {
-    setShouldCancelUpdate(true);
+  const cancelUpdateNoteBody = (noteId: NoteId, shouldCancel = true) => {
+    if (shouldCancel) {
+      cancelUpdateBody.current = [...cancelUpdateBody.current, noteId];
+    } else {
+      cancelUpdateBody.current = cancelUpdateBody.current.filter(
+        id => id !== noteId,
+      );
+    }
   };
 
   const createDraftNote = async (draft?: Partial<NoteDraft>): Promise<void> => {

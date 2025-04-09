@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -18,6 +18,7 @@ interface StatusColumnProps {
   onSelectItem: (itemId: UniqueIdentifier) => void;
   selectedItem?: UniqueIdentifier;
   color?: string;
+  orderFunction?: (item: StatusItemType) => number;
 }
 
 export function StatusColumn({
@@ -27,6 +28,7 @@ export function StatusColumn({
   onSelectItem,
   selectedItem,
   color,
+  orderFunction,
 }: StatusColumnProps) {
   const [loadingNewItem, setLoadingNewItem] = useState(false);
 
@@ -44,6 +46,12 @@ export function StatusColumn({
     }
   }
 
+  const sortedItems = useMemo(() => {
+    return items.sort((a, b) => {
+      return orderFunction ? orderFunction(a) - orderFunction(b) : 0;
+    });
+  }, [items, orderFunction]);
+
   return (
     <div
       ref={setNodeRef}
@@ -55,11 +63,11 @@ export function StatusColumn({
       )}
     >
       <SortableContext
-        items={items.map(item => item.id)}
+        items={sortedItems.map(item => item.id)}
         strategy={verticalListSortingStrategy}
       >
         <div className="flex flex-col gap-2 flex-1 overflow-auto">
-          {items.map(item => (
+          {sortedItems.map(item => (
             <StatusItem
               selected={selectedItem === item.id}
               key={item.id}

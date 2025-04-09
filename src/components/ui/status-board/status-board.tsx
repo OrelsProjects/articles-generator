@@ -520,6 +520,7 @@ export function StatusBoard({
                 items={column.items}
                 color={column.color}
                 selectedItem={selectedItem}
+                orderFunction={column.orderFunction}
                 onNewItem={() => handleNewItem(column.id)}
                 onSelectItem={itemId => handleSelectItem(itemId)}
               />

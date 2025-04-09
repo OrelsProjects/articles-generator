@@ -1,7 +1,7 @@
 import { authOptions } from "@/auth/authOptions";
 import { createNote, CreateNote } from "@/lib/dal/note";
 import { getAuthorId, getHandleDetails } from "@/lib/dal/publication";
-import { NoteDraft } from "@/types/note";
+import { NoteDraft, NoteDraftBody } from "@/types/note";
 import { NoteStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
   }
   const userId = session.user.id;
   try {
-    const newNoteDraft: Partial<NoteDraft> | undefined = await request.json();
+    const newNoteDraft: Partial<NoteDraftBody> | undefined =
+      await request.json();
     const authorId = await getAuthorId(userId);
     let handle = "",
       name = "",

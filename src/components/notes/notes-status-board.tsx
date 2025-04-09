@@ -57,6 +57,10 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
         id: "scheduled",
         title: "Scheduled",
         items: convertToStatusItems(scheduledNotes),
+        // order by scheduledTo date. asc
+        orderFunction: (item: StatusItem) => {
+          return new Date(item.noteDraft?.scheduledTo || "").getTime();
+        },
         color: "amber",
         icon: Clock,
       },

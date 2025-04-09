@@ -19,6 +19,7 @@ export interface StatusColumn {
   items: StatusItem[]
   color?: string
   icon?: LucideIcon
+  orderFunction?: (item: StatusItem) => number
 }
 
 export interface StatusBoardProps {

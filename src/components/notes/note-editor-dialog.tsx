@@ -56,6 +56,7 @@ export function NotesEditorDialog() {
     uploadingFile,
     uploadFile,
     deleteImage,
+    cancelUpdateNoteBody,
   } = useNotes();
   const {
     scheduleNote,
@@ -69,6 +70,7 @@ export function NotesEditorDialog() {
     "last_note",
     null,
   );
+  const editor = useEditor(notesTextEditorOptions(handleBodyChange));
 
   const { isLoading: isSendingNote } = useExtension();
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
@@ -77,7 +79,6 @@ export function NotesEditorDialog() {
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(
     undefined,
   );
-  const [body, setBody] = useState("");
   const [unscheduling, setUnscheduling] = useState(false);
   const [confirmedSchedule, setConfirmedSchedule] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
@@ -85,35 +86,69 @@ export function NotesEditorDialog() {
   // State for drag and drop
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
+  const isInspiration = selectedNote?.status === "inspiration";
+  const isEmpty = isEmptyNote(selectedNote);
+
+  const updateLastNote = (note: NoteDraft | null) => {
+    // Only update the lastest if it's not saved in the db and if it's not an inspiration note.
+    if (!isInspiration && (isEmpty || !note)) {
+      setLastNote(note);
+    }
+  };
+
+  const updateEditorBody = (body: string) => {
+    convertMDToHtml(body).then(html => {
+      editor?.commands.setContent(html);
+    });
+  };
+
+  const getLastNote = () => {
+    if (!isInspiration && isEmpty) {
+      return lastNote;
+    }
+    return null;
+  };
+
   const handleOpenChange = (open: boolean) => {
+    debugger;
     setOpen(open);
     if (!open) {
-      if (!isEmptyNote(selectedNote)) {
-        setLastNote(null);
-      } else {
-        setLastNote({
-          ...(selectedNote || NOTE_EMPTY),
-          body,
-        });
+      if (!isInspiration) {
+        if (!isEmpty) {
+          updateLastNote(null);
+        } else {
+          updateLastNote({
+            ...(selectedNote || NOTE_EMPTY),
+            body: editor?.getText() || "",
+          });
+        }
       }
-      setBody("");
+      // Reset for next use -
+      updateEditorBody("");
       selectNote(null);
+      cancelUpdateNoteBody(selectedNote?.id || "");
+    } else {
+      cancelUpdateNoteBody(selectedNote?.id || "", false);
     }
   };
 
   useEffect(() => {
-    if (selectedNote && !body) {
+    if (!editor) return;
+    // We check for body empty because selectedNote will change on update and we don't want the cursor the jump around after the update.
+    // So we use body as our source of truth.
+    if (selectedNote && !editor?.getText()) {
       handleOpenChange(true);
-      if (lastNote) {
-        convertMDToHtml(lastNote.body).then(html => {
-          setBody(lastNote.body);
-          editor?.commands.setContent(html);
-        });
+      const isSelectedNoteBodyEmpty =
+        !selectedNote?.body || selectedNote?.body === "";
+      if (isSelectedNoteBodyEmpty && !isInspiration) {
+        const lastNote = getLastNote();
+        if (lastNote) {
+          updateEditorBody(lastNote.body);
+        } else {
+          updateEditorBody("");
+        }
       } else {
-        convertMDToHtml(selectedNote.body).then(html => {
-          setBody(selectedNote.body);
-          editor?.commands.setContent(html);
-        });
+        updateEditorBody(selectedNote.body);
       }
       if (selectedNote.status === "scheduled" && selectedNote.scheduledTo) {
         const presetDate = new Date(selectedNote.scheduledTo);
@@ -123,9 +158,7 @@ export function NotesEditorDialog() {
         setConfirmedSchedule(false);
       }
     }
-  }, [selectedNote]);
-
-  const editor = useEditor(notesTextEditorOptions(handleBodyChange));
+  }, [selectedNote, editor]);
 
   const name = useMemo(() => {
     if (!selectedNote) return "";
@@ -148,20 +181,23 @@ export function NotesEditorDialog() {
     options?: { immediate?: boolean },
   ): Promise<NoteDraft | null> {
     const newBody = unformatText(html);
-    setBody(newBody);
-    if (!lastNote) {
-      setLastNote({
-        ...NOTE_EMPTY,
-        body: newBody,
-      });
-    } else {
-      setLastNote({
-        ...lastNote,
-        body: newBody,
-      });
+    updateEditorBody(newBody);
+    if (isEmpty && !isInspiration) {
+      const lastNote = getLastNote();
+      if (!lastNote) {
+        updateLastNote({
+          ...NOTE_EMPTY,
+          body: newBody,
+        });
+      } else {
+        updateLastNote({
+          ...lastNote,
+          body: newBody,
+        });
+      }
     }
+    debugger;
 
-    const isEmpty = isEmptyNote(selectedNote);
     if (selectedNote) {
       if (options?.immediate) {
         const note = await editNoteBody(selectedNote.id, newBody);
@@ -179,7 +215,7 @@ export function NotesEditorDialog() {
     if (!html) return null;
     const note = await handleBodyChange(html, { immediate: true });
     if (note) {
-      setLastNote(null);
+      updateLastNote(null);
     }
     return note;
   };
@@ -201,6 +237,8 @@ export function NotesEditorDialog() {
   };
 
   const handleSave = async () => {
+    debugger;
+
     if (!selectedNote) return;
     let newNote = {
       ...selectedNote,
@@ -217,6 +255,7 @@ export function NotesEditorDialog() {
           ...note,
           scheduledTo: scheduledDate,
         };
+        updateLastNote(null);
       }
     } catch (e: any) {
       if (e instanceof CancelError) {
@@ -276,7 +315,8 @@ export function NotesEditorDialog() {
 
   const handleImprovement = (improvedText: string) => {
     const formattedText = formatText(improvedText);
-    editor?.chain().focus().setContent(formattedText).run();
+    updateEditorBody(formattedText);
+    editor?.commands.focus();
   };
 
   const handleEmojiSelect = (emoji: Skin) => {
@@ -441,10 +481,7 @@ export function NotesEditorDialog() {
 
   return (
     <>
-      <Dialog
-        open={open}
-        onOpenChange={handleOpenChange}
-      >
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           hideCloseButton
           className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl"
@@ -549,7 +586,6 @@ export function NotesEditorDialog() {
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0 hidden md:flex"
-                  disabled={!body}
                   onClick={handleCopy}
                 >
                   <Copy className="h-5 w-5 text-muted-foreground" />
@@ -567,7 +603,6 @@ export function NotesEditorDialog() {
                   className="rounded-full px-6"
                   onClick={handleSave}
                   disabled={
-                    editor?.getText().trim().length === 0 ||
                     loadingEditNote ||
                     loadingScheduleNote ||
                     isSendingNote ||
