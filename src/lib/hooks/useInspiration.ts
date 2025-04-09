@@ -68,7 +68,7 @@ export function useInspiration() {
           existingNotesIds: existingNotes
             ? existingNotes.map(note => note.id)
             : inspirationNotes.map(note => note.id),
-          page: currentPage,
+          page: page,
           filters: newFilters || filters,
         },
         { signal: cancelRef.current?.signal },
@@ -90,7 +90,6 @@ export function useInspiration() {
       } else {
         dispatch(setInspirationNotes(sortedNotes));
       }
-      dispatch(setCurrentPage(page));
       dispatch(setLoadingInspiration(false));
       loadingInspirationRef.current = false;
     } catch (error) {
@@ -209,7 +208,9 @@ export function useInspiration() {
   );
 
   const loadMore = useCallback(async () => {
+    debugger;
     await fetchInspirationNotes({ page: currentPage + 1 });
+    dispatch(setCurrentPage(currentPage + 1));
   }, [fetchInspirationNotes]);
 
   useEffect(() => {

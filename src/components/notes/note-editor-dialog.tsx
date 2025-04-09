@@ -85,7 +85,7 @@ export function NotesEditorDialog() {
   // State for drag and drop
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
-  const handleOpenChange = (open: boolean, caller: string) => {
+  const handleOpenChange = (open: boolean) => {
     setOpen(open);
     if (!open) {
       if (!isEmptyNote(selectedNote)) {
@@ -103,7 +103,7 @@ export function NotesEditorDialog() {
 
   useEffect(() => {
     if (selectedNote && !body) {
-      handleOpenChange(true, "useEffect selectedNote && !body");
+      handleOpenChange(true);
       if (lastNote) {
         convertMDToHtml(lastNote.body).then(html => {
           setBody(lastNote.body);
@@ -228,7 +228,7 @@ export function NotesEditorDialog() {
     if (shouldSchedule) {
       try {
         await scheduleNote(newNote);
-        handleOpenChange(false, "handleSave scheduleNote");
+        handleOpenChange(false);
         toast.success(
           "Note scheduled to: " + getScheduleTimeText(scheduledDate, false),
           {
@@ -251,7 +251,7 @@ export function NotesEditorDialog() {
       try {
         await updateNoteStatus(selectedNote.id, "draft");
         toast.info("Note unscheduled");
-        handleOpenChange(false, "handleSave unscheduleNote");
+        handleOpenChange(false);
       } catch (e: any) {
         if (e instanceof CancelError) {
           return;
@@ -443,9 +443,7 @@ export function NotesEditorDialog() {
     <>
       <Dialog
         open={open}
-        onOpenChange={open => {
-          handleOpenChange(open, "Dialog");
-        }}
+        onOpenChange={handleOpenChange}
       >
         <DialogContent
           hideCloseButton
