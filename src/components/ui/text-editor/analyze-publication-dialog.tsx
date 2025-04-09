@@ -31,30 +31,6 @@ import { Byline } from "@/types/article";
 import { toast } from "react-toastify";
 import { AuthorSelectionDialog } from "@/components/onboarding/author-selection-dialog";
 
-const loadingStatesConst = [
-  { text: "Validating publication in our databases..." },
-  { text: "Checking Substack availability..." },
-  { text: "Extracting publications...", delay: 7000 },
-  { text: "Analyzing writing style...", delay: 6000 },
-  { text: "Generating content insights...", delay: 4000 },
-  { text: "Setting up your preferences..." },
-  { text: "Almost done...", delay: 3000 },
-  { text: "I promise, it's almost ready...", delay: 3000 },
-  {
-    text: "You have a humongous publication, my machines really struggle...🤖",
-    delay: 10000,
-  },
-  {
-    text: "Okay, if you're still here, I'll let you in on a secret: I've been faking it.",
-    delay: 10000,
-  },
-  {
-    text: "The statuses are not real. I just wanted to make you feel good while you wait.",
-    delay: 10000,
-  },
-  { text: "Well, this is awkward... Hope it finishes soon...🤦", delay: 3000 },
-];
-
 const ERRORS = {
   INVALID_URL: {
     value: "URL is invalid 🤔",
@@ -200,6 +176,7 @@ export function AnalyzePublicationDialog({
         }}
       >
         <DialogContent
+          closeOnOutsideClick={false}
           className="sm:max-w-[425px]"
           onOpenAutoFocus={e => e.preventDefault()}
         >

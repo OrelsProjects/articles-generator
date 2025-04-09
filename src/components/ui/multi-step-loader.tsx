@@ -52,7 +52,7 @@ const LoaderCore = ({
     <div className="flex relative justify-start max-w-xl mx-auto flex-col mt-40">
       {loadingStates.map((loadingState, index) => {
         const distance = Math.abs(index - value);
-        const opacity = Math.max(1 - distance * 0.2, 0); // Minimum opacity is 0, keep it 0.2 if you're sane.
+        const opacity = Math.max(1 - distance * 0.3, 0); // Minimum opacity is 0, keep it 0.2 if you're sane.
 
         return (
           <motion.div
@@ -75,7 +75,7 @@ const LoaderCore = ({
               className={cn(
                 "text-foreground",
                 value < index && "text-foreground",
-                value === index && "text-primary opacity-100",
+                value === index && "text-primary opacity-100 font-semibold",
                 value > index && "text-foreground",
               )}
             >
@@ -138,7 +138,7 @@ export const MultiStepLoader = ({
           exit={{
             opacity: 0,
           }}
-          className="w-full h-full fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md bottom-0 bg-white/40 dark:bg-black/60 "
+          className="w-full h-full fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md bottom-0 bg-gray-100/40 dark:bg-black/60 "
         >
           <div className="h-96 relative">
             <LoaderCore value={currentState} loadingStates={loadingStates} />

@@ -8,12 +8,12 @@ import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 const loadingStatesConst = [
   { text: "Validating publication in our databases..." },
   { text: "Checking Substack availability..." },
-  { text: "Extracting publications...", delay: 7000 },
-  { text: "Analyzing writing style...", delay: 6000 },
-  { text: "Generating content insights...", delay: 4000 },
+  { text: "Extracting publications...", delay: 10000 },
+  { text: "Analyzing writing style...", delay: 10000 },
+  { text: "Generating content insights...", delay: 10000 },
   { text: "Setting up your preferences..." },
-  { text: "Almost done...", delay: 3000 },
-  { text: "I promise, it's almost ready...", delay: 3000 },
+  { text: "Almost done...", delay: 10000 },
+  { text: "I promise, it's almost ready...", delay: 10000 },
   {
     text: "You have a humongous publication, my machines really struggle...🤖",
     delay: 10000,
@@ -66,7 +66,7 @@ export function AnalyzePublicationButton({
       <MultiStepLoader
         loadingStates={loadingStatesConst}
         loading={analyzing}
-        duration={3000}
+        duration={10000}
         loop={false}
       />
     </div>

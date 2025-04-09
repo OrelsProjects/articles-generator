@@ -37,7 +37,7 @@ export default function AuthProvider({
   const { user: currentUser } = useSelector(selectAuth);
   const { data: session, status } = useSession();
 
-  const setUser = async (session?: Session) => {
+  const setUser = async (session?: Session): Promise<boolean> => {
     let hasPublication = false;
     try {
       const userPlan: Plan | null = session?.user?.meta
@@ -84,6 +84,7 @@ export default function AuthProvider({
     state: "authenticated" | "unauthenticated",
     hasPublication: boolean,
   ) => {
+    debugger;
     if (state === "unauthenticated") {
       if (!pathname.includes("login")) {
         router.push("/", { preserveQuery: true });
@@ -110,7 +111,7 @@ export default function AuthProvider({
           paramsToRemove: ["redirect"],
         });
       } else if (pathname.includes("login")) {
-        // router.push("/home", { preserveQuery: true });
+        router.push("/home", { preserveQuery: true });
       }
     }
   };

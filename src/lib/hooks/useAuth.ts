@@ -26,6 +26,7 @@ const useAuth = () => {
           redirect.searchParams.append(key, val);
         }
       });
+
       setLoading(true);
       await signIn("google", {
         redirect: true,
