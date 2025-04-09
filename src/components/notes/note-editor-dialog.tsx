@@ -73,7 +73,6 @@ export function NotesEditorDialog() {
   );
   const editor = useEditor(notesTextEditorOptions(handleBodyChange));
 
-  const { isLoading: isSendingNote } = useExtension();
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
   // setOpen MUST be called only from handleOpenChange to avoid logic bugs, like setting body to ''.
   const [open, setOpen] = useState(false);
@@ -84,6 +83,7 @@ export function NotesEditorDialog() {
   const [confirmedSchedule, setConfirmedSchedule] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [isSendingNote, setIsSendingNote] = useState(false);
 
   // State for drag and drop
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -403,7 +403,7 @@ export function NotesEditorDialog() {
     if (!selectedNote) return;
     try {
       const isEmpty = isEmptyNote(selectedNote);
-      let noteId = "";
+      let noteId = selectedNote.id;
       if (isEmpty) {
         const note = await handleCreateNewDraft();
         if (note) {
@@ -466,7 +466,7 @@ export function NotesEditorDialog() {
 
   const handleImageSelect = async (file: File) => {
     if (!selectedNote) return;
-
+    debugger;
     // Check if there's already an image
     if (selectedNote.attachments && selectedNote.attachments.length > 0) {
       toast.error("Only one image is allowed");
@@ -495,6 +495,19 @@ export function NotesEditorDialog() {
     [selectedNote],
   );
 
+  const canSendNote = useMemo(() => {
+    if (isEmpty || isInspiration) {
+      return false;
+    }
+    return !loadingEditNote && !loadingScheduleNote && !isSendingNote;
+  }, [
+    loadingEditNote,
+    loadingScheduleNote,
+    isSendingNote,
+    isEmpty,
+    isInspiration,
+  ]);
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -503,8 +516,7 @@ export function NotesEditorDialog() {
             !loadingEditNote &&
             !loadingScheduleNote &&
             !isSendingNote &&
-            !isUploadingFile &&
-            !isSendingNote
+            !isUploadingFile
           }
           hideCloseButton
           className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl"
@@ -621,7 +633,8 @@ export function NotesEditorDialog() {
                   onPreSend={handleSave}
                   note={selectedNote}
                   source="note-editor-dialog"
-                  includeText
+                  onLoadingChange={setIsSendingNote}
+                  disabled={!canSendNote}
                 />
                 <Button
                   variant="default"

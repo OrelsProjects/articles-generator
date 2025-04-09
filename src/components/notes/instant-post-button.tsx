@@ -13,24 +13,24 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface SubstackPostButtonProps {
   onPreSend?: () => Promise<void>;
+  onLoadingChange?: (loading: boolean) => void;
   note: Note | NoteDraft | string | null;
   size?: "sm" | "lg" | "default" | "icon";
   variant?: "ghost" | "default" | "outline";
+  disabled?: boolean;
   source: string;
-  includeText?: boolean;
-  tooltipContent?: string;
   className?: string;
 }
 
 export function InstantPostButton({
   note,
   onPreSend,
+  onLoadingChange,
   size = "sm",
   variant = "ghost",
-  tooltipContent = "Post to Substack instantly",
-  includeText,
   source,
   className,
+  disabled,
 }: SubstackPostButtonProps) {
   const { getNoteById, hasExtension } = useExtension();
   const { updateNoteStatus, sendNote, loadingSendNote } = useNotes();
@@ -53,6 +53,7 @@ export function InstantPostButton({
     const noteObject = typeof note === "string" ? getNoteById(note) : note;
     if (!noteObject) return;
     try {
+      onLoadingChange?.(true);
       await onPreSend?.();
       const response = await sendNote(noteObject.id);
       if (response) {
@@ -64,6 +65,8 @@ export function InstantPostButton({
     } catch (error) {
       console.error("Error sending post:", error);
       setShowExtensionDialog(true);
+    } finally {
+      onLoadingChange?.(false);
     }
   };
 
@@ -88,7 +91,7 @@ export function InstantPostButton({
             // tooltipContent={tooltipContent}
             variant={variant}
             size={size}
-            disabled={loadingSendNote || !note}
+            disabled={loadingSendNote || !note || disabled}
             onClick={handleSendNote}
             className={cn(
               "flex items-center gap-2",

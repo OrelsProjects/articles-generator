@@ -26,7 +26,7 @@ export interface WriterSearchResult extends Writer {
 export const DBNotesToNotes = (
   note: (NotesComments & { attachments?: NotesAttachments[] })[],
 ): Note[] => {
-  return note.map(note => ({
+  const notes: Note[] = note.map(note => ({
     id: note.id.toString(),
     entityKey: note.entityKey,
     content: note.body,
@@ -40,8 +40,10 @@ export const DBNotesToNotes = (
     reactionCount: note.reactionCount,
     commentsCount: note.commentsCount || 0,
     restacks: note.restacks,
-    attachment: note.attachments?.map(att => att.imageUrl || "") || [],
+    attachments: note.attachments?.map(att => att.imageUrl || "") || [],
   }));
+
+  return notes;
 };
 
 export const DBArticlesToArticles = (article: Post[]): Article[] => {
