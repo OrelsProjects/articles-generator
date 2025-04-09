@@ -40,7 +40,9 @@ export const canUseFeature = (
   userMetadata: UserMetadata,
   featureFlag: FeatureFlag,
 ) => {
-  return userMetadata.featureFlags.includes(featureFlag);
+  return (
+    userMetadata.isAdmin || userMetadata.featureFlags.includes(featureFlag)
+  );
 };
 
 export const pricePerTokens = [
