@@ -26,6 +26,7 @@ export async function createScheduleForNote(
   }
   const dateNoSeconds = new Date(date);
   dateNoSeconds.setSeconds(0);
+  dateNoSeconds.setMilliseconds(0);
   const scheduleName = buildScheduleName(note.id);
   const cronExpression = getCronExpressionFromDate(dateNoSeconds);
 
