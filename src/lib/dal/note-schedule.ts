@@ -9,7 +9,11 @@ import {
 } from "@/lib/utils/event-bridge";
 import { NoteStatus } from "@prisma/client";
 
-export const buildScheduleName = (noteId: string) => `note-scheduled-${noteId}`;
+export const buildScheduleName = (noteId: string) => {
+  const env = process.env.NODE_ENV;
+  const prefix = env === "production" ? "" : "dev-";
+  return `${prefix}note-scheduled-${noteId}`;
+};
 
 export async function createScheduleForNote(
   userId: string,

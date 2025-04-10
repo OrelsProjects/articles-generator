@@ -15,6 +15,8 @@ import {
   type UniqueIdentifier,
   useDroppable,
   pointerWithin,
+  TouchSensor,
+  MouseSensor,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { StatusColumn } from "./status-column";
@@ -83,10 +85,17 @@ export function StatusBoard({
   }, [activeId, columns]);
 
   // Configure sensors for mouse, touch, and keyboard interactions
+  // Configure sensors for mouse, touch, and keyboard interactions
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 100,
+        tolerance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -492,10 +501,6 @@ export function StatusBoard({
     }
   }
 
-  async function handleNewItem(columnId: UniqueIdentifier) {
-    await onNewItem?.(columnId);
-  }
-
   return (
     <div className="relative">
       <DndContext
@@ -521,8 +526,8 @@ export function StatusBoard({
                 color={column.color}
                 selectedItem={selectedItem}
                 orderFunction={column.orderFunction}
-                onNewItem={() => handleNewItem(column.id)}
                 onSelectItem={itemId => handleSelectItem(itemId)}
+                className={column.id === "published" ? "opacity-70" : ""}
               />
             </div>
           ))}
@@ -559,7 +564,7 @@ function ArchiveZone({ isOver }: { isOver: boolean }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.2 }}
-      className={`fixed bottom-8 left-1/2 transform -translate-x-1/2 w-80 h-32 rounded-lg flex flex-col items-center justify-center gap-2 ${
+      className={`fixed bottom-8 ml-1 md:ml-0 md:left-1/2 transform md:-translate-x-1/2 w-80 h-32 rounded-lg flex flex-col items-center justify-center gap-2 ${
         isOver
           ? "bg-destructive text-destructive-foreground shadow-lg"
           : "bg-muted border-2 border-dashed border-destructive/50"

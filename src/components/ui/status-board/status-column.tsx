@@ -14,37 +14,25 @@ import { cn } from "@/lib/utils";
 interface StatusColumnProps {
   id: UniqueIdentifier;
   items: StatusItemType[];
-  onNewItem: () => Promise<unknown>;
   onSelectItem: (itemId: UniqueIdentifier) => void;
   selectedItem?: UniqueIdentifier;
   color?: string;
   orderFunction?: (item: StatusItemType) => number;
+  className?: string;
 }
 
 export function StatusColumn({
   id,
   items,
-  onNewItem,
   onSelectItem,
   selectedItem,
   color,
   orderFunction,
+  className,
 }: StatusColumnProps) {
-  const [loadingNewItem, setLoadingNewItem] = useState(false);
-
   const { setNodeRef } = useDroppable({
     id,
   });
-
-  async function handleNewItem() {
-    if (loadingNewItem) return;
-    setLoadingNewItem(true);
-    try {
-      await onNewItem();
-    } finally {
-      setLoadingNewItem(false);
-    }
-  }
 
   const sortedItems = useMemo(() => {
     return items.sort((a, b) => {
@@ -60,6 +48,7 @@ export function StatusColumn({
         color === "gray" && "bg-gray-200/15 dark:bg-gray-500/20",
         color === "amber" && "bg-amber-100/20 dark:bg-amber-500/20",
         color === "green" && "bg-green-100/20 dark:bg-green-500/20",
+        className,
       )}
     >
       <SortableContext
