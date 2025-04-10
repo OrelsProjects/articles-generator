@@ -3,6 +3,8 @@
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { useNotes } from "@/lib/hooks/useNotes";
+import { EditScheduleDialog } from "@/components/queue/edit-schedule-dialog";
+import QueuePage from "@/components/queue/queue-page";
 
 export default function NotesCalendarPage() {
   const { loading, error, scheduleNote: updateNoteDate } = useNotesSchedule();
@@ -26,11 +28,7 @@ export default function NotesCalendarPage() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-2xl font-bold mb-6 px-4 pt-4">Notes Calendar</h1>
-      <CalendarGrid
-        notes={userNotes}
-        onNoteUpdate={updateNoteDate}
-      />
+      <QueuePage />
     </div>
   );
 }

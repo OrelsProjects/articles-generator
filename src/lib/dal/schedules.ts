@@ -66,3 +66,4 @@ export async function updateSchedule(
   });
   return updatedSchedule;
 }
+

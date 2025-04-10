@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
 import { Note, NoteDraft, NoteDraftImage } from "@/types/note";
 import { Filter } from "@/lib/dal/milvus";
+import { UserSchedule } from "@/types/schedule";
 
 export interface NotesState {
   userNotes: NoteDraft[];
@@ -23,12 +24,14 @@ export interface NotesState {
   handle: string | null;
   thumbnail: string | null;
   name: string | null;
+  userSchedules: UserSchedule[];
 }
 
 export const initialState: NotesState = {
   userNotes: [],
   inspirationNotes: [],
   inspirationFilters: [],
+  userSchedules: [],
   selectedNote: null,
   selectedImage: null,
   loadingNotes: false,
@@ -245,6 +248,22 @@ const notesSlice = createSlice({
         };
       }
     },
+    setUserSchedule: (state, action: PayloadAction<UserSchedule[]>) => {
+      state.userSchedules = action.payload;
+    },
+    addUserSchedule: (state, action: PayloadAction<UserSchedule>) => {
+      state.userSchedules.push(action.payload);
+    },
+    removeUserSchedule: (state, action: PayloadAction<string>) => {
+      state.userSchedules = state.userSchedules.filter(
+        schedule => schedule.id !== action.payload,
+      );
+    },
+    updateUserSchedule: (state, action: PayloadAction<UserSchedule>) => {
+      state.userSchedules = state.userSchedules.map(schedule =>
+        schedule.id === action.payload.id ? action.payload : schedule,
+      );
+    },
   },
 });
 
@@ -271,6 +290,10 @@ export const {
   setName,
   addAttachmentToNote,
   removeAttachmentFromNote,
+  setUserSchedule,
+  addUserSchedule,
+  removeUserSchedule,
+  updateUserSchedule,
 } = notesSlice.actions;
 
 export const selectNotes = (state: RootState) => state.notes;
