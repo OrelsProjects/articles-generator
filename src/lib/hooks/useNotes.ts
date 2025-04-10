@@ -323,6 +323,7 @@ export const useNotes = () => {
     cancelRef.current?.abort();
     const controller = new AbortController();
     cancelRef.current = controller;
+    let isCanceled = false;
 
     EventTracker.track("notes_edit_note_body");
     setLoadingEditNote(true);
@@ -371,12 +372,17 @@ export const useNotes = () => {
           : null;
       }
     } catch (error: any) {
-      if (error instanceof AxiosError && error.code === "ERR_CANCELED")
+      if (error instanceof AxiosError && error.code === "ERR_CANCELED") {
         // throw new CancelError("Cancelled");
         Logger.error("Error editing note:", error);
+        isCanceled = true;
+        return null;
+      }
       throw error;
     } finally {
-      setLoadingEditNote(false);
+      if (!isCanceled) {
+        setLoadingEditNote(false);
+      }
     }
   };
 

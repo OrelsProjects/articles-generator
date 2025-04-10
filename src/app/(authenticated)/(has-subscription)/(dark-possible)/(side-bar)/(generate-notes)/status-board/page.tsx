@@ -49,7 +49,7 @@ export default function StatusBoardPage() {
         <div className="flex justify-between items-center mb-12">
           <div className="w-full flex justify-between items-center gap-2">
             <h1 className="text-3xl font-bold">{TITLE}</h1>
-            {/* <TooltipButton
+            <TooltipButton
               tooltipContent="Start writing"
               variant="outline"
               onClick={handleCreateDraftNote}
@@ -57,7 +57,7 @@ export default function StatusBoardPage() {
             >
               <Plus size={16} />
               New draft
-            </TooltipButton> */}
+            </TooltipButton>
           </div>
           <div className="flex flex-col md:flex-row justify-end items-center gap-2">
             <TooltipButton
