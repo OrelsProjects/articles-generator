@@ -67,6 +67,7 @@ enum FeatureFlag {
   instantPost
   populateNotes
   collaborativeNotes
+  initQueue
 }
 
 enum CookieName {
@@ -80,6 +81,11 @@ enum CookieSameSite {
   lax
   strict
   unspecified
+}
+
+enum AmPm {
+  am
+  pm
 }
 
 model User {
@@ -497,7 +503,7 @@ model SubstackImage {
   imageHeight Int
   explicit    Boolean @default(false)
 
-  noteId String @db.ObjectId
+  noteId         String @db.ObjectId
   s3AttachmentId String @db.ObjectId
 
   createdAt DateTime @default(now())
@@ -512,7 +518,7 @@ model S3Attachment {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   s3Url    String @unique
-  noteId String @db.ObjectId
+  noteId   String @db.ObjectId
   fileName String
 
   createdAt DateTime @default(now())
@@ -521,4 +527,27 @@ model S3Attachment {
   note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
   @@map("s3Attachments")
+}
+
+model UserSchedule {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+
+  sunday    Boolean @default(true)
+  monday    Boolean @default(true)
+  tuesday   Boolean @default(true)
+  wednesday Boolean @default(true)
+  thursday  Boolean @default(true)
+  friday    Boolean @default(true)
+  saturday  Boolean @default(true)
+
+  hour   Int
+  minute Int
+  ampm   AmPm
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([hour, minute, ampm, userId])
+  @@map("userSchedules")
 }

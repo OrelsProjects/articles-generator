@@ -23,7 +23,6 @@ import { useTheme } from "next-themes";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -34,30 +33,31 @@ import usePayments from "@/lib/hooks/usePayments";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
-  const { purchaseCredits, loadingCredits } = usePayments();
+  const { purchaseCredits, loadingCredits, cancelSubscription } = usePayments();
   const { user } = useAppSelector(selectAuth);
   const { hasPublication } = useSettings();
-  const { credits } = useAppSelector(selectSettings);
+  const { credits, cancelAt } = useAppSelector(selectSettings);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showGetTokensDialog, setShowGetTokensDialog] = useState(false);
+  const [loadingCancel, setLoadingCancel] = useState(false);
 
   const handleSaveSettings = () => {
     toast.success("Settings saved successfully");
   };
 
-  const cancelSubscription = async () => {
+  const handleCancelSubscription = async () => {
     try {
-      await axios.post("/api/user/subscription/cancel");
+      setLoadingCancel(true);
+      await cancelSubscription();
       toast.success("Your subscription has been canceled");
       setShowCancelDialog(false);
     } catch (error) {
       console.error("Error canceling subscription:", error);
       toast.error("Failed to cancel subscription. Please try again.");
+    } finally {
+      setLoadingCancel(false);
     }
   };
-
-  // Calculate credit usage
-  const planType = user?.meta?.plan || "hobbyist";
 
   const creditPercentage = Math.min(
     Math.round((credits.used / Math.max(credits.total, 1)) * 100),
@@ -105,6 +105,18 @@ export default function SettingsPage() {
                     Credits reset every month ({credits.total})
                   </p>
                 </div>
+
+                {cancelAt && (
+                  <div className="mt-2 p-3 border border-border rounded-md bg-muted/30">
+                    <p className="text-sm text-destructive font-medium">
+                      Your subscription will be canceled at: {new Date(cancelAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric"
+                      })}
+                    </p>
+                  </div>
+                )}
 
                 <div className="w-fit mt-4 text-sm text-muted-foreground flex flex-col items-center">
                   <div className="mt-2">
@@ -218,59 +230,72 @@ export default function SettingsPage() {
         <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle
-                aria-label="Cancel subscription confirmation"
-                className="text-xl"
-              >
-                Wait! Are you sure you want to cancel?
+              <DialogTitle className="text-xl font-bold">
+                Cancel subscription
               </DialogTitle>
-              <DialogDescription className="pt-4 text-base">
-                <div className="space-y-4">
-                  <div className="bg-muted p-4 rounded-lg">
-                    <h3 className="font-medium mb-2">
-                      Here&apos;s what you&apos;ll miss out on:
-                    </h3>
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>Premium content generation capabilities</li>
-                      <li>Advanced AI features and personalization</li>
-                      <li>Priority support and updates</li>
-                      <li>Unlimited note creation and organization</li>
-                    </ul>
-                  </div>
-
-                  <div className="text-sm text-muted-foreground border-l-4 border-primary/30 pl-3 py-1">
-                    Don&apos;t worry, your subscription will remain active until{" "}
-                    <span className="font-medium">
-                      {user?.meta?.currentPeriodEnd
-                        ? new Date(
-                            user.meta.currentPeriodEnd,
-                          ).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : "the end of your current billing period"}
-                    </span>
-                  </div>
-                </div>
-              </DialogDescription>
             </DialogHeader>
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-5">
+
+            <div className="bg-muted/50 border border-border rounded-md p-4 my-4">
+              <p className="text-muted-foreground">
+                Is there something we can do to change your mind? I&apos;d love
+                to hear from you. <br /> Please{" "}
+                <Link
+                  href="mailto:oreslam@gmail.com"
+                  className="text-primary hover:underline"
+                >
+                  email
+                </Link>{" "}
+                me 👍
+              </p>
+            </div>
+
+            <p className="text-foreground text-base">
+              Your subscription will remain active until the end of your current
+              billing cycle, which is{" "}
+              {user?.meta?.currentPeriodEnd
+                ? new Date(user.meta.currentPeriodEnd).toLocaleDateString(
+                    "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    },
+                  )
+                : "the end of your current billing period"}
+              .
+            </p>
+
+            <p className="text-red-500 font-medium mt-6">
+              Your account will be locked after this date.
+            </p>
+
+            <ul className="list-disc pl-6 mt-4 space-y-3 text-foreground text-sm">
+              <li>Scheduled notes will not be sent.</li>
+              <li>You will not have access to your notes or articles.</li>
+              <li>You will lose any and all access to your account.</li>
+              <li>Your subscription will not renew.</li>
+            </ul>
+
+            <div className="border-t border-border my-6 pt-4">
+              <h3 className="text-lg font-semibold text-foreground text-center">
+                Are you sure you want to cancel your subscription?
+              </h3>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-between gap-4 mt-4">
               <Button
-                variant="ghost"
-                className="sm:w-auto font-medium"
+                variant="outline"
+                className="flex items-center justify-center gap-2 border border-primary"
                 onClick={() => setShowCancelDialog(false)}
               >
-                Keep my subscription
+                ← No, keep subscription
               </Button>
-              <Button type="button" asChild>
-                <Link
-                  href={
-                    process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
-                  }
-                >
-                  Stop my Substack growth
-                </Link>
+              <Button
+                variant="destructive"
+                disabled={loadingCancel}
+                onClick={handleCancelSubscription}
+              >
+                Yes, cancel subscription
               </Button>
             </div>
           </DialogContent>

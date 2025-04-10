@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 
 const TOP_CREATORS = [
   "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdc125fa8-cfe4-438f-9b30-375d783f944b_865x865.jpeg",
+  "/tim-denning.png",
+  "/sinem-gunel.jpg",
   "https://substack-post-media.s3.amazonaws.com/public/images/95cb46cf-ef70-48d6-a362-174a9dc489af_3024x3024.jpeg",
   "https://substack-post-media.s3.amazonaws.com/public/images/c73dc80d-8611-44fa-a17d-33461220c621_678x678.png",
-  "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F247d3dbd-b294-456c-a2e5-092a25541e56_1200x1200.jpeg",
-  "/testimonials/macdaniel-chimedza.png",
   "/testimonials/kacper-wojaczek.png",
 ];
 
