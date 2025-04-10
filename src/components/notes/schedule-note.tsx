@@ -195,7 +195,7 @@ export function ScheduleNote({
   const isTimeValid = !timeError;
 
   return (
-    <>
+    <div className="hidden md:flex">
       <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
         <DialogTrigger asChild>
           <TooltipButton
@@ -409,7 +409,7 @@ export function ScheduleNote({
           setShowExtensionDialog(false);
         }}
       />
-    </>
+    </div>
   );
 }
 
