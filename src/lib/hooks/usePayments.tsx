@@ -5,8 +5,9 @@ import { loadStripe } from "@stripe/stripe-js";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { setProducts } from "@/lib/features/products/productsSlice";
 import { useRef, useState } from "react";
-import { selectAuth } from "@/lib/features/auth/authSlice";
+import { selectAuth, updateUserPlan } from "@/lib/features/auth/authSlice";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { Plan } from "@prisma/client";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -79,16 +80,22 @@ export default function usePayments() {
     }
   };
 
-  /**
-   * Upgrade subscription (monthly → yearly)
-   */
-  const upgradeSubscription = async (userId: string) => {
+  const updateSubscription = async (
+    plan: string,
+    interval: "month" | "year",
+  ) => {
     try {
-      const resp = await axios.post("/api/stripe/subscription/upgrade", {
-        userId,
+      const response = await axios.post<{
+        success: boolean;
+        data: {
+          plan: Plan;
+        };
+      }>("/api/user/subscription/update", {
+        plan,
+        interval,
       });
-      Logger.info("Upgrade response", resp.data);
-      window.location.reload();
+
+      dispatch(updateUserPlan(plan));
     } catch (error: any) {
       Logger.error("Failed to upgrade subscription", { error });
       throw error;
@@ -128,7 +135,7 @@ export default function usePayments() {
     getProducts,
     goToCheckout,
     cancelSubscription,
-    upgradeSubscription,
+    updateSubscription,
     purchaseCredits,
     loadingCredits,
   };

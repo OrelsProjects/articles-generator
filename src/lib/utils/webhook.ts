@@ -10,6 +10,7 @@ import {
 } from "@/lib/mail/templates";
 import { creditsPerPlan } from "@/lib/plans-consts";
 import { getStripeInstance } from "@/lib/stripe";
+import { calculateNewPlanCreditsLeft } from "@/lib/utils/credits";
 import loggerServer from "@/loggerServer";
 import { Payment, Plan, Subscription } from "@prisma/client";
 import { Stripe } from "stripe";
@@ -29,6 +30,25 @@ async function getUserBySubscription(subscription: Stripe.Subscription) {
     where: { email: email },
   });
 }
+
+async function getPlanBySubscription(subscription: Stripe.Subscription) {
+  const product = await getStripeInstance().products.retrieve(
+    subscription.items.data[0].plan.product as string,
+  );
+  return await getPlanByProductId(product.id);
+}
+
+export const getPlanByProductId = async (
+  productId: string,
+): Promise<Plan | null> => {
+  if (productId === process.env.STRIPE_PRICING_ID_PREMIUM) {
+    return "premium";
+  }
+  if (productId === process.env.STRIPE_PRICING_ID_STANDARD) {
+    return "standard";
+  }
+  return "hobbyist";
+};
 
 export async function handleSubscriptionCreated(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription;
@@ -57,7 +77,7 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
   }
   const subscriptionId = subscription.id;
   const user = await getUserBySubscription(subscription);
-  const isTrialing = subscription.trial_end !== null;
+  const isTrialing = subscription.status === "trialing";
   const isFreeSubscription = subscription.metadata?.isFreeSubscription;
   const plan: Plan = product.metadata?.plan as Plan;
   if (!user) {
@@ -129,12 +149,20 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
 export async function handleSubscriptionUpdated(event: any) {
   const subscription = event.data.object as Stripe.Subscription;
   const subscriptionId = subscription.id;
+  const plan = await getPlanBySubscription(subscription);
   const user = await getUserBySubscription(subscription);
   if (!user) {
     loggerServer.error("No user found for subscription", {
       subscription: `${JSON.stringify(subscription)}`,
     });
-    return;
+    throw new Error("No user found for subscription");
+  }
+
+  if (!plan) {
+    loggerServer.error("No plan found for subscription", {
+      subscription: `${JSON.stringify(subscription)}`,
+    });
+    throw new Error("No plan found for subscription");
   }
 
   const currentSubscription = await getActiveSubscription(user.id);
@@ -143,26 +171,34 @@ export async function handleSubscriptionUpdated(event: any) {
     loggerServer.error("No subscription found for user", {
       userId: user.id,
     });
-    return;
+    throw new Error("No subscription found for user");
   }
 
+  const { creditsLeft, creditsForPlan } = await calculateNewPlanCreditsLeft(
+    user.id,
+    plan,
+    currentSubscription,
+  );
   const { id, ...currentSubscriptionNoId } = currentSubscription;
 
   const newSubscription: Omit<Subscription, "id"> = {
     ...currentSubscriptionNoId,
-    trialEnd: subscription.trial_end
-      ? new Date(subscription.trial_end * 1000)
-      : currentSubscription.trialEnd,
+    plan: plan || currentSubscription.plan,
     status: subscription.status,
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
     currentPeriodEnd: new Date(subscription.current_period_end * 1000),
     currentPeriodStart: new Date(subscription.current_period_start * 1000),
+    creditsPerPeriod: creditsForPlan,
+    creditsRemaining: creditsLeft,
     startDate: currentSubscription.startDate,
     endDate: currentSubscription.endDate,
-    isTrialing: subscription.trial_end !== null,
-    trialStart: subscription.trial_end
-      ? new Date(subscription.trial_end * 1000)
+    isTrialing: subscription.status === "trialing",
+    trialStart: subscription.trial_start
+      ? new Date(subscription.trial_start * 1000)
       : currentSubscription.trialStart,
+    trialEnd: subscription.trial_end
+      ? new Date(subscription.trial_end * 1000)
+      : currentSubscription.trialEnd,
   };
 
   await prisma.subscription.update({
@@ -172,17 +208,6 @@ export async function handleSubscriptionUpdated(event: any) {
     data: newSubscription,
   });
 
-  await prisma.subscription.update({
-    where: {
-      stripeSubId: subscriptionId,
-    },
-    data: {
-      status: subscription.status,
-      trialEnd: subscription.trial_end
-        ? new Date(subscription.trial_end * 1000)
-        : null,
-    },
-  });
   if (user.email) {
     await sendMail({
       to: user.email!,
@@ -354,7 +379,7 @@ export async function handleInvoicePaymentSucceeded(event: any) {
     return;
   }
 
-  const payment = {
+  const payment: Omit<Payment, "id"> = {
     invoiceId: invoice.id,
     amountReceived: invoice.amount_paid,
     currency: invoice.currency,
@@ -366,8 +391,8 @@ export async function handleInvoicePaymentSucceeded(event: any) {
     productId: null,
     productName: null,
     createdAt: new Date(),
-    updatedAt: new Date()
-  } as Payment;
+    updatedAt: new Date(),
+  };
 
   await prisma.payment.create({
     data: payment,

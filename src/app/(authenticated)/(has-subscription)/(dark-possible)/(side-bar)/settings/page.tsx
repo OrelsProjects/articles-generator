@@ -31,7 +31,6 @@ import axios from "axios";
 import Link from "next/link";
 import { StepSliderDialog } from "@/components/ui/step-slider-dialog";
 import usePayments from "@/lib/hooks/usePayments";
-import { ExternalLink } from "lucide-react";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -107,7 +106,7 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <div className="mt-4 text-sm text-muted-foreground">
+                <div className="w-fit mt-4 text-sm text-muted-foreground flex flex-col items-center">
                   <div className="mt-2">
                     <Button
                       variant="neumorphic-primary"
@@ -117,30 +116,25 @@ export default function SettingsPage() {
                       Get more credits
                     </Button>
                   </div>
-                  {planType !== "premium" && (
-                    <div className="mt-2 w-fit">
-                      <div className="text-muted-foreground text-center mb-2">
-                        Or
-                      </div>
-                      <Button variant="outline" asChild>
-                        <Link
-                          target="_blank"
-                          href={
-                            process.env
-                              .NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL as string
-                          }
-                        >
-                          Manage your plan{" "}
-                          <ExternalLink className="w-4 h-4 ml-2" />
-                        </Link>
-                      </Button>
+
+                  <div className="mt-2 w-fit">
+                    <div className="text-muted-foreground text-center mb-2">
+                      Or
                     </div>
-                  )}
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link
+                        href={"/settings/pricing"}
+                        className="text-foreground bg-card"
+                      >
+                        Update plan
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
                 <div className="w-full flex justify-end">
                   <Button
                     variant="link"
-                    className="mt-2 text-muted-foreground/60 hover:text-destructive"
+                    className="mt-2 text-muted-foreground hover:text-destructive"
                     onClick={() => setShowCancelDialog(true)}
                   >
                     Cancel subscription

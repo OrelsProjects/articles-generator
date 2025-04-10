@@ -25,7 +25,6 @@ import {
 } from "@/types/note";
 import { isScheduled, getScheduleTimeText } from "@/lib/utils/date/schedule";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
-import { useExtension } from "@/lib/hooks/useExtension";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
 import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
 import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";

@@ -1,4 +1,6 @@
+import { getLookupKey } from "@/lib/utils/plans";
 import { Coupon } from "@/types/payment";
+import { Plan } from "@prisma/client";
 import Stripe from "stripe";
 
 const LAUNCH_COUPON_NAME = "LAUNCH";
@@ -180,7 +182,7 @@ export const generateSessionId = async (options: {
 
   const stripeSession = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
-    
+
     line_items: [
       {
         price: priceId,
@@ -208,14 +210,19 @@ export const generateSessionId = async (options: {
 export const getPlanPriceId = async (
   stripe: Stripe,
   interval: "month" | "year",
+  plan: Plan,
+  productId?: string,
 ) => {
   const products = await stripe.products.list();
-  const product = products.data.find(
-    product => product.metadata?.app === appName,
-  );
+  const product = productId
+    ? products.data.find(product => product.id === productId)
+    : products.data.find(product => product.metadata?.app === appName);
+  let priceLookupKey = getLookupKey(plan, interval);
+
   const prices = await stripe.prices.list({
     product: product?.id,
     recurring: { interval },
+    lookup_keys: [priceLookupKey],
   });
 
   const price = prices.data[0];

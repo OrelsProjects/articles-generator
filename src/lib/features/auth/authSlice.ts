@@ -48,11 +48,12 @@ const authSlice = createSlice({
       }
       state.state = action.payload.state ?? "authenticated";
     },
-    updateUserPlan: (state, action: PayloadAction<Plan>) => {
+    updateUserPlan: (state, action: PayloadAction<string>) => {
+      const planLower = action.payload.toLowerCase() as Plan;
       if (state.user) {
         state.user.meta = {
           ...state.user.meta,
-          plan: action.payload,
+          plan: planLower,
           currentPeriodStart: state.user.meta?.currentPeriodStart || null,
           currentPeriodEnd: state.user.meta?.currentPeriodEnd || null,
           cancelAtPeriodEnd: state.user.meta?.cancelAtPeriodEnd || false,
