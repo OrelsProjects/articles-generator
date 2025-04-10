@@ -24,8 +24,10 @@ export async function createScheduleForNote(
   if (!note) {
     throw new Error("Note not found");
   }
+  const dateNoSeconds = new Date(date);
+  dateNoSeconds.setSeconds(0);
   const scheduleName = buildScheduleName(note.id);
-  const cronExpression = getCronExpressionFromDate(date);
+  const cronExpression = getCronExpressionFromDate(dateNoSeconds);
 
   const existingSchedule = await getEventBridgeSchedule({ name: scheduleName });
   if (existingSchedule) {
@@ -53,7 +55,7 @@ export async function createScheduleForNote(
     noteId,
     cronExpression,
     userId,
-    scheduledAt: date,
+    scheduledAt: dateNoSeconds,
     scheduleId: scheduleName,
   });
 
@@ -64,7 +66,7 @@ export async function createScheduleForNote(
     data: {
       sentViaScheduleAt: null,
       status: "scheduled",
-      scheduledTo: date,
+      scheduledTo: dateNoSeconds,
     },
   });
 }
