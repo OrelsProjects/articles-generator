@@ -17,10 +17,11 @@ export const navItems = [
     disabled: false,
   },
   {
-    name: "Notes",
-    mobileName: "Notes",
-    href: "/notes",
-    icon: FileText,
+    name: "Queue",
+    mobileName: "Queue",
+    href: "/queue",
+    icon: Calendar,
+    adminOnly: false,
     locationInMobile: "bottom",
   },
   {
@@ -29,14 +30,6 @@ export const navItems = [
     href: "/status-board",
     icon: KanbanSquare,
     locationInMobile: "bottom",
-  },
-  {
-    name: "Notes calendar",
-    mobileName: "Calendar",
-    href: "/calendar",
-    icon: Calendar,
-    locationInMobile: "bottom",
-    adminOnly: true,
   },
   {
     name: "Editor",

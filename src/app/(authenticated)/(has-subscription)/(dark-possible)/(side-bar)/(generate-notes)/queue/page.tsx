@@ -1,14 +1,10 @@
 "use client";
 
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
-import { CalendarGrid } from "@/components/calendar/calendar-grid";
-import { useNotes } from "@/lib/hooks/useNotes";
-import { EditScheduleDialog } from "@/components/queue/edit-schedule-dialog";
 import QueuePage from "@/components/queue/queue-page";
 
 export default function NotesCalendarPage() {
-  const { loading, error, scheduleNote: updateNoteDate } = useNotesSchedule();
-  const { userNotes } = useNotes();
+  const { loading, error } = useNotesSchedule();
 
   if (loading) {
     return (
@@ -27,7 +23,7 @@ export default function NotesCalendarPage() {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="w-screen md:container mx-auto">
       <QueuePage />
     </div>
   );

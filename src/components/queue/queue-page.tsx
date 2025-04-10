@@ -1,11 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  format,
-  addDays,
-  startOfToday,
-} from "date-fns";
+import React, { useState, useEffect, useRef } from "react";
+import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useAppSelector } from "@/lib/hooks/redux";
@@ -27,6 +23,7 @@ export function QueuePage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [activeDays, setActiveDays] = useState<Date[]>([]);
   const [activeTab, setActiveTab] = useState("scheduled");
+  const lastNoteRef = useRef<HTMLDivElement>(null);
 
   // Generate an array of dates based on scheduled notes and minimum 28 days
   useEffect(() => {
@@ -54,6 +51,38 @@ export function QueuePage() {
 
     setActiveDays(days);
   }, [scheduledNotes]);
+
+  // Find the latest scheduled note for scrolling
+  const getLatestNote = () => {
+    if (scheduledNotes.length === 0) return null;
+
+    if (scheduledNotes.length === 1) return scheduledNotes[0];
+
+    return [...scheduledNotes].sort(
+      (a, b) =>
+        new Date(b.scheduledTo || 0).getTime() -
+        new Date(a.scheduledTo || 0).getTime(),
+    )[0];
+  };
+
+  // Scroll to latest note
+  const scrollToLatestNote = () => {
+    if (activeTab !== "scheduled") {
+      setActiveTab("scheduled");
+      // Allow time for tab content to render before scrolling
+      setTimeout(() => {
+        lastNoteRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 100);
+    } else {
+      lastNoteRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  };
 
   // Group notes by date
   const groupedScheduledNotes = React.useMemo(() => {
@@ -89,7 +118,7 @@ export function QueuePage() {
   const groupedSchedules = React.useMemo(() => {
     const grouped: Record<string, UserSchedule[]> = {};
 
-    userSchedules.forEach((schedule) => {
+    userSchedules.forEach(schedule => {
       // Check each active day and add applicable schedules
       activeDays.forEach(day => {
         const dateKey = format(day, "yyyy-MM-dd");
@@ -134,6 +163,10 @@ export function QueuePage() {
     selectNote(note);
   };
 
+  // Get latest note ID for ref
+  const latestNote = getLatestNote();
+  const latestNoteId = latestNote?.id;
+
   return (
     <div className="container py-8 mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -159,19 +192,34 @@ export function QueuePage() {
               : scheduledNotes.length > 1
                 ? `the last one will be published on `
                 : ""}
-            {scheduledNotes.length === 1 && scheduledNotes[0].scheduledTo
-              ? <strong>{format(new Date(scheduledNotes[0].scheduledTo), "EEEE MMMM do")}</strong>
-              : scheduledNotes.length > 1
-                ? (() => {
-                    // Find the latest scheduled note
-                    const latestNote = [...scheduledNotes].sort((a, b) => 
-                      new Date(b.scheduledTo || 0).getTime() - new Date(a.scheduledTo || 0).getTime()
-                    )[0];
-                    return latestNote.scheduledTo 
-                      ? <strong>{format(new Date(latestNote.scheduledTo), "EEEE MMMM do")}</strong>
-                      : null;
-                  })()
-                : null}
+            {scheduledNotes.length === 1 && scheduledNotes[0].scheduledTo ? (
+              <strong
+                className="underline cursor-pointer"
+                onClick={scrollToLatestNote}
+              >
+                {format(
+                  new Date(scheduledNotes[0].scheduledTo),
+                  "EEEE MMMM do",
+                )}
+              </strong>
+            ) : scheduledNotes.length > 1 ? (
+              (() => {
+                // Find the latest scheduled note
+                const latestNote = [...scheduledNotes].sort(
+                  (a, b) =>
+                    new Date(b.scheduledTo || 0).getTime() -
+                    new Date(a.scheduledTo || 0).getTime(),
+                )[0];
+                return latestNote.scheduledTo ? (
+                  <strong
+                    className="underline cursor-pointer"
+                    onClick={scrollToLatestNote}
+                  >
+                    {format(new Date(latestNote.scheduledTo), "EEEE MMMM do")}
+                  </strong>
+                ) : null;
+              })()
+            ) : null}
           </span>
         </div>
       )}
@@ -189,7 +237,7 @@ export function QueuePage() {
               "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
             )}
           >
-            Scheduled Notes
+            Scheduled
           </TabsTrigger>
           <TabsTrigger
             value="drafts"
@@ -205,16 +253,18 @@ export function QueuePage() {
               "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
             )}
           >
-            Published Notes
+            Published
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="scheduled" className="mt-0">
-          <ScheduledNotesList 
-            days={activeDays} 
-            groupedNotes={groupedScheduledNotes} 
-            groupedSchedules={groupedSchedules} 
-            onSelectNote={handleSelectNote} 
+          <ScheduledNotesList
+            days={activeDays}
+            groupedNotes={groupedScheduledNotes}
+            groupedSchedules={groupedSchedules}
+            onSelectNote={handleSelectNote}
+            lastNoteRef={lastNoteRef}
+            lastNoteId={latestNoteId}
           />
         </TabsContent>
 

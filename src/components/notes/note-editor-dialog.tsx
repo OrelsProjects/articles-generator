@@ -154,7 +154,7 @@ export function NotesEditorDialog() {
       } else {
         updateEditorBody(selectedNote.body);
       }
-      if (selectedNote.status === "scheduled" && selectedNote.scheduledTo) {
+      if (selectedNote.scheduledTo) {
         const presetDate = new Date(selectedNote.scheduledTo);
         setScheduledDate(presetDate);
         setConfirmedSchedule(true);

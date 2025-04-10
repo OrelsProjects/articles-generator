@@ -70,7 +70,7 @@ export const useNotes = () => {
   const { consumeCredits } = useCredits();
   const [loadingEditNote, setLoadingEditNote] = useState(false);
   // Don't delete, it works for some reason and allows user to save on click. TODO: Check why
-  const [shouldCancelUpdate, setShouldCancelUpdate] = useState(false);
+  const [, setShouldCancelUpdate] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [loadingSendNote, setLoadingSendNote] = useState(false);
 
@@ -227,6 +227,7 @@ export const useNotes = () => {
 
   const updateNoteStatus = useCallback(
     async (noteId: string, status: NoteStatus | "archived") => {
+      debugger;
       EventTracker.track("notes_update_note_status_" + status);
       const previousNote = userNotes.find(note => note.id === noteId);
       const previousStatus = previousNote?.status;
@@ -262,7 +263,6 @@ export const useNotes = () => {
           );
         }
         throw error;
-      } finally {
       }
     },
     [userNotes, selectedNote, selectNote, dispatch],
@@ -427,6 +427,7 @@ export const useNotes = () => {
   };
 
   const createDraftNote = async (draft?: Partial<NoteDraft>): Promise<void> => {
+    debugger;
     EventTracker.track("notes_create_draft_note");
     selectNote({ ...NOTE_EMPTY, ...draft });
   };

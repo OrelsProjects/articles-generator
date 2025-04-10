@@ -5,6 +5,7 @@ import {
   addUserSchedule,
   removeUserSchedule,
   updateUserSchedule,
+  updateNote,
 } from "@/lib/features/notes/notesSlice";
 import { CreateUserSchedule, UserSchedule } from "@/types/schedule";
 import axios from "axios";
@@ -17,7 +18,9 @@ export function useQueue() {
   const [loading, setLoading] = useState(false);
 
   const scheduledNotes = useMemo(() => {
-    return userNotes.filter(note => note.scheduledTo);
+    return userNotes.filter(
+      note => note.status === "scheduled" && note.scheduledTo,
+    );
   }, [userNotes]);
 
   const initQueue = async () => {
@@ -99,6 +102,46 @@ export function useQueue() {
     }
   };
 
+  const rescheduleNote = async (noteId: string, newTime: Date) => {
+    setLoading(true);
+    const noteToUpdate = userNotes.find(note => note.id === noteId);
+
+    if (!noteToUpdate) {
+      setLoading(false);
+      return;
+    }
+
+    // Optimistic update
+    dispatch(
+      updateNote({
+        id: noteId,
+        note: {
+          scheduledTo: newTime,
+        },
+      }),
+    );
+
+    try {
+      // Update the note on the server
+      await axios.patch(`/api/user/notes/${noteId}`, {
+        scheduledTo: newTime.toISOString(),
+      });
+    } catch (error) {
+      // Revert optimistic update on error
+      dispatch(
+        updateNote({
+          id: noteId,
+          note: {
+            scheduledTo: noteToUpdate.scheduledTo,
+          },
+        }),
+      );
+      console.error("Failed to reschedule note:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (userSchedules.length === 0) {
       fetchSchedules();
@@ -110,6 +153,7 @@ export function useQueue() {
     addSchedule,
     removeSchedule,
     updateSchedule,
+    rescheduleNote,
     initQueue,
     loading,
   };

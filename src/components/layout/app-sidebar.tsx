@@ -240,7 +240,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             )}
           >
             <item.icon size={20} />
-            <span className="text-xs mt-1">{item.name}</span>
+            <span className="text-xs mt-1">{item.mobileName}</span>
           </Link>
         ))}
 
