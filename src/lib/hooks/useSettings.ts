@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import axios from "axios";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
-import { AIUsageType } from "@prisma/client";
+import { AIUsageType, FeatureFlag } from "@prisma/client";
 import { AllUsages } from "@/types/settings";
 import { SubscriptionInfo } from "@/types/settings";
 
@@ -60,11 +60,17 @@ export const useSettings = () => {
     return credits.remaining >= cost;
   };
 
+  //temp for Tim Denning
+  const hasInitQueue = useMemo(() => {
+    return user?.meta?.featureFlags.includes(FeatureFlag.initQueue);
+  }, [user]);
+
   return {
     init,
     didExceedLimit,
     hasPublication,
     hasEnoughCredits,
     credits,
+    hasInitQueue,
   };
 };

@@ -109,6 +109,35 @@ export const useNotesSchedule = () => {
     [dispatch],
   );
 
+  const scheduleNoteById = useCallback(
+    async (noteId: string, scheduledTo: Date) => {
+      const note = userNotes.find(n => n.id === noteId);
+      if (!note) return;
+      dispatch(
+        updateNote({
+          id: noteId,
+          note: {
+            scheduledTo,
+          },
+        }),
+      );
+      try {
+        await scheduleNote({
+          ...note,
+          scheduledTo,
+        });
+      } catch (error) {
+        dispatch(
+          updateNote({
+            id: noteId,
+            note: { scheduledTo: note.scheduledTo },
+          }),
+        );
+        throw error;
+      }
+    },
+    [scheduleNote],
+  );
   return {
     notes: userNotes,
     loading: loadingNotes,
@@ -118,5 +147,6 @@ export const useNotesSchedule = () => {
     initCanUserScheduleInterval,
     isIntervalRunning,
     cancelCanUserScheduleInterval,
+    scheduleNoteById,
   };
 };

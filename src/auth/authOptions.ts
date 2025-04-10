@@ -2,6 +2,7 @@ import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { FeatureFlag, Plan, PrismaClient } from "@prisma/client";
+import { createDefaultUserSchedule } from "@/lib/dal/user-schedule";
 
 const prisma = new PrismaClient();
 
@@ -60,7 +61,9 @@ export const authOptions: AuthOptions = {
       ];
 
       const activeSubscription = subscriptions.find(
-        subscription => subscription.status === "active" || subscription.status === "trialing",
+        subscription =>
+          subscription.status === "active" ||
+          subscription.status === "trialing",
       );
 
       session.user.meta = {

@@ -429,14 +429,20 @@ export default function NoteComponent({
               <div
                 ref={contentRef}
                 className={cn(
-                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 cursor-pointer z-10  min-h-[180px] md:min-h-[200px]",
+                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 cursor-pointer z-10 min-h-[180px] md:min-h-[200px]",
                   isExpanded ? "max-h-none" : "max-h-[260px]",
                   isUserNote && "cursor-pointer",
                 )}
-                onClick={handleSelectNote}
               >
+                {/* Transparent overlay for click handling */}
+                <div 
+                  className="absolute inset-0 z-20 cursor-pointer" 
+                  onClick={handleSelectNote}
+                  aria-hidden="true"
+                ></div>
+                
                 <div
-                  className="prose prose-sm max-w-none note-component-content"
+                  className="prose prose-sm max-w-none note-component-content relative z-10"
                   dangerouslySetInnerHTML={{
                     __html: htmlContent,
                   }}
