@@ -69,9 +69,7 @@ export default function usePayments() {
       return;
     }
     try {
-      await axios.post("/api/stripe/subscription/cancel", {
-        userId: user.userId,
-      });
+      await axios.post("/api/user/subscription/cancel");
       Logger.info("Subscription canceled successfully");
       window.location.reload();
     } catch (error: any) {

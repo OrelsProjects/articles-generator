@@ -11,6 +11,10 @@ export interface CreditInfo {
   used: number;
 }
 
+export interface SubscriptionInfo {
+  cancelAt: Date | undefined;
+}
+
 export interface AllUsages {
   credits: CreditInfo;
 }

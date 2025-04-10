@@ -1,8 +1,7 @@
-import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { getActiveSubscription } from "@/lib/dal/subscription";
 import loggerServer from "@/loggerServer";
-import { AllUsages } from "@/types/settings";
+import { AllUsages, SubscriptionInfo } from "@/types/settings";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -17,15 +16,22 @@ export async function GET() {
     if (!subscription) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const usages: AllUsages = {
+    const data: AllUsages = {
       credits: {
         remaining: subscription.creditsRemaining,
         total: subscription.creditsPerPeriod,
         used: subscription.creditsPerPeriod - subscription.creditsRemaining,
       },
     };
-
-    return NextResponse.json({ usages });
+    const subscriptionInfo: SubscriptionInfo = {
+    cancelAt: subscription.cancelAtPeriodEnd
+      ? new Date(subscription.currentPeriodEnd)
+      : undefined,
+    };
+    return NextResponse.json({
+      usages: data,
+      subscriptionInfo,
+    });
   } catch (error: any) {
     loggerServer.error("Error getting usages", { error });
     return NextResponse.json(

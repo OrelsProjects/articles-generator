@@ -10,8 +10,10 @@ const initialCreditInfo: CreditInfo = {
 
 const initialState: {
   credits: CreditInfo;
+  cancelAt: Date | undefined;
 } = {
   credits: initialCreditInfo,
+  cancelAt: undefined,
 };
 
 export const settingsSlice = createSlice({
@@ -19,7 +21,10 @@ export const settingsSlice = createSlice({
   initialState,
   reducers: {
     setUsages: (state, action: PayloadAction<AllUsages>) => {
-      return action.payload;
+      return {
+        ...state,
+        credits: action.payload.credits,
+      };
     },
     incrementUsage: (state, action: PayloadAction<{ amount: number }>) => {
       const { amount } = action.payload;
@@ -31,10 +36,13 @@ export const settingsSlice = createSlice({
       state.credits.remaining -= amount;
       state.credits.used += amount;
     },
+    setCancelAt: (state, action: PayloadAction<Date | undefined>) => {
+      state.cancelAt = action.payload;
+    },
   },
 });
 
-export const { setUsages, incrementUsage, decrementUsage } =
+export const { setUsages, incrementUsage, decrementUsage, setCancelAt } =
   settingsSlice.actions;
 
 export const selectSettings = (state: RootState) => state.settings;
