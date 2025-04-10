@@ -76,25 +76,26 @@ export default function Pricing({
   const [billingCycle, setBillingCycle] = useState<"month" | "year">("year");
   const router = useCustomRouter();
   const { user } = useAppSelector(state => state.auth);
-  const { upgradeSubscription, goToCheckout } = usePayments();
+  const { updateSubscription, goToCheckout } = usePayments();
   const [loading, setLoading] = useState(false);
 
   const handleGetStarted = async (plan: string) => {
-    if (onboarding) {
-      setLoading(true);
-      try {
+    setLoading(true);
+    try {
+      if (onboarding) {
         await goToCheckout(billingCycle, plan);
-      } catch (error) {
-        toast.error("Something went wrong. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      if (!user) {
-        router.push(`/login?plan=${plan}&interval=${billingCycle}`);
       } else {
-        upgradeSubscription(user.userId);
+        if (!user) {
+          router.push(`/login?plan=${plan}&interval=${billingCycle}`);
+        } else {
+          await updateSubscription(plan, billingCycle);
+          toast.success("Subscription updated successfully!");
+        }
       }
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -255,13 +256,19 @@ export default function Pricing({
                         : "bg-background hover:bg-accent",
                     )}
                     variant={plan.popular ? "default" : "outline-primary"}
-                    disabled={loading}
+                    disabled={
+                      loading || user?.meta?.plan === plan.name.toLowerCase()
+                    }
                     onClick={() => handleGetStarted(plan.name.toLowerCase())}
                   >
                     {loading && (
                       <RefreshCw className="mr-2 w-4 h-4 animate-spin" />
                     )}
-                    {hadSubscription ? "Get started" : "Start free trial"}
+                    {hadSubscription
+                      ? user?.meta?.plan === plan.name.toLowerCase()
+                        ? "Your plan"
+                        : "Update plan"
+                      : "Start free trial"}
                   </Button>
                   <ul className="space-y-3">
                     {plan.features.map((feature, i) => (

@@ -1,9 +1,9 @@
 import prisma from "@/app/api/_db/db";
 import { getActiveSubscription } from "@/lib/dal/subscription";
-import { creditCosts } from "@/lib/plans-consts";
+import { creditCosts, creditsPerPlan } from "@/lib/plans-consts";
 import { getNextRefillDate } from "@/lib/services/creditService";
 import loggerServer from "@/loggerServer";
-import { AIUsageType } from "@prisma/client";
+import { AIUsageType, Plan, Subscription } from "@prisma/client";
 
 type AIUsageErrors = "NO-SUBSCRIPTION" | "USAGE-UNKNOWN" | "NOT-ENOUGH-CREDITS";
 
@@ -41,9 +41,8 @@ export async function canUseAI(
 
   let creditsLeft = subscription.creditsRemaining;
 
-  const nextRefill = getNextRefillDate(subscription.lastCreditReset);
-
   if (creditsLeft < cost) {
+    const nextRefill = getNextRefillDate(subscription.lastCreditReset);
     return {
       result: false,
       status: ErrorStatus["NOT-ENOUGH-CREDITS"],
@@ -111,4 +110,24 @@ export async function undoUseCredits(userId: string, usageType: AIUsageType) {
   } catch (error) {
     loggerServer.error("Error undoing use credits", { error });
   }
+}
+
+export async function calculateNewPlanCreditsLeft(
+  userId: string,
+  newPlan: Plan,
+  subscription?: Subscription,
+): Promise<{ creditsLeft: number; creditsForPlan: number }> {
+  const newCreditsForPlan = creditsPerPlan[newPlan];
+  const userSubscription =
+    subscription || (await getActiveSubscription(userId));
+  if (!userSubscription) {
+    throw new Error("Subscription not found in calculateNewPlanCreditsLeft");
+  }
+  const oldCreditsPerPeriod = userSubscription.creditsPerPeriod;
+  const creditsLeft = userSubscription.creditsRemaining;
+
+  let creditsUsed = Math.max(oldCreditsPerPeriod - creditsLeft, 0);
+
+  const newCreditsLeft = newCreditsForPlan - creditsUsed;
+  return { creditsLeft: newCreditsLeft, creditsForPlan: newCreditsForPlan };
 }
