@@ -186,7 +186,7 @@ export function NotesEditorDialog() {
     options?: { immediate?: boolean },
   ): Promise<NoteDraft | null> {
     const newBody = unformatText(html);
-    updateEditorBody(newBody);
+    // updateEditorBody(newBody);
     if (isEmpty && !isInspiration) {
       const lastNote = getLastNote();
       if (!lastNote) {
