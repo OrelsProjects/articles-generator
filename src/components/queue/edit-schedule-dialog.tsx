@@ -68,16 +68,18 @@ export function EditScheduleDialog({
   // Time picker state
   const [hours, setHours] = React.useState(12);
   const [minutes, setMinutes] = React.useState(0);
-  const [period, setPeriod] = React.useState<"AM" | "PM">("AM");
 
   // Convert userSchedules to ScheduleEntries format for the UI
   React.useEffect(() => {
     if (userSchedules && userSchedules.length > 0) {
       const formattedSchedule = userSchedules.map(userSchedule => {
-        // Format time string
-        const hour = userSchedule.hour % 12 === 0 ? 12 : userSchedule.hour % 12;
-        const period = userSchedule.hour >= 12 ? "pm" : "am";
-        const timeString = `${hour}:${userSchedule.minute.toString().padStart(2, "0")} ${period}`;
+        // Convert to 24-hour format
+        let hour24 = userSchedule.hour;
+        if (userSchedule.ampm === "pm" && hour24 < 12) hour24 += 12;
+        if (userSchedule.ampm === "am" && hour24 === 12) hour24 = 0;
+        
+        // Format time string in 24-hour format
+        const timeString = `${hour24.toString().padStart(2, "0")}:${userSchedule.minute.toString().padStart(2, "0")}`;
 
         // Map days
         const days = {
@@ -106,14 +108,16 @@ export function EditScheduleDialog({
 
   // Helper function to parse time string to hour and minute
   const parseTimeString = (timeString: string) => {
-    const [time, period] = timeString.split(" ");
-    const [hours, minutes] = time.split(":").map(Number);
+    const [hourStr, minuteStr] = timeString.split(":");
+    const hour = parseInt(hourStr, 10);
+    const minute = parseInt(minuteStr, 10);
+    
+    // Convert to 12-hour format for API
+    let hour12 = hour % 12;
+    if (hour12 === 0) hour12 = 12;
+    const ampm = hour >= 12 ? "pm" as const : "am" as const;
 
-    let hour = hours;
-    if (period === "pm" && hour < 12) hour += 12;
-    if (period === "am" && hour === 12) hour = 0;
-
-    return { hour, minute: minutes };
+    return { hour: hour12, minute, ampm };
   };
 
   const handleToggleDay = async (
@@ -134,15 +138,14 @@ export function EditScheduleDialog({
 
     try {
       // Convert to the format expected by the API
-      const { hour, minute } = parseTimeString(updatedEntry.time);
-      const period = updatedEntry.time.split(" ")[1]; // Get am/pm
+      const { hour, minute, ampm } = parseTimeString(updatedEntry.time);
 
       // This is an existing entry, so we need to update it
       await updateSchedule({
         id: updatedEntry.id,
         hour,
         minute,
-        ampm: period === "pm" ? "pm" : "am",
+        ampm,
         sunday: updatedEntry.days.sun,
         monday: updatedEntry.days.mon,
         tuesday: updatedEntry.days.tue,
@@ -174,11 +177,15 @@ export function EditScheduleDialog({
 
   const handleAddNewSlot = async () => {
     try {
-      // Convert to the format expected by the API
+      // Convert from 24-hour to 12-hour format for API
+      const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+      const ampm = hours >= 12 ? "pm" : "am";
+      
+      // Use the API with 12-hour format as expected
       await addSchedule({
-        hour: hours,
+        hour: hour12,
         minute: minutes,
-        ampm: period.toLowerCase() as "am" | "pm",
+        ampm: ampm as "am" | "pm",
         sunday: true,
         monday: true,
         tuesday: true,
@@ -249,7 +256,7 @@ export function EditScheduleDialog({
       }
 
       // Create the new time string
-      const newTime = `${hours}:${newMinutes.toString().padStart(2, "0")} ${period}`;
+      const newTime = `${hours}:${newMinutes.toString().padStart(2, "0")}`;
       return { ...entry, time: newTime };
     });
 
@@ -260,14 +267,13 @@ export function EditScheduleDialog({
     try {
       const updatePromises = newSchedule.map(entry => {
         if (!entry.id.startsWith("temp-")) {
-          const { hour, minute } = parseTimeString(entry.time);
-          const period = entry.time.split(" ")[1]; // Get am/pm
+          const { hour, minute, ampm } = parseTimeString(entry.time);
 
           return updateSchedule({
             id: entry.id,
             hour,
             minute,
-            ampm: period === "pm" ? "pm" : "am",
+            ampm,
             sunday: entry.days.sun,
             monday: entry.days.mon,
             tuesday: entry.days.tue,
@@ -289,25 +295,21 @@ export function EditScheduleDialog({
   };
 
   // Handlers for time picker
-  const incrementHours = () => setHours(prev => (prev === 12 ? 1 : prev + 1));
-  const decrementHours = () => setHours(prev => (prev === 1 ? 12 : prev - 1));
-  const incrementMinutes = () =>
-    setMinutes(prev => (prev === 59 ? 0 : prev + 1));
-  const decrementMinutes = () =>
-    setMinutes(prev => (prev === 0 ? 59 : prev - 1));
-  const togglePeriod = () => setPeriod(prev => (prev === "AM" ? "PM" : "AM"));
+  const incrementHours = () => setHours(prev => (prev === 23 ? 0 : prev + 1));
+  const decrementHours = () => setHours(prev => (prev === 0 ? 23 : prev - 1));
+  const incrementMinutes = () => setMinutes(prev => (prev === 59 ? 0 : prev + 1));
+  const decrementMinutes = () => setMinutes(prev => (prev === 0 ? 59 : prev - 1));
 
   const handleSaveAll = async () => {
     try {
       const updatePromises = schedule.map(entry => {
-        const { hour, minute } = parseTimeString(entry.time);
-        const period = entry.time.split(" ")[1]; // Get am/pm
+        const { hour, minute, ampm } = parseTimeString(entry.time);
 
         return updateSchedule({
           id: entry.id,
           hour,
           minute,
-          ampm: period === "pm" ? "pm" : "am",
+          ampm,
           sunday: entry.days.sun,
           monday: entry.days.mon,
           tuesday: entry.days.tue,
@@ -515,7 +517,7 @@ export function EditScheduleDialog({
                         <div className="text-xl font-semibold flex items-center text-center">
                           <Clock className="mr-2 h-5 w-5 text-muted-foreground" />
                           {hours.toString().padStart(2, "0")}:
-                          {minutes.toString().padStart(2, "0")} {period}
+                          {minutes.toString().padStart(2, "0")}
                         </div>
                       </div>
 
@@ -525,7 +527,7 @@ export function EditScheduleDialog({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={incrementHours}
+                            onClick={() => setHours(prev => (prev === 23 ? 0 : prev + 1))}
                             className="rounded-full hover:bg-muted"
                           >
                             <ChevronUp className="h-5 w-5" />
@@ -537,16 +539,14 @@ export function EditScheduleDialog({
                             onChange={e => {
                               const value = e.target.value.replace(/\D/g, "");
                               if (value === "") {
-                                setHours(1); // Default to 1 if empty
+                                setHours(0); // Default to 0 if empty
                                 return;
                               }
                               const numValue = parseInt(value, 10);
-                              if (numValue >= 1 && numValue <= 12) {
+                              if (numValue >= 0 && numValue <= 23) {
                                 setHours(numValue);
-                              } else if (numValue > 12) {
-                                setHours(12); // Cap at 12
-                              } else {
-                                setHours(1); // Minimum is 1
+                              } else if (numValue > 23) {
+                                setHours(23); // Cap at 23
                               }
                             }}
                             className="text-2xl font-bold my-2 w-12 text-center bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-primary rounded"
@@ -555,7 +555,7 @@ export function EditScheduleDialog({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={decrementHours}
+                            onClick={() => setHours(prev => (prev === 0 ? 23 : prev - 1))}
                             className="rounded-full hover:bg-muted"
                           >
                             <ChevronDown className="h-5 w-5" />
@@ -571,7 +571,7 @@ export function EditScheduleDialog({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={incrementMinutes}
+                            onClick={() => setMinutes(prev => (prev === 59 ? 0 : prev + 1))}
                             className="rounded-full hover:bg-muted"
                           >
                             <ChevronUp className="h-5 w-5" />
@@ -599,30 +599,7 @@ export function EditScheduleDialog({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={decrementMinutes}
-                            className="rounded-full hover:bg-muted"
-                          >
-                            <ChevronDown className="h-5 w-5" />
-                          </Button>
-                        </div>
-
-                        {/* AM/PM */}
-                        <div className="flex flex-col items-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={togglePeriod}
-                            className="rounded-full hover:bg-muted"
-                          >
-                            <ChevronUp className="h-5 w-5" />
-                          </Button>
-                          <div className="text-2xl font-bold my-2 min-w-[50px] text-center">
-                            {period}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={togglePeriod}
+                            onClick={() => setMinutes(prev => (prev === 0 ? 59 : prev - 1))}
                             className="rounded-full hover:bg-muted"
                           >
                             <ChevronDown className="h-5 w-5" />

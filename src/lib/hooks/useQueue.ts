@@ -142,6 +142,97 @@ export function useQueue() {
     }
   };
 
+  // Returns the next available schedule in the queue that has no note scheduled to it
+  // go over schedules and return the first one that has no note scheduled to it.
+  // Doesn't have to be bigger than now
+  const getNextAvailableSchedule = () => {
+    // Start from today
+    const today = new Date();
+    const currentHour = today.getHours();
+    const currentMinute = today.getMinutes();
+    
+    // Look 30 days ahead maximum
+    const maxDaysToLook = 30;
+    let currentDay = new Date();
+    
+    // For each day, check if there's an available slot
+    for (let dayOffset = 0; dayOffset < maxDaysToLook; dayOffset++) {
+      if (dayOffset > 0) {
+        // Set to next day at beginning of day
+        currentDay = new Date(today);
+        currentDay.setDate(today.getDate() + dayOffset);
+        currentDay.setHours(0, 0, 0, 0);
+      }
+      
+      // Get day of week for this day
+      const dayOfWeek = currentDay.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      
+      // Filter schedules for this day of week
+      const daySchedules = userSchedules.filter(schedule => {
+        return schedule[dayOfWeek as keyof UserSchedule];
+      });
+      
+      // No schedules for this day, continue to next day
+      if (daySchedules.length === 0) continue;
+      
+      // Sort schedules by time
+      daySchedules.sort((a, b) => {
+        // Convert to 24-hour format for easier comparison
+        const getHour24 = (schedule: UserSchedule) => {
+          let hour = schedule.hour;
+          if (schedule.ampm === 'pm' && hour < 12) hour += 12;
+          if (schedule.ampm === 'am' && hour === 12) hour = 0;
+          return hour;
+        };
+        
+        const aHour = getHour24(a);
+        const bHour = getHour24(b);
+        
+        if (aHour !== bHour) return aHour - bHour;
+        return a.minute - b.minute;
+      });
+      
+      // For each schedule on this day, check if there's a note already scheduled
+      for (const schedule of daySchedules) {
+        // Convert schedule to 24-hour format for comparison
+        let scheduleHour = schedule.hour;
+        if (schedule.ampm === 'pm' && scheduleHour < 12) scheduleHour += 12;
+        if (schedule.ampm === 'am' && scheduleHour === 12) scheduleHour = 0;
+        
+        // Skip schedules earlier than current time for today
+        if (dayOffset === 0 && 
+            (scheduleHour < currentHour || 
+             (scheduleHour === currentHour && schedule.minute <= currentMinute))) {
+          continue;
+        }
+        
+        // Create a date object for this schedule
+        const scheduleDate = new Date(currentDay);
+        scheduleDate.setHours(scheduleHour, schedule.minute, 0, 0);
+        
+        // Check if there's already a note scheduled at this exact time
+        const hasScheduledNote = scheduledNotes.some(note => {
+          if (!note.scheduledTo) return false;
+          
+          const noteDate = new Date(note.scheduledTo);
+          return noteDate.getFullYear() === scheduleDate.getFullYear() &&
+                 noteDate.getMonth() === scheduleDate.getMonth() &&
+                 noteDate.getDate() === scheduleDate.getDate() &&
+                 noteDate.getHours() === scheduleDate.getHours() &&
+                 noteDate.getMinutes() === scheduleDate.getMinutes();
+        });
+        
+        // If no note is scheduled for this slot, return it
+        if (!hasScheduledNote) {
+          return scheduleDate;
+        }
+      }
+    }
+    
+    // If no available slot found, return null
+    return null;
+  };
+
   useEffect(() => {
     if (userSchedules.length === 0) {
       fetchSchedules();
@@ -156,5 +247,6 @@ export function useQueue() {
     rescheduleNote,
     initQueue,
     loading,
+    getNextAvailableSchedule,
   };
 }
