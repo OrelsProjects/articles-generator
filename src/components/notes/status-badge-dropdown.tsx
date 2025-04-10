@@ -18,7 +18,11 @@ type StatusBadgeProps = {
   onStatusChange?: (newStatus: NoteStatus) => Promise<void>;
 };
 
-const StatusBadgeDropdown = ({ note, onStatusChange, showOnlySchedule }: StatusBadgeProps) => {
+const StatusBadgeDropdown = ({
+  note,
+  onStatusChange,
+  showOnlySchedule,
+}: StatusBadgeProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
@@ -115,14 +119,7 @@ const StatusBadgeDropdown = ({ note, onStatusChange, showOnlySchedule }: StatusB
         {isLoading && (
           <Loader2 className="h-2 w-2 md:h-3 md:w-3 animate-spin mr-0.5 md:mr-1" />
         )}
-        <span className="hidden md:block">{currentStatusText}</span>
-        <span className="block md:hidden">
-          {currentStatusText === "scheduled"
-            ? currentStatusText
-            : currentStatusText.charAt(0).toUpperCase() +
-              currentStatusText.charAt(1).toLowerCase()}
-          .
-        </span>
+        <span>{currentStatusText}</span>
       </Badge>
 
       <AnimatePresence>

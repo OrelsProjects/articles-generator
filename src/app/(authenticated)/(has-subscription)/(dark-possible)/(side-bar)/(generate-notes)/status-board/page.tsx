@@ -45,11 +45,11 @@ export default function StatusBoardPage() {
 
   return (
     <div className="w-full py-8 flex justify-center items-start">
-      <div className="container px-4 md:px-16 lg:px-24">
+      <div className="container px-6 md:px-16 lg:px-24">
         <div className="flex justify-between items-center mb-12">
           <div className="w-full flex justify-between items-center gap-2">
             <h1 className="text-3xl font-bold">{TITLE}</h1>
-            <TooltipButton
+            {/* <TooltipButton
               tooltipContent="Start writing"
               variant="outline"
               onClick={handleCreateDraftNote}
@@ -57,17 +57,18 @@ export default function StatusBoardPage() {
             >
               <Plus size={16} />
               New draft
-            </TooltipButton>
+            </TooltipButton> */}
           </div>
-          <div className="flex justify-end items-center gap-2">
+          <div className="flex flex-col md:flex-row justify-end items-center gap-2">
             <TooltipButton
               tooltipContent="Start writing"
               variant="outline"
               onClick={handleCreateDraftNote}
-              className="hidden md:flex items-center gap-2"
+              className="flex items-center gap-2"
             >
               <Plus size={16} />
-              New draft
+              <span className="hidden md:block">New draft</span>
+              <span className="block md:hidden">Draft</span>
             </TooltipButton>
             <GenerateNotesDialog />
           </div>

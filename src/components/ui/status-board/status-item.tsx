@@ -16,7 +16,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@radix-ui/react-tooltip";
+} from "@/components/ui/tooltip";
 interface StatusItemProps {
   item: StatusItemType;
   onSelectItem: (itemId: UniqueIdentifier, content: string) => void;
@@ -78,26 +78,28 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
               {(item.author?.[0] || "U").toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          {item.hasAttachment && (
-            <TooltipProvider>
-              <Tooltip delayDuration={150}>
-                <TooltipTrigger>
-                  <ImageIcon className="w-4 h-4 text-muted-foreground absolute top-3 right-3" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Note has an image</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
 
           <div className="flex-1 min-w-0 space-y-2.5">
             {item.author && (
               <div className="w-full flex justify-between">
                 <div className="font-medium text-sm pt-1.5">{item.author}</div>
-                {item.noteDraft && item.status === "scheduled" && (
-                  <StatusBadgeDropdown note={item.noteDraft} />
-                )}
+                <div className="flex flex-col items-end gap-1">
+                  {item.noteDraft && item.status === "scheduled" && (
+                    <StatusBadgeDropdown note={item.noteDraft} />
+                  )}
+                  {item.hasAttachment && (
+                    <TooltipProvider>
+                      <Tooltip delayDuration={150}>
+                        <TooltipTrigger>
+                          <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Note has an image</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
               </div>
             )}
             <Body text={item.content} />

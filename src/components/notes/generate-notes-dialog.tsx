@@ -71,7 +71,7 @@ export function GenerateNotesDialog() {
             variant="neumorphic-primary"
             size="icon"
             className={cn(
-              "md:hidden fixed h-12 w-12 bottom-20 right-4 z-50 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0",
+              "hidden fixed h-12 w-12 bottom-20 right-4 z-50 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0",
             )}
           >
             <Pencil className="h-6 w-6" />
@@ -81,10 +81,11 @@ export function GenerateNotesDialog() {
           <TooltipButton
             tooltipContent="Generate personalized notes"
             variant="neumorphic-primary"
-            className="hidden md:flex"
+            className="flex"
           >
             <Sparkles size={16} className="h-4 w-4 mr-2" />
-            Generate notes
+            <span className="hidden md:block">Generate notes</span>
+            <span className="block md:hidden">Generate</span>
           </TooltipButton>
         </DialogTrigger>
 
