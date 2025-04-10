@@ -208,7 +208,7 @@ export function useInspiration() {
   );
 
   const loadMore = useCallback(async () => {
-    debugger;
+    
     await fetchInspirationNotes({ page: currentPage + 1 });
     dispatch(setCurrentPage(currentPage + 1));
   }, [fetchInspirationNotes]);

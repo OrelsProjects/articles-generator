@@ -227,7 +227,7 @@ export const useNotes = () => {
 
   const updateNoteStatus = useCallback(
     async (noteId: string, status: NoteStatus | "archived") => {
-      debugger;
+      
       EventTracker.track("notes_update_note_status_" + status);
       const previousNote = userNotes.find(note => note.id === noteId);
       const previousStatus = previousNote?.status;
@@ -427,7 +427,7 @@ export const useNotes = () => {
   };
 
   const createDraftNote = async (draft?: Partial<NoteDraft>): Promise<void> => {
-    debugger;
+    
     EventTracker.track("notes_create_draft_note");
     selectNote({ ...NOTE_EMPTY, ...draft });
   };
@@ -523,7 +523,7 @@ export const useNotes = () => {
     if (uploadingFile) return;
     try {
       const existingNote = userNotes.find(note => note.id === noteId);
-      debugger;
+      
       if (
         existingNote?.attachments?.length &&
         existingNote.attachments.length >= 1

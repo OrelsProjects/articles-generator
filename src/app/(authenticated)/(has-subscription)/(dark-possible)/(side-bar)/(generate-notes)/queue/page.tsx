@@ -2,9 +2,13 @@
 
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import QueuePage from "@/components/queue/queue-page";
+import { useQueue } from "@/lib/hooks/useQueue";
 
 export default function NotesCalendarPage() {
   const { loading, error } = useNotesSchedule();
+  const { getNextAvailableSchedule } = useQueue();
+
+  console.log("getNextAvailableSchedule", getNextAvailableSchedule());
 
   if (loading) {
     return (

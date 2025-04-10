@@ -36,6 +36,8 @@ interface DayScheduleProps {
   onUnscheduleNote?: (note: NoteDraft) => void;
   lastNoteRef?: RefObject<HTMLDivElement>;
   lastNoteId?: string;
+  activeDropTarget?: string | null;
+  useDndContext?: boolean;
 }
 
 // Helper type for combined items
@@ -58,6 +60,8 @@ export const DaySchedule = ({
   onUnscheduleNote,
   lastNoteRef,
   lastNoteId,
+  activeDropTarget,
+  useDndContext = true, // Default to true for backward compatibility
 }: DayScheduleProps) => {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -70,42 +74,39 @@ export const DaySchedule = ({
 
   // Function to get a time string from a schedule
   const getScheduleTimeString = (schedule: UserSchedule) => {
-    return `${schedule.hour}:${schedule.minute.toString().padStart(2, "0")} ${schedule.ampm}`;
+    // Convert to 24-hour format
+    let hour24 = schedule.hour;
+    if (schedule.ampm === "pm" && hour24 < 12) hour24 += 12;
+    if (schedule.ampm === "am" && hour24 === 12) hour24 = 0;
+    
+    return `${hour24.toString().padStart(2, "0")}:${schedule.minute.toString().padStart(2, "0")}`;
   };
 
   // Function to get a time string from a note
   const getNoteTimeString = (note: NoteDraft) => {
     if (!note.scheduledTo) return "";
-    return format(new Date(note.scheduledTo), "h:mm a");
+    return format(new Date(note.scheduledTo), "HH:mm");
   };
 
   // Convert time string to timestamp for sorting
   const timeStringToTimestamp = (timeStr: string) => {
     try {
       // Parse different time formats
-      let date;
+      let date = new Date();
+      
       if (timeStr.includes(":")) {
-        if (
-          timeStr.includes("AM") ||
-          timeStr.includes("PM") ||
-          timeStr.includes("am") ||
-          timeStr.includes("pm")
-        ) {
-          date = parse(timeStr, "h:mm a", new Date());
-        } else {
-          const [hourStr, rest] = timeStr.split(":");
-          const [minuteStr, ampmStr] = rest.split(" ");
-          date = parse(
-            `${hourStr}:${minuteStr} ${ampmStr}`,
-            "h:mm a",
-            new Date(),
-          );
+        const [hourStr, minuteStr] = timeStr.split(":");
+        const hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr, 10);
+        
+        if (!isNaN(hour) && !isNaN(minute)) {
+          date.setHours(hour, minute, 0, 0);
+          return hour * 60 + minute;
         }
-      } else {
-        // Fallback if format is unexpected
-        return 0;
       }
-      return date.getHours() * 60 + date.getMinutes();
+      
+      // Fallback if format is unexpected
+      return 0;
     } catch (e) {
       console.error("Error parsing time:", timeStr, e);
       return 0;
@@ -118,19 +119,14 @@ export const DaySchedule = ({
       // Create a new date object with the given day
       const date = new Date(day);
 
-      // Extract hours, minutes, and AM/PM
-      const isPM = timeStr.toLowerCase().includes("pm");
-      let [hourMinute, ampm] = timeStr.split(" ");
-      let [hour, minute] = hourMinute.split(":").map(Number);
-
-      // Convert to 24-hour format if PM
-      if (isPM && hour < 12) hour += 12;
-      if (!isPM && hour === 12) hour = 0;
+      // Extract hours and minutes from 24-hour format
+      const [hourStr, minuteStr] = timeStr.split(":");
+      const hour = parseInt(hourStr, 10);
+      const minute = parseInt(minuteStr, 10);
 
       // Set the hours and minutes
-      date.setHours(hour);
-      date.setMinutes(minute);
-
+      date.setHours(hour, minute, 0, 0);
+      
       return date;
     } catch (e) {
       console.error("Error parsing time to date:", timeStr, e);
@@ -230,7 +226,7 @@ export const DaySchedule = ({
     // 3. Invalid target - do nothing
 
     // Check if dropped on an empty slot (id starts with "empty-")
-    debugger;
+    
     if (typeof over.id === "string" && over.id.startsWith("empty-")) {
       const emptySlot = allScheduledItems.find(item => item.id === over.id);
       if (emptySlot && emptySlot.time) {
@@ -269,47 +265,59 @@ export const DaySchedule = ({
     return null;
   }
 
+  // Render content with or without DndContext
+  const renderScheduleItems = () => (
+    <SortableContext 
+      items={allScheduledItems.map(item => item.id)}
+      strategy={verticalListSortingStrategy}
+    >
+      {/* Render all scheduled items in order */}
+      {allScheduledItems.map(item => (
+        <React.Fragment key={item.id}>
+          {item.type === "note" && item.note && (
+            <div
+              ref={item.note.id === lastNoteId ? lastNoteRef : undefined}
+              className={activeDropTarget === item.id ? "ring-2 ring-primary rounded-md" : ""}
+            >
+              <ScheduleNoteRow
+                note={item.note}
+                onSelect={onSelectNote}
+                onUnschedule={onUnscheduleNote}
+              />
+            </div>
+          )}
+          {item.type === "empty" && (
+            <div className={activeDropTarget === item.id ? "ring-2 ring-primary rounded-md" : ""}>
+              <EmptyScheduleSlot
+                id={item.id}
+                time={item.time}
+                date={day}
+                onClick={onEmptySlotClick}
+              />
+            </div>
+          )}
+        </React.Fragment>
+      ))}
+    </SortableContext>
+  );
+
   return (
     <div className="mb-6">
       {dayTitle}
 
-      <DndContext
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        sensors={sensors}
-      >
-        <SortableContext
-          items={allScheduledItems.map(item => item.id)}
-          strategy={verticalListSortingStrategy}
+      {useDndContext ? (
+        <DndContext 
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          sensors={sensors}
         >
-          {/* Render all scheduled items in order */}
-          {allScheduledItems.map(item => (
-            <React.Fragment key={item.id}>
-              {item.type === "note" && item.note && (
-                <div
-                  ref={item.note.id === lastNoteId ? lastNoteRef : undefined}
-                >
-                  <ScheduleNoteRow
-                    note={item.note}
-                    onSelect={onSelectNote}
-                    onUnschedule={onUnscheduleNote}
-                  />
-                </div>
-              )}
-              {item.type === "empty" && (
-                <EmptyScheduleSlot
-                  id={item.id}
-                  time={item.time}
-                  date={day}
-                  onClick={onEmptySlotClick}
-                />
-              )}
-            </React.Fragment>
-          ))}
-        </SortableContext>
-      </DndContext>
-
+          {renderScheduleItems()}
+        </DndContext>
+      ) : (
+        renderScheduleItems()
+      )}
+      
       {/* If no items were found and not today, show generic message */}
       {allScheduledItems.length === 0 && !isToday && (
         <EmptyScheduleSlot

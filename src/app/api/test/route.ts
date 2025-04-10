@@ -54,12 +54,33 @@ import { getActiveSubscription } from "@/lib/dal/subscription";
 // }
 
 export async function GET() {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
+    // const allUserNotes = await prisma.note.findMany();
+    // const updatedNotes: any = [];
+    // // if has scheduleTo, update it to remove seconds
+    // for (const note of allUserNotes) {
+    //   if (note.scheduledTo) {
+    //     note.scheduledTo = new Date(note.scheduledTo);
+    //     note.scheduledTo.setSeconds(0);
+    //     note.scheduledTo.setMilliseconds(0);
+    //     updatedNotes.push(note);
+    //   }
+    // }
+    // let i = 0;
+    // for (const note of updatedNotes) {
+    //   console.log(`Updating note ${i} of ${updatedNotes.length}`);
+    //   await prisma.note.update({
+    //     where: { id: note.id },
+    //     data: { scheduledTo: note.scheduledTo },
+    //   });
+    //   i++;
+    // }
+
     // Get all users with publications
     // const usersWithPublications = await prisma.userMetadata.findMany({
     //   where: {
@@ -98,16 +119,14 @@ export async function GET() {
     //   cc: ["orelzilberman@gmail.com"],
     // });
 
-
     const subscription = await getActiveSubscription(session.user.id);
 
     if (!subscription) {
-      return NextResponse.json({ error: "No active subscription found" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No active subscription found" },
+        { status: 400 },
+      );
     }
-    
-    
-    
-    
 
     const mailResult = await sendMail({
       to: "orelsmail@gmail.com",

@@ -33,7 +33,7 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
 }) => {
   // Format the time from the note's scheduledTo date
   const time = note.scheduledTo
-    ? format(new Date(note.scheduledTo), "h:mm a")
+    ? format(new Date(note.scheduledTo), "HH:mm")
     : "";
 
   // If used as drag overlay, don't use sortable/droppable functionality
@@ -41,8 +41,8 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
     return (
       <div className="flex justify-between items-center p-3 mb-2 rounded-md bg-card border border-border transition-colors">
         <div className="flex flex-1 min-w-0">
-          <div className="text-muted-foreground mr-2">
-            <Calendar size={16} />
+          <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5">
+            <CalendarClock size={16} />
           </div>
           <div className="text-sm text-muted-foreground min-w-[72px]">
             {time}
@@ -62,9 +62,9 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
             />
           </div>
         )}
-        <div className="ml-2 text-muted-foreground">
+        {/* <div className="ml-2 text-muted-foreground">
           <GripVertical size={16} />
-        </div>
+        </div> */}
       </div>
     );
   }
@@ -128,23 +128,29 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
       className={`w-full flex justify-between items-center p-3 mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative ${
         isOver ? "bg-secondary/40 border-primary" : ""
       }`}
+      onClick={handleClick}
     >
-      {/* Clickable content area */}
+      {/* Drag handle - only this part is draggable */}
       <div
-        className="flex min-w-0 cursor-pointer justify-between items-center max-w-[80%]"
-        onClick={handleClick}
+        className="p-1 text-muted-foreground cursor-grab hover:text-foreground absolute -left-10"
+        {...attributes}
+        {...listeners}
       >
-        <div className="w-full flex items-center">
-          <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5">
-            <CalendarClock size={16} />
-          </div>
-          <div className="text-sm text-muted-foreground min-w-[72px]">
-            {time}
-          </div>
-          <div className="text-sm text-foreground ml-4 truncate">
-            {note.body || ""}
-          </div>
+        <GripVertical size={18} />
+      </div>
+
+      {/* Content area */}
+      <div className="flex flex-1 min-w-0 items-center">
+        <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5">
+          <CalendarClock size={16} />
         </div>
+        <div className="text-sm text-muted-foreground min-w-[72px]">
+          {time}
+        </div>
+        <div className="text-sm text-foreground ml-4 truncate">
+          {note.body || ""}
+        </div>
+        
         {hasImage(note) && (
           <div className="h-10 w-10 rounded-md bg-secondary/40 ml-4 overflow-hidden flex-shrink-0">
             <Image
@@ -166,21 +172,12 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
             variant="ghost"
             tooltipContent="Unschedule"
             onClick={handleUnschedule}
-            className="text-muted-foreground hover:text-red-500 transition-colors p-2"
+            className="text-muted-foreground hover:text-red-500 transition-colors p-2 z-10"
             title="Unschedule"
           >
             <X size={16} />
           </TooltipButton>
         )}
-
-        {/* Drag handle - only this part is draggable */}
-      </div>
-      <div
-        className="p-1 text-muted-foreground cursor-grab hover:text-foreground absolute -left-10"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical size={18} />
       </div>
     </div>
   );

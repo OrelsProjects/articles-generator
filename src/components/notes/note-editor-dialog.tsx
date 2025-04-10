@@ -465,7 +465,7 @@ export function NotesEditorDialog() {
 
   const handleImageSelect = async (file: File) => {
     if (!selectedNote) return;
-    debugger;
+    
     // Check if there's already an image
     if (selectedNote.attachments && selectedNote.attachments.length > 0) {
       toast.error("Only one image is allowed");

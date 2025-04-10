@@ -25,16 +25,19 @@ export const EmptyScheduleSlot: React.FC<EmptyScheduleSlotProps> = ({
   });
 
   const handleClick = () => {
-    debugger;
-    // Convert time (HH:MM) AM/PM to date.
-    const dateForClick = date ? date : new Date();
-    let [hourString, minuteString] = time?.split(":") || ["00", "00"];
-    // Minute will have AM/PM, so we need to remove it
-    minuteString = minuteString.replace(/[a-zA-Z]/g, "");
-    const hour = parseInt(hourString.trim());
-    const minute = parseInt(minuteString.trim());
-    dateForClick.setHours(hour);
-    dateForClick.setMinutes(minute);
+    // Convert 24-hour time format to date
+    const dateForClick = date ? new Date(date) : new Date();
+    
+    if (time) {
+      const [hourStr, minuteStr] = time.split(":");
+      const hour = parseInt(hourStr.trim());
+      const minute = parseInt(minuteStr.trim());
+      
+      if (!isNaN(hour) && !isNaN(minute)) {
+        dateForClick.setHours(hour, minute, 0, 0);
+      }
+    }
+    
     onClick(dateForClick);
   };
   return (
