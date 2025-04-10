@@ -174,18 +174,9 @@ export function EditScheduleDialog({
 
   const handleAddNewSlot = async () => {
     try {
-      // Format the time string
-      const formattedHours =
-        hours === 12 && period === "AM"
-          ? 0
-          : period === "PM" && hours < 12
-            ? hours + 12
-            : hours;
-      const formattedMinutes = minutes.toString().padStart(2, "0");
-
       // Convert to the format expected by the API
       await addSchedule({
-        hour: formattedHours,
+        hour: hours,
         minute: minutes,
         ampm: period.toLowerCase() as "am" | "pm",
         sunday: true,
