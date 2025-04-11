@@ -54,7 +54,7 @@ export function SuccessDialog({
         </DialogHeader>
         <DialogFooter className="sm:justify-end">
           <Button variant="ghost" onClick={handleArchiveNote}>
-            Archive note
+            Delete note
           </Button>
           <Button onClick={handleViewNote}>View note</Button>
         </DialogFooter>

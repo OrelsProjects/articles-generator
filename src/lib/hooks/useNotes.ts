@@ -345,7 +345,13 @@ export const useNotes = () => {
             },
             { signal: controller.signal },
           );
-          dispatch(addNotes({ items: [data], nextCursor: null }));
+          dispatch(
+            addNotes({
+              items: [data],
+              nextCursor: null,
+              options: { toStart: true },
+            }),
+          );
           dispatch(setSelectedNote({ note: data }));
           cancelRef.current = null;
           return data;

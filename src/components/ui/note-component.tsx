@@ -1,20 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
-import {
-  convertMDToHtml,
-  Note,
-  NoteDraft,
-  NoteFeedback,
-  NoteStatus,
-} from "@/types/note";
+import { convertMDToHtml, Note, NoteDraft, NoteFeedback } from "@/types/note";
 import {
   Heart,
   MessageCircle,
   RefreshCw,
   ThumbsUp,
-  Archive,
   ExternalLink,
+  Trash,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -95,7 +89,7 @@ const NotesActions = ({
       </div>
       <TooltipButton
         tooltipContent={
-          "Archive note" + (extraFeedbackText ? ` (${extraFeedbackText})` : "")
+          "Delete note" + (extraFeedbackText ? ` (${extraFeedbackText})` : "")
         }
         variant="ghost"
         size="sm"
@@ -106,7 +100,7 @@ const NotesActions = ({
         {loadingArchive ? (
           <RefreshCw className="h-4 w-4 animate-spin" />
         ) : (
-          <Archive className="h-4 w-4" />
+          <Trash className="h-4 w-4" />
         )}
       </TooltipButton>
 
@@ -342,16 +336,11 @@ export default function NoteComponent({
       : "";
 
   const handleArchive = async () => {
-    // yes no alert
-    const confirm = window.confirm(
-      `Are you sure you want to archive this note?${extraFeedbackText}`,
-    );
-    if (!confirm) return;
     setLoadingArchive(true);
     try {
       await updateNoteStatus(note.id, "archived");
     } catch (error) {
-      toast.error("Failed to archive note");
+      toast.error("Failed to delete note");
     } finally {
       setLoadingArchive(false);
     }

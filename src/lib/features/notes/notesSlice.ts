@@ -138,11 +138,8 @@ const notesSlice = createSlice({
         options?: { toStart: boolean };
       }>,
     ) => {
-      if (action.payload.options?.toStart) {
-        state.userNotes = [...action.payload.items, ...state.userNotes];
-      } else {
-        state.userNotes.push(...action.payload.items);
-      }
+      state.userNotes = [...action.payload.items, ...state.userNotes];
+
       state.userNotesCursor = action.payload.nextCursor;
       state.hasMoreUserNotes = !!action.payload.nextCursor;
     },
