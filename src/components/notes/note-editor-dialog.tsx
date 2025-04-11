@@ -43,10 +43,12 @@ import { CancelError } from "@/types/errors/CancelError";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { urlToFile } from "@/lib/utils/file";
 import { SaveDropdown } from "@/components/notes/save-dropdown";
+import { AvoidPlagiarismDialog } from "@/components/notes/avoid-plagiarism-dialog";
+import slugify from "slugify";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
-  const { selectedNote, thumbnail } = useAppSelector(selectNotes);
+  const { selectedNote, thumbnail, handle } = useAppSelector(selectNotes);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     updateNoteBody,
@@ -58,8 +60,8 @@ export function NotesEditorDialog() {
     uploadFile,
     deleteImage,
     cancelUpdateNoteBody,
-    sendNote,
   } = useNotes();
+
   const {
     scheduleNote,
     loadingScheduleNote,
@@ -74,6 +76,8 @@ export function NotesEditorDialog() {
   );
   const editor = useEditor(notesTextEditorOptions(handleBodyChange));
 
+  const [showAvoidPlagiarismDialog, setShowAvoidPlagiarismDialog] =
+    useState(false);
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
   // setOpen MUST be called only from handleOpenChange to avoid logic bugs, like setting body to ''.
   const [open, setOpen] = useState(false);
@@ -251,6 +255,26 @@ export function NotesEditorDialog() {
     };
   }) => {
     if (!selectedNote) return;
+    if (handle !== selectedNote.handle) {
+      const unformattedBody = unformatText(editor?.getHTML() || "");
+      const unformattedNoteBody = unformatText(selectedNote.body || "");
+      const slugifiedBody = slugify(unformattedBody, {
+        lower: true,
+        strict: true,
+      });
+      const slugifiedNoteBody = slugify(unformattedNoteBody, {
+        lower: true,
+        strict: true,
+      });
+      if (
+        selectedNote.status === "inspiration" &&
+        slugifiedBody === slugifiedNoteBody
+      ) {
+        setShowAvoidPlagiarismDialog(true);
+        return;
+      }
+    }
+    
     const toastId = toast.loading("Saving note...");
     try {
       const currentNote = { ...selectedNote };
@@ -379,53 +403,6 @@ export function NotesEditorDialog() {
 
   const [showNoSubstackCookiesDialog, setShowNoSubstackCookiesDialog] =
     useState(false);
-
-  // Determine button text based on current state
-  const saveButtonText = useMemo(() => {
-    let text = "Save";
-    const textComponent = (text: string) => <span>{text}</span>;
-    if (isEmptyNote(selectedNote)) {
-      if (loadingScheduleNote) {
-        return textComponent("Scheduling note...");
-      }
-      if (loadingEditNote) {
-        return textComponent("Creating note...");
-      }
-      if (confirmedSchedule) {
-        return textComponent("Save and schedule");
-      } else {
-        return textComponent("Create new draft");
-      }
-    }
-    if (noteSaved) {
-      // [checkmark] saved
-      return (
-        <div className="flex items-center gap-2">
-          <Check className="h-4 w-4 text-foreground" />
-          <span>Saved</span>
-        </div>
-      );
-    }
-
-    if (loadingEditNote) {
-      text = unscheduling ? "Unscheduling note..." : "Saving note...";
-    } else if (loadingScheduleNote) {
-      text = "Scheduling note...";
-    } else if (confirmedSchedule) {
-      text = "Schedule";
-    } else if (selectedNote?.status === "scheduled") {
-      text = "Unschedule";
-    }
-
-    return textComponent(text);
-  }, [
-    noteSaved,
-    loadingEditNote,
-    loadingScheduleNote,
-    unscheduling,
-    confirmedSchedule,
-    selectedNote?.status,
-  ]);
 
   const handleFileUpload = async (file: File) => {
     if (!selectedNote) return;
@@ -695,6 +672,13 @@ export function NotesEditorDialog() {
           cancelCanUserScheduleInterval();
         }}
         loading={isIntervalRunning}
+      />
+      <AvoidPlagiarismDialog
+        open={showAvoidPlagiarismDialog}
+        onOpenChange={setShowAvoidPlagiarismDialog}
+        onConfirm={() => {
+          setShowAvoidPlagiarismDialog(false);
+        }}
       />
     </>
   );
