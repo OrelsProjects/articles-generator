@@ -19,7 +19,7 @@ const basicFeatures = (credits: number) => [
   "Easy one-click posting",
   "Specialized AI-Powered Substack editor",
   "Growing Notes Inspirations (5m+)",
-  "<span class='text-primary'>Notes scheduling (No need to keep browser open)</span>",
+  "<span class='text-primary'>Notes scheduling (No need to keep browser open, Requires Chrome)</span>",
 ];
 
 const advancedFeatures = [
