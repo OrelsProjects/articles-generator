@@ -70,7 +70,14 @@ export function NotesEditorDialog() {
     cancelCanUserScheduleInterval,
   } = useNotesSchedule();
 
-  const editor = useEditor(notesTextEditorOptions(handleBodyChange));
+  const editor = useEditor(
+    notesTextEditorOptions(html => {
+      if (isInspiration) {
+        return;
+      }
+      return handleBodyChange(html);
+    }),
+  );
 
   const [showAvoidPlagiarismDialog, setShowAvoidPlagiarismDialog] =
     useState(false);
@@ -155,11 +162,6 @@ export function NotesEditorDialog() {
     options?: { immediate?: boolean },
   ): Promise<NoteDraft | null> {
     const newBody = unformatText(html);
-    // updateEditorBody(newBody);
-    if (isInspiration) {
-      return null;
-    }
-
     if (selectedNote) {
       if (options?.immediate) {
         const note = await editNoteBody(selectedNote.id, newBody);
