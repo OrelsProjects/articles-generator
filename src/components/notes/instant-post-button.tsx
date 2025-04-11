@@ -12,7 +12,7 @@ import { CreatePostResponse } from "@/types/createPostResponse";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SubstackPostButtonProps {
-  onPreSend?: () => Promise<void>;
+  onPreSend?: () => unknown;
   onLoadingChange?: (loading: boolean) => void;
   note: Note | NoteDraft | string | null;
   size?: "sm" | "lg" | "default" | "icon";
@@ -20,6 +20,7 @@ interface SubstackPostButtonProps {
   disabled?: boolean;
   source: string;
   className?: string;
+  children?: React.ReactNode;
 }
 
 export function InstantPostButton({
@@ -31,6 +32,7 @@ export function InstantPostButton({
   source,
   className,
   disabled,
+  children,
 }: SubstackPostButtonProps) {
   const { getNoteById, hasExtension } = useExtension();
   const { updateNoteStatus, sendNote, loadingSendNote } = useNotes();
@@ -87,39 +89,35 @@ export function InstantPostButton({
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className="flex items-center gap-0.5 rounded-lg">
-          <TooltipButton
-            // tooltipContent={tooltipContent}
-            variant={variant}
-            size={size}
-            disabled={loadingSendNote || !note || disabled}
-            onClick={handleSendNote}
-            className={cn(
-              "flex items-center gap-2",
-              {
-                "text-muted-foreground": !isHovered,
-              },
-              className,
-            )}
-          >
-            <AnimatePresence>
-              {isHovered && (
-                <motion.span
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: "auto", opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden whitespace-nowrap"
-                >
-                  Post note
-                </motion.span>
+          {children ? (
+            children
+          ) : (
+            <TooltipButton
+              tooltipContent="Post note now"
+              variant={variant}
+              size={size}
+              disabled={loadingSendNote || !note || disabled}
+              onClick={handleSendNote}
+              className={cn(
+                "flex items-center gap-2",
+                {
+                  "text-muted-foreground": !isHovered,
+                },
+                className,
               )}
-            </AnimatePresence>
-            {loadingSendNote ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </TooltipButton>
+            >
+              <AnimatePresence>
+                <motion.span className="overflow-hidden whitespace-nowrap">
+                  Post now
+                </motion.span>
+              </AnimatePresence>
+              {loadingSendNote ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </TooltipButton>
+          )}
         </div>
       </div>
 

@@ -3,6 +3,7 @@
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import QueuePage from "@/components/queue/queue-page";
 import { useQueue } from "@/lib/hooks/useQueue";
+import { Loader2 } from "lucide-react";
 
 export default function NotesCalendarPage() {
   const { loading, error } = useNotesSchedule();
@@ -13,7 +14,7 @@ export default function NotesCalendarPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg">Loading your notes...</p>
+        <Loader2 className="animate-spin text-primary" size={20} />
       </div>
     );
   }

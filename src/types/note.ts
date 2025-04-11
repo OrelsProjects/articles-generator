@@ -234,7 +234,7 @@ export function inspirationNoteToNoteDraft(
   };
 }
 
-const NOTE_EMPTY_ID = "empty";
+export const NOTE_EMPTY_ID = "empty";
 
 export const isEmptyNote = (note: NoteDraft | Note | string | null) => {
   const id = typeof note === "string" ? note : note?.id;

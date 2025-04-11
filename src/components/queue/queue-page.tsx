@@ -5,7 +5,7 @@ import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditScheduleDialog } from "./edit-schedule-dialog";
@@ -14,10 +14,12 @@ import { NoteDraft } from "@/types/note";
 import { UserSchedule } from "@/types/schedule";
 import NoteComponent from "@/components/ui/note-component";
 import { ScheduledNotesList } from "./components";
+import { TooltipButton } from "@/components/ui/tooltip-button";
+import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
 
 export function QueuePage() {
   const { scheduledNotes } = useQueue();
-  const { selectNote } = useNotes();
+  const { selectNote, createDraftNote } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
   const { userNotes } = useAppSelector(state => state.notes);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -171,7 +173,24 @@ export function QueuePage() {
     <div className="container py-8 mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-foreground">Queue</h1>
-        <Button onClick={() => setIsEditDialogOpen(true)}>Edit queue</Button>
+        <div className="flex flex-col md:flex-row items-center gap-2">
+          <TooltipButton
+            tooltipContent="Start writing"
+            variant="outline"
+            onClick={() => createDraftNote()}
+            className="items-center gap-2"
+          >
+            <Plus size={16} />
+            New draft
+          </TooltipButton>
+          {activeTab === "scheduled" ? (
+            <Button onClick={() => setIsEditDialogOpen(true)}>
+              Edit queue
+            </Button>
+          ) : (
+            <GenerateNotesDialog />
+          )}
+        </div>
       </div>
 
       {scheduledNotes.length === 0 && (

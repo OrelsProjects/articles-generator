@@ -227,7 +227,6 @@ export const useNotes = () => {
 
   const updateNoteStatus = useCallback(
     async (noteId: string, status: NoteStatus | "archived") => {
-      
       EventTracker.track("notes_update_note_status_" + status);
       const previousNote = userNotes.find(note => note.id === noteId);
       const previousStatus = previousNote?.status;
@@ -241,8 +240,6 @@ export const useNotes = () => {
           if (selectedNote?.id === noteId) {
             selectNote(null);
           }
-        } else {
-          dispatch(updateNote({ id: noteId, note: { status } }));
         }
         const body = status === "archived" ? { isArchived: true } : { status };
 
@@ -250,7 +247,11 @@ export const useNotes = () => {
           await axios.delete(`/api/user/notes/${noteId}/schedule`, {
             params: { status },
           });
+          dispatch(updateNote({ id: noteId, note: { status: "draft" } }));
         } else {
+          // Previous status is not scheduled, so it can be published/draft
+          const validStatus = status === "archived" ? "draft" : status;
+          dispatch(updateNote({ id: noteId, note: { status: validStatus } }));
           await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
         }
       } catch (error: any) {
@@ -389,7 +390,7 @@ export const useNotes = () => {
   const updateNoteBodyDebounced = useCallback(
     debounce((noteId, body) => {
       editNoteBody(noteId, body);
-    }, 2500),
+    }, 500),
     [selectedNote],
   );
 
@@ -427,7 +428,6 @@ export const useNotes = () => {
   };
 
   const createDraftNote = async (draft?: Partial<NoteDraft>): Promise<void> => {
-    
     EventTracker.track("notes_create_draft_note");
     selectNote({ ...NOTE_EMPTY, ...draft });
   };
@@ -523,7 +523,7 @@ export const useNotes = () => {
     if (uploadingFile) return;
     try {
       const existingNote = userNotes.find(note => note.id === noteId);
-      
+
       if (
         existingNote?.attachments?.length &&
         existingNote.attachments.length >= 1
