@@ -212,6 +212,7 @@ export function NotesEditorDialog() {
     if (selectedNote) {
       if (options?.immediate) {
         const note = await editNoteBody(selectedNote.id, newBody);
+        setLastNote(null);
         return note;
       } else if (!isEmpty) {
         updateNoteBody(selectedNote.id, newBody);
@@ -234,11 +235,6 @@ export function NotesEditorDialog() {
   const userName = useMemo(() => {
     return name || user?.displayName || "Unknown";
   }, [name]);
-
-  const handleClearSchedule = () => {
-    setScheduledDate(undefined);
-    setConfirmedSchedule(false);
-  };
 
   const handleConfirmSchedule = async (date: Date) => {
     setScheduledDate(date);
