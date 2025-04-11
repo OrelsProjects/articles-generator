@@ -70,11 +70,14 @@ export function NotesEditorDialog() {
     cancelCanUserScheduleInterval,
   } = useNotesSchedule();
 
-  const [lastNote, setLastNote] = useLocalStorage<NoteDraft | null>(
-    "last_note",
-    null,
+  const editor = useEditor(
+    notesTextEditorOptions(html => {
+      if (isInspiration) {
+        return;
+      }
+      return handleBodyChange(html);
+    }),
   );
-  const editor = useEditor(notesTextEditorOptions(handleBodyChange));
 
   const [showAvoidPlagiarismDialog, setShowAvoidPlagiarismDialog] =
     useState(false);
@@ -85,9 +88,6 @@ export function NotesEditorDialog() {
     undefined,
   );
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
-  const [unscheduling, setUnscheduling] = useState(false);
-  const [confirmedSchedule, setConfirmedSchedule] = useState(false);
-  const [noteSaved, setNoteSaved] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [isSendingNote, setIsSendingNote] = useState(false);
 
@@ -97,39 +97,15 @@ export function NotesEditorDialog() {
   const isInspiration = selectedNote?.status === "inspiration";
   const isEmpty = isEmptyNote(selectedNote);
 
-  const updateLastNote = (note: NoteDraft | null) => {
-    // Only update the lastest if it's not saved in the db and if it's not an inspiration note.
-    if (!isInspiration && (isEmpty || !note)) {
-      setLastNote(note);
-    }
-  };
-
   const updateEditorBody = (body: string) => {
     convertMDToHtml(body).then(html => {
       editor?.commands.setContent(html);
     });
   };
 
-  const getLastNote = () => {
-    if (!isInspiration && isEmpty) {
-      return lastNote;
-    }
-    return null;
-  };
-
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
     if (!open) {
-      if (!isInspiration) {
-        if (!isEmpty) {
-          updateLastNote(null);
-        } else {
-          updateLastNote({
-            ...(selectedNote || NOTE_EMPTY),
-            body: editor?.getText() || "",
-          });
-        }
-      }
       // Reset for next use -
       updateEditorBody("");
       selectNote(null);
@@ -152,21 +128,14 @@ export function NotesEditorDialog() {
       const isSelectedNoteBodyEmpty =
         !selectedNote?.body || selectedNote?.body === "";
       if (isSelectedNoteBodyEmpty && !isInspiration) {
-        const lastNote = getLastNote();
-        if (lastNote) {
-          updateEditorBody(lastNote.body);
-        } else {
-          updateEditorBody("");
-        }
+        updateEditorBody("");
       } else {
         updateEditorBody(selectedNote.body);
       }
       if (selectedNote.scheduledTo) {
         const presetDate = new Date(selectedNote.scheduledTo);
         setScheduledDate(presetDate);
-        setConfirmedSchedule(true);
       } else {
-        setConfirmedSchedule(false);
         setScheduledDate(undefined);
       }
     }
@@ -193,28 +162,11 @@ export function NotesEditorDialog() {
     options?: { immediate?: boolean },
   ): Promise<NoteDraft | null> {
     const newBody = unformatText(html);
-    // updateEditorBody(newBody);
-    if (isEmpty && !isInspiration) {
-      const lastNote = getLastNote();
-      if (!lastNote) {
-        updateLastNote({
-          ...NOTE_EMPTY,
-          body: newBody,
-        });
-      } else {
-        updateLastNote({
-          ...lastNote,
-          body: newBody,
-        });
-      }
-    }
-
     if (selectedNote) {
       if (options?.immediate) {
         const note = await editNoteBody(selectedNote.id, newBody);
-        setLastNote(null);
         return note;
-      } else if (!isEmpty) {
+      } else {
         updateNoteBody(selectedNote.id, newBody);
         return null;
       }
@@ -226,9 +178,6 @@ export function NotesEditorDialog() {
     const html = editor?.getHTML();
     if (!html) return null;
     const note = await handleBodyChange(html, { immediate: true });
-    if (note) {
-      updateLastNote(null);
-    }
     return note;
   };
 
@@ -238,7 +187,6 @@ export function NotesEditorDialog() {
 
   const handleConfirmSchedule = async (date: Date) => {
     setScheduledDate(date);
-    setConfirmedSchedule(true);
     return handleSave({
       schedule: {
         to: date,
@@ -291,7 +239,6 @@ export function NotesEditorDialog() {
         const note = await handleBodyChange(editor?.getHTML() || "", {
           immediate: true,
         });
-        setLastNote(null);
         if (note) {
           if (currentNote.status === "inspiration") {
             if (currentNote.attachments && currentNote.attachments.length > 0) {
@@ -346,7 +293,6 @@ export function NotesEditorDialog() {
           return;
         }
       } else if (selectedNote?.status === "scheduled") {
-        setUnscheduling(true);
         try {
           toast.update(toastId, {
             render: "Unscheduling note...",
@@ -361,8 +307,6 @@ export function NotesEditorDialog() {
           }
           toast.error("Failed to unschedule note");
           return;
-        } finally {
-          setUnscheduling(false);
         }
       }
     } finally {
@@ -407,7 +351,6 @@ export function NotesEditorDialog() {
   const handleFileUpload = async (file: File) => {
     if (!selectedNote) return;
     try {
-      const isEmpty = isEmptyNote(selectedNote);
       let noteId = selectedNote.id;
       if (isEmpty) {
         const note = await handleCreateNewDraft();

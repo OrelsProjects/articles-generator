@@ -336,8 +336,8 @@ export function StatusBoard({
             });
           });
         } catch (error) {
-          log("Error archiving item:", error);
-          toast.error("Failed to archive note");
+          log("Error deleting item:", error);
+          toast.error("Failed to delete note");
         }
       }
 
@@ -571,7 +571,7 @@ function ArchiveZone({ isOver }: { isOver: boolean }) {
       }`}
     >
       <Trash2 className={`h-8 w-8 ${isOver ? "animate-bounce" : ""}`} />
-      <span className="font-medium text-lg">Drop to Archive</span>
+      <span className="font-medium text-lg">Drop to Delete</span>
     </motion.div>
   );
 }
