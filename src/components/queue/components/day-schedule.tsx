@@ -33,7 +33,7 @@ interface DayScheduleProps {
   onSelectNote: (note: NoteDraft) => void;
   onEmptySlotClick: (date: Date) => void;
   onRescheduleNote?: (noteId: string, newTime: Date) => void;
-  onUnscheduleNote?: (note: NoteDraft) => void;
+  onUnscheduleNote?: (note: NoteDraft) => Promise<unknown>;
   lastNoteRef?: RefObject<HTMLDivElement>;
   lastNoteId?: string;
   activeDropTarget?: string | null;

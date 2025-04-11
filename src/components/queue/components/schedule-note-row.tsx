@@ -1,17 +1,23 @@
-import React, { MouseEvent } from "react";
+import React, { MouseEvent, useState } from "react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { NoteDraft } from "@/types/note";
 import { useSortable } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Calendar, X, CalendarClock } from "lucide-react";
+import {
+  GripVertical,
+  Calendar,
+  X,
+  CalendarClock,
+  Loader2,
+} from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 
 interface ScheduleNoteRowProps {
   note: NoteDraft;
   onSelect: (note: NoteDraft) => void;
-  onUnschedule?: (note: NoteDraft) => void;
+  onUnschedule?: (note: NoteDraft) => Promise<unknown>;
   isDragOverlay?: boolean;
 }
 
@@ -31,6 +37,7 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
   onUnschedule,
   isDragOverlay = false,
 }) => {
+  const [loadingUnschedule, setLoadingUnschedule] = useState(false);
   // Format the time from the note's scheduledTo date
   const time = note.scheduledTo
     ? format(new Date(note.scheduledTo), "HH:mm")
@@ -117,7 +124,10 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
   const handleUnschedule = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent selecting the note when clicking unschedule
     if (onUnschedule) {
-      onUnschedule(note);
+      setLoadingUnschedule(true);
+      onUnschedule(note).finally(() => {
+        setLoadingUnschedule(false);
+      });
     }
   };
 
@@ -125,7 +135,7 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`w-full flex justify-between items-center p-3 mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative ${
+      className={`w-full flex justify-between items-center p-3 mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative cursor-pointer ${
         isOver ? "bg-secondary/40 border-primary" : ""
       }`}
       onClick={handleClick}
@@ -144,13 +154,11 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
         <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5">
           <CalendarClock size={16} />
         </div>
-        <div className="text-sm text-muted-foreground min-w-[72px]">
-          {time}
-        </div>
+        <div className="text-sm text-muted-foreground min-w-[72px]">{time}</div>
         <div className="text-sm text-foreground ml-4 truncate">
           {note.body || ""}
         </div>
-        
+
         {hasImage(note) && (
           <div className="h-10 w-10 rounded-md bg-secondary/40 ml-4 overflow-hidden flex-shrink-0">
             <Image
@@ -175,7 +183,11 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
             className="text-muted-foreground hover:text-red-500 transition-colors p-2 z-10"
             title="Unschedule"
           >
-            <X size={16} />
+            {loadingUnschedule ? (
+              <Loader2 className="animate-spin text-red-500" size={16} />
+            ) : (
+              <X size={16} />
+            )}
           </TooltipButton>
         )}
       </div>

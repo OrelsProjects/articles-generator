@@ -93,12 +93,15 @@ export function useQueue() {
   };
 
   const fetchSchedules = async () => {
+    setLoading(true);
     try {
       const response = await axios.get<UserSchedule[]>("/api/user/queue");
       dispatch(setUserSchedule(response.data));
     } catch (error) {
       console.error(error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -224,6 +227,7 @@ export function useQueue() {
         
         // If no note is scheduled for this slot, return it
         if (!hasScheduledNote) {
+          console.log("scheduleDate", scheduleDate);
           return scheduleDate;
         }
       }

@@ -357,9 +357,7 @@ export default function NoteComponent({
     }
   };
 
-
   const handleSelectNote = () => {
-    debugger
     selectNote(note, {
       forceShowEditor: true,
       isFromInspiration: !isUserNote,
@@ -435,12 +433,12 @@ export default function NoteComponent({
                 )}
               >
                 {/* Transparent overlay for click handling */}
-                <div 
-                  className="absolute inset-0 z-20 cursor-pointer" 
+                <div
+                  className="absolute inset-0 z-20 cursor-pointer"
                   onClick={handleSelectNote}
                   aria-hidden="true"
                 ></div>
-                
+
                 <div
                   className="prose prose-sm max-w-none note-component-content relative z-10"
                   dangerouslySetInnerHTML={{

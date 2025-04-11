@@ -40,47 +40,47 @@ import { ExtensionInstallDialog } from "@/components/notes/extension-install-dia
 import { useUi } from "@/lib/hooks/useUi";
 
 interface ScheduleNoteProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   initialScheduledDate?: Date | null;
-  confirmedSchedule: boolean;
-  onScheduleConfirm: (date: Date) => void;
-  onScheduleClear: () => void;
-  className?: string;
-  disabled?: boolean;
+  onScheduleConfirm: (date: Date) => Promise<void>;
 }
 
 export function ScheduleNote({
+  open,
+  onOpenChange,
   initialScheduledDate,
-  confirmedSchedule,
   onScheduleConfirm,
-  onScheduleClear,
-  className,
-  disabled = false,
 }: ScheduleNoteProps) {
   const { showScheduleModal, updateShowScheduleModal } = useUi();
 
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(
     initialScheduledDate ? new Date(initialScheduledDate) : undefined,
   );
-  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [loadingSchedule, setLoadingSchedule] = useState(false);
   const [timeError, setTimeError] = useState<string | null>(null);
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
 
   const { hasExtension } = useExtension();
 
+  const handleOpenChange = (open: boolean) => {
+    onOpenChange(open);
+  };
+
   useEffect(() => {
     if (showScheduleModal) {
-      setScheduleDialogOpen(true);
+      handleOpenChange(true);
       updateShowScheduleModal(false);
     }
   }, [open]);
 
   // Set default time to one hour from now when opening the schedule dialog
   useEffect(() => {
-    if (scheduleDialogOpen && !scheduledDate) {
+    if (open && !scheduledDate) {
       const defaultDate = addHours(new Date(), 1);
       setScheduledDate(defaultDate);
     }
-  }, [scheduleDialogOpen, scheduledDate]);
+  }, [open, scheduledDate]);
 
   // Validate the schedule time whenever it changes
   useEffect(() => {
@@ -101,24 +101,29 @@ export function ScheduleNote({
   }, [initialScheduledDate]);
 
   const handleClearSchedule = () => {
-    setScheduledDate(undefined);
-    setScheduleDialogOpen(false);
-    onScheduleClear();
+    handleOpenChange(false);
     setTimeError(null);
   };
 
   // Handle confirming the schedule
   const handleConfirmSchedule = async () => {
-    const userHasExtension = await hasExtension();
-    if (!userHasExtension) {
-      setShowExtensionDialog(true);
-      return;
-    }
-    if (scheduledDate && isValidScheduleTime(scheduledDate)) {
-      onScheduleConfirm(scheduledDate);
-      setScheduleDialogOpen(false);
-    } else {
-      setTimeError(getInvalidTimeMessage());
+    setLoadingSchedule(true);
+    try {
+      const userHasExtension = await hasExtension();
+      if (!userHasExtension) {
+        setShowExtensionDialog(true);
+        return;
+      }
+      if (scheduledDate && isValidScheduleTime(scheduledDate)) {
+        await onScheduleConfirm(scheduledDate);
+        handleOpenChange(false);
+      } else {
+        setTimeError(getInvalidTimeMessage());
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingSchedule(false);
     }
   };
 
@@ -196,45 +201,15 @@ export function ScheduleNote({
 
   return (
     <div className="hidden md:flex">
-      <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
-        <DialogTrigger asChild>
-          <TooltipButton
-            tooltipContent="Schedule note"
-            variant="ghost"
-            size="icon"
-            className={`${confirmedSchedule ? "text-primary/95 hover:text-primary" : "text-muted-foreground"} ${className}`}
-            disabled={disabled}
-          >
-            <CalendarClock className="h-5 w-5" />
-          </TooltipButton>
-        </DialogTrigger>
-
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           hideCloseButton
           className="max-w-[550px] p-0 gap-0 border-border bg-background rounded-xl"
         >
           <div className="p-6 flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-foreground">Schedule</h2>
-              <div className="flex gap-3">
-                <Button
-                  variant="ghost"
-                  className="hover:bg-accent hover:text-accent-foreground transition-colors"
-                  onClick={handleClearSchedule}
-                >
-                  Clear
-                </Button>
-                <Button
-                  className="rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={handleConfirmSchedule}
-                  disabled={!isTimeValid}
-                >
-                  Confirm
-                </Button>
-              </div>
-            </div>
+            <h2 className="text-xl font-bold text-foreground">Schedule</h2>
 
-            {confirmedSchedule && scheduledDate && (
+            {scheduledDate && (
               <div className="py-2 px-4 bg-accent/30 rounded-md">
                 {renderScheduleTimeText()}
               </div>
@@ -247,6 +222,11 @@ export function ScheduleNote({
             )}
 
             <div className="space-y-8">
+              <div className="space-y-2 bg-muted/10 p-4 py-2 rounded-md">
+                <div className="text-muted-foreground text-lg font-medium">
+                  {timezone}
+                </div>
+              </div>
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-foreground">Date</h3>
                 <div className="grid grid-cols-3 gap-4">
@@ -391,11 +371,21 @@ export function ScheduleNote({
                   </Select>
                 </div>
               </div>
-
-              <div className="space-y-2 bg-muted/10 p-4 py-2 rounded-md">
-                <div className="text-muted-foreground text-lg font-medium">
-                  {timezone}
-                </div>
+              <div className="w-full flex justify-end gap-3">
+                <Button
+                  variant="ghost"
+                  className="hover:bg-accent hover:text-accent-foreground transition-colors"
+                  onClick={handleClearSchedule}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={handleConfirmSchedule}
+                  disabled={!isTimeValid || loadingSchedule}
+                >
+                  {loadingSchedule ? "Scheduling..." : "Schedule"}
+                </Button>
               </div>
             </div>
           </div>

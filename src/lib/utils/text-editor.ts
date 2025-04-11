@@ -3,7 +3,7 @@ import TurndownService from "turndown";
 
 import { DOMSerializer } from "@tiptap/pm/model";
 import { Editor, Extension, UseEditorOptions } from "@tiptap/react";
-import { Node } from "@tiptap/core";
+import { InputRule, Node } from "@tiptap/core";
 
 import StarterKit from "@tiptap/starter-kit";
 import BubbleMenu from "@tiptap/extension-bubble-menu";
@@ -418,6 +418,24 @@ const SkeletonPlugin = Extension.create({
 // <p> has margin top-bottom of 6px.
 // images
 // Nothing else.
+export const ArrowLigature = Extension.create({
+  name: "arrowLigature",
+
+  addInputRules() {
+    // Trigger on `->`
+    const arrowRule = new InputRule({
+      find: /->$/,
+      handler: ({ state, match, range }) => {
+        if (match[0]) {
+          state.tr.insertText("→", range.from, range.to);
+        }
+      }
+    });
+
+    return [arrowRule];
+  },
+});
+
 export const notesTextEditorOptions = (
   onUpdate?: (html: string) => void,
   options: {
@@ -437,6 +455,7 @@ export const notesTextEditorOptions = (
       paragraph: {
         HTMLAttributes: { class: cn("mb-5 leading-8", Lora.className) },
       },
+      horizontalRule: false,
     }),
     SkeletonPlugin,
     BulletList,
@@ -444,9 +463,7 @@ export const notesTextEditorOptions = (
     Document,
     CustomBlockquote,
     CodeBlock,
-    // HardBreak.configure({
-    //   keepMarks: true, // Preserves formatting on new lines
-    // }),
+    ArrowLigature,
     Paragraph.configure({
       HTMLAttributes: { class: "my-3" },
     }),

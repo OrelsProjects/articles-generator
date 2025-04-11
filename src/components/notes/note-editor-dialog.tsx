@@ -42,6 +42,7 @@ import { Button } from "@/components/ui/button";
 import { CancelError } from "@/types/errors/CancelError";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { urlToFile } from "@/lib/utils/file";
+import { SaveDropdown } from "@/components/notes/save-dropdown";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
@@ -57,6 +58,7 @@ export function NotesEditorDialog() {
     uploadFile,
     deleteImage,
     cancelUpdateNoteBody,
+    sendNote,
   } = useNotes();
   const {
     scheduleNote,
@@ -78,6 +80,7 @@ export function NotesEditorDialog() {
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(
     undefined,
   );
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [unscheduling, setUnscheduling] = useState(false);
   const [confirmedSchedule, setConfirmedSchedule] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
@@ -227,8 +230,6 @@ export function NotesEditorDialog() {
     return name || user?.displayName || "Unknown";
   }, [name]);
 
-  const scheduleIsSet = isScheduled(scheduledDate) && confirmedSchedule;
-
   const handleClearSchedule = () => {
     setScheduledDate(undefined);
     setConfirmedSchedule(false);
@@ -237,84 +238,112 @@ export function NotesEditorDialog() {
   const handleConfirmSchedule = async (date: Date) => {
     setScheduledDate(date);
     setConfirmedSchedule(true);
+    return handleSave({
+      schedule: {
+        to: date,
+      },
+    });
   };
 
-  const handleSave = async () => {
-    if (!selectedNote) return;
-    const currentSelectedNote = selectedNote;
-    let newNote = {
-      ...currentSelectedNote,
-      scheduledTo: scheduledDate,
+  const handleSave = async (options?: {
+    schedule?: {
+      to: Date;
     };
-    const shouldSchedule = scheduleIsSet && scheduledDate;
+  }) => {
+    if (!selectedNote) return;
+    const toastId = toast.loading("Saving note...");
     try {
-      const note = await handleBodyChange(editor?.getHTML() || "", {
-        immediate: true,
-      });
-      if (note) {
-        if (currentSelectedNote.status === "inspiration") {
-          if (
-            currentSelectedNote.attachments &&
-            currentSelectedNote.attachments.length > 0
-          ) {
-            const url = currentSelectedNote.attachments?.[0].url;
-            if (url) {
-              setIsUploadingFile(true);
-              const file = await urlToFile(url);
-              await uploadFile(file, note.id);
+      const currentNote = { ...selectedNote };
+      const { schedule } = options || {};
+      const scheduledTo = schedule?.to;
+      const shouldSchedule = !!scheduledTo;
+
+      let newNote = {
+        ...currentNote,
+        scheduledTo,
+      };
+
+      try {
+        const note = await handleBodyChange(editor?.getHTML() || "", {
+          immediate: true,
+        });
+        if (note) {
+          if (currentNote.status === "inspiration") {
+            if (currentNote.attachments && currentNote.attachments.length > 0) {
+              const url = currentNote.attachments?.[0].url;
+              if (url) {
+                toast.update(toastId, {
+                  render: "Uploading image...",
+                  isLoading: true,
+                });
+                setIsUploadingFile(true);
+                const file = await urlToFile(url);
+                await uploadFile(file, note.id);
+              }
             }
           }
+          newNote = {
+            ...newNote,
+            ...note,
+            scheduledTo,
+          };
+          updateLastNote(null);
         }
-        newNote = {
-          ...newNote,
-          ...note,
-          scheduledTo: scheduledDate,
-        };
-        updateLastNote(null);
-      }
-    } catch (e: any) {
-      if (e instanceof CancelError) {
-        return;
-      }
-      toast.error("Failed to save note");
-      return;
-    }
-    if (shouldSchedule) {
-      try {
-        await scheduleNote(newNote);
-        handleOpenChange(false);
-        toast.success(
-          "Note scheduled to: " + getScheduleTimeText(scheduledDate, false),
-          {
-            autoClose: 6000,
-          },
-        );
       } catch (e: any) {
         if (e instanceof CancelError) {
           return;
         }
-        if (e instanceof NoSubstackCookiesError) {
-          setShowNoSubstackCookiesDialog(true);
-        } else {
-          toast.error("Failed to schedule note. Try again please.");
-        }
+        toast.error("Failed to save note");
         return;
       }
-    } else if (selectedNote?.status === "scheduled") {
-      setUnscheduling(true);
-      try {
-        await updateNoteStatus(selectedNote.id, "draft");
-        toast.info("Note unscheduled");
-        handleOpenChange(false);
-      } catch (e: any) {
-        if (e instanceof CancelError) {
+      if (shouldSchedule) {
+        try {
+          toast.update(toastId, {
+            render: "Scheduling note...",
+            isLoading: true,
+          });
+          await scheduleNote(newNote);
+          handleOpenChange(false);
+          toast.success(
+            "Note scheduled to: " + getScheduleTimeText(scheduledTo, false),
+            {
+              autoClose: 6000,
+            },
+          );
+        } catch (e: any) {
+          if (e instanceof CancelError) {
+            return;
+          }
+          if (e instanceof NoSubstackCookiesError) {
+            setShowNoSubstackCookiesDialog(true);
+          } else {
+            toast.error("Failed to schedule note. Try again please.");
+          }
           return;
         }
-        toast.error("Failed to unschedule note");
-        return;
-      } finally {
-        setUnscheduling(false);
+      } else if (selectedNote?.status === "scheduled") {
+        setUnscheduling(true);
+        try {
+          toast.update(toastId, {
+            render: "Unscheduling note...",
+            isLoading: true,
+          });
+          await updateNoteStatus(selectedNote.id, "draft");
+          toast.info("Note unscheduled");
+          handleOpenChange(false);
+        } catch (e: any) {
+          if (e instanceof CancelError) {
+            return;
+          }
+          toast.error("Failed to unschedule note");
+          return;
+        } finally {
+          setUnscheduling(false);
+        }
       }
+    } finally {
+      handleOpenChange(false);
+      toast.dismiss(toastId);
     }
   };
 
@@ -465,7 +494,7 @@ export function NotesEditorDialog() {
 
   const handleImageSelect = async (file: File) => {
     if (!selectedNote) return;
-    
+
     // Check if there's already an image
     if (selectedNote.attachments && selectedNote.attachments.length > 0) {
       toast.error("Only one image is allowed");
@@ -511,12 +540,6 @@ export function NotesEditorDialog() {
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
-          closeOnOutsideClick={
-            !loadingEditNote &&
-            !loadingScheduleNote &&
-            !isSendingNote &&
-            !isUploadingFile
-          }
           hideCloseButton
           className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl"
         >
@@ -571,16 +594,7 @@ export function NotesEditorDialog() {
             </div>
 
             <div className="flex flex-col md:flex-row items-center justify-between p-4 border-t border-border gap-4 md:gap-0">
-              <div className="flex gap-2 items-center">
-                <ScheduleNote
-                  initialScheduledDate={scheduledDate}
-                  confirmedSchedule={confirmedSchedule}
-                  onScheduleConfirm={handleConfirmSchedule}
-                  onScheduleClear={handleClearSchedule}
-                  disabled={
-                    isSendingNote || loadingEditNote || loadingScheduleNote
-                  }
-                />
+              <div className="h-full flex gap-2 items-center">
                 <AIToolsDropdown
                   note={selectedNote}
                   onImprovement={handleImprovement}
@@ -635,19 +649,31 @@ export function NotesEditorDialog() {
                   onLoadingChange={setIsSendingNote}
                   disabled={!canSendNote}
                 />
-                <Button
-                  variant="default"
-                  className="rounded-full px-6"
-                  onClick={handleSave}
+                <ScheduleNote
+                  open={scheduleDialogOpen}
+                  onOpenChange={setScheduleDialogOpen}
+                  initialScheduledDate={scheduledDate}
+                  onScheduleConfirm={handleConfirmSchedule}
+                />
+                <SaveDropdown
+                  onSave={handleSave}
+                  onSchedule={() => {
+                    setScheduleDialogOpen(true);
+                  }}
+                  onAddToQueue={(date: Date) => {
+                    setScheduledDate(date);
+                    return handleSave({
+                      schedule: {
+                        to: date,
+                      },
+                    });
+                  }}
+                  presetSchedule={scheduledDate}
                   disabled={
-                    loadingEditNote ||
-                    loadingScheduleNote ||
-                    isSendingNote ||
-                    noteSaved
+                    loadingEditNote || loadingScheduleNote || isSendingNote
                   }
-                >
-                  {saveButtonText}
-                </Button>
+                  saving={loadingEditNote}
+                />
               </div>
             </div>
           </div>
