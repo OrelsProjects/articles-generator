@@ -167,6 +167,7 @@ export function NotesEditorDialog() {
         setConfirmedSchedule(true);
       } else {
         setConfirmedSchedule(false);
+        setScheduledDate(undefined);
       }
     }
   }, [selectedNote, editor]);
@@ -249,32 +250,35 @@ export function NotesEditorDialog() {
     });
   };
 
+  const isPlagiarism = () => {
+    const unformattedBody = unformatText(editor?.getHTML() || "");
+    const unformattedNoteBody = unformatText(selectedNote?.body || "");
+
+    const slugifiedBody = slugify(unformattedBody, {
+      lower: true,
+      strict: true,
+    });
+    const slugifiedNoteBody = slugify(unformattedNoteBody, {
+      lower: true,
+      strict: true,
+    });
+    return (
+      slugifiedBody === slugifiedNoteBody &&
+      selectedNote?.status === "inspiration" &&
+      selectedNote?.handle !== handle
+    );
+  };
   const handleSave = async (options?: {
     schedule?: {
       to: Date;
     };
   }) => {
     if (!selectedNote) return;
-    if (handle !== selectedNote.handle) {
-      const unformattedBody = unformatText(editor?.getHTML() || "");
-      const unformattedNoteBody = unformatText(selectedNote.body || "");
-      const slugifiedBody = slugify(unformattedBody, {
-        lower: true,
-        strict: true,
-      });
-      const slugifiedNoteBody = slugify(unformattedNoteBody, {
-        lower: true,
-        strict: true,
-      });
-      if (
-        selectedNote.status === "inspiration" &&
-        slugifiedBody === slugifiedNoteBody
-      ) {
-        setShowAvoidPlagiarismDialog(true);
-        return;
-      }
+    if (isPlagiarism()) {
+      setShowAvoidPlagiarismDialog(true);
+      return;
     }
-    
+
     const toastId = toast.loading("Saving note...");
     try {
       const currentNote = { ...selectedNote };
@@ -291,6 +295,7 @@ export function NotesEditorDialog() {
         const note = await handleBodyChange(editor?.getHTML() || "", {
           immediate: true,
         });
+        setLastNote(null);
         if (note) {
           if (currentNote.status === "inspiration") {
             if (currentNote.attachments && currentNote.attachments.length > 0) {
@@ -311,7 +316,6 @@ export function NotesEditorDialog() {
             ...note,
             scheduledTo,
           };
-          updateLastNote(null);
         }
       } catch (e: any) {
         if (e instanceof CancelError) {

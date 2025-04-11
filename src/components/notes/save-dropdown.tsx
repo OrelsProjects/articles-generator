@@ -51,7 +51,7 @@ export function SaveDropdown({
     const nextAvailableSlot = getNextAvailableSchedule();
     console.log("nextAvailableSlot", nextAvailableSlot);
     let text = null;
-    const date = nextAvailableSlot;
+    const date = presetSchedule || nextAvailableSlot;
 
     if (date) {
       text = format(date, "MMM do, yyyy, HH:mm");
@@ -70,7 +70,7 @@ export function SaveDropdown({
     try {
       const nextAvailableSlot = getNextAvailableSchedule();
       setLoading(true);
-      const date = nextAvailableSlot;
+      const date = presetSchedule || nextAvailableSlot;
       if (date) {
         await onAddToQueue(date);
       } else {
