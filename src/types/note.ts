@@ -254,3 +254,99 @@ export const NOTE_EMPTY: NoteDraft = {
   wasSentViaSchedule: false,
   attachments: [],
 };
+
+
+/**
+ * {
+    "user_id": 51141391,
+    "body": "test",
+    "body_json": {
+        "type": "doc",
+        "attrs": {
+            "schemaVersion": "v1"
+        },
+        "content": [
+            {
+                "type": "paragraph",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "test"
+                    }
+                ]
+            }
+        ]
+    },
+    "post_id": null,
+    "publication_id": null,
+    "ancestor_path": "",
+    "type": "feed",
+    "status": "published",
+    "reply_minimum_role": "everyone",
+    "id": 108004483,
+    "deleted": false,
+    "date": "2025-04-11T19:41:04.465Z",
+    "name": "Orel Zilberman",
+    "photo_url": "https://substack-post-media.s3.amazonaws.com/public/images/e5cee6df-f85a-422b-a19e-655ff6c8a668_1024x1024.png",
+    "reactions": {
+        "❤": 0
+    },
+    "children": [],
+    "user_bestseller_tier": null,
+    "isFirstFeedCommentByUser": false,
+    "reaction_count": 0,
+    "restacks": 0,
+    "restacked": false,
+    "children_count": 0,
+    "attachments": [],
+    "user_primary_publication": {
+        "id": 2283026,
+        "subdomain": "theindiepreneur",
+        "custom_domain_optional": false,
+        "name": "The IndiePreneur",
+        "logo_url": "https://substack-post-media.s3.amazonaws.com/public/images/a34d2e1d-ede1-4d86-a2c8-30a45a83b55d_1024x1024.png",
+        "author_id": 51141391,
+        "user_id": 51141391,
+        "handles_enabled": false,
+        "explicit": false,
+        "is_personal_mode": false
+    }
+}
+ */
+export interface SubstackPostNoteResponse {
+  user_id: number;
+  body: string;
+  body_json: any[];
+  post_id: number | null;
+  publication_id: number | null;
+  ancestor_path: string;
+  type: string;
+  status: string;
+  reply_minimum_role: string;
+  id: number;
+  deleted: boolean;
+  date: Date;
+  name: string;
+  photo_url: string;
+  reactions: Record<string, number>;
+  children: any[];
+  user_bestseller_tier: number | null;
+  isFirstFeedCommentByUser: boolean;
+  reaction_count: number;
+  restacks: number;
+  restacked: boolean;
+  children_count: number;
+  attachments: any[];
+  user_primary_publication: {
+    id: number;
+    subdomain: string;
+    custom_domain_optional: boolean;
+    name: string;
+    logo_url: string;
+    author_id: number;
+    user_id: number;
+    handles_enabled: boolean;
+    explicit: boolean;
+    is_personal_mode: boolean;
+  };
+}

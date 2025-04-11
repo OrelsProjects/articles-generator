@@ -75,7 +75,16 @@ const useAuth = () => {
     }
   }, []);
 
+  const refreshUserMetadata = useCallback(async () => {
+    try {
+      await axios.post("/api/user/data/refresh");
+    } catch (error: any) {
+      Logger.error("Error refreshing user metadata", { error });
+    }
+  }, []);
+
   return {
+    refreshUserMetadata,
     signInWithGoogle,
     deleteUser,
     signOut,
