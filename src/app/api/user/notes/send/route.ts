@@ -9,11 +9,19 @@ import { CookieName } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { SubstackPostNoteResponse } from "@/types/note";
 
 const schema = z.object({
   userId: z.string().optional(),
   noteId: z.string(),
 });
+
+const doesBodyContainLink = (body: string) => {
+  const regexHttps = /https?:\/\/[^\s]+/g;
+  const regexWww = /www\.[^\s]+/g;
+  const regexDotCom = /\.com/g;
+  return regexHttps.test(body) || regexWww.test(body) || regexDotCom.test(body);
+};
 
 const sendFailure = async (noteBody: string, noteId: string, email: string) => {
   try {
@@ -22,7 +30,7 @@ const sendFailure = async (noteBody: string, noteId: string, email: string) => {
       from: "support",
       subject: "Failed to send note",
       template: generateFailedToSendNoteEmail(noteBody, noteId),
-      cc: [],
+      cc: ["orelsmail@gmail.com"],
     });
   } catch (error) {
     loggerServer.error("Error to send note: " + error);
@@ -119,25 +127,37 @@ export async function POST(request: NextRequest) {
       messageData.attachmentIds = attachments.map(attachment => attachment.id);
     }
 
-    const response = await fetch("https://substack.com/api/v1/comment/feed", {
-      headers: {
-        "Content-Type": "application/json",
-        Referer: "https://substack.com/home",
-        "Referrer-Policy": "strict-origin-when-cross-origin",
-        Cookie: `substack.sid=${cookie.value}`,
-      },
-      body: JSON.stringify(messageData),
-      method: "POST",
-    });
+    let retries = 3;
+    let didSucceed = false;
+    let response: any;
+    while (retries > 0 && !didSucceed) {
+      response = await fetch("https://substack.com/api/v1/comment/feed", {
+        headers: {
+          "Content-Type": "application/json",
+          Referer: "https://substack.com/home",
+          "Referrer-Policy": "strict-origin-when-cross-origin",
+          Cookie: `substack.sid=${cookie.value}`,
+        },
+        body: JSON.stringify(messageData),
+        method: "POST",
+      });
+      console.log("Ran fetch to send note: " + retries + " retries left");
+      didSucceed = response.ok;
+      if (!didSucceed) {
+        const errorMessage = await response.json();
+        console.log("Error to send note: " + JSON.stringify(errorMessage));
+      }
+      retries--;
+    }
 
-    if (!response.ok) {
+    if (!didSucceed) {
       const errorMessage = await response.json();
       await sendFailure(note.body, note.id, user.email);
       loggerServer.error(
         "Error to send note: " +
           response.statusText +
           "response: " +
-          errorMessage +
+          JSON.stringify(errorMessage) +
           " for note: " +
           noteId +
           " for user: " +
@@ -149,8 +169,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as SubstackPostNoteResponse;
+    // if contains link, update the note so it removes the OG
+    if (
+      data.attachments.length > 0 &&
+      note.S3Attachment.length === 0 &&
+      doesBodyContainLink(note.body)
+    ) {
+      // path https://substack.com/api/v1/feed/comment/commentId
+      const response = await fetch(
+        `https://substack.com/api/v1/feed/comment/${data.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Referer: "https://substack.com/home",
+            "Referrer-Policy": "strict-origin-when-cross-origin",
+            Cookie: `substack.sid=${cookie.value}`,
+          },
+          body: JSON.stringify(messageData),
+        },
+      );
 
+      if (!response.ok) {
+        loggerServer.error(
+          "Error to remove OG: " +
+            response.statusText +
+            " for note: " +
+            noteId +
+            " for user: " +
+            userId,
+        );
+      }
+    }
     await prisma.note.update({
       where: {
         id: noteId,

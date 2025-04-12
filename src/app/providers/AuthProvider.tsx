@@ -21,6 +21,7 @@ import { Session } from "next-auth";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { useSettings } from "@/lib/hooks/useSettings";
 import Loading from "@/components/ui/loading";
+import useAuth from "@/lib/hooks/useAuth";
 
 export default function AuthProvider({
   children,
@@ -32,6 +33,7 @@ export default function AuthProvider({
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const { setIdeas } = useIdea();
+  const { refreshUserMetadata } = useAuth();
   const { init: initSettings } = useSettings();
   const [loading, setLoading] = useState(true);
   const { user: currentUser } = useSelector(selectAuth);
@@ -120,6 +122,7 @@ export default function AuthProvider({
     switch (status) {
       case "authenticated":
         setLoading(true);
+        refreshUserMetadata();
         setUser(session)
           .then(response => {
             hasPublication = response;

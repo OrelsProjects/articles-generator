@@ -235,7 +235,7 @@ export function generateFailedToSendNoteEmail(
     <p>The note with body:\n <strong>${noteBody}</strong>\n failed to send.</p>
     <p>You can send it now by clicking the button below. Make sure to do it from the <strong>computer</strong> you use Substack on (Won't work from mobile)</p>
     <div class="center-button-container">
-      <a href="https://writeroom.co/notes?sendNoteId=${noteId}" class="button">Send now</a>
+      <a href="https://writeroom.co/queue?sendNoteId=${noteId}" class="button">Send now</a>
     </div>
   `;
   return baseEmailTemplate(content);
