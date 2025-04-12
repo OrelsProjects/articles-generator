@@ -27,25 +27,27 @@ export const setSubstackCookies = async (
   cookies: SubstackCookie[],
 ) => {
   for (const cookie of cookies) {
-    await prisma.substackCookie.upsert({
-      where: {
-        name_userId: { name: cookieNameCookieNameToDB[cookie.name], userId },
-      },
-      update: {
-        value: cookie.value,
-        expiresAt: cookie.expiresAt,
-        domain: cookie.domain,
-        path: cookie.path,
-        secure: cookie.secure,
-        httpOnly: cookie.httpOnly,
-        sameSite: cookieSameSiteToDB[cookie.sameSite],
-      },
-      create: {
-        ...cookie,
-        name: cookieNameCookieNameToDB[cookie.name],
-        userId,
-        sameSite: cookieSameSiteToDB[cookie.sameSite],
-      },
-    });
+    if (cookie.value) {
+      await prisma.substackCookie.upsert({
+        where: {
+          name_userId: { name: cookieNameCookieNameToDB[cookie.name], userId },
+        },
+        update: {
+          value: cookie.value,
+          expiresAt: cookie.expiresAt,
+          domain: cookie.domain,
+          path: cookie.path,
+          secure: cookie.secure,
+          httpOnly: cookie.httpOnly,
+          sameSite: cookieSameSiteToDB[cookie.sameSite],
+        },
+        create: {
+          ...cookie,
+          name: cookieNameCookieNameToDB[cookie.name],
+          userId,
+          sameSite: cookieSameSiteToDB[cookie.sameSite],
+        },
+      });
+    }
   }
 };
