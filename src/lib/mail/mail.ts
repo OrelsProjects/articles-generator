@@ -1,5 +1,6 @@
 import Mailchimp, { MessagesMessage } from "@mailchimp/mailchimp_transactional";
 import client from "@mailchimp/mailchimp_marketing";
+import slugify from "slugify";
 
 const mailchimpTx = Mailchimp(process.env.MAILCHIMP_API_KEY || "");
 const config = {
@@ -33,8 +34,9 @@ export const sendMail = async ({
   template: string;
   cc: string[];
 }) => {
+  const fromSlugified = slugify(from);
   const message: MessagesMessage = {
-    from_email: `${from}@writeroom.co`,
+    from_email: `${fromSlugified}@writeroom.co`,
     subject,
     html: template,
     to: Array.isArray(to)

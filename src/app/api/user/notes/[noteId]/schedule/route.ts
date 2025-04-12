@@ -1,3 +1,4 @@
+import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { isOwnerOfNote } from "@/lib/dal/note";
 import {
@@ -30,6 +31,18 @@ export async function POST(
     const isOwner = await isOwnerOfNote(noteId, session.user.id);
     if (!isOwner) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const note = await prisma.note.findUnique({
+      where: {
+        id: noteId,
+      },
+    });
+    if (!note || note.body.length === 0) {
+      return NextResponse.json(
+        { error: "Note body is empty" },
+        { status: 400 },
+      );
     }
 
     await createScheduleForNote(session.user.id, noteId, new Date(date));

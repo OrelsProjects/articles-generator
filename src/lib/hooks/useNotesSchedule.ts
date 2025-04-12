@@ -6,6 +6,7 @@ import axios from "axios";
 import { Logger } from "@/logger";
 import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";
 import { useExtension } from "@/lib/hooks/useExtension";
+import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 
 export const useNotesSchedule = () => {
   const dispatch = useAppDispatch();
@@ -64,6 +65,9 @@ export const useNotesSchedule = () => {
 
   const scheduleNote = useCallback(
     async (note: NoteDraft) => {
+      if (!note.body || note.body.length === 0) {
+        throw new ScheduleFailedEmptyNoteBodyError("Note body is empty");
+      }
       setLoadingScheduleNote(true);
 
       const previousNote = userNotes.find(n => n.id === note.id);

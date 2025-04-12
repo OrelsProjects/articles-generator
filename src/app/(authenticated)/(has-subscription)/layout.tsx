@@ -3,6 +3,7 @@
 import { DataFetchProvider } from "@/app/providers/DataFetchProvider";
 import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
 import NewSubscriptionDialog from "@/app/providers/NewSubscriptionDialog";
+import ShowNoteFromUrlProvider from "@/app/providers/ShowNoteFromUrlProvider";
 import SubscriptionProvider from "@/app/providers/SubscriptionProvider";
 import { SubstackCookiesProvider } from "@/app/providers/SubstackCookiesProvider";
 import VisitProvider from "@/app/providers/VisitProvider";
@@ -18,6 +19,7 @@ export default function ContentLayout({
         <NewSubscriptionDialog />
         <VisitProvider>
           <DataFetchProvider>
+            <ShowNoteFromUrlProvider />
             <SubstackCookiesProvider>{children}</SubstackCookiesProvider>
           </DataFetchProvider>
         </VisitProvider>

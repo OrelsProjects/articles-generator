@@ -19,10 +19,11 @@ import { ScheduleNoteRow } from "./schedule-note-row";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { toast } from "react-toastify";
 import { useNotes } from "@/lib/hooks/useNotes";
-import { 
-  SortableContext, 
-  verticalListSortingStrategy 
+import {
+  SortableContext,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 
 interface ScheduledNotesListProps {
   days: Date[];
@@ -63,24 +64,24 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   // Prepare a map of all empty slots
   const emptySlotMap = React.useMemo(() => {
     const map = new Map<string, { day: Date; time: string }>();
-    
+
     days.forEach(day => {
       const dateKey = format(day, "yyyy-MM-dd");
       const schedulesForDay = groupedSchedules[dateKey] || [];
-      
+
       schedulesForDay.forEach((schedule, index) => {
         // Convert to 24-hour format
         let hour24 = schedule.hour;
         if (schedule.ampm === "pm" && hour24 < 12) hour24 += 12;
         if (schedule.ampm === "am" && hour24 === 12) hour24 = 0;
-        
+
         const timeStr = `${hour24.toString().padStart(2, "0")}:${schedule.minute.toString().padStart(2, "0")}`;
         const slotId = `empty-${day.toISOString()}-${timeStr}-${index}`;
-        
+
         map.set(slotId, { day, time: timeStr });
       });
     });
-    
+
     return map;
   }, [days, groupedSchedules]);
 
@@ -100,7 +101,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     // Find which note is being dragged
     const noteId = active.id as string;
     const note = findNoteById(noteId);
-    
+
     if (note) {
       setActiveDragNote(note);
     }
@@ -117,33 +118,33 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     setActiveDragNote(null);
     setActiveDropTarget(null);
-    
+
     if (!over) return; // Dropped outside a valid target
-    
+
     const noteId = active.id as string;
     const draggedNote = findNoteById(noteId);
-    
+
     if (!draggedNote) return;
-    
+
     // Handle dropping on an empty slot (these IDs start with "empty-")
     if (typeof over.id === "string" && over.id.startsWith("empty-")) {
       const slotInfo = emptySlotMap.get(over.id);
-      
+
       if (slotInfo) {
         const { day, time } = slotInfo;
         const [hourStr, minuteStr] = time.split(":");
         const hour = parseInt(hourStr);
         const minute = parseInt(minuteStr);
-        
+
         // Create date object for the new scheduled time
         const newDate = new Date(day);
         newDate.setHours(hour, minute, 0, 0);
-        
+
         console.log(`Rescheduling note ${noteId} to ${newDate.toISOString()}`);
-        
+
         // Try to reschedule
         handleRescheduleNote(noteId, newDate);
       }
@@ -151,11 +152,13 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     // Handle dropping on another note (for swapping schedules)
     else if (typeof over.id === "string" && over.id !== noteId) {
       const targetNote = findNoteById(over.id);
-      
+
       if (targetNote && targetNote.scheduledTo) {
         const targetDate = new Date(targetNote.scheduledTo);
-        console.log(`Rescheduling note ${noteId} to ${targetDate.toISOString()}`);
-        
+        console.log(
+          `Rescheduling note ${noteId} to ${targetDate.toISOString()}`,
+        );
+
         handleRescheduleNote(noteId, targetDate);
       }
     }
@@ -169,15 +172,23 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         render: "Note rescheduled",
         type: "success",
         isLoading: false,
-        autoClose: 1500
+        autoClose: 1500,
       });
     } catch (error) {
-      toast.update(toastId, {
-        render: "Failed to reschedule note",
-        type: "error",
-        isLoading: false,
-        autoClose: 3000
-      });
+      if (error instanceof ScheduleFailedEmptyNoteBodyError) {
+        toast.update(toastId, {
+          render: "Note body is empty",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      } else {
+        toast.update(toastId, {
+          render: "Failed to reschedule note",
+          type: "error",
+          isLoading: false,
+        });
+      }
       console.error(error);
     }
   };
@@ -207,7 +218,10 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       sensors={sensors}
       collisionDetection={closestCenter}
     >
-      <SortableContext items={allDraggableIds} strategy={verticalListSortingStrategy}>
+      <SortableContext
+        items={allDraggableIds}
+        strategy={verticalListSortingStrategy}
+      >
         <div className="space-y-6">
           {days.map(day => {
             const dateKey = format(day, "yyyy-MM-dd");
@@ -232,7 +246,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
           })}
         </div>
       </SortableContext>
-      
+
       {/* Drag Overlay - shown while dragging */}
       <DragOverlay>
         {activeDragNote && (

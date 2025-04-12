@@ -45,6 +45,7 @@ import { urlToFile } from "@/lib/utils/file";
 import { SaveDropdown } from "@/components/notes/save-dropdown";
 import { AvoidPlagiarismDialog } from "@/components/notes/avoid-plagiarism-dialog";
 import slugify from "slugify";
+import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
@@ -283,6 +284,10 @@ export function NotesEditorDialog() {
           );
         } catch (e: any) {
           if (e instanceof CancelError) {
+            return;
+          }
+          if (e instanceof ScheduleFailedEmptyNoteBodyError) {
+            toast.error("Note body is empty");
             return;
           }
           if (e instanceof NoSubstackCookiesError) {

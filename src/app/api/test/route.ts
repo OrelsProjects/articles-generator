@@ -7,6 +7,7 @@ import { generateVectorSearchOptimizedDescriptionPrompt } from "@/lib/prompts";
 import { parseJson } from "@/lib/utils/json";
 import { addUserToList, sendMail, testEndpoint } from "@/lib/mail/mail";
 import {
+  generateFailedToSendNoteEmail,
   generateSubscriptionTrialEndingEmail,
   welcomeTemplate,
 } from "@/lib/mail/templates";
@@ -119,22 +120,22 @@ export async function GET() {
     //   cc: ["orelzilberman@gmail.com"],
     // });
 
-    const subscription = await getActiveSubscription(session.user.id);
+    // const subscription = await getActiveSubscription(session.user.id);
 
-    if (!subscription) {
-      return NextResponse.json(
-        { error: "No active subscription found" },
-        { status: 400 },
-      );
-    }
+    // if (!subscription) {
+    //   return NextResponse.json(
+    //     { error: "No active subscription found" },
+    //     { status: 400 },
+    //   );
+    // }
 
     const mailResult = await sendMail({
       to: "orelsmail@gmail.com",
-      from: "Orel from WriteRoom 👋",
+      from: "Orel from WriteRoom",
       subject: "Your Trial is Ending Soon",
-      template: generateSubscriptionTrialEndingEmail(
-        subscription.plan,
-        new Date(),
+      template: generateFailedToSendNoteEmail(
+        "67f772a23b037dc651e2e072",
+        "67f772a23b037dc651e2e072",
       ),
       cc: ["orelzilberman@gmail.com"],
     });

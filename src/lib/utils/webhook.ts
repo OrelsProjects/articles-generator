@@ -211,7 +211,7 @@ export async function handleSubscriptionUpdated(event: any) {
   if (user.email) {
     await sendMail({
       to: user.email!,
-      from: "Orel from WriteRoom 👋",
+      from: "support",
       subject: "Subscription Updated",
       template: welcomeTemplate(user.name || undefined),
       cc: [],
@@ -278,7 +278,7 @@ export async function handleSubscriptionDeleted(event: Stripe.Event) {
   const userEmail = (customer as any).email;
   await sendMail({
     to: userEmail,
-    from: "Orel from WriteRoom 👋",
+    from: "support",
     subject: "Subscription Deleted",
     template: generateSubscriptionDeletedEmail(subscriptionId),
     cc: [],
@@ -334,7 +334,7 @@ export async function handleSubscriptionTrialEnding(event: any) {
   // Send email notification about trial ending
   await sendMail({
     to: userEmail,
-    from: "Orel from WriteRoom 👋",
+    from: "support",
     subject: "Your Trial is Ending Soon",
     template: generateSubscriptionTrialEndingEmail(
       subscriptionFromDb.plan,
@@ -445,7 +445,7 @@ export async function handleInvoicePaymentFailed(event: any) {
   }
   await sendMail({
     to: "orelsmail@gmail.com",
-    from: "Orel from WriteRoom 👋",
+    from: "support",
     subject: "Payment Failed",
     template: generateInvoicePaymentFailedEmail(invoice.id, customerEmail),
     cc: [],
