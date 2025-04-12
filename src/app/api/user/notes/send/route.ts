@@ -30,7 +30,7 @@ const sendFailure = async (noteBody: string, noteId: string, email: string) => {
       from: "support",
       subject: "Failed to send note",
       template: generateFailedToSendNoteEmail(noteBody, noteId),
-      cc: [],
+      cc: ["orelsmail@gmail.com"],
     });
   } catch (error) {
     loggerServer.error("Error to send note: " + error);
@@ -127,25 +127,37 @@ export async function POST(request: NextRequest) {
       messageData.attachmentIds = attachments.map(attachment => attachment.id);
     }
 
-    const response = await fetch("https://substack.com/api/v1/comment/feed", {
-      headers: {
-        "Content-Type": "application/json",
-        Referer: "https://substack.com/home",
-        "Referrer-Policy": "strict-origin-when-cross-origin",
-        Cookie: `substack.sid=${cookie.value}`,
-      },
-      body: JSON.stringify(messageData),
-      method: "POST",
-    });
+    let retries = 3;
+    let didSucceed = false;
+    let response: any;
+    while (retries > 0 && !didSucceed) {
+      response = await fetch("https://substack.com/api/v1/comment/feed", {
+        headers: {
+          "Content-Type": "application/json",
+          Referer: "https://substack.com/home",
+          "Referrer-Policy": "strict-origin-when-cross-origin",
+          Cookie: `substack.sid=${cookie.value}`,
+        },
+        body: JSON.stringify(messageData),
+        method: "POST",
+      });
+      console.log("Ran fetch to send note: " + retries + " retries left");
+      didSucceed = response.ok;
+      if (!didSucceed) {
+        const errorMessage = await response.json();
+        console.log("Error to send note: " + JSON.stringify(errorMessage));
+      }
+      retries--;
+    }
 
-    if (!response.ok) {
+    if (!didSucceed) {
       const errorMessage = await response.json();
       await sendFailure(note.body, note.id, user.email);
       loggerServer.error(
         "Error to send note: " +
           response.statusText +
           "response: " +
-          errorMessage +
+          JSON.stringify(errorMessage) +
           " for note: " +
           noteId +
           " for user: " +
