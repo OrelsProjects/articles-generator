@@ -1,6 +1,7 @@
 "use client";
 
 import { DataFetchProvider } from "@/app/providers/DataFetchProvider";
+import { ExtensionProvider } from "@/app/providers/ExtensionProvider";
 import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
 import NewSubscriptionDialog from "@/app/providers/NewSubscriptionDialog";
 import ShowNoteFromUrlProvider from "@/app/providers/ShowNoteFromUrlProvider";
@@ -20,7 +21,10 @@ export default function ContentLayout({
         <VisitProvider>
           <DataFetchProvider>
             <ShowNoteFromUrlProvider />
-            <SubstackCookiesProvider>{children}</SubstackCookiesProvider>
+            <SubstackCookiesProvider>
+              <ExtensionProvider />
+              {children}
+            </SubstackCookiesProvider>
           </DataFetchProvider>
         </VisitProvider>
       </SubscriptionProvider>

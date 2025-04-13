@@ -66,7 +66,6 @@ export function NotesEditorDialog() {
   const {
     scheduleNote,
     loadingScheduleNote,
-    initCanUserScheduleInterval,
     isIntervalRunning,
     cancelCanUserScheduleInterval,
   } = useNotesSchedule();
@@ -82,7 +81,6 @@ export function NotesEditorDialog() {
 
   const [showAvoidPlagiarismDialog, setShowAvoidPlagiarismDialog] =
     useState(false);
-  const [showExtensionDialog, setShowExtensionDialog] = useState(false);
   // setOpen MUST be called only from handleOpenChange to avoid logic bugs, like setting body to ''.
   const [open, setOpen] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(
@@ -320,15 +318,6 @@ export function NotesEditorDialog() {
     }
   };
 
-  const handleSubstackLogin = () => {
-    initCanUserScheduleInterval()
-      ?.then(() => {
-        setShowNoSubstackCookiesDialog(false);
-      })
-      .catch(() => {
-        toast.error("Didn't find any Substack login. Try again please.");
-      });
-  };
 
   const handleImprovement = (improvedText: string) => {
     const formattedText = formatText(improvedText);
@@ -604,23 +593,6 @@ export function NotesEditorDialog() {
           </div>
         </DialogContent>
       </Dialog>
-      <ExtensionInstallDialog
-        open={showExtensionDialog}
-        onOpenChange={setShowExtensionDialog}
-        onInstall={() => {
-          setShowExtensionDialog(false);
-        }}
-      />
-      <NoSubstackCookiesDialog
-        open={showNoSubstackCookiesDialog}
-        onOpenChange={setShowNoSubstackCookiesDialog}
-        onSubstackLogin={handleSubstackLogin}
-        onCancel={() => {
-          setShowNoSubstackCookiesDialog(false);
-          cancelCanUserScheduleInterval();
-        }}
-        loading={isIntervalRunning}
-      />
       <AvoidPlagiarismDialog
         open={showAvoidPlagiarismDialog}
         onOpenChange={setShowAvoidPlagiarismDialog}

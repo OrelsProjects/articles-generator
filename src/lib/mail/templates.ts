@@ -240,7 +240,7 @@ export function generateFailedToSendNoteEmail(
         <br/> failed to send.</p>`
         : `The note with id <a href="https://writeroom.co/queue?noteId=${noteId}">${noteId}</a> failed to send because the note is empty.`
     }
-    <p>You can send it now by clicking the button below. Make sure to do it from the <strong>computer</strong> you use Substack on (Won't work from mobile)</p>
+    <p>You can send it now by clicking the button below.</p>
     <div class="center-button-container">
       <a href="https://writeroom.co/queue?sendNoteId=${noteId}" class="button">Send now</a>
     </div>

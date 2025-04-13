@@ -11,7 +11,7 @@ import { extensionApiRequest } from "@/lib/api/api";
 export const useNotesSchedule = () => {
   const dispatch = useAppDispatch();
   const { userNotes, loadingNotes, error } = useAppSelector(selectNotes);
-  const { setUserSubstackCookies } = useExtension();
+  const { setUserSubstackCookies, sendExtensionApiRequest } = useExtension();
 
   const [loadingScheduleNote, setLoadingScheduleNote] = useState(false);
   const [isIntervalRunning, setIsIntervalRunning] = useState(false);
@@ -80,7 +80,7 @@ export const useNotesSchedule = () => {
           );
         }
         // Then update on server
-        await extensionApiRequest("schedule", {
+        await sendExtensionApiRequest("schedule", {
           date: note.scheduledTo,
           noteId: note.id,
         });

@@ -10,12 +10,24 @@ import {
   BrowserType,
   GetSubstackCookiesResponse,
 } from "@/types/useSubstack.type";
-import axios from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { CreatePostResponse } from "@/types/createPostResponse";
 import { Logger } from "@/logger";
-import { useAppSelector } from "@/lib/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { FeatureFlag, Note } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
+import {
+  extensionApiRequest,
+  getSubstackCookiesExpiration,
+  RouteBody,
+} from "@/lib/api/api";
+import { ApiRoute } from "@/lib/api/api";
+import { NoExtensionError } from "@/types/errors/NoExtensionError";
+import {
+  setShowExtensionDialog,
+  setShowNoSubstackCookiesDialog,
+} from "@/lib/features/ui/uiSlice";
+import { NoCookiesError } from "@/types/errors/NoCookiesError";
 
 /**
  * Detects the current browser type
@@ -45,6 +57,7 @@ const detectBrowser = (): BrowserType => {
  * @returns {UseExtension} Hook methods and state
  */
 export function useExtension(): UseExtension {
+  const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.auth);
   const { userNotes } = useAppSelector(state => state.notes);
   const [isLoading, setIsLoading] = useState(false);
@@ -309,8 +322,38 @@ export function useExtension(): UseExtension {
     [userNotes],
   );
 
+  /**
+ * <T extends ApiRoute, R = any>(
+  route: T,
+  body: RouteBody<T>,
+  config?: AxiosRequestConfig,
+): Promise<AxiosResponse<R>>
+ */
+  const sendExtensionApiRequest = async <T extends ApiRoute, R = any>(
+    route: T,
+    body: RouteBody<T>,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<R>> => {
+    const cookiesValid = await getSubstackCookiesExpiration(config);
+    debugger;
+    if (!cookiesValid.valid) {
+      const userHasExtension = await hasExtension();
+      if (!userHasExtension) {
+        dispatch(setShowExtensionDialog(true));
+        throw new NoExtensionError(
+          "Authentication required. Please log in to Substack.",
+        );
+      } else {
+        dispatch(setShowNoSubstackCookiesDialog(true));
+        throw new NoCookiesError(
+          "Authentication required. Please log in to Substack.",
+        );
+      }
+    }
+    return await extensionApiRequest<T, R>(route, body, config);
+  };
+
   return {
-    sendNote,
     isLoading,
     error,
     postResponse,
@@ -319,5 +362,6 @@ export function useExtension(): UseExtension {
     getNoteById,
     hasExtension,
     setUserSubstackCookies,
+    sendExtensionApiRequest,
   };
 }

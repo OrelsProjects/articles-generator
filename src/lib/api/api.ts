@@ -2,6 +2,8 @@ import { NoteDraft, NoteDraftBody, NoteStatus } from "@/types/note";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { z } from "zod";
 import { Logger } from "@/logger";
+import { hasExtension } from "@/lib/utils/extension";
+import { NoExtensionError } from "@/types/errors/NoExtensionError";
 
 export async function createNoteDraft(
   note: {
@@ -56,7 +58,7 @@ interface RouteBodyTypes {
 }
 
 // Define route schemas using Zod
-const routeSchemas = {
+export const routeSchemas = {
   schedule: z.object({
     date: z.date(),
     noteId: z.string(),
@@ -72,10 +74,10 @@ const routeSchemas = {
 } as const;
 
 // Type for valid routes
-type ApiRoute = (typeof ROUTES)[number];
+export type ApiRoute = (typeof ROUTES)[number];
 
 // Type for route-specific request bodies
-type RouteBody<T extends ApiRoute> = T extends keyof typeof routeSchemas
+export type RouteBody<T extends ApiRoute> = T extends keyof typeof routeSchemas
   ? z.infer<(typeof routeSchemas)[T]>
   : never;
 
@@ -92,11 +94,7 @@ export async function extensionApiRequest<T extends ApiRoute, R = any>(
   config?: AxiosRequestConfig,
 ): Promise<AxiosResponse<R>> {
   try {
-    // 1. Verify user authentication
-    const cookiesValid = await getSubstackCookiesExpiration(config);
-    if (!cookiesValid.valid) {
-      throw new Error("Authentication required. Please log in to Substack.");
-    }
+
     // 2. Validate request body against schema
     if (route in routeSchemas) {
       const schema = routeSchemas[route as keyof typeof routeSchemas];

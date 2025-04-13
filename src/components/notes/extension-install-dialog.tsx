@@ -14,12 +14,16 @@ interface ExtensionInstallDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onInstall: () => void;
+  onRefresh: () => void;
+  loading: boolean;
 }
 
 export function ExtensionInstallDialog({
   open,
   onOpenChange,
   onInstall,
+  onRefresh,
+  loading,
 }: ExtensionInstallDialogProps) {
   const handleInstall = () => {
     // Open Chrome extension store in a new tab
@@ -35,26 +39,46 @@ export function ExtensionInstallDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle aria-label="Chrome Extension Required" className="flex items-center gap-2">
+          <DialogTitle
+            aria-label="Chrome Extension Required"
+            className="flex items-center gap-2"
+          >
             <PuzzleIcon className="h-5 w-5 text-primary" />
             Chrome Extension Required
           </DialogTitle>
           <DialogDescription>
             To post directly to Substack, you need to install WriteRoom&apos;s
-            Chrome extension. It only takes a minute and enables one-click
-            publishing.
+            Chrome extension. It only takes a minute and enables scheduling
+            notes.
             <br />
             <br />
             <span className="text-foreground">
-              (Sometimes it takes a few moments to update after installation)
+              <span
+                onClick={() => {
+                  window.location.reload();
+                }}
+                className="text-primary cursor-pointer underline"
+              >
+                (Refresh after installation)
+              </span>
             </span>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-end">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onOpenChange(false);
+            }}
+            disabled={loading}
+          >
             Next time
           </Button>
-          <Button variant="neumorphic-primary" onClick={handleInstall}>
+          <Button
+            variant="neumorphic-primary"
+            onClick={handleInstall}
+            disabled={loading}
+          >
             Let&apos;s go!
           </Button>
         </DialogFooter>

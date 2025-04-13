@@ -13,11 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { ExternalLinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { toast } from "react-toastify";
+import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 interface NoSubstackCookiesDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubstackLogin: () => void;
   onCancel: () => void;
   loading: boolean;
 }
@@ -25,10 +25,20 @@ interface NoSubstackCookiesDialogProps {
 export function NoSubstackCookiesDialog({
   open,
   onOpenChange,
-  onSubstackLogin,
+
   onCancel,
   loading,
 }: NoSubstackCookiesDialogProps) {
+  const { initCanUserScheduleInterval } = useNotesSchedule();
+  const handleSubstackLogin = () => {
+    initCanUserScheduleInterval()
+      ?.then(() => {
+        onOpenChange(false);
+      })
+      .catch(() => {
+        toast.error("Didn't find any Substack login. Try again please.");
+      });
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -53,7 +63,7 @@ export function NoSubstackCookiesDialog({
               href="https://www.substack.com"
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => onSubstackLogin()}
+              onClick={handleSubstackLogin}
               className={cn({
                 "opacity-50 pointer-events-none cursor-wait": loading,
               })}

@@ -10,6 +10,8 @@ export interface UiState {
   sideBarState: "collapsed" | "expanded";
   didShowSaveTooltip: boolean;
   showScheduleModal: boolean;
+  showExtensionDialog: boolean;
+  showNoSubstackCookiesDialog: boolean;
 }
 
 export const initialState: UiState = {
@@ -21,6 +23,8 @@ export const initialState: UiState = {
   sideBarState: "expanded",
   didShowSaveTooltip: false,
   showScheduleModal: false,
+  showExtensionDialog: false,
+  showNoSubstackCookiesDialog: false,
 };
 
 const uiSlice = createSlice({
@@ -51,6 +55,12 @@ const uiSlice = createSlice({
     setShowScheduleModal: (state, action) => {
       state.showScheduleModal = action.payload;
     },
+    setShowExtensionDialog: (state, action) => {
+      state.showExtensionDialog = action.payload;
+    },
+    setShowNoSubstackCookiesDialog: (state, action) => {
+      state.showNoSubstackCookiesDialog = action.payload;
+    },
   },
 });
 
@@ -63,6 +73,8 @@ export const {
   setSideBarState,
   setDidShowSaveTooltip,
   setShowScheduleModal,
+  setShowExtensionDialog,
+  setShowNoSubstackCookiesDialog,
 } = uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;

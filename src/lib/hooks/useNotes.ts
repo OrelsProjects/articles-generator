@@ -51,6 +51,7 @@ import {
   extensionApiRequest,
   updateNoteDraft,
 } from "@/lib/api/api";
+import { useExtension } from "@/lib/hooks/useExtension";
 
 export const useNotes = () => {
   const { user } = useAppSelector(selectAuth);
@@ -77,6 +78,7 @@ export const useNotes = () => {
   const [, setShouldCancelUpdate] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [loadingSendNote, setLoadingSendNote] = useState(false);
+  const { sendExtensionApiRequest } = useExtension();
 
   const loadingCreateNote = useRef(false);
   const loadingNotesRef = useRef(false);
@@ -248,7 +250,7 @@ export const useNotes = () => {
         const body = status === "archived" ? { isArchived: true } : { status };
 
         if (previousStatus === "scheduled") {
-          await extensionApiRequest("schedule-delete", {
+          await sendExtensionApiRequest("schedule-delete", {
             noteId,
             status,
           });
@@ -594,7 +596,7 @@ export const useNotes = () => {
       if (!user) return;
       try {
         setLoadingSendNote(true);
-        const response = await extensionApiRequest("send", {
+        const response = await sendExtensionApiRequest("send", {
           noteId,
           userId: user.userId,
         });

@@ -1,5 +1,9 @@
+import { RouteBody } from "@/lib/api/api";
+import { ApiRoute } from "@/lib/api/api";
 import { CreatePostResponse } from "@/types/createPostResponse";
+import { AxiosRequestConfig } from "axios";
 import { NoteDraft } from "@/types/note";
+import { AxiosResponse } from "axios";
 
 /**
  * Supported browser types
@@ -83,7 +87,6 @@ export enum SubstackError {
  * Hook return type
  */
 export interface UseSubstackPost {
-  sendNote: (params: CreatePostParams) => Promise<CreatePostResponse | null>;
   isLoading: boolean;
   error: string | null;
   postResponse: CreatePostResponse | null;
@@ -92,4 +95,9 @@ export interface UseSubstackPost {
   getNoteById: (noteId: string) => NoteDraft | null;
   setUserSubstackCookies: () => Promise<void>;
   hasExtension: () => Promise<boolean>;
+  sendExtensionApiRequest: <T extends ApiRoute, R = any>(
+    route: T,
+    body: RouteBody<T>,
+    config?: AxiosRequestConfig,
+  ) => Promise<AxiosResponse<R>>;
 }

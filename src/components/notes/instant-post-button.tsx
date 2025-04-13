@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { EventTracker } from "@/eventTracker";
 import { CreatePostResponse } from "@/types/createPostResponse";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 
 interface SubstackPostButtonProps {
   onPreSend?: () => unknown;
@@ -41,16 +42,9 @@ export function InstantPostButton({
     null,
   );
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [showExtensionDialog, setShowExtensionDialog] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   const handleSendNote = async () => {
     EventTracker.track("note_post_button_clicked_" + source);
-    const userHasExtension = await hasExtension();
-    if (!userHasExtension) {
-      setShowExtensionDialog(true);
-      return;
-    }
     if (!note) return;
     const noteObject = typeof note === "string" ? getNoteById(note) : note;
     if (!noteObject) return;
@@ -61,12 +55,10 @@ export function InstantPostButton({
       if (response) {
         setPostResponse(response);
         setShowSuccessDialog(true);
-      } else {
-        setShowExtensionDialog(true);
       }
     } catch (error) {
       console.error("Error sending post:", error);
-      setShowExtensionDialog(true);
+      toast.error("Error sending post");
     } finally {
       onLoadingChange?.(false);
     }
@@ -82,12 +74,8 @@ export function InstantPostButton({
   };
 
   return (
-    <div className="hidden md:flex">
-      <div
-        className="relative"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
+    <div className="flex">
+      <div className="relative">
         <div className="flex items-center gap-0.5 rounded-lg">
           {children ? (
             children
@@ -98,13 +86,7 @@ export function InstantPostButton({
               size={size}
               disabled={loadingSendNote || !note || disabled}
               onClick={handleSendNote}
-              className={cn(
-                "flex items-center gap-2",
-                {
-                  "text-muted-foreground": !isHovered,
-                },
-                className,
-              )}
+              className={cn("flex items-center gap-2", className)}
             >
               <AnimatePresence>
                 <motion.span className="overflow-hidden whitespace-nowrap">
@@ -129,14 +111,6 @@ export function InstantPostButton({
           if (!note) return;
           if (typeof note === "string") updateNoteStatus(note, "archived");
           else updateNoteStatus(note.id, "archived");
-        }}
-      />
-
-      <ExtensionInstallDialog
-        open={showExtensionDialog}
-        onOpenChange={setShowExtensionDialog}
-        onInstall={() => {
-          setShowExtensionDialog(false);
         }}
       />
     </div>

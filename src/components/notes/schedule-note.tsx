@@ -391,14 +391,6 @@ export function ScheduleNote({
           </div>
         </DialogContent>
       </Dialog>
-
-      <ExtensionInstallDialog
-        open={showExtensionDialog}
-        onOpenChange={setShowExtensionDialog}
-        onInstall={() => {
-          setShowExtensionDialog(false);
-        }}
-      />
     </div>
   );
 }
