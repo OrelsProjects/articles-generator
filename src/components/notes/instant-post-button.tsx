@@ -35,7 +35,7 @@ export function InstantPostButton({
   disabled,
   children,
 }: SubstackPostButtonProps) {
-  const { getNoteById, hasExtension } = useExtension();
+  const { getNoteById } = useExtension();
   const { updateNoteStatus, sendNote, loadingSendNote } = useNotes();
 
   const [postResponse, setPostResponse] = useState<CreatePostResponse | null>(

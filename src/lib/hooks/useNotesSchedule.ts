@@ -65,7 +65,6 @@ export const useNotesSchedule = () => {
 
   const scheduleNote = useCallback(
     async (note: NoteDraft) => {
-      debugger;
       if (!note.body || note.body.length === 0) {
         throw new ScheduleFailedEmptyNoteBodyError("Note body is empty");
       }

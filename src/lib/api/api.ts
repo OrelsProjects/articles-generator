@@ -118,12 +118,10 @@ export async function extensionApiRequest<T extends ApiRoute, R = any>(
     switch (route) {
       case "schedule-delete":
         method = "delete";
-        debugger;
         endpoint = `/api/user/notes/${body.noteId}/schedule`;
         if ("status" in body && body.status) {
           endpoint += `?status=${body.status}`;
         }
-
         break;
       case "schedule":
         method = "post";

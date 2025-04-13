@@ -335,7 +335,6 @@ export function useExtension(): UseExtension {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<R>> => {
     const cookiesValid = await getSubstackCookiesExpiration(config);
-    debugger;
     if (!cookiesValid.valid) {
       const userHasExtension = await hasExtension();
       if (!userHasExtension) {

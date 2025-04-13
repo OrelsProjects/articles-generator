@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { CalendarClock } from "lucide-react";
-import { TooltipButton } from "@/components/ui/tooltip-button";
 import { addHours } from "date-fns";
 import {
   Select,
@@ -35,8 +34,6 @@ import {
   isValidScheduleTime,
   getInvalidTimeMessage,
 } from "@/lib/utils/date/schedule";
-import { useExtension } from "@/lib/hooks/useExtension";
-import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
 import { useUi } from "@/lib/hooks/useUi";
 
 interface ScheduleNoteProps {
@@ -59,9 +56,6 @@ export function ScheduleNote({
   );
   const [loadingSchedule, setLoadingSchedule] = useState(false);
   const [timeError, setTimeError] = useState<string | null>(null);
-  const [showExtensionDialog, setShowExtensionDialog] = useState(false);
-
-  const { hasExtension } = useExtension();
 
   const handleOpenChange = (open: boolean) => {
     onOpenChange(open);
@@ -109,11 +103,6 @@ export function ScheduleNote({
   const handleConfirmSchedule = async () => {
     setLoadingSchedule(true);
     try {
-      const userHasExtension = await hasExtension();
-      if (!userHasExtension) {
-        setShowExtensionDialog(true);
-        return;
-      }
       if (scheduledDate && isValidScheduleTime(scheduledDate)) {
         await onScheduleConfirm(scheduledDate);
         handleOpenChange(false);
