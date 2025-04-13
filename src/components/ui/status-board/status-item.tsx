@@ -88,6 +88,7 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
                   {item.noteDraft && item.status === "scheduled" && (
                     <StatusBadgeDropdown
                       status={item.noteDraft.status as NoteStatus}
+                      scheduledTo={item.noteDraft.scheduledTo}
                     />
                   )}
                   {item.hasAttachment && (

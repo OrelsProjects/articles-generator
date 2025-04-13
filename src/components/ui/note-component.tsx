@@ -401,6 +401,7 @@ export default function NoteComponent({
                 <StatusBadgeDropdown
                   status={note.status as NoteStatus}
                   isArchived={note.isArchived}
+                  scheduledTo={note.scheduledTo}
                 />
               )}
             </div>

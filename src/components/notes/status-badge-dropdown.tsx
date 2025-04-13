@@ -1,16 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { NoteStatus } from "@/types/note";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 type StatusBadgeProps = {
   status: NoteStatus;
+  scheduledTo?: Date | null;
   isArchived?: boolean;
 };
 
-const StatusBadgeDropdown = ({ status, isArchived }: StatusBadgeProps) => {
+const StatusBadgeDropdown = ({
+  status,
+  scheduledTo,
+  isArchived,
+}: StatusBadgeProps) => {
+  const currentStatusText = useMemo(() => {
+    if (scheduledTo && status === "scheduled") {
+      // return DD/MM, HH:MM (24h format)
+      return format(scheduledTo, "dd/MM, HH:mm");
+    }
+    return status;
+  }, [scheduledTo, status]);
+
   return (
     <div className="relative inline-block">
       <Badge
@@ -30,7 +44,7 @@ const StatusBadgeDropdown = ({ status, isArchived }: StatusBadgeProps) => {
           },
         )}
       >
-        <span>{status}</span>
+        <span>{currentStatusText}</span>
       </Badge>
     </div>
   );
