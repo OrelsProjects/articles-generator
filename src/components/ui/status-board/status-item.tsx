@@ -17,6 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { NoteStatus } from "@prisma/client";
 interface StatusItemProps {
   item: StatusItemType;
   onSelectItem: (itemId: UniqueIdentifier, content: string) => void;
@@ -85,7 +86,9 @@ export function StatusItem({ item, onSelectItem, selected }: StatusItemProps) {
                 <div className="font-medium text-sm pt-1.5">{item.author}</div>
                 <div className="flex flex-col items-end gap-1">
                   {item.noteDraft && item.status === "scheduled" && (
-                    <StatusBadgeDropdown note={item.noteDraft} />
+                    <StatusBadgeDropdown
+                      status={item.noteDraft.status as NoteStatus}
+                    />
                   )}
                   {item.hasAttachment && (
                     <TooltipProvider>
