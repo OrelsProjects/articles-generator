@@ -8,6 +8,7 @@ import {
   CookieSameSite,
   CookieName,
 } from "@/types/useSubstack.type";
+import { toMilis } from "@/lib/utils/date";
 
 const cookieNameCookieNameToDB: Record<CookieName, CookieNameDB> = {
   "substack.sid": CookieNameDB.substackSid,
@@ -52,7 +53,7 @@ export const setSubstackCookies = async (
   }
 };
 
-export const validateCookie = async (
+export const validateCookies = async (
   userId: string,
 ): Promise<{
   valid: boolean;
@@ -76,8 +77,15 @@ export const validateCookie = async (
     }
 
     const now = new Date();
-    const expiresAtDate = new Date(expiresAt);
+    const expiresAtDate = new Date(toMilis(expiresAt));
     if (expiresAtDate < now) {
+      console.error(
+        "expiresAtDate < now",
+        expiresAtDate,
+        now,
+        "expiresAt: ",
+        expiresAt,
+      );
       return { valid: false };
     }
 

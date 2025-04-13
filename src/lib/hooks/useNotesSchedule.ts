@@ -1,12 +1,12 @@
 import { useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { selectNotes, updateNote } from "@/lib/features/notes/notesSlice";
-import { isEmptyNote, NoteDraft } from "@/types/note";
+import { NoteDraft } from "@/types/note";
 import axios from "axios";
 import { Logger } from "@/logger";
-import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";
 import { useExtension } from "@/lib/hooks/useExtension";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
+import { extensionApiRequest } from "@/lib/api/api";
 
 export const useNotesSchedule = () => {
   const dispatch = useAppDispatch();
@@ -65,6 +65,7 @@ export const useNotesSchedule = () => {
 
   const scheduleNote = useCallback(
     async (note: NoteDraft) => {
+      debugger;
       if (!note.body || note.body.length === 0) {
         throw new ScheduleFailedEmptyNoteBodyError("Note body is empty");
       }
@@ -73,17 +74,15 @@ export const useNotesSchedule = () => {
       const previousNote = userNotes.find(n => n.id === note.id);
 
       try {
-        const canUserSchedule = await canSchedule({
-          setCookiesIfVerified: false,
-        });
-
-        if (!canUserSchedule) {
-          throw new NoSubstackCookiesError("User cannot schedule notes");
+        if (!note.scheduledTo) {
+          throw new ScheduleFailedEmptyNoteBodyError(
+            "Note scheduledTo is empty",
+          );
         }
-
         // Then update on server
-        await axios.post(`/api/user/notes/${note.id}/schedule`, {
+        await extensionApiRequest("schedule", {
           date: note.scheduledTo,
+          noteId: note.id,
         });
         dispatch(
           updateNote({

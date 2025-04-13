@@ -46,7 +46,11 @@ import { Byline } from "@/types/article";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { CreatePostResponse } from "@/types/createPostResponse";
 import { CancelError } from "@/types/errors/CancelError";
-import { createNoteDraft, updateNoteDraft } from "@/lib/api/api";
+import {
+  createNoteDraft,
+  extensionApiRequest,
+  updateNoteDraft,
+} from "@/lib/api/api";
 
 export const useNotes = () => {
   const { user } = useAppSelector(selectAuth);
@@ -244,8 +248,9 @@ export const useNotes = () => {
         const body = status === "archived" ? { isArchived: true } : { status };
 
         if (previousStatus === "scheduled") {
-          await axios.delete(`/api/user/notes/${noteId}/schedule`, {
-            params: { status },
+          await extensionApiRequest("schedule-delete", {
+            noteId,
+            status,
           });
           dispatch(updateNote({ id: noteId, note: { status: "draft" } }));
         } else {
@@ -589,13 +594,10 @@ export const useNotes = () => {
       if (!user) return;
       try {
         setLoadingSendNote(true);
-        const response = await axios.post<{ result: CreatePostResponse }>(
-          `/api/user/notes/send`,
-          {
-            noteId,
-            userId: user.userId,
-          },
-        );
+        const response = await extensionApiRequest("send", {
+          noteId,
+          userId: user.userId,
+        });
         return response.data.result;
       } catch (error: any) {
         Logger.error("Error sending note:", error);

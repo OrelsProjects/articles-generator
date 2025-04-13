@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
-import { convertMDToHtml, Note, NoteDraft, NoteFeedback } from "@/types/note";
+import {
+  convertMDToHtml,
+  Note,
+  NoteDraft,
+  NoteFeedback,
+  NoteStatus,
+} from "@/types/note";
 import {
   Heart,
   MessageCircle,
@@ -391,7 +397,12 @@ export default function NoteComponent({
           >
             <Author />
             <div className=" flex items-center gap-2 top-0">
-              {isUserNote && <StatusBadgeDropdown note={note as NoteDraft} />}
+              {"status" in note && (
+                <StatusBadgeDropdown
+                  status={note.status as NoteStatus}
+                  isArchived={note.isArchived}
+                />
+              )}
             </div>
             {/* <div className="flex items-center gap-2" /> */}
             {!isUserNote && (
