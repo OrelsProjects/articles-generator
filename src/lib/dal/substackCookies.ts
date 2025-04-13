@@ -51,3 +51,38 @@ export const setSubstackCookies = async (
     }
   }
 };
+
+export const validateCookie = async (
+  userId: string,
+): Promise<{
+  valid: boolean;
+  expiresAt?: Date;
+}> => {
+  try {
+    const cookies = await prisma.substackCookie.findMany({
+      where: { userId },
+    });
+    //check for sid
+    const sidCookie = cookies.find(
+      cookie => cookie.name === CookieNameDB.substackSid,
+    );
+    if (!sidCookie) {
+      return { valid: false };
+    }
+    const sidCookieValue = sidCookie.value;
+    const expiresAt = sidCookie.expiresAt;
+    if (!sidCookieValue || !expiresAt) {
+      return { valid: false };
+    }
+
+    const now = new Date();
+    const expiresAtDate = new Date(expiresAt);
+    if (expiresAtDate < now) {
+      return { valid: false };
+    }
+
+    return { valid: true, expiresAt: expiresAtDate };
+  } catch (error) {
+    return { valid: false };
+  }
+};
