@@ -78,6 +78,7 @@ export function FollowerActivityChart({}: FollowerActivityChartProps) {
               : 0;
             return (
               <div
+                key={item.hour}
                 className="flex-1 mx-0.5 bg-chart-1 transition-colors cursor-help"
                 style={{ height: `${normalizedHeight}%` }}
               />
