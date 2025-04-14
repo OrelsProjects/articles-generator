@@ -348,8 +348,8 @@ export default function InspirationGrid() {
     <div className="w-full min-h-screen bg-transparent py-8 pb-28 md:py-16 flex justify-center items-start">
       <div className="container">
         <div className="mb-6 mx-auto">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-1">
+            <div className="flex items-center mb-6 md:mb-1">
               <h2 className="text-xl md:text-3xl font-semibold text-foreground">
                 Inspirations
               </h2>
@@ -359,7 +359,7 @@ export default function InspirationGrid() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 ml-1 mt-1"
+                      className="h-6 w-6 ml-1 mt-1 hidden md:flex"
                     >
                       <Info className="h-4 w-4 text-muted-foreground" />
                     </Button>
@@ -373,40 +373,38 @@ export default function InspirationGrid() {
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2">
-                <Select
-                  value={sort.type}
-                  onValueChange={value => {
-                    const newSort: InspirationSort = {
-                      type: value as InspirationSortType,
-                      direction: sort.direction,
-                    };
-                    updateSort(newSort);
-                  }}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="relevance">
-                      {inspirationSortTypeToName.relevance}
-                    </SelectItem>
-                    <SelectItem value="date">
-                      {inspirationSortTypeToName.date}
-                    </SelectItem>
-                    <SelectItem value="likes">
-                      {inspirationSortTypeToName.likes}
-                    </SelectItem>
-                    <SelectItem value="comments">
-                      {inspirationSortTypeToName.comments}
-                    </SelectItem>
-                    <SelectItem value="restacks">
-                      {inspirationSortTypeToName.restacks}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="w-full flex items-center justify-between md:justify-end gap-2 overflow-x-auto">
+              <Select
+                value={sort.type}
+                onValueChange={value => {
+                  const newSort: InspirationSort = {
+                    type: value as InspirationSortType,
+                    direction: sort.direction,
+                  };
+                  updateSort(newSort);
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="relevance">
+                    {inspirationSortTypeToName.relevance}
+                  </SelectItem>
+                  <SelectItem value="date">
+                    {inspirationSortTypeToName.date}
+                  </SelectItem>
+                  <SelectItem value="likes">
+                    {inspirationSortTypeToName.likes}
+                  </SelectItem>
+                  <SelectItem value="comments">
+                    {inspirationSortTypeToName.comments}
+                  </SelectItem>
+                  <SelectItem value="restacks">
+                    {inspirationSortTypeToName.restacks}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
               {hasAdvancedFiltering && (
                 <InspirationFilterDialog
                   filters={filters}
@@ -416,7 +414,7 @@ export default function InspirationGrid() {
               )}
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground hidden md:block">
             Use these high-performing posts as inspirations for your next
             content! Our AI engine selected these for you.
           </p>
