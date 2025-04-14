@@ -18,7 +18,7 @@ import { TooltipButton } from "@/components/ui/tooltip-button";
 import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
 
 export function QueuePage() {
-  const { scheduledNotes } = useQueue();
+  const { scheduledNotes, relevantScheduledNotes } = useQueue();
   const { selectNote, createDraftNote } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
   const { userNotes } = useAppSelector(state => state.notes);
@@ -193,14 +193,14 @@ export function QueuePage() {
         </div>
       </div>
 
-      {scheduledNotes.length === 0 && (
+      {relevantScheduledNotes.length === 0 && (
         <div className="bg-red-50 dark:bg-red-950/25 border border-red-200 dark:border-red-900 p-4 rounded-md mb-6 flex items-center text-red-800 dark:text-red-400">
           <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
           <span>You have no scheduled notes in your queue</span>
         </div>
       )}
 
-      {scheduledNotes.length > 0 && (
+      {relevantScheduledNotes.length > 0 && (
         <div className="bg-green-50 dark:bg-green-950/25 border border-green-200 dark:border-green-900 p-4 rounded-md mb-6 flex items-center text-green-800 dark:text-green-400">
           <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
           <span>

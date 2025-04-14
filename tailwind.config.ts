@@ -82,6 +82,21 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        "chart-1": {
+          DEFAULT: "hsl(var(--chart-1))",
+        },
+        "chart-2": {
+          DEFAULT: "hsl(var(--chart-2))",
+        },
+        "chart-3": {
+          DEFAULT: "hsl(var(--chart-3))",
+        },
+        "chart-4": {
+          DEFAULT: "hsl(var(--chart-4))",
+        },
+        "chart-5": {
+          DEFAULT: "hsl(var(--chart-5))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

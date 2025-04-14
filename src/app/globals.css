@@ -88,11 +88,12 @@
     --input: 20 5.9% 90%;
     --ring: 24.6 95% 53.1%;
     --radius: 0.5rem;
-    --chart-1: 24.6 95% 53.1%;
-    --chart-2: 60 4.8% 95.9%;
-    --chart-3: 60 4.8% 95.9%;
-    --chart-4: 60 4.8% 105.9%;
-    --chart-5: 24.6 95% 63.1%;
+
+    --chart-1: 224.3 74% 54.2%; /* Strong mid-blue */
+    --chart-2: 226.8 69% 49.7%; /* Muted but bold blue */
+    --chart-3: 222.1 78% 43.6%; /* Grittier, darker blue */
+    --chart-4: 228.6 63% 57.9%; /* Dusty indigo vibe */
+    --chart-5: 220.4 80% 47.3%; /* A punchier base tone */
 
     --sidebar-background: 0 0% 97%;
     --sidebar-foreground: 20 14% 37%;
@@ -125,11 +126,12 @@
     --input: 12 6.5% 15.1%;
     --ring: 35.5 91.7% 32.9%;
     --radius: 0.5rem;
-    --chart-1: 47.9 95.8% 53.1%;
-    --chart-2: 12 6.5% 15.1%;
-    --chart-3: 12 6.5% 15.1%;
-    --chart-4: 12 6.5% 25.1%;
-    --chart-5: 47.9 95.8% 63.1%;
+
+    --chart-1: 224.3 74% 54.2%; /* Strong mid-blue */
+    --chart-2: 226.8 69% 49.7%; /* Muted but bold blue */
+    --chart-3: 222.1 78% 43.6%; /* Grittier, darker blue */
+    --chart-4: 228.6 63% 57.9%; /* Dusty indigo vibe */
+    --chart-5: 220.4 80% 47.3%; /* A punchier base tone */
 
     --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 60 9% 50%;

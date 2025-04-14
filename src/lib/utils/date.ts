@@ -18,3 +18,9 @@ export function toMilis(date: number | string | Date) {
   }
   return date;
 }
+export function convertHourUTCToHourLocal(hourUTC: number): number {
+  const now = new Date();
+  const timezoneOffset = now.getTimezoneOffset();
+  const hourLocal = hourUTC - timezoneOffset / 60;
+  return hourLocal;
+}

@@ -17,21 +17,18 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { toast } from "react-toastify";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { daysStringArrayToDaysObject } from "@/types/schedule";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
-import { useSettings } from "@/lib/hooks/useSettings";
+import { FollowerActivityChart } from "@/components/analytics/follower-activity-chart";
 
 interface ScheduleEntry {
   id: string;
@@ -58,9 +55,16 @@ export function EditScheduleDialog({
   onOpenChange,
   onSave,
 }: EditScheduleDialogProps) {
-  const { hasInitQueue } = useSettings();
-  const { addSchedule, removeSchedule, updateSchedule, initQueue, loading } =
-    useQueue();
+  const {
+    addSchedule,
+    removeSchedule,
+    updateSchedule,
+    fetchBestTimeToPublish,
+    initQueue,
+    loading,
+    loadingBestTimeToPublish,
+    bestTimeToPublish,
+  } = useQueue();
   const { userSchedules } = useAppSelector(state => state.notes);
   const [schedule, setSchedule] = React.useState<ScheduleEntry[]>([]);
   const [isAddingSlot, setIsAddingSlot] = React.useState(false);
@@ -68,6 +72,16 @@ export function EditScheduleDialog({
   // Time picker state
   const [hours, setHours] = React.useState(12);
   const [minutes, setMinutes] = React.useState(0);
+
+  // Function to handle refreshing follower activity data
+  const handleRefreshActivity = async () => {
+    try {
+      await fetchBestTimeToPublish();
+    } catch (error) {
+      toast.error("Failed to refresh audience activity data");
+      console.error(error);
+    }
+  };
 
   // Convert userSchedules to ScheduleEntries format for the UI
   React.useEffect(() => {
@@ -77,7 +91,7 @@ export function EditScheduleDialog({
         let hour24 = userSchedule.hour;
         if (userSchedule.ampm === "pm" && hour24 < 12) hour24 += 12;
         if (userSchedule.ampm === "am" && hour24 === 12) hour24 = 0;
-        
+
         // Format time string in 24-hour format
         const timeString = `${hour24.toString().padStart(2, "0")}:${userSchedule.minute.toString().padStart(2, "0")}`;
 
@@ -111,11 +125,11 @@ export function EditScheduleDialog({
     const [hourStr, minuteStr] = timeString.split(":");
     const hour = parseInt(hourStr, 10);
     const minute = parseInt(minuteStr, 10);
-    
+
     // Convert to 12-hour format for API
     let hour12 = hour % 12;
     if (hour12 === 0) hour12 = 12;
-    const ampm = hour >= 12 ? "pm" as const : "am" as const;
+    const ampm = hour >= 12 ? ("pm" as const) : ("am" as const);
 
     return { hour: hour12, minute, ampm };
   };
@@ -180,7 +194,7 @@ export function EditScheduleDialog({
       // Convert from 24-hour to 12-hour format for API
       const hour12 = hours % 12 === 0 ? 12 : hours % 12;
       const ampm = hours >= 12 ? "pm" : "am";
-      
+
       // Use the API with 12-hour format as expected
       await addSchedule({
         hour: hour12,
@@ -297,8 +311,10 @@ export function EditScheduleDialog({
   // Handlers for time picker
   const incrementHours = () => setHours(prev => (prev === 23 ? 0 : prev + 1));
   const decrementHours = () => setHours(prev => (prev === 0 ? 23 : prev - 1));
-  const incrementMinutes = () => setMinutes(prev => (prev === 59 ? 0 : prev + 1));
-  const decrementMinutes = () => setMinutes(prev => (prev === 0 ? 59 : prev - 1));
+  const incrementMinutes = () =>
+    setMinutes(prev => (prev === 59 ? 0 : prev + 1));
+  const decrementMinutes = () =>
+    setMinutes(prev => (prev === 0 ? 59 : prev - 1));
 
   const handleSaveAll = async () => {
     try {
@@ -358,14 +374,14 @@ export function EditScheduleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-screen md:max-h-[90%] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-medium">
             Edit your posting schedule
           </DialogTitle>
         </DialogHeader>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto ">
           <table className="w-full">
             <thead>
               <tr className="text-left text-sm font-medium text-zinc-400">
@@ -462,26 +478,14 @@ export function EditScheduleDialog({
         </div>
 
         <div className="flex flex-col items-center gap-4 pt-2">
-          {schedule.length > 0 ? (
-            <Button
-              variant="link"
-              className="text-foreground"
-              onClick={handleMakeNatural}
-              disabled={loading}
-            >
-              Make my schedule more natural
-            </Button>
-          ) : (
-            hasInitQueue && (
-              <Button
-                variant="default"
-                onClick={handleAddDefaults}
-                disabled={loading}
-              >
-                Add defaults (For Tim)
-              </Button>
-            )
-          )}
+          <Button
+            variant="link"
+            className="text-foreground"
+            onClick={handleMakeNatural}
+            disabled={loading}
+          >
+            Make my schedule more natural
+          </Button>
 
           <Collapsible
             open={isAddingSlot}
@@ -527,7 +531,9 @@ export function EditScheduleDialog({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setHours(prev => (prev === 23 ? 0 : prev + 1))}
+                            onClick={() =>
+                              setHours(prev => (prev === 23 ? 0 : prev + 1))
+                            }
                             className="rounded-full hover:bg-muted"
                           >
                             <ChevronUp className="h-5 w-5" />
@@ -555,7 +561,9 @@ export function EditScheduleDialog({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setHours(prev => (prev === 0 ? 23 : prev - 1))}
+                            onClick={() =>
+                              setHours(prev => (prev === 0 ? 23 : prev - 1))
+                            }
                             className="rounded-full hover:bg-muted"
                           >
                             <ChevronDown className="h-5 w-5" />
@@ -571,7 +579,9 @@ export function EditScheduleDialog({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setMinutes(prev => (prev === 59 ? 0 : prev + 1))}
+                            onClick={() =>
+                              setMinutes(prev => (prev === 59 ? 0 : prev + 1))
+                            }
                             className="rounded-full hover:bg-muted"
                           >
                             <ChevronUp className="h-5 w-5" />
@@ -599,7 +609,9 @@ export function EditScheduleDialog({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setMinutes(prev => (prev === 0 ? 59 : prev - 1))}
+                            onClick={() =>
+                              setMinutes(prev => (prev === 0 ? 59 : prev - 1))
+                            }
                             className="rounded-full hover:bg-muted"
                           >
                             <ChevronDown className="h-5 w-5" />
@@ -627,6 +639,17 @@ export function EditScheduleDialog({
               )}
             </AnimatePresence>
           </Collapsible>
+        </div>
+
+        {/* Follower Activity Chart */}
+        <div className="mt-8 border-t border-border pt-4">
+          {loadingBestTimeToPublish ? (
+            <div className="flex justify-center items-center h-[200px]">
+              <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <FollowerActivityChart />
+          )}
         </div>
       </DialogContent>
     </Dialog>

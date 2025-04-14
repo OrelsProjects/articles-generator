@@ -6,7 +6,7 @@ import productsReducer from "@/lib/features/products/productsSlice";
 import settingsReducer from "@/lib/features/settings/settingsSlice";
 import notesReducer from "@/lib/features/notes/notesSlice";
 import inspirationReducer from "@/lib/features/inspiration/inspirationSlice";
-
+import statisticsReducer from "@/lib/features/statistics/statisticsSlice";
 // Load UI state from localStorage
 // const loadUiState = () => {
 //   if (typeof window === "undefined") return undefined;
@@ -41,6 +41,7 @@ export const makeStore = () => {
       settings: settingsReducer,
       notes: notesReducer,
       inspiration: inspirationReducer,
+      statistics: statisticsReducer,
     },
     // preloadedState: {
     //   ui: loadUiState(),

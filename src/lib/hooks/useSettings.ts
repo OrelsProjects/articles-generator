@@ -60,17 +60,11 @@ export const useSettings = () => {
     return credits.remaining >= cost;
   };
 
-  //temp for Tim Denning
-  const hasInitQueue = useMemo(() => {
-    return user?.meta?.featureFlags.includes(FeatureFlag.initQueue);
-  }, [user]);
-
   return {
     init,
     didExceedLimit,
     hasPublication,
     hasEnoughCredits,
     credits,
-    hasInitQueue,
   };
 };

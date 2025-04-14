@@ -271,7 +271,7 @@ export default function SettingsPage() {
 
             <ul className="list-disc pl-6 mt-4 space-y-3 text-foreground text-sm">
               <li>Scheduled notes will not be sent.</li>
-              <li>You will not have access to your notes or articles.</li>
+              <li>You will not have access to your notes or posts.</li>
               <li>You will lose any and all access to your account.</li>
               <li>Your subscription will not renew.</li>
             </ul>
