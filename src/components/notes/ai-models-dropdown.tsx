@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export type FrontendModel =
+  | "auto"
   | "gpt-4.5"
   | "claude-3.5"
   | "claude-3.7"
@@ -25,13 +26,13 @@ const AI_MODELS: {
   shortName: string;
   recommended?: boolean;
 }[] = [
+  { value: "auto", label: "Auto", shortName: "auto", recommended: true },
   { value: "gpt-4.5", label: "GPT-4.5", shortName: "o4.5" },
   { value: "gpt-4.1", label: "GPT-4.1", shortName: "o4.1" },
   {
     value: "gemini-2.5-pro",
     label: "Gemini 2.5 Pro",
     shortName: "g2.5",
-    recommended: true,
   },
   { value: "claude-3.5", label: "Claude 3.5", shortName: "c3.5" },
   { value: "claude-3.7", label: "Claude 3.7", shortName: "c3.7" },
@@ -52,8 +53,7 @@ export function AiModelsDropdown({
   classNameTrigger,
   size = "sm",
 }: AiModelsDropdownProps) {
-  const [selectedModel, setSelectedModel] =
-    useState<FrontendModel>("claude-3.7");
+  const [selectedModel, setSelectedModel] = useState<FrontendModel>("auto");
 
   const { hasAdvancedGPT } = useUi();
 

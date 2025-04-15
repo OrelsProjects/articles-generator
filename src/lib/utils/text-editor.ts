@@ -432,7 +432,15 @@ export const ArrowLigature = Extension.create({
       }
     });
 
-    return [arrowRule];
+    const emDashRule = new InputRule({
+      find: /--$/,
+      handler: ({ state, match, range }) => {
+        if (match[0]) {
+          state.tr.insertText("—", range.from, range.to);
+        }
+      },
+    });
+    return [arrowRule, emDashRule];
   },
 });
 

@@ -5,7 +5,8 @@ export type LocalStorageKey =
   | "features"
   | "referral"
   | "subscription"
-  | "last_note";
+  | "last_note"
+  | "queue_active_tab";
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue

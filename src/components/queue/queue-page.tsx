@@ -16,8 +16,13 @@ import NoteComponent from "@/components/ui/note-component";
 import { ScheduledNotesList } from "./components";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 
 export function QueuePage() {
+  const [activeTabCache, setActiveTabCache] = useLocalStorage(
+    "queue_active_tab",
+    "scheduled",
+  );
   const { scheduledNotes, relevantScheduledNotes } = useQueue();
   const { selectNote, createDraftNote } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
@@ -54,6 +59,15 @@ export function QueuePage() {
     setActiveDays(days);
   }, [scheduledNotes]);
 
+  useEffect(() => {
+    setActiveTab(activeTabCache);
+  }, [activeTabCache]);
+
+  const handleUpdateActiveTab = (tab: string) => {
+    setActiveTab(tab);
+    setActiveTabCache(tab);
+  };
+
   // Find the latest scheduled note for scrolling
   const getLatestNote = () => {
     if (scheduledNotes.length === 0) return null;
@@ -70,7 +84,7 @@ export function QueuePage() {
   // Scroll to latest note
   const scrollToLatestNote = () => {
     if (activeTab !== "scheduled") {
-      setActiveTab("scheduled");
+      handleUpdateActiveTab("scheduled");
       // Allow time for tab content to render before scrolling
       setTimeout(() => {
         lastNoteRef.current?.scrollIntoView({
@@ -246,7 +260,7 @@ export function QueuePage() {
       <Tabs
         defaultValue="scheduled"
         value={activeTab}
-        onValueChange={setActiveTab}
+        onValueChange={handleUpdateActiveTab}
         className="w-full"
       >
         <TabsList className="mb-4 border-b w-full rounded-none bg-transparent p-0 justify-start">

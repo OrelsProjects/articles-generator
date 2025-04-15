@@ -804,6 +804,7 @@ export const generateNotesPrompt = (
   - Make sure it passes the flesch-kincaid test with a score of 70 or higher.
   - ${avoidWordsPrompt}
   - Mark a new line with double '\\n' (blackslash n). No hard line breaks.
+  - Do not use dashes or em dash.
   
   The response **must** be an array of notes in the following JSON format, without additional text:
   [

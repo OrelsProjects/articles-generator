@@ -39,8 +39,8 @@ export async function POST(
   const useTopTypes = body.useTopTypes || false;
   const topic = body.topic;
   const featureFlags = session.user.meta?.featureFlags || [];
-  let initialGeneratingModel: Model = "anthropic/claude-3.7-sonnet";
-  let model: Model = "anthropic/claude-3.7-sonnet";
+  let initialGeneratingModel: Model = "openrouter/auto";
+  let model: Model = "openrouter/auto";
 
   if (requestedModel && featureFlags.includes(FeatureFlag.advancedGPT)) {
     if (requestedModel === "gpt-4.5") {
@@ -55,10 +55,12 @@ export async function POST(
       model = "google/gemini-2.5-pro-preview-03-25";
     } else if (requestedModel === "grok-3-beta") {
       model = "x-ai/grok-3-beta";
+    } else if (requestedModel === "auto") {
+      model = "openrouter/auto";
     }
-  }
-  if (model !== "openai/gpt-4.5-preview") {
-    initialGeneratingModel = model;
+    if (model !== "openai/gpt-4.5-preview") {
+      initialGeneratingModel = model;
+    }
   }
 
   const count = Math.min(parseInt(countString || "3"), 3);

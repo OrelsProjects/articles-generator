@@ -15,7 +15,8 @@ export type Model =
   | "google/gemini-2.0-flash-001"
   | "openai/gpt-4.5-preview"
   | "x-ai/grok-3-beta"
-  | "google/gemini-2.5-pro-preview-03-25";
+  | "google/gemini-2.5-pro-preview-03-25"
+  | "openrouter/auto";
 
 export function getTokenCount(text: string) {
   const encoding = new Tiktoken(o200k_base);
@@ -35,6 +36,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
     "google/gemini-2.5-pro-preview-03-25": 1.25,
     "openai/gpt-4.1": 2,
     "x-ai/grok-3-beta": 3,
+    "openrouter/auto": 2,
   };
   const pricePerMillionTokensOutput = {
     "openai/gpt-4o": 10,
@@ -47,6 +49,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
     "google/gemini-2.5-pro-preview-03-25": 10,
     "openai/gpt-4.1": 8,
     "x-ai/grok-3-beta": 15,
+    "openrouter/auto": 2,
   };
   let price = (tokens / 1000000) * pricePerMillionTokensInput[model];
   if (outputTokens) {
@@ -74,7 +77,7 @@ export async function runPrompt(
   let response = await axios.post(
     "https://openrouter.ai/api/v1/chat/completions",
     {
-      model: model,
+      model,
       messages,
     },
     {
