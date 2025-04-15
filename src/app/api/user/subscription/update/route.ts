@@ -62,20 +62,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Update the subscription with the new price
-    const updateResponse = await stripe.subscriptions.update(
-      currentSubscription.stripeSubId,
-      {
-        items: [
-          {
-            id: stripeSubscription.items.data[0].id,
-            price: price,
-          },
-        ],
-        // Keep the trial period
-        trial_end: stripeSubscription.trial_end || undefined,
-      },
-    );
+    await stripe.subscriptions.update(currentSubscription.stripeSubId, {
+      items: [
+        {
+          id: stripeSubscription.items.data[0].id,
+          price: price,
+        },
+      ],
+    });
 
     return NextResponse.json({
       success: true,
