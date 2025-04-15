@@ -8,6 +8,9 @@ import { parseJson } from "@/lib/utils/json";
 import { addUserToList, sendMail, testEndpoint } from "@/lib/mail/mail";
 import {
   generateFailedToSendNoteEmail,
+  generateFreeSubscriptionEndedEmail,
+  generateSubscriptionDeletedEmail,
+  generateSubscriptionPausedEmail,
   generateSubscriptionTrialEndingEmail,
   welcomeTemplate,
 } from "@/lib/mail/templates";
@@ -61,6 +64,32 @@ export async function GET() {
   }
 
   try {
+    const deleteTemplates = generateSubscriptionDeletedEmail("Orel", "Pro");
+    const freeTrialEndingTemplates = generateFreeSubscriptionEndedEmail("Orel");
+    const pausedTemplates = generateSubscriptionPausedEmail("Orel", "Pro");
+    await sendMail({
+      to: "orelsmail@gmail.com",
+      from: "support",
+      subject: deleteTemplates.subject,
+      template: deleteTemplates.body,
+      cc: [],
+    });
+
+    await sendMail({
+      to: "orelsmail@gmail.com",
+      from: "support",
+      subject: freeTrialEndingTemplates.subject,
+      template: freeTrialEndingTemplates.body,
+      cc: [],
+    });
+
+    await sendMail({
+      to: "orelsmail@gmail.com",
+      from: "support",
+      subject: pausedTemplates.subject,
+      template: pausedTemplates.body,
+      cc: [],
+    });
     // const allUserNotes = await prisma.note.findMany();
     // const updatedNotes: any = [];
     // // if has scheduleTo, update it to remove seconds

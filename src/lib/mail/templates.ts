@@ -224,10 +224,13 @@ export function generateSubscriptionTrialEndingEmail(
   };
 }
 
-export function generateSubscriptionDeletedEmail(subscriptionId: string) {
+export function generateSubscriptionDeletedEmail(
+  userName?: string,
+  planName?: string,
+) {
   const content = `
-    <h2>We're sad to see you go</h2>
-    <p>Your subscription <strong>${subscriptionId}</strong> for WriteRoom has been successfully canceled.</p>
+    <h2>Hey ${userName || "there"}, we're sad to see you go</h2>
+    <p>Your plan <strong>${planName}</strong> for WriteRoom has been successfully canceled.</p>
     <p>Everyone's writing needs are unique, and I'd genuinely value hearing about your experience. What could we have done differently to better support your creative process?</p>
     <p>As a thank you for your feedback, I'd be happy to offer you a special discount if you decide to return in the future. Your insights help make WriteRoom better for writers everywhere.</p>
     <div class="center-button-container">
@@ -361,5 +364,75 @@ export function generatePaymentConfirmationEmail(
   return {
     body: baseEmailTemplate(content),
     subject: `Payment Confirmed: Your WriteRoom ${planName || "subscription"} is active`,
+  };
+}
+
+export function generateFreeSubscriptionEndedEmail(userName?: string) {
+  const content = `
+    <h2>Your WriteRoom Free Trial Has Ended – Keep the Momentum Going!</h2>
+    <p>Hi ${userName || "there"},</p>
+    <p>We hope you enjoyed exploring WriteRoom's full potential during your free trial! While your access to premium features has now concluded, your writing journey doesn't have to stop here :)</p>
+    
+    <p>During your trial, you unlocked:</p>
+    <ul>
+      <li>AI-powered notes outline and writer</li>
+      <li>Easy notes scheduling</li>
+      <li>Access to 5m+ inspiration notes</li>
+      <li>Smart text editor with style enhancements</li>
+      <li>Notes AI enhancer</li>
+    </ul>
+    
+    <p>Many writers like you find their voice via WriteRoom:<br>
+    <em>"WriteRoom allowed me to finally find my voice on Substack Notes, one that I'm satisfied with and I feel like."</em> – Kacper Wojaczek</p>
+    
+    <div class="center-button-container">
+      <a href="https://www.writeroom.co/pricing" class="button">Continue Your Writing Journey</a>
+    </div>
+    
+    <p>Special offer for trial users: Save 15% on your first 3 months when you upgrade in the next 48 hours.</p>
+    <p> Use the code <strong>TRIAL15</strong> at checkout to save 15%.</p>
+    
+    <p style="margin-top: 20px;">Whatever you decide, thank you for giving WriteRoom a try. We're rooting for your writing success!</p>
+    
+    <p>Warm regards,<br>
+    Orel and the WriteRoom Team</p>
+    
+    <p style="font-size: 0.9em; color: #666; margin-top: 25px;">
+      P.S. Need help choosing a plan? Reply to this email – I'll personally help you find the perfect fit.
+    </p>
+  `;
+
+  return {
+    body: baseEmailTemplate(content),
+    subject: "Your WriteRoom Free Trial Has Ended – Keep the Momentum Going!",
+  };
+}
+
+export function generateSubscriptionPausedEmail(
+  userName?: string,
+  planName?: string,
+) {
+  const content = `
+    <h2>Your WriteRoom Subscription is Paused – Ready to Return Anytime</h2>
+    <p>Hi ${userName || "there"},</p>
+    <p>We've successfully paused your <strong>${planName || "subscription"}</strong>. Your writing space remains exactly as you left it, and we'll preserve all your work and preferences until you're ready to resume.</p>
+
+    <p>While paused, your data is saved and will be accessible once you resume your subscription.</p>
+
+    <p>When you're ready to continue your writing journey, one click brings everything back:</p>
+
+    <div class="center-button-container">
+      <a href="https://www.writeroom.co/settings" class="button">Resume Subscription</a>
+    </div>
+
+    <p>Whether this is a temporary break or extended leave, we're here to support your creative rhythm. Your writing matters, and we're honored you chose WriteRoom as part of your process.</p>
+
+    <p>Warm regards,<br>
+    Orel and the WriteRoom Team</p>
+  `;
+
+  return {
+    body: baseEmailTemplate(content),
+    subject: "Your WriteRoom Subscription is Paused – Ready to Return Anytime",
   };
 }

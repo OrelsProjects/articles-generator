@@ -3,6 +3,7 @@ import { getActiveSubscription } from "@/lib/dal/subscription";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addUserToList, sendMail } from "@/lib/mail/mail";
 import {
+  generateFreeSubscriptionEndedEmail,
   generateInvoicePaymentFailedEmail,
   generatePaymentConfirmationEmail,
   generateSubscriptionDeletedEmail,
@@ -225,6 +226,7 @@ export async function handleSubscriptionPaused(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription;
   const subscriptionId = subscription.id;
   const user = await getUserBySubscription(subscription);
+  const plan = await getPlanBySubscription(subscription);
   if (!user) {
     loggerServer.error("No user found for subscription", {
       subscription: `${JSON.stringify(subscription)}`,
@@ -239,6 +241,31 @@ export async function handleSubscriptionPaused(event: Stripe.Event) {
       status: "paused",
     },
   });
+
+  if (subscription.metadata?.freeTrialCode) {
+    const emailTemplate = generateFreeSubscriptionEndedEmail(
+      user.name || undefined,
+    );
+    await sendMail({
+      to: user.email!,
+      from: "support",
+      subject: emailTemplate.subject,
+      template: emailTemplate.body,
+      cc: [],
+    });
+  } else {
+    const emailTemplate = generateSubscriptionDeletedEmail(
+      user.name || undefined,
+      plan?.toString(),
+    );
+    await sendMail({
+      to: user.email!,
+      from: "support",
+      subject: emailTemplate.subject,
+      template: emailTemplate.body,
+      cc: [],
+    });
+  }
 }
 
 export async function handleSubscriptionResumed(event: Stripe.Event) {
@@ -261,6 +288,7 @@ export async function handleSubscriptionResumed(event: Stripe.Event) {
   });
 }
 
+// this function is called with a subscription from stripe is cancelled
 export async function handleSubscriptionDeleted(event: Stripe.Event) {
   const stripe = getStripeInstance();
   const subscription = event.data.object as Stripe.Subscription;
