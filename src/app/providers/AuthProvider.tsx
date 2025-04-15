@@ -94,7 +94,6 @@ export default function AuthProvider({
     }
 
     const shouldOnboard = !hasPublication;
-
     if (shouldOnboard) {
       if (!pathname.includes("onboarding")) {
         router.push(`/onboarding`, {

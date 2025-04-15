@@ -403,7 +403,7 @@ export const useNotes = () => {
   const updateNoteBodyDebounced = useCallback(
     debounce((noteId, body) => {
       editNoteBody(noteId, body);
-    }, 500),
+    }, 200),
     [selectedNote],
   );
 

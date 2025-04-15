@@ -1,5 +1,5 @@
 import Loading from "@/components/ui/loading";
-import axios from "axios";
+import usePayments from "@/lib/hooks/usePayments";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -8,12 +8,13 @@ export default function SubscriptionProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const { verifySubscription } = usePayments();
   const [hasSubscription, setHasSubscription] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const verifySubscription = async () => {
+  const handleVerifySubscription = async () => {
     try {
-      await axios.get("/api/user/subscription/verify");
+      await verifySubscription();
       setHasSubscription(true);
     } catch (error) {
       console.error(error);
@@ -23,7 +24,7 @@ export default function SubscriptionProvider({
   };
 
   useEffect(() => {
-    verifySubscription();
+    handleVerifySubscription();
   }, []);
 
   if (loading) {

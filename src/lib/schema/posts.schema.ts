@@ -10,12 +10,12 @@ const PostTagSchema = z.object({
 
 export const PublishedBylineSchema = z.object({
   id: z.number(),
-  name: z.string(),
-  handle: z.string(),
-  previous_name: z.string().nullable(),
-  photo_url: z.string(),
-  bio: z.string(),
-  profile_set_up_at: z.string(),
+  name: z.string().nullable().optional(),
+  handle: z.string().nullable().optional(),
+  previous_name: z.string().nullable().optional(),
+  photo_url: z.string().nullable().optional(),
+  bio: z.string().nullable().optional(),
+  profile_set_up_at: z.string().nullable().optional(),
   twitter_screen_name: z.string().nullable().optional(),
   is_guest: z.boolean(),
   bestseller_tier: z.number().nullable().optional(),
@@ -56,7 +56,8 @@ export const PublishedBylineSchema = z.object({
         }),
       }),
     )
-    .nullable().optional(),
+    .nullable()
+    .optional(),
 });
 
 export const PostSchema = z.object({

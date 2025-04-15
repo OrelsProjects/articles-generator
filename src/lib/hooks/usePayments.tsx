@@ -129,6 +129,15 @@ export default function usePayments() {
     }
   };
 
+  const verifySubscription = async () => {
+    try {
+      await axios.get("/api/user/subscription/verify");
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   return {
     getProducts,
     goToCheckout,
@@ -136,5 +145,6 @@ export default function usePayments() {
     updateSubscription,
     purchaseCredits,
     loadingCredits,
+    verifySubscription,
   };
 }

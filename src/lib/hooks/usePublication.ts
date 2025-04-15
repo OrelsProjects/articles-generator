@@ -17,6 +17,7 @@ export const usePublication = () => {
     url: string,
   ): Promise<{
     valid: boolean;
+    validUrl?: string;
     hasPublication: boolean;
   }> => {
     try {

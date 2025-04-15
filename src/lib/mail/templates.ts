@@ -161,15 +161,14 @@ export const welcomeTemplate = (name?: string): EmailTemplate => ({
         <p><strong>P.S.</strong> Your feedback shapes WriteRoom's future. Have ideas, questions, or just want to chat about writing? Just reply to this email – I read every message personally.</p>
         
         <div class="button-container">
-            <a class="button" href="https://writeroom.co/editor">Start creating</a>
+            <a class="button" href="https://writeroom.co/home">Start creating</a>
         </div>
 
         <div class="divider"></div>
 
         <footer class="footer">
             <p>Crafted with ❤️ by Orel and the WriteRoom team</p>
-            <p>Questions or thoughts? Just hit reply – we're real humans who love hearing from you.</p>
-            <p>Need to unsubscribe? <a href="%unsubscribe_url%" style="color: #ff661a; text-decoration: none;">Click here</a> (though we hope you'll stay).</p>
+            <p>Questions or thoughts? Just hit reply. we're real humans who love hearing from you.</p>
         </footer>
 
     </div>
@@ -293,7 +292,7 @@ export function generatePublicationAnalysisCompleteEmail(userName?: string) {
     <p>Good news! We've completed the in-depth analysis of your publication.</p>
     <p>Ready to start writing with your new insights?</p>
     <div class="center-button-container">
-      <a href="https://www.writeroom.co/settings" class="button">View My Analysis</a>
+      <a href="https://www.writeroom.co/settings#preferences" class="button">View Your Analysis</a>
     </div>
   `;
   return {

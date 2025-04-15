@@ -66,12 +66,11 @@ const useAuth = () => {
       await signOutAuth();
       dispatch(clearUser());
       localStorage.clear();
+      router.push("/");
     } catch (error: any) {
       Logger.error("Error deleting user", { error });
       dispatch(setError("Failed to delete user"));
       throw error;
-    } finally {
-      router.push("/");
     }
   }, []);
 

@@ -46,16 +46,6 @@ export function PublicationOnboarding() {
             create better notes and ideas. Please connect your publication to
             continue.
           </p>
-          <div className="bg-muted p-4 rounded-md">
-            <p className="text-sm font-medium">What you&apos;ll need:</p>
-            <ul className="text-sm mt-2 space-y-1 list-disc list-inside">
-              <li>Your publication URL (e.g., yourname.substack.com)</li>
-              <li>
-                Public access to your publication (Paid publications is also
-                okay)
-              </li>
-            </ul>
-          </div>
         </CardContent>
         <CardFooter>
           <AnalyzePublicationButton variant="default" className="w-full" />

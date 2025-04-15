@@ -1,6 +1,7 @@
 // Validate the user's url first, make sure it's not 404.
 
 import { getPublicationByUrl } from "@/lib/dal/publication";
+import { getPublicationUpdatedUrl } from "@/lib/publication";
 import { getArticleEndpoint } from "@/lib/utils/publication";
 import { getUrlComponents, toValidUrl } from "@/lib/utils/url";
 import { Logger } from "@/logger";
@@ -15,21 +16,31 @@ export async function GET(request: NextRequest) {
       throw new Error("URL is required");
     }
 
-    const { validUrl, mainComponentInUrl } = getUrlComponents(url);
+    const { validUrl } = getUrlComponents(url);
+
+    const responseBody: {
+      valid: boolean;
+      validUrl?: string;
+      hasPublication: boolean;
+    } = {
+      valid: false,
+      hasPublication: false,
+    };
 
     const endpointToValidate = getArticleEndpoint(validUrl, 0, 1);
     const response = await fetch(endpointToValidate);
-    const status = response.ok;
-    if (!status) {
+    if (!response.ok) {
       throw new Error("URL is not valid");
     }
 
+    const updatedUrlResponse = await getPublicationUpdatedUrl(validUrl);
     const publicationInDB = await getPublicationByUrl(validUrl);
 
-    return NextResponse.json({
-      valid: true,
-      hasPublication: publicationInDB.length > 0,
-    });
+    responseBody.hasPublication = publicationInDB.length > 0;
+    responseBody.valid = true;
+    responseBody.validUrl = updatedUrlResponse;
+
+    return NextResponse.json(responseBody);
   } catch (error: any) {
     Logger.error(error);
     return NextResponse.json({ error: "URL is not valid" }, { status: 400 });

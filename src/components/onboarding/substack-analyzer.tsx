@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getBylines } from "@/lib/publication";
 import { Byline } from "@/types/article";
 import { Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "react-toastify";
 import { AuthorSelectionDialog } from "@/components/onboarding/author-selection-dialog";
+
 export function SubstackAnalyzer() {
   const [url, setUrl] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -26,10 +26,10 @@ export function SubstackAnalyzer() {
     try {
       const response = await fetch(`/api/publication/bylines?url=${url}`);
       const data = await response.json();
-      setBylines(data);
+      setBylines(data || []);
 
-      if (data.length === 0) {
-        toast.error("No authors found");
+      if (!data || data.length === 0) {
+        toast.error("No authors found. Please try a different URL.");
       } else {
         setDialogOpen(true);
       }

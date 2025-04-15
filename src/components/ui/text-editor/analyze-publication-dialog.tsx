@@ -85,6 +85,8 @@ export function AnalyzePublicationDialog({
   const [openAuthorSelectionDialog, setOpenAuthorSelectionDialog] =
     useState(false);
   const [bylines, setBylines] = useState<Byline[]>([]);
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [selectedByline, setSelectedByline] = useState<Byline | null>(null);
 
   useEffect(() => {
     if (open !== undefined) {
@@ -109,21 +111,34 @@ export function AnalyzePublicationDialog({
     if (loading) return;
     try {
       setLoadingBylines(true);
-      const { valid, hasPublication } = await validatePublication(url);
+      const { valid, validUrl } = await validatePublication(url);
       if (!valid) {
         setError(ERRORS.INVALID_SUBSTACK_URL);
         return;
       }
-      const response = await fetch(`/api/publication/bylines?url=${url}`);
+      if (validUrl) {
+        setUrl(validUrl);
+      }
+      const response = await fetch(
+        `/api/publication/bylines?url=${validUrl || url}`,
+      );
       const data = await response.json();
-      setBylines(data);
+      setBylines(data || []);
       setOpenAuthorSelectionDialog(true);
     } catch (error) {
       console.error(error);
       toast.error("Failed to fetch bylines");
+      setBylines([]);
+      setError(ERRORS.GENERAL_ERROR);
     } finally {
       setLoadingBylines(false);
     }
+  };
+
+  const handleBylineSelect = (byline: Byline) => {
+    setSelectedByline(byline);
+    setOpenAuthorSelectionDialog(false);
+    setShowConfirmationDialog(true);
   };
 
   const handleSubmit = async (byline: Byline) => {
@@ -140,9 +155,10 @@ export function AnalyzePublicationDialog({
     setLoading(true);
 
     setIsOpen(false);
+    setShowConfirmationDialog(false);
+
     try {
-      onAnalyzing?.(true);
-      setOpenAuthorSelectionDialog(false);
+      handleBylineSelect(byline);
       await analyzePublication(url, byline);
     } catch (error: any) {
       Logger.error("Error analyzing publication:", error);
@@ -159,11 +175,16 @@ export function AnalyzePublicationDialog({
           value: errorMessage,
         });
       }
+      onAnalyzing?.(false);
       setIsOpen(true);
     } finally {
       setLoading(false);
-      onAnalyzing?.(false);
     }
+  };
+
+  const startAnalysis = () => {
+    onAnalyzing?.(true);
+    setShowConfirmationDialog(false);
   };
 
   return (
@@ -269,6 +290,65 @@ export function AnalyzePublicationDialog({
         bylines={bylines}
         onSelect={handleSubmit}
       />
+
+      {/* Final Confirmation Dialog */}
+      <Dialog
+        open={showConfirmationDialog}
+        onOpenChange={setShowConfirmationDialog}
+      >
+        <DialogContent
+          className="sm:max-w-[500px]"
+          onOpenAutoFocus={e => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle className="text-xl">
+              We&apos;re about to analyze your publication
+            </DialogTitle>
+            <DialogDescription className="text-base pt-2">
+              This process will take several minutes to complete as we analyze
+              your content and writing style.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4">
+            <div className="bg-primary/10 border border-primary/20 rounded-md p-4">
+              <p className="text-sm text-primary mb-0.5">
+                <span className="font-bold">What happens next:</span>
+              </p>
+              <p className="text-sm text-primary mb-2.5">
+                Analysis may take up to 5 minutes to complete.
+                <br />
+                While you wait, you can:
+              </p>
+              <ul className="list-disc pl-5 mt-2 space-y-1 text-sm text-primary">
+                <li>Go make a cup of tea or coffee (I prefer coffee)</li>
+                <li>Enjoy our loading animation (You&apos;ll enjoy it)</li>
+                <li>Wait for an email from us (shortly)</li>
+              </ul>
+            </div>
+
+            {selectedByline && (
+              <div className="text-sm text-muted-foreground">
+                <p>
+                  <span className="font-medium">Selected Author:</span>{" "}
+                  {selectedByline.name}
+                </p>
+                <p>
+                  {/* Publication url  */}
+                  <span className="font-medium">Publication URL:</span>{" "}
+                  <span>{url}</span>
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button onClick={startAnalysis} className="w-full sm:w-auto">
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

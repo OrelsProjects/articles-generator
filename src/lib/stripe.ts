@@ -228,3 +228,11 @@ export const getPlanPriceId = async (
   const price = prices.data[0];
   return price?.id;
 };
+
+export const cancelSubscription = async (subscriptionId: string) => {
+  const stripe = getStripeInstance();
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  if (subscription.status === "active" || subscription.status === "trialing") {
+    await stripe.subscriptions.cancel(subscriptionId);
+  }
+};

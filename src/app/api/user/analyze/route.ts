@@ -324,7 +324,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (didConsumeCredits && session.user.email) {
+    if (session.user.email) {
       const email = generatePublicationAnalysisCompleteEmail();
       // send mail
       await sendMail({

@@ -178,7 +178,12 @@ const removeQueryParams = (url: string) => {
   return url.split("?")[0];
 };
 
-export const getUrlComponents = (url: string): UrlComponents => {
+export const getUrlComponents = (
+  url: string,
+  options?: {
+    withoutWWW?: boolean;
+  },
+): UrlComponents => {
   if (!url) {
     return { validUrl: "", mainComponentInUrl: "" };
   }
@@ -250,6 +255,10 @@ export const getUrlComponents = (url: string): UrlComponents => {
   const firstSlashAfterLastDot = validUrl.indexOf("/", lastDotIndex);
   if (firstSlashAfterLastDot !== -1) {
     validUrl = validUrl.slice(0, firstSlashAfterLastDot);
+  }
+
+  if (options?.withoutWWW) {
+    validUrl = validUrl.replace("www.", "");
   }
 
   if (validUrl.startsWith("https://")) {

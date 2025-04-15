@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import {
@@ -40,6 +40,18 @@ export default function SettingsPage() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showGetTokensDialog, setShowGetTokensDialog] = useState(false);
   const [loadingCancel, setLoadingCancel] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const id = window.location.hash.substring(1);
+      const el = document.getElementById(id);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth" });
+        }, 100); // slight delay to ensure it's rendered
+      }
+    }
+  }, []);
 
   const handleSaveSettings = () => {
     toast.success("Settings saved successfully");
@@ -109,10 +121,11 @@ export default function SettingsPage() {
                 {cancelAt && (
                   <div className="mt-2 p-3 border border-border rounded-md bg-muted/30">
                     <p className="text-sm text-destructive font-medium">
-                      Your subscription will be canceled at: {new Date(cancelAt).toLocaleDateString("en-US", {
+                      Your subscription will be canceled at:{" "}
+                      {new Date(cancelAt).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
-                        day: "numeric"
+                        day: "numeric",
                       })}
                     </p>
                   </div>
@@ -216,15 +229,13 @@ export default function SettingsPage() {
           </section>
 
           {/* Publication Section - Only shown if user has a publication */}
-          {hasPublication && (
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">
-                Publication Preferences
-              </h2>
-              <PublicationPreferences />
-            </section>
-          )}
-          
+          <section id="preferences">
+            <h2 className="text-2xl font-semibold mb-4">
+              Publication Preferences
+            </h2>
+            {hasPublication && <PublicationPreferences />}
+          </section>
+
           {/* Danger Zone Section */}
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-red-500">

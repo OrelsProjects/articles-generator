@@ -1,14 +1,37 @@
 import { prismaArticles } from "@/app/api/_db/db";
 import { PostSchema, PublishedBylineSchema } from "@/lib/schema/posts.schema";
-import { getUrlComponents, toValidUrl } from "@/lib/utils/url";
+import { getUrlComponents } from "@/lib/utils/url";
 import { Byline } from "@/types/article";
-import { DBArticlesToArticles, DBNotesToNotes, WriterWithData } from "@/types/writer";
+import {
+  DBArticlesToArticles,
+  DBNotesToNotes,
+  WriterWithData,
+} from "@/types/writer";
 import axios from "axios";
 import { z } from "zod";
 import { Post } from "../../prisma/generated/articles";
 
+export async function getPublicationUpdatedUrl(url: string) {
+  const publicationDataResponse = await axios.get(
+    `${url}/api/v1/homepage_data`,
+  );
+  const posts = publicationDataResponse.data.newPosts;
+  const validatedPosts = z.array(PostSchema).parse(posts);
+  if (validatedPosts.length === 0) {
+    return url;
+  }
+
+  if (validatedPosts[0].canonical_url) {
+    const { validUrl } = getUrlComponents(validatedPosts[0].canonical_url, {
+      withoutWWW: true,
+    });
+    return validUrl;
+  }
+  return url;
+}
+
 export async function getBylines(url: string) {
-  const { validUrl } = getUrlComponents(url);
+  const { validUrl } = getUrlComponents(url, { withoutWWW: true });
   if (!validUrl) {
     throw new Error("Invalid URL");
   }
@@ -43,10 +66,10 @@ export async function getBylines(url: string) {
 
     const bylineData: Byline[] = publicationBylines.map(byline => ({
       authorId: byline.id,
-      handle: byline.handle,
-      name: byline.name,
-      photoUrl: byline.photo_url,
-      bio: byline.bio,
+      handle: byline.handle || "",
+      name: byline.name || "",
+      photoUrl: byline.photo_url || "",
+      bio: byline.bio || "",
     }));
 
     const uniqueBylines = bylineData.filter(

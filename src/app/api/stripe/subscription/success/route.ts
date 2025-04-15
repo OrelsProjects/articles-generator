@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
 
     try {
       const paymentEmail = generatePaymentConfirmationEmail(
-        session.customer_email || "",
+        session.customer_details?.name || "",
         plan,
         (price.unit_amount as number) / 100,
       );

@@ -6,6 +6,8 @@ import prisma from "@/app/api/_db/db";
 import loggerServer from "@/loggerServer";
 import { checkAndResetCredits } from "@/lib/services/creditService";
 import { deleteScheduleForNote } from "@/lib/dal/note-schedule";
+import { cancelSubscription } from "@/lib/stripe";
+import { getActiveSubscription } from "@/lib/dal/subscription";
 
 export async function GET(req: NextRequest): Promise<any> {
   const session = await getServerSession(authOptions);
@@ -82,6 +84,11 @@ export async function DELETE(req: NextRequest): Promise<any> {
       }
     }
 
+    // cancel subscription
+    const subscription = await getActiveSubscription(session.user?.id);
+    if (subscription) {
+      await cancelSubscription(subscription.stripeSubId);
+    }
     await prisma.user.delete({
       where: { id: session.user?.id },
     });

@@ -3,10 +3,21 @@
 import Pricing from "@/components/landing/pricing-section";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import usePayments from "@/lib/hooks/usePayments";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-
+import { useEffect } from "react";
 export default function PricingPage() {
+  const router = useCustomRouter();
+  const { verifySubscription } = usePayments();
+
+  useEffect(() => {
+    verifySubscription().then(() => {
+      router.push("/home");
+    });
+  }, []);
+
   return (
     <div className="min-h-screen relative">
       <header className="sticky top-0 z-50 h-16">

@@ -312,12 +312,11 @@ export function NotesEditorDialog() {
           return;
         }
       }
-    } finally {
       handleOpenChange(false);
+    } finally {
       toast.dismiss(toastId);
     }
   };
-
 
   const handleImprovement = (improvedText: string) => {
     const formattedText = formatText(improvedText);
