@@ -34,7 +34,7 @@ export function useQueue() {
     return scheduledNotes.filter(
       note => note.scheduledTo && note.scheduledTo > new Date(),
     );
-  }, [scheduledNotes]);
+  }, [scheduledNotes, userNotes]);
 
   const initQueue = async () => {
     try {
