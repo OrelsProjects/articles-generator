@@ -2,44 +2,60 @@
 
 import { useState, useEffect } from "react";
 import { usePublicationSettings } from "@/lib/hooks/usePublicationSettings";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, X, InfoIcon } from "lucide-react";
+import { Loader2, Plus, X, InfoIcon, RefreshCcw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { useAppSelector } from "@/lib/hooks/redux";
+import { selectSettings } from "@/lib/features/settings/settingsSlice";
+import RefreshPublicationData from "@/components/settings/refresh-publication-data";
 
 export function PublicationPreferences() {
-  const { settings, loading, error, updateSettings, hasPublication } = usePublicationSettings();
+  const { publicationSettings, loading, updateSettings, hasPublication } =
+    usePublicationSettings();
   const [personalDescription, setPersonalDescription] = useState("");
   const [newTopic, setNewTopic] = useState("");
   const [preferredTopics, setPreferredTopics] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (settings) {
-      setPersonalDescription(settings.personalDescription || "");
-      setPreferredTopics(settings.preferredTopics || []);
+    if (publicationSettings) {
+      setPersonalDescription(publicationSettings.personalDescription || "");
+      setPreferredTopics(publicationSettings.preferredTopics || []);
     }
-  }, [settings]);
+  }, [publicationSettings]);
 
-  const handleAddTopic = (type: 'preferred' | 'main') => {
+  const handleAddTopic = (type: "preferred" | "main") => {
     if (!newTopic.trim()) return;
-    
-    if (type === 'preferred') {
+
+    if (type === "preferred") {
       if (!preferredTopics.includes(newTopic)) {
         setPreferredTopics([...preferredTopics, newTopic]);
       }
     }
-    
+
     setNewTopic("");
   };
 
-  const handleRemoveTopic = (topic: string, type: 'preferred' | 'main') => {
-    if (type === 'preferred') {
+  const handleRemoveTopic = (topic: string, type: "preferred" | "main") => {
+    if (type === "preferred") {
       setPreferredTopics(preferredTopics.filter(t => t !== topic));
     }
   };
@@ -62,7 +78,8 @@ export function PublicationPreferences() {
         <CardHeader>
           <CardTitle>Publication Preferences</CardTitle>
           <CardDescription>
-            Customize your publication preferences to improve content generation.
+            Customize your publication preferences to improve content
+            generation.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -77,13 +94,14 @@ export function PublicationPreferences() {
     );
   }
 
-  if (loading && !settings) {
+  if (loading && !publicationSettings) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Publication Preferences</CardTitle>
           <CardDescription>
-            Customize your publication preferences to improve content generation.
+            Customize your publication preferences to improve content
+            generation.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center items-center py-8">
@@ -95,11 +113,15 @@ export function PublicationPreferences() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Publication Preferences</CardTitle>
-        <CardDescription>
-          Customize your publication preferences to improve content generation.
-        </CardDescription>
+      <CardHeader className="flex flex-row justify-between">
+        <div className="flex flex-col">
+          <CardTitle>Publication Preferences</CardTitle>
+          <CardDescription>
+            Customize your publication preferences to improve content
+            generation.
+          </CardDescription>
+        </div>
+        <RefreshPublicationData />
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
@@ -112,7 +134,9 @@ export function PublicationPreferences() {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="max-w-xs">
-                    We&apos;ve generated a description based on your publication, but you can provide your own to improve content generation.
+                    We&apos;ve generated a description based on your
+                    publication, but you can provide your own to improve content
+                    generation.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -122,13 +146,14 @@ export function PublicationPreferences() {
             id="personalDescription"
             placeholder="Describe yourself, your background, expertise, and writing style..."
             value={personalDescription}
-            onChange={(e) => setPersonalDescription(e.target.value)}
+            onChange={e => setPersonalDescription(e.target.value)}
             rows={4}
           />
-          {settings?.generatedDescription && (
+          {publicationSettings?.generatedDescription && (
             <div className="mt-2">
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium">Generated description:</span> {settings.generatedDescription}
+                <span className="font-medium">Generated description:</span>{" "}
+                {publicationSettings.generatedDescription}
               </p>
             </div>
           )}
@@ -144,7 +169,8 @@ export function PublicationPreferences() {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="max-w-xs">
-                    Topics you&apos;re interested in writing about. These will be used to generate content ideas.
+                    Topics you&apos;re interested in writing about. These will
+                    be used to generate content ideas.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -155,20 +181,28 @@ export function PublicationPreferences() {
               id="preferredTopics"
               placeholder="Add a topic..."
               value={newTopic}
-              onChange={(e) => setNewTopic(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddTopic('preferred')}
+              onChange={e => setNewTopic(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleAddTopic("preferred")}
             />
-            <Button type="button" onClick={() => handleAddTopic('preferred')} disabled={!newTopic.trim()}>
+            <Button
+              type="button"
+              onClick={() => handleAddTopic("preferred")}
+              disabled={!newTopic.trim()}
+            >
               <Plus className="h-4 w-4" />
             </Button>
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
-            {preferredTopics.map((topic) => (
-              <Badge key={topic} variant="secondary" className="flex items-center gap-1">
+            {preferredTopics.map(topic => (
+              <Badge
+                key={topic}
+                variant="secondary"
+                className="flex items-center gap-1"
+              >
                 {topic}
                 <button
                   type="button"
-                  onClick={() => handleRemoveTopic(topic, 'preferred')}
+                  onClick={() => handleRemoveTopic(topic, "preferred")}
                   className="ml-1 rounded-full hover:bg-destructive/20"
                 >
                   <X className="h-3 w-3" />
@@ -176,26 +210,27 @@ export function PublicationPreferences() {
               </Badge>
             ))}
           </div>
-          {settings?.generatedTopics && (
+          {publicationSettings?.generatedTopics && (
             <div className="mt-2">
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium">Generated topics:</span> {settings.generatedTopics}
+                <span className="font-medium">Generated topics:</span>{" "}
+                {publicationSettings.generatedTopics}
               </p>
             </div>
           )}
         </div>
 
-     
-
         <Alert className="bg-muted">
           <InfoIcon className="h-4 w-4" />
           <AlertDescription>
-            We&apos;ve generated some data about your publication to help with content creation. Your custom preferences will be prioritized over the generated data.
+            We&apos;ve generated some data about your publication to help with
+            content creation. Your custom preferences will be prioritized over
+            the generated data.
           </AlertDescription>
         </Alert>
 
-        <Button 
-          onClick={handleSaveSettings} 
+        <Button
+          onClick={handleSaveSettings}
           disabled={isSaving}
           className="w-full"
         >
@@ -205,10 +240,10 @@ export function PublicationPreferences() {
               Saving...
             </>
           ) : (
-            'Save Preferences'
+            "Save Preferences"
           )}
         </Button>
       </CardContent>
     </Card>
   );
-} 
+}

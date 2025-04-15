@@ -5,6 +5,7 @@ import AppUser from "@/types/appUser";
 import prisma from "@/app/api/_db/db";
 import loggerServer from "@/loggerServer";
 import { checkAndResetCredits } from "@/lib/services/creditService";
+import { deleteScheduleForNote } from "@/lib/dal/note-schedule";
 
 export async function GET(req: NextRequest): Promise<any> {
   const session = await getServerSession(authOptions);
@@ -68,6 +69,19 @@ export async function DELETE(req: NextRequest): Promise<any> {
     if (!session.user?.id) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+    const userSchedules = await prisma.scheduledNote.findMany({
+      where: {
+        userId: session.user?.id,
+      },
+    });
+
+    // Delete all schedules for the user
+    if (userSchedules.length > 0) {
+      for (const schedule of userSchedules) {
+        await deleteScheduleForNote(schedule.noteId);
+      }
+    }
+
     await prisma.user.delete({
       where: { id: session.user?.id },
     });

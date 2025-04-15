@@ -1,5 +1,10 @@
 import { Plan } from "@prisma/client";
 
+export interface EmailTemplate {
+  body: string;
+  subject: string;
+}
+
 export function baseEmailTemplate(content: string) {
   return `
     <!DOCTYPE html>
@@ -26,7 +31,7 @@ export function baseEmailTemplate(content: string) {
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .header {
-          background-color: #cc5500; /* Deep burnt orange */
+          background-color: #ff661a; /* Deep burnt orange */
           color: #ffffff;
           padding: 20px;
           text-align: center;
@@ -41,7 +46,7 @@ export function baseEmailTemplate(content: string) {
         }
         .button {
           display: inline-block;
-          background-color: #cc5500; /* Deep burnt orange */
+          background-color: #ff661a; /* Deep burnt orange */
           color: #ffffff;
           padding: 10px 20px;
           text-decoration: none;
@@ -78,7 +83,8 @@ export function baseEmailTemplate(content: string) {
   `;
 }
 
-export const welcomeTemplate = (name?: string) => `<!DOCTYPE html>
+export const welcomeTemplate = (name?: string): EmailTemplate => ({
+  body: `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -104,7 +110,7 @@ export const welcomeTemplate = (name?: string) => `<!DOCTYPE html>
         .title {
             font-size: 24px;
             font-weight: bold;
-            color: #cc5500; /* Deep burnt orange */
+            color: #ff661a; /* Deep burnt orange */
         }
         .button-container {
             text-align: center;
@@ -113,7 +119,7 @@ export const welcomeTemplate = (name?: string) => `<!DOCTYPE html>
             display: inline-block;
             padding: 10px 20px;
             color: #ffffff;
-            background-color: #cc5500; /* Deep burnt orange */
+            background-color: #ff661a; /* Deep burnt orange */
             text-decoration: none;
             border-radius: 5px;
             margin-top: 15px;
@@ -135,52 +141,61 @@ export const welcomeTemplate = (name?: string) => `<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <h1 class="title">Hey ${name || "there"}, Welcome to WriteRoom!</h1>
+        <h1 class="title">Hey ${name || "there"}, welcome to the WriteRoom family!</h1>
         
-        <p><strong>Payment Confirmation:</strong> We appreciate your support and are thrilled to have you on board!</p>
+        <p><strong>Your payment is confirmed!</strong> Thanks so much for joining us – we're genuinely excited to be part of your writing journey.</p>
 
-        <p>WriteRoom is designed to help you write smarter while staying true to your own voice. Whether you’re a Substack writer, blogger, or content creator, our AI-powered tools give you the freedom to explore ideas, craft outlines, and refine your words—without losing the spark that makes your writing unique.</p>
+        <p>WriteRoom was built for writers like you who want to maintain their authentic voice while getting a little AI magic to enhance your process. Whether you're crafting Substack newsletters, blog posts, or any creative content, our tools are designed to amplify your natural talent – never replace it.</p>
         
-        <p>Here’s what you can expect:</p>
+        <p>Here's what's waiting for you:</p>
         <ul>
-          <li><strong>AI-Powered Outlines & Titles:</strong> Generate tailored suggestions for what to write next.</li>
-          <li><strong>Smart Text Editor:</strong> Enhance clarity, refine tone, and expand or condense sections in real-time.</li>
-          <li><strong>Authentic Control:</strong> Keep your signature style intact while letting AI do the heavy lifting.</li>
+          <li><strong>AI-Powered Outlines & Titles:</strong> Get personalized suggestions that match your unique style and topic preferences.</li>
+          <li><strong>Smart Text Editor:</strong> Fine-tune your clarity, adjust your tone, and reshape your content without losing your distinctive voice.</li>
+          <li><strong>Complete Creative Control:</strong> You're always in the driver's seat – our AI is your co-pilot, not the other way around.</li>
         </ul>
         
-        <p>We’ll keep you updated with new features to help you make the most of WriteRoom. In the meantime, feel free to jump right in and start writing!</p>
+        <p>We're constantly developing new features based on writer feedback. Keep an eye on your inbox for updates, tips, and inspiration to maximize your WriteRoom experience.</p>
         
-        <p>Thanks again for joining.</p>
+        <p>Ready to dive in? Your blank canvas is waiting!</p>
 
-        <p><strong>P.S.</strong> We love feedback! If you have questions or suggestions, simply reply to this email or reach out anytime.</p>
+        <p><strong>P.S.</strong> Your feedback shapes WriteRoom's future. Have ideas, questions, or just want to chat about writing? Just reply to this email – I read every message personally.</p>
         
         <div class="button-container">
-            <a class="button" href="https://writeroom.co/editor">Start writing</a>
+            <a class="button" href="https://writeroom.co/editor">Start creating</a>
         </div>
 
         <div class="divider"></div>
 
         <footer class="footer">
-            <p>Made with ❤️ by Orel</p>
-            <p>If you have any questions, just hit reply. We're always here to help.</p>
-            <p>Simply reply to this email to reach us.</p>
-            <p>Need to unsubscribe? <a href="%unsubscribe_url%" style="color: #cc5500; text-decoration: none;">Click here</a>.</p>
+            <p>Crafted with ❤️ by Orel and the WriteRoom team</p>
+            <p>Questions or thoughts? Just hit reply – we're real humans who love hearing from you.</p>
+            <p>Need to unsubscribe? <a href="%unsubscribe_url%" style="color: #ff661a; text-decoration: none;">Click here</a> (though we hope you'll stay).</p>
         </footer>
 
     </div>
 </body>
 </html>
-`;
+`,
+  subject: name
+    ? `Welcome to WriteRoom, ${name} :)`
+    : "Welcome to WriteRoom :)",
+});
 
 export function generateSubscriptionCanceledEmail(subscriptionId: string) {
   const content = `
-    <h2>Subscription Canceled</h2>
-    <p>Your subscription <strong>${subscriptionId}</strong> for WriteRoom has been canceled.</p>
-    <p>We’re sorry to see you go. If you have feedback about your experience or suggestions for how we can improve, we’d love to hear from you.</p>
-    <p>Should you change your mind, you can reactivate your subscription at any time to regain access to AI outlines, real-time text improvements, and more.</p>
-    <a href="https://writeroom.co/account" class="button">Manage Your WriteRoom Account</a>
+    <h2>We'll miss having you in the WriteRoom!</h2>
+    <p>Your subscription <strong>${subscriptionId}</strong> has been successfully canceled.</p>
+    <p>Everyone's writing journey is different, and we're grateful you gave WriteRoom a try. If you have a moment to share what we could have done better, I'd personally love to hear your thoughts – it helps us improve for other writers.</p>
+    <p>Should your writing needs change, your account is still here whenever you're ready to return. We've preserved all your previous work, so you can pick up right where you left off.</p>
+    <div class="center-button-container">
+      <a href="https://writeroom.co/account" class="button">Manage Your Account</a>
+    </div>
+    <p style="margin-top: 20px; font-style: italic;">Wishing you continued success with your writing, wherever it takes you!</p>
   `;
-  return baseEmailTemplate(content);
+  return {
+    body: baseEmailTemplate(content),
+    subject: "We'll miss having you in the WriteRoom!",
+  };
 }
 
 export function generateSubscriptionTrialEndingEmail(
@@ -188,31 +203,43 @@ export function generateSubscriptionTrialEndingEmail(
   trialEndDate: Date,
 ) {
   const planString = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const formattedDate = trialEndDate.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 
   const content = `
-    <h2>Your WriteRoom Trial is Ending Soon</h2>
-    <p>Your trial for subscription plan: <strong>${planString}</strong> will end on 
-    <strong>${trialEndDate.toLocaleDateString()}</strong>.</p>
-    <p>If you find value in WriteRoom, you can safely ignore this email and keep up the amazing writing :).</p>
-    <p>Otherwise, you can cancel your subscription any time.</p>
+    <h2>Your WriteRoom adventure continues soon!</h2>
+    <p>Just a friendly heads-up that your trial of the <strong>${planString} Plan</strong> will wrap up on <strong>${formattedDate}</strong>.</p>
+    <p>We hope WriteRoom has been helping your words flow and your creativity shine! If you're enjoying the experience, no action is needed – your subscription will continue seamlessly, and you can keep creating amazing content without interruption.</p>
+    <p>Not quite the right fit for your writing process? No problem at all – you can manage or cancel your subscription anytime before your trial ends.</p>
+    <p>Either way, we're here to support your writing journey!</p>
     <div class="center-button-container">
-      <a href="https://writeroom.co/settings" class="button">Manage Subscription</a>
+      <a href="https://writeroom.co/settings" class="button">Manage My Subscription</a>
     </div>
   `;
-  return baseEmailTemplate(content);
+  return {
+    body: baseEmailTemplate(content),
+    subject: "Your WriteRoom trial is ending soon",
+  };
 }
 
 export function generateSubscriptionDeletedEmail(subscriptionId: string) {
   const content = `
-    <h2>I'm sorry to see you go :(</h2>
-    <p>Your subscription <strong>${subscriptionId}</strong> for WriteRoom has been cancelled.</p>
-    <p>If you didn't enjoy using WriteRoom, I'd love to hear from you and improve.</p>
-    <p>Should you change your mind and tell me how I can improve, I'll give you a substantial discount for your next subscription :)</p>
+    <h2>We're sad to see you go</h2>
+    <p>Your subscription <strong>${subscriptionId}</strong> for WriteRoom has been successfully canceled.</p>
+    <p>Everyone's writing needs are unique, and I'd genuinely value hearing about your experience. What could we have done differently to better support your creative process?</p>
+    <p>As a thank you for your feedback, I'd be happy to offer you a special discount if you decide to return in the future. Your insights help make WriteRoom better for writers everywhere.</p>
     <div class="center-button-container">
-      <a href=${process.env.NEXT_PUBLIC_UPDATE_SUBSCRIPTION_URL} class="button">Manage Subscription</a>
+      <a href="mailto:feedback@writeroom.co?subject=My%20WriteRoom%20Experience" class="button">Share Your Feedback</a>
     </div>
+    <p style="margin-top: 20px;">Your WriteRoom account remains active, and we've saved all your previous work should you ever wish to return.</p>
   `;
-  return baseEmailTemplate(content);
+  return {
+    body: baseEmailTemplate(content),
+    subject: "We're sad to see you go",
+  };
 }
 
 export function generateInvoicePaymentFailedEmail(
@@ -220,10 +247,18 @@ export function generateInvoicePaymentFailedEmail(
   email: string,
 ) {
   const content = `
-    <h2>Payment Failed</h2>
-    <p>A user with email <strong>${email}</strong> payment for invoice <strong>${invoiceId}</strong> has failed.</p>
+    <h2>We noticed an issue with your payment</h2>
+    <p>Hi there! We wanted to let you know that the payment for invoice <strong>${invoiceId}</strong> associated with <strong>${email}</strong> wasn't able to go through.</p>
+    <p>This sometimes happens due to temporary card issues or bank security measures. No worries – you can update your payment method or try again through your account dashboard.</p>
+    <p>Need any help sorting this out? We're here for you!</p>
+    <div class="center-button-container">
+      <a href="https://writeroom.co/settings" class="button">Update Payment Information</a>
+    </div>
   `;
-  return baseEmailTemplate(content);
+  return {
+    body: baseEmailTemplate(content),
+    subject: "We noticed an issue with your payment",
+  };
 }
 
 export function generateFailedToSendNoteEmail(
@@ -231,19 +266,101 @@ export function generateFailedToSendNoteEmail(
   noteId: string,
 ) {
   const content = `
-    <h2>Failed to send note</h2>
+    <h2>Quick fix needed for your note</h2>
     ${
       noteBody.length > 0
-        ? `<p>The note: <a href="https://writeroom.co/queue?noteId=${noteId}">${noteId}</a>
-        with body:
-        <br/> <strong>${noteBody}</strong>
-        <br/> failed to send.</p>`
-        : `The note with id <a href="https://writeroom.co/queue?noteId=${noteId}">${noteId}</a> failed to send because the note is empty.`
+        ? `<p>We tried to send your note (<a href="https://writeroom.co/queue?noteId=${noteId}">view here</a>), but ran into a small hiccup along the way.</p>
+        <p>Here's what you wrote:</p>
+        <p style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #ff661a; margin: 15px 0;"><strong>${noteBody}</strong></p>
+        <p>No worries! You can send it now with a single click:</p>
+        <div class="center-button-container">
+          <a href="https://writeroom.co/queue?sendNoteId=${noteId}" class="button">Send Now</a>
+        </div>
+        `
+        : `<p>We tried to send your note (<a href="https://writeroom.co/queue?noteId=${noteId}">view here</a>), but it appears to be empty.<br/> Perhaps you meant to add some content?</p>`
     }
-    <p>You can send it now by clicking the button below.</p>
+
+  `;
+  return {
+    body: baseEmailTemplate(content),
+    subject: "Quick fix needed for your note",
+  };
+}
+
+export function generatePublicationAnalysisCompleteEmail(userName?: string) {
+  const content = `
+    <h2>Your publication analysis is ready, ${userName || "writer"}!</h2>
+    <p>Good news! We've completed the in-depth analysis of your publication.</p>
+    <p>Ready to start writing with your new insights?</p>
     <div class="center-button-container">
-      <a href="https://writeroom.co/queue?sendNoteId=${noteId}" class="button">Send now</a>
+      <a href="https://www.writeroom.co/settings" class="button">View My Analysis</a>
     </div>
   `;
-  return baseEmailTemplate(content);
+  return {
+    body: baseEmailTemplate(content),
+    subject: "Your publication analysis is ready 🎉",
+  };
+}
+
+export function generatePaymentConfirmationEmail(
+  userName?: string,
+  planName?: string,
+  amount?: string | number,
+  paymentDate?: Date,
+  nextBillingDate?: Date,
+  invoiceNumber?: string,
+) {
+  const formattedPaymentDate = paymentDate
+    ? paymentDate.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "today";
+
+  const formattedNextBillingDate = nextBillingDate
+    ? nextBillingDate.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
+  const content = `
+    <h2>Payment Confirmed! Your WriteRoom journey continues</h2>
+    <p>Hi ${userName || "there"},</p>
+    <p>Great news! Your payment for WriteRoom ${planName || "subscription"} has been successfully processed. Thank you for your continued support of your writing journey with us.</p>
+    
+    <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+      <h3 style="color: #cc5500; margin-top: 0;">Payment Details</h3>
+      <p><strong>Amount:</strong> ${amount || "Your subscription amount"}</p>
+      <p><strong>Date:</strong> ${formattedPaymentDate}</p>
+      ${invoiceNumber ? `<p><strong>Invoice Number:</strong> ${invoiceNumber}</p>` : ""}
+      ${formattedNextBillingDate ? `<p><strong>Next Billing Date:</strong> ${formattedNextBillingDate}</p>` : ""}
+    </div>
+    
+    <p>Your subscription is active and you have full access to all WriteRoom features to help elevate your writing:</p>
+    <ul>
+      <li>Smart, powerful notes outline and writer</li>
+      <li>Easy notes scheduling (Doesn't require a chrome tab open)</li>
+      <li>Publication analytics and insights</li>
+      <li>Inspiration notes from 5m+ pool of notes</li>
+    </ul>
+    
+    <p>Need to review your subscription details or download your invoice? You can access your account settings at any time:</p>
+    
+    <div class="center-button-container">
+      <a href="https://writeroom.co/settings" class="button">Manage Subscription</a>
+    </div>
+    
+    <p style="margin-top: 20px;">If you have any questions about your payment or subscription, please don't hesitate to reach out – we're here to help!</p>
+    
+    <p>Happy writing,<br>
+    The WriteRoom Team</p>
+  `;
+
+  return {
+    body: baseEmailTemplate(content),
+    subject: `Payment Confirmed: Your WriteRoom ${planName || "subscription"} is active`,
+  };
 }

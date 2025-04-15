@@ -14,7 +14,8 @@ export type Model =
   | "anthropic/claude-3.5-haiku"
   | "google/gemini-2.0-flash-001"
   | "openai/gpt-4.5-preview"
-  | "google/gemini-2.5-pro-exp-03-25:free";
+  | "x-ai/grok-3-beta"
+  | "google/gemini-2.5-pro-preview-03-25";
 
 export function getTokenCount(text: string) {
   const encoding = new Tiktoken(o200k_base);
@@ -31,7 +32,9 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
     "google/gemini-2.0-flash-001": 0.15,
     "openai/gpt-4.5-preview": 75,
     "anthropic/claude-3.5-haiku": 0.8,
-    "google/gemini-2.5-pro-exp-03-25:free": 0,
+    "google/gemini-2.5-pro-preview-03-25": 1.25,
+    "openai/gpt-4.1": 2,
+    "x-ai/grok-3-beta": 3,
   };
   const pricePerMillionTokensOutput = {
     "openai/gpt-4o": 10,
@@ -41,7 +44,9 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
     "google/gemini-2.0-flash-001": 0.6,
     "openai/gpt-4.5-preview": 150,
     "anthropic/claude-3.5-haiku": 4,
-    "google/gemini-2.5-pro-exp-03-25:free": 0,
+    "google/gemini-2.5-pro-preview-03-25": 10,
+    "openai/gpt-4.1": 8,
+    "x-ai/grok-3-beta": 15,
   };
   let price = (tokens / 1000000) * pricePerMillionTokensInput[model];
   if (outputTokens) {

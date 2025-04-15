@@ -1,4 +1,8 @@
-import { setCancelAt, setUsages } from "@/lib/features/settings/settingsSlice";
+import {
+  setCancelAt,
+  setGeneratingDescription,
+  setUsages,
+} from "@/lib/features/settings/settingsSlice";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "../features/auth/authSlice";
@@ -7,8 +11,8 @@ import { useMemo } from "react";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import axios from "axios";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
-import { AIUsageType, FeatureFlag } from "@prisma/client";
-import { AllUsages } from "@/types/settings";
+import { AIUsageType } from "@prisma/client";
+import { AllUsages, Settings } from "@/types/settings";
 import { SubscriptionInfo } from "@/types/settings";
 
 export const useSettings = () => {
@@ -30,19 +34,20 @@ export const useSettings = () => {
 
   const init = async () => {
     try {
-      try {
-        await axios.post("/api/user/analyze/notes");
-      } catch (error) {
+      axios.post("/api/user/analyze/notes").catch(error => {
         console.error(error);
-      }
+      });
+
       const response = await axios.get<{
         usages: AllUsages;
         subscriptionInfo: SubscriptionInfo;
+        settings: Settings;
       }>("/api/user/settings");
 
-      const { usages, subscriptionInfo } = response.data;
+      const { usages, subscriptionInfo, settings } = response.data;
       dispatch(setUsages(usages));
       dispatch(setCancelAt(subscriptionInfo.cancelAt));
+      dispatch(setGeneratingDescription(settings.generatingDescription));
     } catch (error) {
       console.error(error);
     }

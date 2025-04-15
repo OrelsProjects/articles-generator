@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useSettings } from "@/lib/hooks/useSettings";
-import { Loader2, RefreshCw } from "lucide-react";
 
 export default function CreditsDisplay() {
   const { credits } = useSettings();

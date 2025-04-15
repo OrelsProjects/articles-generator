@@ -15,8 +15,9 @@ export type FrontendModel =
   | "claude-3.5"
   | "claude-3.7"
   | "claude-3.5-haiku"
-  | "gemini-2.5-pro";
-
+  | "gemini-2.5-pro"
+  | "grok-3-beta"
+  | "gpt-4.1";
 // Define AI models
 const AI_MODELS: {
   value: FrontendModel;
@@ -25,6 +26,7 @@ const AI_MODELS: {
   recommended?: boolean;
 }[] = [
   { value: "gpt-4.5", label: "GPT-4.5", shortName: "o4.5" },
+  { value: "gpt-4.1", label: "GPT-4.1", shortName: "o4.1" },
   {
     value: "gemini-2.5-pro",
     label: "Gemini 2.5 Pro",
@@ -33,7 +35,8 @@ const AI_MODELS: {
   },
   { value: "claude-3.5", label: "Claude 3.5", shortName: "c3.5" },
   { value: "claude-3.7", label: "Claude 3.7", shortName: "c3.7" },
-  { value: "claude-3.5-haiku", label: "Claude Haiku 3.5", shortName: "ch3.5" },
+  { value: "claude-3.5-haiku", label: "Claude Haiku 3.5", shortName: "c3.5h" },
+  { value: "grok-3-beta", label: "Grok 3 Beta", shortName: "grok3" },
 ];
 
 interface AiModelsDropdownProps {

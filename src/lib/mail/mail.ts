@@ -26,17 +26,16 @@ export const sendMail = async ({
   from,
   subject,
   template,
-  cc,
+  cc = [],
 }: {
   to: string | string[];
-  from: string;
   subject: string;
+  from: "support" | "noreply" | "welcome"
   template: string;
-  cc: string[];
+  cc?: string[];
 }) => {
-  const fromSlugified = slugify(from);
   const message: MessagesMessage = {
-    from_email: `${fromSlugified}@writeroom.co`,
+    from_email: `${from}@writeroom.co`,
     subject,
     html: template,
     to: Array.isArray(to)

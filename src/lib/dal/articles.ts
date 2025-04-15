@@ -42,7 +42,7 @@ export const getUserArticles = async (
   };
 
   const queryOptions = {
-    take: options.limit || 9999,
+    take: options.limit || 300,
     orderBy: options.order
       ? {
           [options.order.by]: options.order.direction,
@@ -140,7 +140,18 @@ export const getUserArticlesBody = async <T extends { canonicalUrl: string }>(
   posts: T[],
 ): Promise<(T & { bodyText: string })[]> => {
   const urls = posts.map(post => post.canonicalUrl);
-  const content = await getSubstackArticleData(urls);
+  const userArticles = await prismaArticles.post.findMany({
+    where: {
+      canonicalUrl: {
+        in: urls,
+      },
+    },
+  });
+  const urlsWithoutBody = userArticles
+    .filter(article => !article.bodyText)
+    .map(article => article.canonicalUrl || "")
+    .filter(url => url !== "");
+  const content = await getSubstackArticleData(urlsWithoutBody);
 
   return posts.map(post => ({
     ...post,

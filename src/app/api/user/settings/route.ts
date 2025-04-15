@@ -1,3 +1,4 @@
+import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { getActiveSubscription } from "@/lib/dal/subscription";
 import loggerServer from "@/loggerServer";
@@ -28,9 +29,17 @@ export async function GET() {
       ? new Date(subscription.currentPeriodEnd)
       : undefined,
     };
+
+    const settings = await prisma.settings.findUnique({
+      where: {
+        userId: session.user.id,
+      },
+    });
+
     return NextResponse.json({
       usages: data,
       subscriptionInfo,
+      settings,
     });
   } catch (error: any) {
     loggerServer.error("Error getting usages", { error });

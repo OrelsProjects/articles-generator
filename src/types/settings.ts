@@ -20,3 +20,7 @@ export interface AllUsages {
 }
 
 export type CreditType = "article" | "regular";
+
+export interface Settings {
+  generatingDescription: boolean;
+}

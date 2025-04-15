@@ -58,6 +58,7 @@ enum AIUsageType {
   textEnhancement
   titleOrSubtitleRefinement
   notesGeneration
+  analyze
 }
 
 enum FeatureFlag {
@@ -107,6 +108,9 @@ model User {
   payment        Payment[]
   subscription   Subscription[]
   substackCookie SubstackCookie[]
+  ScheduledNote  ScheduledNote[]
+  UserSchedule   UserSchedule[]
+  Settings       Settings[]
 
   @@map("users")
 }
@@ -195,6 +199,21 @@ model UserMetadata {
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("userMetadata")
+}
+
+model Settings {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @db.ObjectId @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  generatingDescription Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("settings")
 }
 
 model PublicationMetadata {
@@ -476,7 +495,8 @@ model SubstackCookie {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // name+userId has to be unique
   @@unique([name, userId])
@@ -494,6 +514,8 @@ model ScheduledNote {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SubstackImage {
@@ -549,6 +571,8 @@ model UserSchedule {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([hour, minute, ampm, userId])
   @@map("userSchedules")

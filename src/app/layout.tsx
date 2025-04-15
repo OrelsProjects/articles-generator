@@ -100,9 +100,7 @@ export default function RootLayout({
                 {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
               </Script>
               <AffiliateProvider>
-                <AnimationProvider>
-                  {children}
-                </AnimationProvider>
+                <AnimationProvider>{children}</AnimationProvider>
                 <ClientTrackersProvider />
               </AffiliateProvider>
             </SessionWrapper>

@@ -25,11 +25,12 @@ const doesBodyContainLink = (body: string) => {
 
 const sendFailure = async (noteBody: string, noteId: string, email: string) => {
   try {
+    const emailTemplate = generateFailedToSendNoteEmail(noteBody, noteId);
     await sendMail({
       to: email,
       from: "support",
-      subject: "Failed to send note",
-      template: generateFailedToSendNoteEmail(noteBody, noteId),
+      subject: emailTemplate.subject,
+      template: emailTemplate.body,
       cc: ["orelsmail@gmail.com"],
     });
   } catch (error) {

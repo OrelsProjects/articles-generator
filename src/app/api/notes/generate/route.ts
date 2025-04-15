@@ -52,7 +52,9 @@ export async function POST(
     } else if (requestedModel === "claude-3.5-haiku") {
       model = "anthropic/claude-3.5-haiku";
     } else if (requestedModel === "gemini-2.5-pro") {
-      model = "google/gemini-2.5-pro-exp-03-25:free";
+      model = "google/gemini-2.5-pro-preview-03-25";
+    } else if (requestedModel === "grok-3-beta") {
+      model = "x-ai/grok-3-beta";
     }
   }
   if (model !== "openai/gpt-4.5-preview") {
@@ -89,9 +91,7 @@ export async function POST(
       "About to generate notes for userMetadata: ",
       JSON.stringify(userMetadata.publication.authorId),
     );
-    const [canUseAIResult] = await Promise.all([
-      canUseAI(session.user.id, "notesGeneration"),
-    ]);
+    const canUseAIResult = await canUseAI(session.user.id, "notesGeneration");
 
     if (!canUseAIResult.result) {
       return NextResponse.json(

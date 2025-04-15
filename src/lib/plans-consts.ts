@@ -34,6 +34,7 @@ export const creditCosts: CreditsCost = {
   [AIUsageType.textEnhancement]: 1,
   [AIUsageType.titleOrSubtitleRefinement]: 1,
   [AIUsageType.notesGeneration]: 3,
+  [AIUsageType.analyze]: 10,
 };
 
 export const canUseFeature = (

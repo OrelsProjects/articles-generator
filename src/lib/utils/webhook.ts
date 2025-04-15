@@ -209,11 +209,12 @@ export async function handleSubscriptionUpdated(event: any) {
   });
 
   if (user.email) {
+    const emailTemplate = welcomeTemplate(user.name || undefined);
     await sendMail({
       to: user.email!,
       from: "support",
-      subject: "Subscription Updated",
-      template: welcomeTemplate(user.name || undefined),
+      subject: emailTemplate.subject,
+      template: emailTemplate.body,
       cc: [],
     });
   }
@@ -276,11 +277,12 @@ export async function handleSubscriptionDeleted(event: Stripe.Event) {
   });
 
   const userEmail = (customer as any).email;
+  const emailTemplate = generateSubscriptionDeletedEmail(subscriptionId);
   await sendMail({
     to: userEmail,
     from: "support",
-    subject: "Subscription Deleted",
-    template: generateSubscriptionDeletedEmail(subscriptionId),
+    subject: emailTemplate.subject,
+    template: emailTemplate.body,
     cc: [],
   });
 }
@@ -332,14 +334,15 @@ export async function handleSubscriptionTrialEnding(event: any) {
     return;
   }
   // Send email notification about trial ending
+  const emailTemplate = generateSubscriptionTrialEndingEmail(
+    subscriptionFromDb.plan,
+    new Date(subscription.trial_end * 1000),
+  );
   await sendMail({
     to: userEmail,
     from: "support",
-    subject: "Your Trial is Ending Soon",
-    template: generateSubscriptionTrialEndingEmail(
-      subscriptionFromDb.plan,
-      new Date(subscription.trial_end * 1000),
-    ),
+    subject: emailTemplate.subject,
+    template: emailTemplate.body,
     cc: ["orelsmail@gmail.com"],
   });
 }
@@ -443,11 +446,17 @@ export async function handleInvoicePaymentFailed(event: any) {
     );
     return;
   }
+
+  const emailTemplate = generateInvoicePaymentFailedEmail(
+    invoice.id,
+    customerEmail,
+  );
+
   await sendMail({
     to: "orelsmail@gmail.com",
     from: "support",
-    subject: "Payment Failed",
-    template: generateInvoicePaymentFailedEmail(invoice.id, customerEmail),
+    subject: emailTemplate.subject,
+    template: emailTemplate.body,
     cc: [],
   });
 }

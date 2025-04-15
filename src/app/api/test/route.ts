@@ -129,16 +129,16 @@ export async function GET() {
     //   );
     // }
 
-    const mailResult = await sendMail({
-      to: "orelsmail@gmail.com",
-      from: "Orel from WriteRoom",
-      subject: "Your Trial is Ending Soon",
-      template: generateFailedToSendNoteEmail(
-        "67f772a23b037dc651e2e072",
-        "67f772a23b037dc651e2e072",
-      ),
-      cc: ["orelzilberman@gmail.com"],
-    });
+    // const mailResult = await sendMail({
+    //   to: "orelsmail@gmail.com",
+    //   from: "Orel from WriteRoom",
+    //   subject: "Your Trial is Ending Soon",
+    //   template: generateFailedToSendNoteEmail(
+    //     "67f772a23b037dc651e2e072",
+    //     "67f772a23b037dc651e2e072",
+    //   ),
+    //   cc: ["orelzilberman@gmail.com"],
+    // });
     // const date = new Date("2025-03-27T01:37:20.962+00:00");
     // const users = await prisma.user.findMany({
     //   where: {

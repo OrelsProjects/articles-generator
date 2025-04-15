@@ -26,10 +26,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import axios from "axios";
 import Link from "next/link";
 import { StepSliderDialog } from "@/components/ui/step-slider-dialog";
 import usePayments from "@/lib/hooks/usePayments";
+import { DangerZone } from "@/components/settings/danger-zone";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -224,6 +224,14 @@ export default function SettingsPage() {
               <PublicationPreferences />
             </section>
           )}
+          
+          {/* Danger Zone Section */}
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-red-500">
+              Danger Zone
+            </h2>
+            <DangerZone />
+          </section>
         </div>
 
         {/* Cancel Subscription Confirmation Dialog */}

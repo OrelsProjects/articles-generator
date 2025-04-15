@@ -12,23 +12,30 @@ import { Publication } from "@/types/publication";
 import { getPublicationByUrl } from "@/lib/dal/publication";
 import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
-import { Article, ArticleWithBody } from "@/types/article";
+import { Article, ArticleWithBody, DescriptionObject } from "@/types/article";
 import loggerServer from "@/loggerServer";
 import { parseJson } from "@/lib/utils/json";
 import { buildSubstackUrl } from "@/lib/utils/url";
 import { setPublications as scrapePosts } from "@/lib/utils/publication";
 import { z } from "zod";
 import { fetchAuthor } from "@/lib/utils/lambda";
+import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
+import { AIUsageType } from "@prisma/client";
+import { sendMail } from "@/lib/mail/mail";
+import { generatePublicationAnalysisCompleteEmail } from "@/lib/mail/templates";
+import { getBylineByUserId } from "@/lib/dal/byline";
 
 const schema = z.object({
-  url: z.string(),
-  byline: z.object({
-    authorId: z.number(),
-    name: z.string(),
-    handle: z.string(),
-    photoUrl: z.string(),
-    bio: z.string(),
-  }),
+  url: z.string().optional(),
+  byline: z
+    .object({
+      authorId: z.number(),
+      name: z.string(),
+      handle: z.string(),
+      photoUrl: z.string(),
+      bio: z.string(),
+    })
+    .optional(),
 });
 
 export const maxDuration = 600; // This function can run for a maximum of 10 minutes
@@ -41,9 +48,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
-  const body = await req.json();
-  const { url, byline } = schema.parse(body);
+  const text = await req.text();
+  const body = JSON.parse(text || "{}");
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.message }, { status: 400 });
+  }
+  let { url, byline } = parsed.data;
+  let didConsumeCredits = false;
   try {
+    const canUseAnalyze = await canUseAI(userId, AIUsageType.analyze);
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId,
@@ -62,12 +76,64 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    if (!byline) {
+      const bylineFromDb = await getBylineByUserId(userId);
+      if (!bylineFromDb) {
+        return NextResponse.json({ error: "No byline found" }, { status: 404 });
+      }
+      byline = {
+        authorId: bylineFromDb.id,
+        name: bylineFromDb.name || "",
+        handle: bylineFromDb.handle || "",
+        photoUrl: bylineFromDb.photoUrl || "",
+        bio: bylineFromDb.bio || "",
+      };
+    }
+
+    if (!url) {
+      if (!userMetadata?.publication?.publicationUrl) {
+        return NextResponse.json(
+          { error: "No publication found" },
+          { status: 404 },
+        );
+      }
+      url = userMetadata?.publication?.publicationUrl;
+    }
+
+    if (userMetadata?.publication?.generatedDescription) {
+      // It's not the first time we're running this.
+      if (!canUseAnalyze.result) {
+        return NextResponse.json(
+          {
+            error: "Not enough credits",
+            nextRefill: canUseAnalyze.nextRefill,
+          },
+          { status: canUseAnalyze.status },
+        );
+      }
+      await useCredits(session.user.id, "analyze");
+      didConsumeCredits = true;
+    }
+
     let publicationMetadata = userMetadata?.publication;
 
     let publications = await getPublicationByUrl(url, {
       createIfNotFound: true,
     });
     let userPublication = publications[0];
+
+    await prisma.settings.upsert({
+      where: {
+        userId,
+      },
+      update: {
+        generatingDescription: true,
+      },
+      create: {
+        userId,
+        generatingDescription: true,
+      },
+    });
 
     await scrapePosts(url, MAX_ARTICLES_TO_GET_BODY);
 
@@ -158,7 +224,7 @@ export async function POST(req: NextRequest) {
     try {
       generatedDescription = await runPrompt(
         messages,
-        "google/gemini-2.5-pro-exp-03-25:free",
+        "google/gemini-2.5-pro-preview-03-25",
       );
       if (!generatedDescription) {
         throw new Error("No generated description");
@@ -171,16 +237,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const descriptionObject: {
-      about: string;
-      aboutGeneral: string;
-      writingStyle: string;
-      topics: string;
-      personality: string;
-      specialEvents: string;
-      privateLife: string;
-      highlights: string;
-    } = await parseJson(generatedDescription);
+    const descriptionObject: DescriptionObject =
+      await parseJson(generatedDescription);
 
     if (publicationMetadata) {
       await prisma.publicationMetadata.update({
@@ -266,11 +324,28 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    if (didConsumeCredits && session.user.email) {
+      const email = generatePublicationAnalysisCompleteEmail();
+      // send mail
+      await sendMail({
+        to: session.user.email,
+        from: "noreply",
+        subject: email.subject,
+        template: email.body,
+      });
+    }
+
     return NextResponse.json({
       publication,
+      descriptionObject,
     });
   } catch (error: any) {
-    loggerServer.error("Error analyzing publication:", error);
+    loggerServer.error(
+      `Error analyzing publication: ${error}\nfor user: ${userId}`,
+    );
+    if (didConsumeCredits) {
+      await undoUseCredits(session.user.id, "analyze");
+    }
     if (error instanceof PublicationNotFoundError) {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }
@@ -278,5 +353,11 @@ export async function POST(req: NextRequest) {
       { error: "Something went wrong. Please try again later." },
       { status: 500 },
     );
+  } finally {
+    await prisma.settings.upsert({
+      where: { userId },
+      update: { generatingDescription: false },
+      create: { userId, generatingDescription: false },
+    });
   }
 }

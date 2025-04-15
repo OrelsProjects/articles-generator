@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
-import { AllUsages, CreditInfo } from "@/types/settings";
+import { AllUsages, CreditInfo, Settings } from "@/types/settings";
 
 const initialCreditInfo: CreditInfo = {
   remaining: 0,
@@ -11,9 +11,13 @@ const initialCreditInfo: CreditInfo = {
 const initialState: {
   credits: CreditInfo;
   cancelAt: Date | undefined;
+  settings: Settings;
 } = {
   credits: initialCreditInfo,
   cancelAt: undefined,
+  settings: {
+    generatingDescription: false,
+  },
 };
 
 export const settingsSlice = createSlice({
@@ -39,11 +43,19 @@ export const settingsSlice = createSlice({
     setCancelAt: (state, action: PayloadAction<Date | undefined>) => {
       state.cancelAt = action.payload;
     },
+    setGeneratingDescription: (state, action: PayloadAction<boolean>) => {
+      state.settings.generatingDescription = action.payload;
+    },
   },
 });
 
-export const { setUsages, incrementUsage, decrementUsage, setCancelAt } =
-  settingsSlice.actions;
+export const {
+  setUsages,
+  incrementUsage,
+  decrementUsage,
+  setCancelAt,
+  setGeneratingDescription,
+} = settingsSlice.actions;
 
 export const selectSettings = (state: RootState) => state.settings;
 
