@@ -220,22 +220,10 @@ export async function POST(req: NextRequest) {
 
     const messages = generateDescriptionPrompt(description, top60Articles);
 
-    let generatedDescription = "";
-    try {
-      generatedDescription = await runPrompt(
-        messages,
-        "google/gemini-2.5-pro-preview-03-25",
-      );
-      if (!generatedDescription) {
-        throw new Error("No generated description");
-      }
-    } catch (error: any) {
-      loggerServer.error("Error generating description:", error);
-      generatedDescription = await runPrompt(
-        messages,
-        "anthropic/claude-3.7-sonnet",
-      );
-    }
+    const generatedDescription = await runPrompt(
+      messages,
+      "deepseek/deepseek-r1",
+    );
 
     const descriptionObject: DescriptionObject =
       await parseJson(generatedDescription);
@@ -309,7 +297,6 @@ export async function POST(req: NextRequest) {
 
     const generatedDescriptionForSearch = await runPrompt(
       generateVectorSearchOptimizedDescriptionPrompt(publicationMetadata),
-      "anthropic/claude-3.7-sonnet",
     );
 
     const parsedGeneratedDescriptionForSearch = await parseJson<{

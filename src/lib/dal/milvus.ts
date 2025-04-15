@@ -211,7 +211,7 @@ async function searchSimilarNotes({
   const searchBody = {
     collectionName: COLLECTION_NAME,
     data: [embedding],
-    limit: limit,
+    limit: limit * 5,
     outputFields: ["*"],
     filter: filtersString,
   };
@@ -249,7 +249,9 @@ async function searchSimilarNotes({
     },
   });
 
-  const topNotes = notesFromDb.sort(() => Math.random() - 0.5).slice(0, limit);
+  const topNotes = notesFromDb
+    .slice(0, limit * 2)
+    .sort(() => Math.random() - 0.5);
   return topNotes.map(note => ({
     ...note,
     body: note.body,

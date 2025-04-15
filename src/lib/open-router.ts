@@ -17,7 +17,8 @@ export type Model =
   | "x-ai/grok-3-beta"
   | "google/gemini-2.5-pro-preview-03-25"
   | "openrouter/auto"
-  | "openai/gpt-4.1";
+  | "openai/gpt-4.1"
+  | "deepseek/deepseek-r1";
 
 export function getTokenCount(text: string) {
   const encoding = new Tiktoken(o200k_base);
@@ -38,6 +39,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
     "openai/gpt-4.1": 2,
     "x-ai/grok-3-beta": 3,
     "openrouter/auto": 2,
+    "deepseek/deepseek-r1": 0.54,
   };
   const pricePerMillionTokensOutput = {
     "openai/gpt-4o": 10,
@@ -51,6 +53,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
     "openai/gpt-4.1": 8,
     "x-ai/grok-3-beta": 15,
     "openrouter/auto": 2,
+    "deepseek/deepseek-r1": 2.18,
   };
   let price = (tokens / 1000000) * pricePerMillionTokensInput[model];
   if (outputTokens) {

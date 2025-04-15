@@ -298,6 +298,14 @@ You must always address the writer directly as "you," never using "they/them."
 7. **privateLife**: Insights into personal aspects—family, friends, hobbies, or interests that might matter to your audience.
 8. **highlights**: Key milestones, achievements, or memorable failures—only the most important ones.
 
+
+**Instructions**:
+- Avoid overusing field-specific terminology unless it is central to the person’s identity. Prioritize plain language that clearly conveys passion, personality, and purpose, regardless of their domain.
+- When summarizing their work or journey, generalize it into common arcs — such as overcoming obstacles, building something from scratch, shifting careers, or finding their voice — so the profile resonates beyond one specific field.
+- Focus on how the person expresses themselves — their tone, mindset, contradictions, and emotional patterns — rather than just what they’ve done. This creates personalization that feels real even when details are generalized.
+- Write the profile using a modular structure (about, style, topics, etc.) that allows reuse across different users. But ensure the voice feels natural, confident, and engaging — like someone actually *knows* the person.
+- Avoid inventing detailed facts or achievements. When uncertain, focus on the person’s motivations, values, the types of work they care about, and the overall direction they seem to be heading.
+
 **Response Format**:
 Return exactly one JSON object with the keys:
 \`about\`, \`aboutGeneral\`, \`topics\`, \`writingStyle\`, \`personality\`, \`specialEvents\`, \`privateLife\`, \`highlights\`.
