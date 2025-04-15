@@ -57,6 +57,8 @@ export async function POST(
       model = "x-ai/grok-3-beta";
     } else if (requestedModel === "auto") {
       model = "openrouter/auto";
+    } else if (requestedModel === "gpt-4.1") {
+      model = "openai/gpt-4.1";
     }
     if (model !== "openai/gpt-4.5-preview") {
       initialGeneratingModel = model;

@@ -16,7 +16,8 @@ export type Model =
   | "openai/gpt-4.5-preview"
   | "x-ai/grok-3-beta"
   | "google/gemini-2.5-pro-preview-03-25"
-  | "openrouter/auto";
+  | "openrouter/auto"
+  | "openai/gpt-4.1";
 
 export function getTokenCount(text: string) {
   const encoding = new Tiktoken(o200k_base);
@@ -60,7 +61,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
 
 export async function runPrompt(
   messages: { role: string; content: string }[],
-  model: Model,
+  model: Model = "openrouter/auto",
 ): Promise<string> {
   let tokenCount = 0;
   tokenCount = getTokenCount(messages.map(m => m.content).join("\n"));
