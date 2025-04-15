@@ -2,10 +2,8 @@ import prisma from "@/app/api/_db/db";
 import loggerServer from "@/loggerServer";
 import { getStripeInstance } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";
-import { Plan } from "@prisma/client";
 import { sendMail } from "@/lib/mail/mail";
 import {
-  generatePaymentConfirmationEmail,
   welcomeTemplate,
 } from "@/lib/mail/templates";
 
@@ -57,20 +55,7 @@ export async function GET(req: NextRequest) {
     const plan = product.metadata?.plan;
 
     try {
-      const paymentEmail = generatePaymentConfirmationEmail(
-        session.customer_details?.name || "",
-        plan,
-        (price.unit_amount as number) / 100,
-      );
       const welcomeEmail = welcomeTemplate();
-
-      await sendMail({
-        to: session.customer_email || "",
-        from: "support",
-        subject: paymentEmail.subject,
-        template: paymentEmail.body,
-        cc: ["orelsmail@gmail.com"],
-      });
       // send welcome email as well
       await sendMail({
         to: session.customer_email || "",

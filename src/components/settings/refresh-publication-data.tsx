@@ -82,11 +82,12 @@ export default function RefreshPublicationData() {
             <li>This will use 10 credits</li>
           </ul>
 
-          {/* <div className="bg-amber-500/10 border border-amber-500/20 rounded-md p-3 mt-4">
-              <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                Are you sure you want to proceed?
-              </p>
-            </div> */}
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-md p-3 mt-4">
+            <p className="text-sm font-medium text-blue-500 dark:text-blue-400">
+              This process can take up to 5 minutes. You&apos;ll get an email
+              once it&apos;s done.
+            </p>
+          </div>
         </div>
 
         <DialogFooter className="flex justify-between sm:justify-between">

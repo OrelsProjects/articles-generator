@@ -4,6 +4,7 @@ import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addUserToList, sendMail } from "@/lib/mail/mail";
 import {
   generateInvoicePaymentFailedEmail,
+  generatePaymentConfirmationEmail,
   generateSubscriptionDeletedEmail,
   generateSubscriptionTrialEndingEmail,
   welcomeTemplate,
@@ -431,6 +432,26 @@ export async function handleInvoicePaymentSucceeded(event: any) {
       isTrialing: false,
       lastCreditReset: new Date(),
     },
+  });
+
+  const currentPeriodEnd = new Date(
+    Number(subscription.currentPeriodEnd) * 1000,
+  );
+
+  const emailTemplate = generatePaymentConfirmationEmail(
+    user.name || "",
+    subscription.plan,
+    invoice.amount_paid,
+    new Date(),
+    currentPeriodEnd,
+  );
+
+  await sendMail({
+    to: userEmail,
+    from: "support",
+    subject: emailTemplate.subject,
+    template: emailTemplate.body,
+    cc: ["orelsmail@gmail.com"],
   });
 }
 

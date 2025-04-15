@@ -48,10 +48,6 @@ export async function POST(req: NextRequest) {
     const stripeSubscription = await stripe.subscriptions.retrieve(
       currentSubscription.stripeSubId,
     );
-
-    // If the user is on a free trial, update directly without charging
-    // Get the Stripe subscription
-
     // Create the items array with the new price
     const price = await getPlanPriceId(stripe, interval, plan as Plan, planId);
 

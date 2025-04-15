@@ -429,7 +429,7 @@ export const ArrowLigature = Extension.create({
         if (match[0]) {
           state.tr.insertText("→", range.from, range.to);
         }
-      }
+      },
     });
 
     const emDashRule = new InputRule({
@@ -440,7 +440,18 @@ export const ArrowLigature = Extension.create({
         }
       },
     });
-    return [arrowRule, emDashRule];
+
+    // Convert a single \n to a double \n
+    const doubleNewlineRule = new InputRule({
+      find: /\n$/,
+      handler: ({ state, match, range }) => {
+        if (match[0]) {
+          state.tr.insertText("\n\n", range.from, range.to);
+        }
+      },
+    });
+
+    return [arrowRule, emDashRule, doubleNewlineRule];
   },
 });
 
