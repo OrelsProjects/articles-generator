@@ -211,11 +211,16 @@ export function NotesEditorDialog() {
       selectedNote?.handle !== handle
     );
   };
-  const handleSave = async (options?: {
-    schedule?: {
-      to: Date;
-    };
-  }) => {
+  const handleSave = async (
+    options: {
+      schedule?: {
+        to: Date;
+      };
+      closeOnSave?: boolean;
+    } = {
+      closeOnSave: true,
+    },
+  ) => {
     if (!selectedNote) return;
     if (isPlagiarism()) {
       setShowAvoidPlagiarismDialog(true);
@@ -225,7 +230,7 @@ export function NotesEditorDialog() {
     const toastId = toast.loading("Saving note...");
     try {
       const currentNote = { ...selectedNote };
-      const { schedule } = options || {};
+      const { schedule, closeOnSave } = options || {};
       const scheduledTo = schedule?.to;
       const shouldSchedule = !!scheduledTo;
 
@@ -312,7 +317,9 @@ export function NotesEditorDialog() {
           return;
         }
       }
-      handleOpenChange(false);
+      if (closeOnSave) {
+        handleOpenChange(false);
+      }
     } finally {
       toast.dismiss(toastId);
     }
@@ -556,7 +563,11 @@ export function NotesEditorDialog() {
               </div>
               <div className="flex gap-3">
                 <InstantPostButton
-                  onPreSend={handleSave}
+                  onPreSend={() => {
+                    handleSave({
+                      closeOnSave: false,
+                    });
+                  }}
                   note={selectedNote}
                   source="note-editor-dialog"
                   onLoadingChange={setIsSendingNote}

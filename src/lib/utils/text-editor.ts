@@ -418,8 +418,8 @@ const SkeletonPlugin = Extension.create({
 // <p> has margin top-bottom of 6px.
 // images
 // Nothing else.
-export const ArrowLigature = Extension.create({
-  name: "arrowLigature",
+export const CustomTextRules = Extension.create({
+  name: "customTextRules",
 
   addInputRules() {
     // Trigger on `->`
@@ -441,17 +441,15 @@ export const ArrowLigature = Extension.create({
       },
     });
 
-    // Convert a single \n to a double \n
-    const doubleNewlineRule = new InputRule({
-      find: /\n$/,
+    const replaceBrRule = new InputRule({
+      find: /<br\s*\/?>/g,
       handler: ({ state, match, range }) => {
         if (match[0]) {
-          state.tr.insertText("\n\n", range.from, range.to);
+          state.tr.insertText("</p><p>", range.from, range.to);
         }
       },
     });
-
-    return [arrowRule, emDashRule, doubleNewlineRule];
+    return [arrowRule, emDashRule, replaceBrRule];
   },
 });
 
@@ -464,13 +462,19 @@ export const notesTextEditorOptions = (
 ): UseEditorOptions => ({
   onUpdate: ({ editor }) => {
     let html = editor.getHTML();
-    html = html.replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br>");
-    onUpdate?.(html);
+    // convert a since \n to a double \n
+    debugger;
+    // replace <br> with ps
+    const newHtml = html.replace(/<br\s*\/?>/g, "</p><p>");
+    if (html !== newHtml) {
+      editor.commands.setContent(newHtml);
+    }
+    onUpdate?.(newHtml);
   },
   editable: !options.disabled,
   extensions: [
     StarterKit.configure({
-      hardBreak: false,
+      // hardBreak: false,
       paragraph: {
         HTMLAttributes: { class: cn("mb-5 leading-8", Lora.className) },
       },
@@ -482,7 +486,7 @@ export const notesTextEditorOptions = (
     Document,
     CustomBlockquote,
     CodeBlock,
-    ArrowLigature,
+    CustomTextRules,
     Paragraph.configure({
       HTMLAttributes: { class: "my-3" },
     }),
