@@ -69,17 +69,10 @@ export async function POST(req: NextRequest) {
 
     const messages = generateNotesDescriptionPrompt(userNotes);
 
-    const [
-      generatedDescription,
-      //   generatedDescriptionClaude35,
-      //   generatedDescriptionClaude37,
-      //   generatedDescriptionGPT45,
-    ] = await Promise.all([
-      //   runPrompt(messages, "google/gemini-2.0-flash-001"),
-      //   runPrompt(messages, "anthropic/claude-3.5-sonnet"),
-      runPrompt(messages, "anthropic/claude-3.7-sonnet"),
-      //   runPrompt(messages, "openai/gpt-4.5-preview"),
-    ]);
+    const generatedDescription = await runPrompt(
+      messages,
+      "deepseek/deepseek-r1",
+    );
 
     const descriptionObject: {
       noteWritingStyle: string;
@@ -93,7 +86,7 @@ export async function POST(req: NextRequest) {
         noteTopics: descriptionObject.noteTopics,
       },
     });
-    
+
     return NextResponse.json({
       success: true,
       descriptionObject,

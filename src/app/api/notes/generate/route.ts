@@ -43,23 +43,36 @@ export async function POST(
   let model: Model = "openrouter/auto";
 
   if (requestedModel && featureFlags.includes(FeatureFlag.advancedGPT)) {
-    if (requestedModel === "gpt-4.5") {
-      model = "openai/gpt-4.5-preview";
-    } else if (requestedModel === "claude-3.5") {
-      model = "anthropic/claude-3.5-sonnet";
-    } else if (requestedModel === "claude-3.7") {
-      model = "anthropic/claude-3.7-sonnet";
-    } else if (requestedModel === "claude-3.5-haiku") {
-      model = "anthropic/claude-3.5-haiku";
-    } else if (requestedModel === "gemini-2.5-pro") {
-      model = "google/gemini-2.5-pro-preview-03-25";
-    } else if (requestedModel === "grok-3-beta") {
-      model = "x-ai/grok-3-beta";
-    } else if (requestedModel === "auto") {
-      model = "openrouter/auto";
-    } else if (requestedModel === "gpt-4.1") {
-      model = "openai/gpt-4.1";
+    switch (requestedModel) {
+      case "gpt-4.5":
+        model = "openai/gpt-4.5-preview";
+        break;
+      case "claude-3.5":
+        model = "anthropic/claude-3.5-sonnet";
+        break;
+      case "claude-3.7":
+        model = "anthropic/claude-3.7-sonnet";
+        break;
+      case "claude-3.5-haiku":
+        model = "anthropic/claude-3.5-haiku";
+        break;
+      case "gemini-2.5-pro":
+        model = "google/gemini-2.5-pro-preview-03-25";
+        break;
+      case "grok-3-beta":
+        model = "x-ai/grok-3-beta";
+        break;
+      case "auto":
+        model = "openrouter/auto";
+        break;
+      case "gpt-4.1":
+        model = "openai/gpt-4.1";
+        break;
+      case "deepseek-r1":
+        model = "deepseek/deepseek-r1";
+        break;
     }
+
     if (model !== "openai/gpt-4.5-preview") {
       initialGeneratingModel = model;
     }
