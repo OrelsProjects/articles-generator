@@ -1,5 +1,6 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
+import { setUserNotesDescription as setUserNotesDescription } from "@/lib/dal/analysis";
 import { getAuthorId } from "@/lib/dal/publication";
 import { runPrompt } from "@/lib/open-router";
 import { generateNotesDescriptionPrompt } from "@/lib/prompts";
@@ -45,51 +46,18 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const authorId = await getAuthorId(userId);
-    if (!authorId) {
+    const descriptionResponse = await setUserNotesDescription(userId);
+
+    if ("error" in descriptionResponse) {
       return NextResponse.json(
-        { error: "Author ID not found" },
-        { status: 404 },
+        { error: descriptionResponse.error },
+        { status: descriptionResponse.status },
       );
     }
 
-    const userNotes = await prismaArticles.notesComments.findMany({
-      where: {
-        authorId: authorId,
-      },
-      orderBy: {
-        date: "desc",
-      },
-      take: 150,
-    });
-
-    if (userNotes.length === 0) {
-      return NextResponse.json({ error: "No notes found" }, { status: 404 });
-    }
-
-    const messages = generateNotesDescriptionPrompt(userNotes);
-
-    const generatedDescription = await runPrompt(
-      messages,
-      "deepseek/deepseek-r1",
-    );
-
-    const descriptionObject: {
-      noteWritingStyle: string;
-      noteTopics: string;
-    } = await parseJson(generatedDescription);
-
-    await prisma.userMetadata.update({
-      where: { userId: userId },
-      data: {
-        noteWritingStyle: descriptionObject.noteWritingStyle,
-        noteTopics: descriptionObject.noteTopics,
-      },
-    });
-
     return NextResponse.json({
       success: true,
-      descriptionObject,
+      descriptionObject: descriptionResponse,
     });
   } catch (error) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
