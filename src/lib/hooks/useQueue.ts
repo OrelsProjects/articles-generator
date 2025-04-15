@@ -31,9 +31,10 @@ export function useQueue() {
 
   // Those that are scheduled to after now
   const relevantScheduledNotes = useMemo(() => {
-    return scheduledNotes.filter(
-      note => note.scheduledTo && note.scheduledTo > new Date(),
-    );
+    return scheduledNotes;
+    // return scheduledNotes.filter(
+    //   note => note.scheduledTo && note.scheduledTo > new Date(),
+    // );
   }, [scheduledNotes, userNotes]);
 
   const initQueue = async () => {
