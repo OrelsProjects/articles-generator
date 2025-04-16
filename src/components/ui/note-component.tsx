@@ -112,7 +112,7 @@ const NotesActions = ({
 
       {/* Replace the Substack posting button with the new component */}
       <InstantPostButton
-        note={note}
+        noteId={note.id}
         size="sm"
         variant="ghost"
         source="note_component"
