@@ -5,7 +5,6 @@ import SessionWrapper from "@/app/providers/SessionWrapper";
 import StoreProvider from "@/app/providers/StoreProvider";
 import TopLoaderProvider from "@/app/providers/TopLoaderProvider";
 import Loading from "@/components/ui/loading";
-import { initLogger } from "@/logger";
 import { Suspense } from "react";
 import { Metadata, Viewport } from "next";
 import AnimationProvider from "@/app/providers/AnimationProvider";
@@ -14,6 +13,7 @@ import { ToastProvider } from "@/app/providers/ToastProvider";
 import { PlusJakartaSans } from "@/lib/utils/fonts";
 import Script from "next/script";
 import AffiliateProvider from "@/app/providers/AffiliateProvider";
+import { Analytics } from "@vercel/analytics/react";
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME as string;
 const APP_DEFAULT_TITLE = process.env.NEXT_PUBLIC_APP_DEFAULT_TITLE as string;
@@ -100,6 +100,7 @@ export default function RootLayout({
                 {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
               </Script>
               <AffiliateProvider>
+                <Analytics />
                 <AnimationProvider>{children}</AnimationProvider>
                 <ClientTrackersProvider />
               </AffiliateProvider>
