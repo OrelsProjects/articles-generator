@@ -278,6 +278,29 @@ function App() {
 
 const testimonials = [
   {
+    quote: `I found ${appName} via Substack.
+
+    It's a great product and easy to use. It takes all the best features of other scheduling apps and puts them in one place.
+    <br/><br/>
+    Right now it's the only Substack scheduler there is. The team works hard on it and I would recommend to anyone who wants to take Substack seriously.
+    <br/><br/>
+    Seeing top posts is a gamechanger as well.
+    <br/><br/>
+    Effortless to get started. I recommend you start with the "queue" page
+    `,
+    author: "Tim Denning",
+    image: "/tim-denning.jpg",
+    title: "Author of Unfiltered by Tim Denning (141k+ Subscribers)",
+  },
+  {
+    quote: `${appName} allowed me to finally find my voice on Substack Notes, one that I'm satisfied with and I feel like. 
+      <br/><br/> It resonates with readers.
+      <br/><br/> It's also extremely easy to use, so it lets me post multiple notes a day, even if I have little to no time`,
+    author: "Kacper Wojaczek",
+    image: "/testimonials/kacper-wojaczek.png",
+    title: "Author of Scramble IT",
+  },
+  {
     quote: `I love ${appName}.
     <br/><br/>
     I've been using it to get inspiration for my Substack Notes and it saves me so much time coming up with new ideas.
@@ -298,14 +321,6 @@ And what I like about it is just how easy it is to copy and paste the results in
     author: "MacDaniel Chimedza",
     image: "/testimonials/macdaniel-chimedza.png",
     title: "Author of The Weekly Mindset",
-  },
-  {
-    quote: `WriteRoom allowed me to finally find my voice on Substack Notes, one that I'm satisfied with and I feel like. 
-      <br/><br/> It resonates with readers.
-      <br/><br/> It's also extremely easy to use, so it lets me post multiple notes a day, even if I have little to no time`,
-    author: "Kacper Wojaczek",
-    image: "/testimonials/kacper-wojaczek.png",
-    title: "Author of Scramble IT",
   },
 ];
 
