@@ -21,21 +21,42 @@ export function useQueue() {
   const [loadingBestTimeToPublish, setLoadingBestTimeToPublish] =
     useState(false);
 
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(12);
+
   const loadingBestNotesRef = useRef(false);
 
   const scheduledNotes = useMemo(() => {
-    return userNotes.filter(
-      note => note.status === "scheduled" && note.scheduledTo,
-    );
-  }, [userNotes]);
+    const now = new Date();    
+    return userNotes
+      .filter(
+        note =>
+          note.status === "scheduled" &&
+          note.scheduledTo &&
+          new Date(note.scheduledTo) > now,
+      )
+      .slice((page - 1) * pageSize, page * pageSize);
+  }, [userNotes, page, pageSize]);
+  console.log("scheduledNotes", scheduledNotes);
 
-  // Those that are scheduled to after now
-  const relevantScheduledNotes = useMemo(() => {
-    return scheduledNotes;
-    // return scheduledNotes.filter(
-    //   note => note.scheduledTo && note.scheduledTo > new Date(),
-    // );
-  }, [scheduledNotes, userNotes]);
+  const draftNotes = useMemo(() => {
+    return userNotes
+      .filter(note => note.status === "draft")
+      .slice((page - 1) * pageSize, page * pageSize);
+  }, [userNotes, page, pageSize]);
+
+  const publishedNotes = useMemo(() => {
+    return userNotes
+      .filter(note => note.status === "published")
+      .slice(0, page * pageSize);
+  }, [userNotes, page, pageSize]);
+
+  const counters = useMemo(() => {
+    const scheduledCount = scheduledNotes.length;
+    const draftCount = draftNotes.length;
+    const publishedCount = publishedNotes.length;
+    return { scheduledCount, draftCount, publishedCount };
+  }, [scheduledNotes, draftNotes, publishedNotes]);
 
   const initQueue = async () => {
     try {
@@ -277,18 +298,31 @@ export function useQueue() {
     }
   };
 
+  const fetchMoreScheduledNotes = async () => {
+    setPage(page + 1);
+  };
+
+  const fetchMoreDraftNotes = async () => {
+    setPage(page + 1);
+  };
+
+  const fetchMorePublishedNotes = async () => {
+    setPage(page + 1);
+  };
+
   useEffect(() => {
     if (userSchedules.length === 0) {
       fetchSchedules();
     }
-    if (relevantScheduledNotes.length === 0) {
+    if (scheduledNotes.length === 0) {
       fetchBestTimeToPublish();
     }
   }, []);
 
   return {
     scheduledNotes,
-    relevantScheduledNotes,
+    draftNotes,
+    publishedNotes,
     addSchedule,
     removeSchedule,
     updateSchedule,
@@ -299,5 +333,9 @@ export function useQueue() {
     loadingBestTimeToPublish,
     bestTimeToPublish,
     fetchBestTimeToPublish,
+    fetchMoreScheduledNotes,
+    fetchMoreDraftNotes,
+    fetchMorePublishedNotes,
+    counters,
   };
 }

@@ -63,33 +63,33 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const deleteTemplates = generateSubscriptionDeletedEmail("Orel", "Pro");
-    const freeTrialEndingTemplates = generateFreeSubscriptionEndedEmail("Orel");
-    const pausedTemplates = generateSubscriptionPausedEmail("Orel", "Pro");
-    await sendMail({
-      to: "orelsmail@gmail.com",
-      from: "support",
-      subject: deleteTemplates.subject,
-      template: deleteTemplates.body,
-      cc: [],
-    });
+  // try {
+  //   const deleteTemplates = generateSubscriptionDeletedEmail("Orel", "Pro");
+  //   const freeTrialEndingTemplates = generateFreeSubscriptionEndedEmail("Orel");
+  //   const pausedTemplates = generateSubscriptionPausedEmail("Orel", "Pro");
+  //   await sendMail({
+  //     to: "orelsmail@gmail.com",
+  //     from: "support",
+  //     subject: deleteTemplates.subject,
+  //     template: deleteTemplates.body,
+  //     cc: [],
+  //   });
 
-    await sendMail({
-      to: "orelsmail@gmail.com",
-      from: "support",
-      subject: freeTrialEndingTemplates.subject,
-      template: freeTrialEndingTemplates.body,
-      cc: [],
-    });
+  //   await sendMail({
+  //     to: "orelsmail@gmail.com",
+  //     from: "support",
+  //     subject: freeTrialEndingTemplates.subject,
+  //     template: freeTrialEndingTemplates.body,
+  //     cc: [],
+  //   });
 
-    await sendMail({
-      to: "orelsmail@gmail.com",
-      from: "support",
-      subject: pausedTemplates.subject,
-      template: pausedTemplates.body,
-      cc: [],
-    });
+  //   await sendMail({
+  //     to: "orelsmail@gmail.com",
+  //     from: "support",
+  //     subject: pausedTemplates.subject,
+  //     template: pausedTemplates.body,
+  //     cc: [],
+  //   });
     // const allUserNotes = await prisma.note.findMany();
     // const updatedNotes: any = [];
     // // if has scheduleTo, update it to remove seconds
@@ -200,11 +200,11 @@ export async function GET() {
     // });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error processing users:", error);
-    return NextResponse.json(
-      { error: "Failed to process users" },
-      { status: 500 },
-    );
-  }
+  // } catch (error) {
+  //   console.error("Error processing users:", error);
+  //   return NextResponse.json(
+  //     { error: "Failed to process users" },
+  //     { status: 500 },
+  //   );
+  // }
 }

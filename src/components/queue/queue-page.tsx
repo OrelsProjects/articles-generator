@@ -23,7 +23,15 @@ export function QueuePage() {
     "queue_active_tab",
     "scheduled",
   );
-  const { scheduledNotes, relevantScheduledNotes } = useQueue();
+  const {
+    scheduledNotes,
+    draftNotes,
+    publishedNotes,
+    counters,
+    fetchMoreScheduledNotes,
+    fetchMoreDraftNotes,
+    fetchMorePublishedNotes,
+  } = useQueue();
   const { selectNote, createDraftNote } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
   const { userNotes } = useAppSelector(state => state.notes);
@@ -31,6 +39,7 @@ export function QueuePage() {
   const [activeDays, setActiveDays] = useState<Date[]>([]);
   const [activeTab, setActiveTab] = useState("scheduled");
   const lastNoteRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Generate an array of dates based on scheduled notes and minimum 28 days
   useEffect(() => {
@@ -62,6 +71,26 @@ export function QueuePage() {
   useEffect(() => {
     setActiveTab(activeTabCache);
   }, [activeTabCache]);
+
+  // if scroll is at 60% of the page, fetch more scheduled notes.
+  // Make sure it doesn't trigger too many times, due to a fast scroll.
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.body.scrollHeight * 0.6
+      ) {
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+        scrollTimeoutRef.current = setTimeout(() => {
+          fetchMoreScheduledNotes();
+        }, 50);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [fetchMoreScheduledNotes]);
 
   const handleUpdateActiveTab = (tab: string) => {
     setActiveTab(tab);
@@ -101,7 +130,7 @@ export function QueuePage() {
   };
 
   // Group notes by date
-  const groupedScheduledNotes = React.useMemo(() => {
+  const groupedScheduledNotes = () => {
     const grouped: Record<string, NoteDraft[]> = {};
 
     scheduledNotes.forEach(note => {
@@ -128,10 +157,10 @@ export function QueuePage() {
     });
 
     return grouped;
-  }, [scheduledNotes]);
+  };
 
   // Group schedules by date for empty slots
-  const groupedSchedules = React.useMemo(() => {
+  const groupedSchedules = () => {
     const grouped: Record<string, UserSchedule[]> = {};
 
     userSchedules.forEach(schedule => {
@@ -162,17 +191,7 @@ export function QueuePage() {
     });
 
     return grouped;
-  }, [userSchedules, activeDays]);
-
-  // Filter drafts
-  const draftNotes = React.useMemo(() => {
-    return userNotes.filter(note => note.status === "draft");
-  }, [userNotes]);
-
-  // Filter published notes
-  const publishedNotes = React.useMemo(() => {
-    return userNotes.filter(note => note.status === "published");
-  }, [userNotes]);
+  };
 
   // Handle note selection
   const handleSelectNote = (note: NoteDraft) => {
@@ -207,14 +226,14 @@ export function QueuePage() {
         </div>
       </div>
 
-      {relevantScheduledNotes.length === 0 && (
+      {scheduledNotes.length === 0 && (
         <div className="bg-red-50 dark:bg-red-950/25 border border-red-200 dark:border-red-900 p-4 rounded-md mb-6 flex items-center text-red-800 dark:text-red-400">
           <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
           <span>You have no scheduled notes in your queue</span>
         </div>
       )}
 
-      {relevantScheduledNotes.length > 0 && (
+      {scheduledNotes.length > 0 && (
         <div className="bg-green-50 dark:bg-green-950/25 border border-green-200 dark:border-green-900 p-4 rounded-md mb-6 flex items-center text-green-800 dark:text-green-400">
           <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
           <span>
@@ -270,7 +289,7 @@ export function QueuePage() {
               "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
             )}
           >
-            Scheduled
+            Scheduled ({counters.scheduledCount})
           </TabsTrigger>
           <TabsTrigger
             value="drafts"
@@ -278,7 +297,7 @@ export function QueuePage() {
               "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
             )}
           >
-            Drafts
+            Drafts ({counters.draftCount})
           </TabsTrigger>
           <TabsTrigger
             value="published"
@@ -286,15 +305,15 @@ export function QueuePage() {
               "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
             )}
           >
-            Published
+            Published ({counters.publishedCount})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="scheduled" className="mt-0">
           <ScheduledNotesList
             days={activeDays}
-            groupedNotes={groupedScheduledNotes}
-            groupedSchedules={groupedSchedules}
+            groupedNotes={groupedScheduledNotes()}
+            groupedSchedules={groupedSchedules()}
             onSelectNote={handleSelectNote}
             lastNoteRef={lastNoteRef}
             lastNoteId={latestNoteId}

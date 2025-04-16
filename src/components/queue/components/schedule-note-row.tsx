@@ -11,6 +11,7 @@ import {
   X,
   CalendarClock,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 
@@ -69,9 +70,9 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
             />
           </div>
         )}
-        {/* <div className="ml-2 text-muted-foreground">
+        <div className="ml-2 text-muted-foreground">
           <GripVertical size={16} />
-        </div> */}
+        </div>
       </div>
     );
   }
@@ -131,26 +132,26 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
     }
   };
 
+  // Prevent drag when clicking on action buttons
+  const handleActionClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`w-full flex justify-between items-center p-3 mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative cursor-pointer ${
+      className={`w-full flex justify-between items-center mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative cursor-grab ${
         isOver ? "bg-secondary/40 border-primary" : ""
       }`}
       onClick={handleClick}
     >
-      {/* Drag handle - only this part is draggable */}
+      {/* Content area */}
       <div
-        className="p-1 text-muted-foreground cursor-grab hover:text-foreground absolute -left-10"
+        className="flex flex-1 min-w-0 items-center p-3"
         {...attributes}
         {...listeners}
       >
-        <GripVertical size={18} />
-      </div>
-
-      {/* Content area */}
-      <div className="flex flex-1 min-w-0 items-center">
         <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5">
           <CalendarClock size={16} />
         </div>
@@ -173,7 +174,18 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
       </div>
 
       {/* Action buttons on the right */}
-      <div className="flex items-center gap-2 ml-2">
+      <div className="flex items-center gap-2 mr-2" onClick={handleActionClick}>
+        {/* Edit button */}
+        <TooltipButton
+          variant="ghost"
+          tooltipContent="Edit"
+          onClick={handleClick}
+          className="text-muted-foreground hover:text-primary transition-colors p-2 z-10"
+          title="Edit"
+        >
+          <Pencil size={16} />
+        </TooltipButton>
+
         {/* Unschedule button */}
         {onUnschedule && (
           <TooltipButton
