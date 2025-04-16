@@ -572,7 +572,7 @@ export function NotesEditorDialog() {
                   onScheduleConfirm={handleConfirmSchedule}
                 />
                 <SaveDropdown
-                  onSave={handleSave}
+                  onSaveAndClose={() => handleSave({ closeOnSave: true })}
                   onSchedule={() => {
                     setScheduleDialogOpen(true);
                   }}

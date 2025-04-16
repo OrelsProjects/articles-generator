@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  CalendarClock,
   ChevronDown,
   CircleArrowRight,
   Clock4,
@@ -22,7 +21,7 @@ import { cn } from "@/lib/utils";
 
 interface SaveDropdownProps {
   selectedNote?: NoteDraft | null;
-  onSave: () => Promise<unknown>;
+  onSaveAndClose: () => Promise<unknown>;
   onSchedule: () => unknown;
   onAddToQueue: (date: Date) => Promise<unknown>;
   presetSchedule?: Date;
@@ -32,7 +31,7 @@ interface SaveDropdownProps {
 }
 
 export function SaveDropdown({
-  onSave,
+  onSaveAndClose,
   onSchedule,
   onAddToQueue,
   presetSchedule,
@@ -125,7 +124,7 @@ export function SaveDropdown({
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            onClick={onSave}
+            onClick={onSaveAndClose}
             disabled={disabled || loading}
             className="text-muted-foreground"
           >
