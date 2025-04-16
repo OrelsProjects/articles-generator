@@ -4,6 +4,7 @@ import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addUserToList, sendMail } from "@/lib/mail/mail";
 import {
   generateFreeSubscriptionEndedEmail,
+  generateFreeTrialEndingEmail,
   generateInvoicePaymentFailedEmail,
   generatePaymentConfirmationEmail,
   generateSubscriptionDeletedEmail,
@@ -320,6 +321,7 @@ export async function handleSubscriptionTrialEnding(event: any) {
   const stripe = getStripeInstance();
   const subscription = event.data.object as Stripe.Subscription;
   const customerId = subscription.customer as string;
+  const user = await getUserBySubscription(subscription);
   const customer = (await stripe.customers.retrieve(
     customerId,
   )) as Stripe.Customer;
@@ -362,18 +364,33 @@ export async function handleSubscriptionTrialEnding(event: any) {
     );
     return;
   }
+  let subject = "";
+  let body = "";
   // Send email notification about trial ending
-  const emailTemplate = generateSubscriptionTrialEndingEmail(
-    subscriptionFromDb.plan,
-    new Date(subscription.trial_end * 1000),
-  );
-  await sendMail({
-    to: userEmail,
-    from: "support",
-    subject: emailTemplate.subject,
-    template: emailTemplate.body,
-    cc: ["orelsmail@gmail.com"],
-  });
+  if (subscription.metadata?.freeTrialCode) {
+    const emailTemplate = generateFreeTrialEndingEmail(
+      new Date(subscription.trial_end * 1000),
+      user?.name || undefined,
+    );
+    subject = emailTemplate.subject;
+    body = emailTemplate.body;
+  } else {
+    const emailTemplate = generateSubscriptionTrialEndingEmail(
+      subscriptionFromDb.plan,
+      new Date(subscription.trial_end * 1000),
+    );
+    subject = emailTemplate.subject;
+    body = emailTemplate.body;
+  }
+  if (subject && body) {
+    await sendMail({
+      to: userEmail,
+      from: "support",
+      subject,
+      template: body,
+      cc: ["orelsmail@gmail.com"],
+    });
+  }
 }
 
 //

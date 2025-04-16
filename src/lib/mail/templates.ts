@@ -367,6 +367,57 @@ export function generatePaymentConfirmationEmail(
   };
 }
 
+export function generateFreeTrialEndingEmail(
+  trialEndDate: Date,
+  userName?: string,
+) {
+  const formattedDate = trialEndDate.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
+  const content = `
+    <h2>Your WriteRoom free trial is wrapping up!</h2>
+    <p>Hi ${userName || "there"},</p>
+    <p>Just a friendly heads-up that your free trial of WriteRoom will conclude on <strong>${formattedDate}</strong>.</p>
+    
+    <p>We've loved having you as part of our writing community and hope that WriteRoom has helped spark your creativity and streamline your writing process!</p>
+    
+    <p>During your trial, you've experienced how WriteRoom can:</p>
+    <ul>
+      <li>Generate AI-powered outlines that match your unique style</li>
+      <li>Enhance your writing with smart text editing tools</li>
+      <li>Help you schedule and organize your content calendar</li>
+      <li>Connect you with inspiration from our extensive note library</li>
+    </ul>
+    
+    <p>Many writers tell us that WriteRoom has become an essential part of their creative process. We'd love for you to continue your journey with us!</p>
+    
+    <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #cc5500;">
+      <h3 style="color: #cc5500; margin-top: 0;">Special Offer: 15% Off Any Plan</h3>
+      <p>To help you continue your writing momentum, we're offering you <strong>15% off any WriteRoom plan</strong> if you upgrade before your trial ends.</p>
+      <p>Simply use code: <strong>WRITE15</strong> at checkout.</p>
+    </div>
+    
+    <p>Ready to keep your writing flow going without interruption?</p>
+    
+    <div class="center-button-container">
+      <a href="https://writeroom.co/pricing" class="button">Explore Plans & Upgrade</a>
+    </div>
+    
+    <p style="margin-top: 20px;">Have questions about which plan might be right for you? Just reply to this email – I'm happy to help you find the perfect fit for your writing needs.</p>
+    
+    <p>Happy writing,<br>
+    Orel and the WriteRoom Team</p>
+  `;
+
+  return {
+    body: baseEmailTemplate(content),
+    subject: `Your WriteRoom free trial ends ${formattedDate} – Special 15% discount inside!`,
+  };
+}
+
 export function generateFreeSubscriptionEndedEmail(userName?: string) {
   const content = `
     <h2>Your WriteRoom Free Trial Has Ended – Keep the Momentum Going!</h2>
