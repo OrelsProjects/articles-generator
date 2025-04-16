@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Check, Copy, Image as ImageIcon } from "lucide-react";
+import { Copy, Image as ImageIcon } from "lucide-react";
 import { selectNotes } from "@/lib/features/notes/notesSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { TooltipButton } from "@/components/ui/tooltip-button";
@@ -19,16 +19,13 @@ import { toast } from "react-toastify";
 import {
   convertMDToHtml,
   isEmptyNote,
-  NOTE_EMPTY,
   NoteDraft,
   NoteDraftImage,
 } from "@/types/note";
-import { isScheduled, getScheduleTimeText } from "@/lib/utils/date/schedule";
+import { getScheduleTimeText } from "@/lib/utils/date/schedule";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
-import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
 import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";
-import NoSubstackCookiesDialog from "@/components/notes/no-substack-cookies-dialog";
 import EmojiPopover from "@/components/notes/emoji-popover";
 import { Skin } from "@emoji-mart/data";
 import { copyHTMLToClipboard } from "@/lib/utils/copy";
@@ -38,9 +35,7 @@ import ImageDropOverlay from "@/components/notes/image-drop-overlay";
 import { NoteImageContainer } from "@/components/notes/note-image-container";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AIToolsDropdown } from "@/components/notes/ai-tools-dropdown";
-import { Button } from "@/components/ui/button";
 import { CancelError } from "@/types/errors/CancelError";
-import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { urlToFile } from "@/lib/utils/file";
 import { SaveDropdown } from "@/components/notes/save-dropdown";
 import { AvoidPlagiarismDialog } from "@/components/notes/avoid-plagiarism-dialog";
@@ -63,12 +58,7 @@ export function NotesEditorDialog() {
     cancelUpdateNoteBody,
   } = useNotes();
 
-  const {
-    scheduleNote,
-    loadingScheduleNote,
-    isIntervalRunning,
-    cancelCanUserScheduleInterval,
-  } = useNotesSchedule();
+  const { scheduleNote, loadingScheduleNote } = useNotesSchedule();
 
   const editor = useEditor(
     notesTextEditorOptions(html => {
@@ -205,6 +195,8 @@ export function NotesEditorDialog() {
       lower: true,
       strict: true,
     });
+    debugger;
+    const selectedHandle = selectedNote;
     return (
       slugifiedBody === slugifiedNoteBody &&
       selectedNote?.status === "inspiration" &&

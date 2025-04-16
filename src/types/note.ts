@@ -223,6 +223,7 @@ export function inspirationNoteToNoteDraft(
     authorName: "",
     scheduledTo: note.scheduledTo,
     wasSentViaSchedule: !!note.sentViaScheduleAt,
+    handle: note.handle,
     attachments: attachment
       ? [
           {
