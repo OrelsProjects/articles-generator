@@ -17,6 +17,7 @@ import { ScheduledNotesList } from "./components";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 export function QueuePage() {
   const [activeTabCache, setActiveTabCache] = useLocalStorage(
@@ -28,16 +29,15 @@ export function QueuePage() {
     draftNotes,
     publishedNotes,
     counters,
-    fetchMoreScheduledNotes,
-    fetchMoreDraftNotes,
-    fetchMorePublishedNotes,
+    nextPage,
+    resetPage,
   } = useQueue();
   const { selectNote, createDraftNote } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
-  const { userNotes } = useAppSelector(state => state.notes);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [activeDays, setActiveDays] = useState<Date[]>([]);
   const [activeTab, setActiveTab] = useState("scheduled");
+
   const lastNoteRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -76,6 +76,12 @@ export function QueuePage() {
   // Make sure it doesn't trigger too many times, due to a fast scroll.
   useEffect(() => {
     const handleScroll = () => {
+      console.log(
+        "scroll",
+        window.innerHeight,
+        window.scroll,
+        document.body.scrollHeight,
+      );
       if (
         window.innerHeight + window.scrollY >=
         document.body.scrollHeight * 0.6
@@ -83,18 +89,29 @@ export function QueuePage() {
         if (scrollTimeoutRef.current) {
           clearTimeout(scrollTimeoutRef.current);
         }
+        console.log("fetching more scheduled notes");
         scrollTimeoutRef.current = setTimeout(() => {
-          fetchMoreScheduledNotes();
-        }, 50);
+          console.log("fetching more scheduled notes 2");
+          nextPage();
+        }, 100);
       }
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [fetchMoreScheduledNotes]);
+    const mainContentScroll = document.getElementById("main-content-scroll");
+    if (mainContentScroll) {
+      console.log("adding scroll event listener");
+      mainContentScroll.addEventListener("scroll", handleScroll);
+    }
+    return () => {
+      if (mainContentScroll) {
+        mainContentScroll.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
 
   const handleUpdateActiveTab = (tab: string) => {
     setActiveTab(tab);
     setActiveTabCache(tab);
+    resetPage();
   };
 
   // Find the latest scheduled note for scrolling
@@ -203,7 +220,7 @@ export function QueuePage() {
   const latestNoteId = latestNote?.id;
 
   return (
-    <div className="container py-8 mx-auto">
+    <ScrollArea className="container py-8 mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-foreground">Queue</h1>
         <div className="flex flex-col md:flex-row items-center gap-2">
@@ -351,7 +368,7 @@ export function QueuePage() {
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
       />
-    </div>
+    </ScrollArea>
   );
 }
 

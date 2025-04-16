@@ -22,41 +22,43 @@ export function useQueue() {
     useState(false);
 
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(12);
+  const [pageSize] = useState(30);
+
+  const pageRef = useRef(1);
 
   const loadingBestNotesRef = useRef(false);
 
   const scheduledNotes = useMemo(() => {
-    const now = new Date();    
-    return userNotes
-      .filter(
-        note =>
-          note.status === "scheduled" &&
-          note.scheduledTo &&
-          new Date(note.scheduledTo) > now,
-      )
-      .slice((page - 1) * pageSize, page * pageSize);
-  }, [userNotes, page, pageSize]);
-  console.log("scheduledNotes", scheduledNotes);
+    const now = new Date();
+    return userNotes.filter(
+      note =>
+        note.status === "scheduled" &&
+        note.scheduledTo &&
+        new Date(note.scheduledTo) > now,
+    );
+  }, [userNotes]);
 
   const draftNotes = useMemo(() => {
-    return userNotes
-      .filter(note => note.status === "draft")
-      .slice((page - 1) * pageSize, page * pageSize);
+    console.log("Page", page);
+    const drafts = userNotes.filter(note => note.status === "draft");
+    const newSize = Math.min(page * pageSize, drafts.length);
+    return drafts.slice(0, newSize);
   }, [userNotes, page, pageSize]);
 
   const publishedNotes = useMemo(() => {
-    return userNotes
-      .filter(note => note.status === "published")
-      .slice(0, page * pageSize);
+    const published = userNotes.filter(note => note.status === "published");
+    const newSize = Math.min(page * pageSize, published.length);
+    return published.slice(0, newSize);
   }, [userNotes, page, pageSize]);
 
   const counters = useMemo(() => {
     const scheduledCount = scheduledNotes.length;
-    const draftCount = draftNotes.length;
-    const publishedCount = publishedNotes.length;
+    const draftCount = userNotes.filter(note => note.status === "draft").length;
+    const publishedCount = userNotes.filter(
+      note => note.status === "published",
+    ).length;
     return { scheduledCount, draftCount, publishedCount };
-  }, [scheduledNotes, draftNotes, publishedNotes]);
+  }, [scheduledNotes, userNotes]);
 
   const initQueue = async () => {
     try {
@@ -298,16 +300,17 @@ export function useQueue() {
     }
   };
 
-  const fetchMoreScheduledNotes = async () => {
-    setPage(page + 1);
+  const nextPage = () => {
+    console.log("next page. current page", pageRef.current);
+    const newPage = pageRef.current + 1;
+    pageRef.current = newPage;
+    setPage(newPage);
   };
 
-  const fetchMoreDraftNotes = async () => {
-    setPage(page + 1);
-  };
-
-  const fetchMorePublishedNotes = async () => {
-    setPage(page + 1);
+  const resetPage = () => {
+    console.log("resetting page. current page", page);
+    pageRef.current = 1;
+    setPage(1);
   };
 
   useEffect(() => {
@@ -333,9 +336,8 @@ export function useQueue() {
     loadingBestTimeToPublish,
     bestTimeToPublish,
     fetchBestTimeToPublish,
-    fetchMoreScheduledNotes,
-    fetchMoreDraftNotes,
-    fetchMorePublishedNotes,
+    nextPage,
+    resetPage,
     counters,
   };
 }

@@ -224,7 +224,9 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 overflow-auto">{children}</div>
+        <div id="main-content-scroll" className="flex-1 overflow-auto">
+          {children}
+        </div>
       </div>
 
       {/* Mobile Bottom Navigation */}

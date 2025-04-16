@@ -79,7 +79,7 @@ export default function NotesCalendarPage() {
   }
 
   return (
-    <div className="w-screen md:container mx-auto">
+    <div className="w-screen md:container mx-auto overflow-clip">
       <QueuePage />
     </div>
   );
