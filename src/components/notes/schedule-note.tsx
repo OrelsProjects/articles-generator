@@ -40,7 +40,7 @@ interface ScheduleNoteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialScheduledDate?: Date | null;
-  onScheduleConfirm: (date: Date) => Promise<void>;
+  onScheduleConfirm: (date: Date) => Promise<unknown>;
 }
 
 export function ScheduleNote({

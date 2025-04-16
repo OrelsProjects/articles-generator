@@ -195,8 +195,7 @@ export function NotesEditorDialog() {
       lower: true,
       strict: true,
     });
-    debugger;
-    const selectedHandle = selectedNote;
+
     return (
       slugifiedBody === slugifiedNoteBody &&
       selectedNote?.status === "inspiration" &&
@@ -212,11 +211,11 @@ export function NotesEditorDialog() {
     } = {
       closeOnSave: true,
     },
-  ) => {
-    if (!selectedNote) return;
+  ): Promise<string | null> => {
+    if (!selectedNote) return null;
     if (isPlagiarism()) {
       setShowAvoidPlagiarismDialog(true);
-      return;
+      return null;
     }
 
     const toastId = toast.loading("Saving note...");
@@ -258,10 +257,10 @@ export function NotesEditorDialog() {
         }
       } catch (e: any) {
         if (e instanceof CancelError) {
-          return;
+          return null;
         }
         toast.error("Failed to save note");
-        return;
+        return null;
       }
       if (shouldSchedule) {
         try {
@@ -279,18 +278,15 @@ export function NotesEditorDialog() {
           );
         } catch (e: any) {
           if (e instanceof CancelError) {
-            return;
+            return null;
           }
           if (e instanceof ScheduleFailedEmptyNoteBodyError) {
             toast.error("Note body is empty");
-            return;
-          }
-          if (e instanceof NoSubstackCookiesError) {
-            setShowNoSubstackCookiesDialog(true);
+            return null;
           } else {
             toast.error("Failed to schedule note. Try again please.");
           }
-          return;
+          return null;
         }
       } else if (selectedNote?.status === "scheduled") {
         try {
@@ -303,15 +299,16 @@ export function NotesEditorDialog() {
           handleOpenChange(false);
         } catch (e: any) {
           if (e instanceof CancelError) {
-            return;
+            return null;
           }
           toast.error("Failed to unschedule note");
-          return;
+          return null;
         }
       }
       if (closeOnSave) {
         handleOpenChange(false);
       }
+      return isEmptyNote(newNote) ? null : newNote.id;
     } finally {
       toast.dismiss(toastId);
     }
@@ -336,9 +333,6 @@ export function NotesEditorDialog() {
     await copyHTMLToClipboard(html);
     toast.success("Copied to clipboard");
   };
-
-  const [showNoSubstackCookiesDialog, setShowNoSubstackCookiesDialog] =
-    useState(false);
 
   const handleFileUpload = async (file: File) => {
     if (!selectedNote) return;
@@ -436,17 +430,8 @@ export function NotesEditorDialog() {
   );
 
   const canSendNote = useMemo(() => {
-    if (isEmpty || isInspiration) {
-      return false;
-    }
     return !loadingEditNote && !loadingScheduleNote && !isSendingNote;
-  }, [
-    loadingEditNote,
-    loadingScheduleNote,
-    isSendingNote,
-    isEmpty,
-    isInspiration,
-  ]);
+  }, [loadingEditNote, loadingScheduleNote, isSendingNote]);
 
   return (
     <>
@@ -555,12 +540,8 @@ export function NotesEditorDialog() {
               </div>
               <div className="flex gap-3">
                 <InstantPostButton
-                  onPreSend={() => {
-                    handleSave({
-                      closeOnSave: false,
-                    });
-                  }}
-                  note={selectedNote}
+                  onSave={() => handleSave({ closeOnSave: false })}
+                  noteId={selectedNote?.id || null}
                   source="note-editor-dialog"
                   onLoadingChange={setIsSendingNote}
                   disabled={!canSendNote}

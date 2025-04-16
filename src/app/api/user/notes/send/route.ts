@@ -203,12 +203,13 @@ export async function POST(request: NextRequest) {
         );
       }
     }
+
     await prisma.note.update({
       where: {
         id: noteId,
       },
       data: {
-        sentViaScheduleAt: new Date(),
+        sentViaScheduleAt: note.scheduledTo ? new Date() : undefined,
         status: "published",
       },
     });

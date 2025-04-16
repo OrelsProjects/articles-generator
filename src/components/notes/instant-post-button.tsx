@@ -13,9 +13,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 
 interface SubstackPostButtonProps {
-  onPreSend?: () => unknown;
+  onSave?: () => Promise<string | null>;
   onLoadingChange?: (loading: boolean) => void;
-  note: Note | NoteDraft | string | null;
+  noteId: string | null;
   size?: "sm" | "lg" | "default" | "icon";
   variant?: "ghost" | "default" | "outline";
   disabled?: boolean;
@@ -25,8 +25,8 @@ interface SubstackPostButtonProps {
 }
 
 export function InstantPostButton({
-  note,
-  onPreSend,
+  noteId,
+  onSave,
   onLoadingChange,
   size = "sm",
   variant = "ghost",
@@ -35,7 +35,6 @@ export function InstantPostButton({
   disabled,
   children,
 }: SubstackPostButtonProps) {
-  const { getNoteById } = useExtension();
   const { updateNoteStatus, sendNote, loadingSendNote } = useNotes();
 
   const [postResponse, setPostResponse] = useState<CreatePostResponse | null>(
@@ -45,13 +44,15 @@ export function InstantPostButton({
 
   const handleSendNote = async () => {
     EventTracker.track("note_post_button_clicked_" + source);
-    if (!note) return;
-    const noteObject = typeof note === "string" ? getNoteById(note) : note;
-    if (!noteObject) return;
+    let sendNoteId = noteId;
     try {
       onLoadingChange?.(true);
-      await onPreSend?.();
-      const response = await sendNote(noteObject.id);
+      const customNoteId = await onSave?.();
+      if (!customNoteId) return;
+      if (customNoteId) {
+        sendNoteId = customNoteId;
+      }
+      const response = await sendNote(sendNoteId!);
       if (response) {
         setPostResponse(response);
         setShowSuccessDialog(true);
@@ -65,11 +66,10 @@ export function InstantPostButton({
   };
 
   const handleOpenChangeSuccessDialog = (open: boolean) => {
-    if (!note) return;
+    if (!noteId) return;
     setShowSuccessDialog(open);
     if (!open) {
-      if (typeof note === "string") updateNoteStatus(note, "published");
-      else updateNoteStatus(note.id, "published");
+      updateNoteStatus(noteId, "published");
     }
   };
 
@@ -84,7 +84,7 @@ export function InstantPostButton({
               tooltipContent="Post note now"
               variant={variant}
               size={size}
-              disabled={loadingSendNote || !note || disabled}
+              disabled={loadingSendNote || disabled}
               onClick={handleSendNote}
               className={cn("flex items-center gap-2", className)}
             >
@@ -107,11 +107,6 @@ export function InstantPostButton({
         open={showSuccessDialog}
         onOpenChange={handleOpenChangeSuccessDialog}
         response={postResponse}
-        onArchiveNote={() => {
-          if (!note) return;
-          if (typeof note === "string") updateNoteStatus(note, "archived");
-          else updateNoteStatus(note.id, "archived");
-        }}
       />
     </div>
   );
