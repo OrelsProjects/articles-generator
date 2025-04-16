@@ -141,14 +141,14 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`w-full flex justify-between items-center mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative cursor-grab ${
+      className={`w-full flex justify-between items-center mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative ${
         isOver ? "bg-secondary/40 border-primary" : ""
       }`}
       onClick={handleClick}
     >
       {/* Content area */}
       <div
-        className="flex flex-1 min-w-0 items-center p-3"
+        className="flex flex-1 min-w-0 items-center p-3 cursor-grab"
         {...attributes}
         {...listeners}
       >
