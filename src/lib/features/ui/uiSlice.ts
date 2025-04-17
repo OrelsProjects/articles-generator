@@ -12,6 +12,7 @@ export interface UiState {
   showScheduleModal: boolean;
   showExtensionDialog: boolean;
   showNoSubstackCookiesDialog: boolean;
+  showCreateScheduleDialog: boolean;
 }
 
 export const initialState: UiState = {
@@ -25,6 +26,7 @@ export const initialState: UiState = {
   showScheduleModal: false,
   showExtensionDialog: false,
   showNoSubstackCookiesDialog: false,
+  showCreateScheduleDialog: false,
 };
 
 const uiSlice = createSlice({
@@ -61,6 +63,9 @@ const uiSlice = createSlice({
     setShowNoSubstackCookiesDialog: (state, action) => {
       state.showNoSubstackCookiesDialog = action.payload;
     },
+    setShowCreateScheduleDialog: (state, action) => {
+      state.showCreateScheduleDialog = action.payload;
+    },
   },
 });
 
@@ -75,6 +80,7 @@ export const {
   setShowScheduleModal,
   setShowExtensionDialog,
   setShowNoSubstackCookiesDialog,
+  setShowCreateScheduleDialog,
 } = uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;

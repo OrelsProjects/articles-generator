@@ -25,17 +25,25 @@ import {
   rectIntersection,
   useDroppable,
 } from "@dnd-kit/core";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 
 interface CalendarGridProps {
   notes: NoteDraft[];
+  hasQueue: boolean;
   onNoteUpdate: (note: NoteDraft) => void;
 }
 
-function DateCell({ day, isDropTarget, notes, onClick, children }: { 
-  day: Date; 
+function DateCell({
+  day,
+  isDropTarget,
+  notes,
+  onClick,
+  children,
+}: {
+  day: Date;
   isDropTarget: boolean;
   notes: NoteDraft[];
   onClick: (note: NoteDraft) => void;
@@ -49,17 +57,13 @@ function DateCell({ day, isDropTarget, notes, onClick, children }: {
       ref={setNodeRef}
       className={cn(
         "min-h-[120px] border rounded-lg p-2 overflow-hidden",
-        isDropTarget && "bg-muted/50 border-primary/50"
+        isDropTarget && "bg-muted/50 border-primary/50",
       )}
     >
       <div className="text-sm mb-2">{format(day, "d")}</div>
       <div className="space-y-2 no-scrollbar">
         {notes.map(note => (
-          <NoteCard
-            key={note.id}
-            note={note}
-            onClick={() => onClick(note)}
-          />
+          <NoteCard key={note.id} note={note} onClick={() => onClick(note)} />
         ))}
         {children}
       </div>
@@ -71,16 +75,16 @@ function DateCell({ day, isDropTarget, notes, onClick, children }: {
 function LeftEdgeZone({ onEnter }: { onEnter: () => void }) {
   const leftEdgeId = "left-edge-zone";
   const { setNodeRef, isOver } = useDroppable({ id: leftEdgeId });
-  
+
   useEffect(() => {
     // This will trigger when isOver changes
     if (isOver) {
       onEnter();
     }
   }, [isOver, onEnter]);
-  
+
   return (
-    <div 
+    <div
       ref={setNodeRef}
       className="absolute top-0 left-[-80px] w-[80px] h-full z-40 bg-blue-500/30"
       data-testid="left-edge-zone"
@@ -91,16 +95,16 @@ function LeftEdgeZone({ onEnter }: { onEnter: () => void }) {
 function RightEdgeZone({ onEnter }: { onEnter: () => void }) {
   const rightEdgeId = "right-edge-zone";
   const { setNodeRef, isOver } = useDroppable({ id: rightEdgeId });
-  
+
   useEffect(() => {
     // This will trigger when isOver changes
     if (isOver) {
       onEnter();
     }
   }, [isOver, onEnter]);
-  
+
   return (
-    <div 
+    <div
       ref={setNodeRef}
       className="absolute top-0 right-[-80px] w-[80px] h-full z-40 bg-blue-500/30"
       data-testid="right-edge-zone"
@@ -110,6 +114,7 @@ function RightEdgeZone({ onEnter }: { onEnter: () => void }) {
 
 export function CalendarGrid({
   notes,
+  hasQueue,
   onNoteUpdate,
 }: CalendarGridProps) {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -119,16 +124,22 @@ export function CalendarGrid({
   const [monthChangeTimeout, setMonthChangeTimeout] =
     useState<NodeJS.Timeout | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
-  const [edgeDetection, setEdgeDetection] = useState<"left" | "right" | null>(null);
+  const [edgeDetection, setEdgeDetection] = useState<"left" | "right" | null>(
+    null,
+  );
   const [edgeProgress, setEdgeProgress] = useState(0);
   const edgeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
   const isOverEdgeRef = useRef<boolean>(false);
+  const [hideScheduleAlert, setHideScheduleAlert] = useLocalStorage<boolean>(
+    "hide_schedule_alert",
+    false,
+  );
 
   // Add global style for no-scrollbar
   useEffect(() => {
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       .no-scrollbar {
         -ms-overflow-style: none;
@@ -140,7 +151,7 @@ export function CalendarGrid({
       }
     `;
     document.head.appendChild(style);
-    
+
     return () => {
       document.head.removeChild(style);
     };
@@ -192,7 +203,11 @@ export function CalendarGrid({
 
   const changeMonth = (direction: "prev" | "next") => {
     // Instantly change the month without animations
-    setSelectedDate(direction === "prev" ? subMonths(selectedDate, 1) : addMonths(selectedDate, 1));
+    setSelectedDate(
+      direction === "prev"
+        ? subMonths(selectedDate, 1)
+        : addMonths(selectedDate, 1),
+    );
   };
 
   const handleDragOver = (event: any) => {
@@ -203,7 +218,7 @@ export function CalendarGrid({
     if (over) {
       console.log("DRAG OVER", over.id);
       setDropTargetId(over.id as string);
-      
+
       // Check if we've moved away from the edge zones
       if (over.id !== "left-edge-zone" && over.id !== "right-edge-zone") {
         // Clear edge detection if we're over something that's not an edge zone
@@ -212,17 +227,17 @@ export function CalendarGrid({
           setEdgeDetection(null);
           setEdgeProgress(0);
           isOverEdgeRef.current = false;
-          
+
           if (progressIntervalRef.current) {
             clearInterval(progressIntervalRef.current);
             progressIntervalRef.current = null;
           }
-          
+
           if (edgeTimeoutRef.current) {
             clearInterval(edgeTimeoutRef.current);
             edgeTimeoutRef.current = null;
           }
-          
+
           if (monthChangeTimeout) {
             clearTimeout(monthChangeTimeout);
             setMonthChangeTimeout(null);
@@ -236,17 +251,17 @@ export function CalendarGrid({
         setEdgeDetection(null);
         setEdgeProgress(0);
         isOverEdgeRef.current = false;
-        
+
         if (progressIntervalRef.current) {
           clearInterval(progressIntervalRef.current);
           progressIntervalRef.current = null;
         }
-        
+
         if (edgeTimeoutRef.current) {
           clearInterval(edgeTimeoutRef.current);
           edgeTimeoutRef.current = null;
         }
-        
+
         if (monthChangeTimeout) {
           clearTimeout(monthChangeTimeout);
           setMonthChangeTimeout(null);
@@ -257,25 +272,25 @@ export function CalendarGrid({
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     console.log("DRAG END", over?.id);
-    
+
     // Clean up all timeouts and intervals
     if (monthChangeTimeout) {
       clearTimeout(monthChangeTimeout);
       setMonthChangeTimeout(null);
     }
-    
+
     if (edgeTimeoutRef.current) {
       clearInterval(edgeTimeoutRef.current);
       edgeTimeoutRef.current = null;
     }
-    
+
     if (progressIntervalRef.current) {
       clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = null;
     }
-    
+
     // Reset edge detection state
     setEdgeDetection(null);
     setEdgeProgress(0);
@@ -283,21 +298,25 @@ export function CalendarGrid({
 
     // If there's no over target, or if it's not a valid droppable area,
     // restore the note to its original date
-    if (!over || 
-        (over.id !== "left-edge-zone" && 
-         over.id !== "right-edge-zone" && 
-         typeof over.id === 'string' && !over.id.includes("T"))) { // Date ISO strings contain 'T'
+    if (
+      !over ||
+      (over.id !== "left-edge-zone" &&
+        over.id !== "right-edge-zone" &&
+        typeof over.id === "string" &&
+        !over.id.includes("T"))
+    ) {
+      // Date ISO strings contain 'T'
       console.log("DROPPED OUTSIDE CALENDAR - RESTORING ORIGINAL POSITION");
-      
+
       if (draggedNote && originalNoteDate) {
         console.log("Restoring to original date:", originalNoteDate);
         // Restore the note to its original date
         onNoteUpdate({
           ...draggedNote,
-          scheduledTo: originalNoteDate
+          scheduledTo: originalNoteDate,
         });
       }
-      
+
       setDraggedNote(null);
       setDropTargetId(null);
       setOriginalNoteDate(null);
@@ -313,7 +332,7 @@ export function CalendarGrid({
       setOriginalNoteDate(null);
       return;
     }
-    
+
     if (over.id === "right-edge-zone") {
       console.log("DROPPED ON RIGHT EDGE");
       setSelectedDate(prevDate => addMonths(prevDate, 1));
@@ -347,24 +366,24 @@ export function CalendarGrid({
 
   const handleDragCancel = () => {
     console.log("DRAG CANCELLED");
-    
+
     setDraggedNote(null);
     setDropTargetId(null);
     setEdgeDetection(null);
     setEdgeProgress(0);
     setOriginalNoteDate(null);
     isOverEdgeRef.current = false;
-    
+
     if (edgeTimeoutRef.current) {
       clearInterval(edgeTimeoutRef.current);
       edgeTimeoutRef.current = null;
     }
-    
+
     if (progressIntervalRef.current) {
       clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = null;
     }
-    
+
     if (monthChangeTimeout) {
       clearTimeout(monthChangeTimeout);
       setMonthChangeTimeout(null);
@@ -376,13 +395,13 @@ export function CalendarGrid({
     console.log("LEFT EDGE ENTERED");
     setEdgeDetection("left");
     isOverEdgeRef.current = true;
-    
+
     // Start progress tracking
     if (!progressIntervalRef.current) {
       console.log("Starting left edge progress tracking");
       setEdgeProgress(0);
       const startTime = Date.now();
-      
+
       progressIntervalRef.current = setInterval(() => {
         if (!isOverEdgeRef.current) {
           // If no longer over the edge, stop tracking
@@ -390,20 +409,20 @@ export function CalendarGrid({
           progressIntervalRef.current = null;
           return;
         }
-        
+
         const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / 600 * 100, 100);
+        const progress = Math.min((elapsed / 600) * 100, 100);
         setEdgeProgress(progress);
-        
+
         // When progress reaches 100%, change the month
         if (progress >= 100) {
           console.log("Left edge progress complete, changing month");
           clearInterval(progressIntervalRef.current!);
           progressIntervalRef.current = null;
-          
+
           // Move to previous month
           setSelectedDate(prevDate => subMonths(prevDate, 1));
-          
+
           // After a small delay, start the next progress if still over edge
           setTimeout(() => {
             if (isOverEdgeRef.current) {
@@ -414,19 +433,19 @@ export function CalendarGrid({
       }, 20);
     }
   }, []);
-  
+
   // Edge detection handler for the right edge
   const handleRightEdgeEnter = useCallback(() => {
     console.log("RIGHT EDGE ENTERED");
     setEdgeDetection("right");
     isOverEdgeRef.current = true;
-    
+
     // Start progress tracking
     if (!progressIntervalRef.current) {
       console.log("Starting right edge progress tracking");
       setEdgeProgress(0);
       const startTime = Date.now();
-      
+
       progressIntervalRef.current = setInterval(() => {
         if (!isOverEdgeRef.current) {
           // If no longer over the edge, stop tracking
@@ -434,20 +453,20 @@ export function CalendarGrid({
           progressIntervalRef.current = null;
           return;
         }
-        
+
         const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / 600 * 100, 100);
+        const progress = Math.min((elapsed / 600) * 100, 100);
         setEdgeProgress(progress);
-        
+
         // When progress reaches 100%, change the month
         if (progress >= 100) {
           console.log("Right edge progress complete, changing month");
           clearInterval(progressIntervalRef.current!);
           progressIntervalRef.current = null;
-          
+
           // Move to next month
           setSelectedDate(prevDate => addMonths(prevDate, 1));
-          
+
           // After a small delay, start the next progress if still over edge
           setTimeout(() => {
             if (isOverEdgeRef.current) {
@@ -462,22 +481,33 @@ export function CalendarGrid({
   return (
     <div className="h-screen flex flex-col p-4">
       <div className="flex items-center justify-between mb-4">
-        <Button
-          variant="ghost"
-          onClick={() => changeMonth("prev")}
-        >
+        <Button variant="ghost" onClick={() => changeMonth("prev")}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <div className="text-2xl font-bold">
           {format(selectedDate, "MMMM yyyy")}
         </div>
-        <Button
-          variant="ghost"
-          onClick={() => changeMonth("next")}
-        >
+        <Button variant="ghost" onClick={() => changeMonth("next")}>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
+
+      {!hasQueue && !hideScheduleAlert && (
+        <div className="mb-4 p-4 bg-primary/10 border border-primary/20 rounded-lg flex justify-between items-center">
+          <p className="text-sm font-medium">
+            Create a schedule for easier notes planning and management
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => setHideScheduleAlert(true)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       <div className="grid grid-cols-7 gap-1 mb-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
           <div key={day} className="text-center font-medium p-2">
@@ -494,7 +524,10 @@ export function CalendarGrid({
         collisionDetection={rectIntersection}
       >
         <div className="relative mx-[80px]">
-          <div ref={calendarRef} className="grid grid-cols-7 gap-1 flex-1 relative overflow-visible">
+          <div
+            ref={calendarRef}
+            className="grid grid-cols-7 gap-1 flex-1 relative overflow-visible"
+          >
             {/* Left edge indicator */}
             {edgeDetection === "left" && (
               <div className="absolute top-0 left-[-80px] w-[80px] h-full bg-primary/30 z-50 pointer-events-none flex flex-col items-center justify-center">
@@ -503,17 +536,15 @@ export function CalendarGrid({
                 </div>
                 {/* Progress indicator */}
                 <div className="w-[80px] h-4 bg-white/30 mt-4 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-white"
                     style={{ width: `${edgeProgress}%` }}
                   />
                 </div>
-                <div className="mt-2 text-white font-bold">
-                  Previous Month
-                </div>
+                <div className="mt-2 text-white font-bold">Previous Month</div>
               </div>
             )}
-            
+
             {/* Right edge indicator */}
             {edgeDetection === "right" && (
               <div className="absolute top-0 right-[-80px] w-[80px] h-full bg-primary/30 z-50 pointer-events-none flex flex-col items-center justify-center">
@@ -522,44 +553,42 @@ export function CalendarGrid({
                 </div>
                 {/* Progress indicator */}
                 <div className="w-[80px] h-4 bg-white/30 mt-4 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-white"
                     style={{ width: `${edgeProgress}%` }}
                   />
                 </div>
-                <div className="mt-2 text-white font-bold">
-                  Next Month
-                </div>
+                <div className="mt-2 text-white font-bold">Next Month</div>
               </div>
             )}
-            
+
             {/* Left edge drop zone */}
-            <LeftEdgeZone 
+            <LeftEdgeZone
               onEnter={() => {
                 handleLeftEdgeEnter();
               }}
             />
-            
+
             {/* Right edge drop zone */}
-            <RightEdgeZone 
+            <RightEdgeZone
               onEnter={() => {
                 handleRightEdgeEnter();
               }}
             />
-            
+
             <div className="col-span-7 grid grid-cols-7 gap-1 w-full">
               {days.map(day => {
-                const dayNotes = notes.filter(note => 
-                  note.scheduledTo && isSameDay(note.scheduledTo, day)
+                const dayNotes = notes.filter(
+                  note => note.scheduledTo && isSameDay(note.scheduledTo, day),
                 );
                 const dayId = day.toISOString();
                 const isDropTarget = dropTargetId === dayId;
 
                 return (
-                  <DateCell 
-                    key={dayId} 
-                    day={day} 
-                    isDropTarget={isDropTarget} 
+                  <DateCell
+                    key={dayId}
+                    day={day}
+                    isDropTarget={isDropTarget}
                     notes={dayNotes}
                     onClick={setSelectedNote}
                   >

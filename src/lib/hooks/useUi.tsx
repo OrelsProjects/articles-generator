@@ -2,6 +2,7 @@ import { selectAuth } from "@/lib/features/auth/authSlice";
 import {
   selectUi,
   setDidShowSaveTooltip,
+  setShowCreateScheduleDialog,
   setShowGenerateNotesSidebar,
   setShowScheduleModal,
   setSideBarState,
@@ -35,6 +36,10 @@ export function useUi() {
     dispatch(setShowScheduleModal(show));
   };
 
+  const updateShowCreateScheduleDialog = (show: boolean) => {
+    dispatch(setShowCreateScheduleDialog(show));
+  };
+
   const hasAdvancedGPT = user?.meta?.featureFlags.includes(
     FeatureFlag.advancedGPT,
   );
@@ -51,6 +56,8 @@ export function useUi() {
 
   const showScheduleModal = useAppSelector(selectUi).showScheduleModal;
 
+  const showCreateScheduleDialog = useAppSelector(selectUi).showCreateScheduleDialog;
+
   return {
     setState,
     hasAdvancedGPT,
@@ -63,5 +70,7 @@ export function useUi() {
     hasPopulateNotes,
     showScheduleModal,
     updateShowScheduleModal,
+    updateShowCreateScheduleDialog,
+    showCreateScheduleDialog,
   };
 }

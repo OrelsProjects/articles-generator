@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, X } from "lucide-react";
 import { addHours } from "date-fns";
 import {
   Select,
@@ -35,6 +35,8 @@ import {
   getInvalidTimeMessage,
 } from "@/lib/utils/date/schedule";
 import { useUi } from "@/lib/hooks/useUi";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { useQueue } from "@/lib/hooks/useQueue";
 
 interface ScheduleNoteProps {
   open: boolean;
@@ -49,7 +51,17 @@ export function ScheduleNote({
   initialScheduledDate,
   onScheduleConfirm,
 }: ScheduleNoteProps) {
-  const { showScheduleModal, updateShowScheduleModal } = useUi();
+  const { hasQueue } = useQueue();
+
+  const {
+    showScheduleModal,
+    updateShowScheduleModal,
+    updateShowCreateScheduleDialog,
+  } = useUi();
+  const [hideScheduleAlert, setHideScheduleAlert] = useLocalStorage<boolean>(
+    "hide_schedule_alert",
+    false,
+  );
 
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(
     initialScheduledDate ? new Date(initialScheduledDate) : undefined,
@@ -197,7 +209,31 @@ export function ScheduleNote({
         >
           <div className="p-6 flex flex-col gap-6">
             <h2 className="text-xl font-bold text-foreground">Schedule</h2>
-
+            {!hasQueue && !hideScheduleAlert && (
+              <div className="mb-4 p-2 px-3 bg-primary/5 border border-primary/40 rounded-lg flex justify-between items-center">
+                <p className="text-sm font-medium">
+                  <Button
+                    variant="link"
+                    className="p-0 pr-1"
+                    onClick={() => {
+                      updateShowCreateScheduleDialog(true);
+                      handleOpenChange(false);
+                    }}
+                  >
+                    Create a schedule
+                  </Button>
+                  for easier notes planning and management
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => setHideScheduleAlert(true)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
             {scheduledDate && (
               <div className="py-2 px-4 bg-accent/30 rounded-md">
                 {renderScheduleTimeText()}

@@ -41,6 +41,7 @@ import { SaveDropdown } from "@/components/notes/save-dropdown";
 import { AvoidPlagiarismDialog } from "@/components/notes/avoid-plagiarism-dialog";
 import slugify from "slugify";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
+import { useQueue } from "@/lib/hooks/useQueue";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);

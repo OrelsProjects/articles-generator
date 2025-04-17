@@ -313,6 +313,10 @@ export function useQueue() {
     setPage(1);
   };
 
+  const hasQueue = useMemo(() => {
+    return userSchedules.length > 0;
+  }, [userSchedules]);
+
   useEffect(() => {
     if (userSchedules.length === 0) {
       fetchSchedules();
@@ -339,5 +343,6 @@ export function useQueue() {
     nextPage,
     resetPage,
     counters,
+    hasQueue,
   };
 }

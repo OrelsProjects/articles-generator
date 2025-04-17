@@ -162,7 +162,10 @@ export async function POST(
       inspirations,
     ] = await Promise.all([
       prisma.note.findMany({
-        where: { userId: session.user.id },
+        where: {
+          userId: session.user.id,
+          isArchived: false,
+        },
         take: 10,
         orderBy: { updatedAt: "desc" },
       }),

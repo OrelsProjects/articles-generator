@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   Plus,
@@ -29,6 +29,7 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
 import { FollowerActivityChart } from "@/components/analytics/follower-activity-chart";
+import { useUi } from "@/lib/hooks/useUi";
 
 interface ScheduleEntry {
   id: string;
@@ -53,38 +54,37 @@ interface EditScheduleDialogProps {
 export function EditScheduleDialog({
   open,
   onOpenChange,
-  onSave,
 }: EditScheduleDialogProps) {
   const {
     addSchedule,
     removeSchedule,
     updateSchedule,
-    fetchBestTimeToPublish,
-    initQueue,
     loading,
     loadingBestTimeToPublish,
-    bestTimeToPublish,
   } = useQueue();
+  const { showCreateScheduleDialog, updateShowCreateScheduleDialog } = useUi();
   const { userSchedules } = useAppSelector(state => state.notes);
-  const [schedule, setSchedule] = React.useState<ScheduleEntry[]>([]);
-  const [isAddingSlot, setIsAddingSlot] = React.useState(false);
+  const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isAddingSlot, setIsAddingSlot] = useState(false);
 
   // Time picker state
-  const [hours, setHours] = React.useState(12);
-  const [minutes, setMinutes] = React.useState(0);
+  const [hours, setHours] = useState(12);
+  const [minutes, setMinutes] = useState(0);
 
-  // Function to handle refreshing follower activity data
-  const handleRefreshActivity = async () => {
-    try {
-      await fetchBestTimeToPublish();
-    } catch (error) {
-      toast.error("Failed to refresh audience activity data");
-      console.error(error);
+  useEffect(() => {
+    setIsOpen(open);
+  }, [open]);
+
+  useEffect(() => {
+    if (showCreateScheduleDialog) {
+      setIsOpen(true);
+      updateShowCreateScheduleDialog(false);
     }
-  };
+  }, [showCreateScheduleDialog]);
 
   // Convert userSchedules to ScheduleEntries format for the UI
-  React.useEffect(() => {
+  useEffect(() => {
     if (userSchedules && userSchedules.length > 0) {
       const formattedSchedule = userSchedules.map(userSchedule => {
         // Convert to 24-hour format
@@ -180,9 +180,7 @@ export function EditScheduleDialog({
       // Call API first
       await removeSchedule(entryId);
 
-      // If API call succeeds, update local state
       setSchedule(prev => prev.filter(entry => entry.id !== entryId));
-      toast.success("Schedule slot removed");
     } catch (error) {
       toast.error("Failed to delete schedule slot");
       console.error(error);
@@ -308,72 +306,8 @@ export function EditScheduleDialog({
     }
   };
 
-  // Handlers for time picker
-  const incrementHours = () => setHours(prev => (prev === 23 ? 0 : prev + 1));
-  const decrementHours = () => setHours(prev => (prev === 0 ? 23 : prev - 1));
-  const incrementMinutes = () =>
-    setMinutes(prev => (prev === 59 ? 0 : prev + 1));
-  const decrementMinutes = () =>
-    setMinutes(prev => (prev === 0 ? 59 : prev - 1));
-
-  const handleSaveAll = async () => {
-    try {
-      const updatePromises = schedule.map(entry => {
-        const { hour, minute, ampm } = parseTimeString(entry.time);
-
-        return updateSchedule({
-          id: entry.id,
-          hour,
-          minute,
-          ampm,
-          sunday: entry.days.sun,
-          monday: entry.days.mon,
-          tuesday: entry.days.tue,
-          wednesday: entry.days.wed,
-          thursday: entry.days.thu,
-          friday: entry.days.fri,
-          saturday: entry.days.sat,
-        });
-      });
-
-      await Promise.all(updatePromises);
-      toast.success("Schedule updated successfully");
-
-      if (onSave) {
-        onSave(schedule);
-      }
-
-      onOpenChange(false);
-    } catch (error) {
-      toast.error("Failed to save schedule");
-      console.error(error);
-    }
-  };
-
-  const handleAddDefaults = async () => {
-    const toastId = toast.loading("Adding default schedule...");
-    try {
-      await initQueue();
-      toast.update(toastId, {
-        render: "Default schedule added",
-        type: "success",
-        isLoading: false,
-        autoClose: 1500,
-      });
-    } catch (error) {
-      toast.update(toastId, {
-        render: "Failed to add default schedule",
-        type: "error",
-        isLoading: false,
-        autoClose: 1500,
-      });
-
-      console.error(error);
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[600px] max-h-screen md:max-h-[90%] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-medium">
