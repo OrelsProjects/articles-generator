@@ -42,6 +42,7 @@ import { AvoidPlagiarismDialog } from "@/components/notes/avoid-plagiarism-dialo
 import slugify from "slugify";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 import { useQueue } from "@/lib/hooks/useQueue";
+import { cn } from "@/lib/utils";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
@@ -136,6 +137,20 @@ export function NotesEditorDialog() {
     return selectedNote.authorName;
   }, [selectedNote]);
 
+  const noteAuthorName = useMemo(() => {
+    if (isInspiration) {
+      return selectedNote.name || selectedNote.handle;
+    }
+    return name;
+  }, [isInspiration, selectedNote?.handle, name]);
+
+  const noteThumbnail = useMemo(() => {
+    if (isInspiration) {
+      return selectedNote.thumbnail;
+    }
+    return thumbnail;
+  }, [isInspiration, selectedNote?.thumbnail, thumbnail]);
+
   const userInitials = useMemo(() => {
     let writerName = name || user?.displayName || "";
     if (!writerName) return "OZ";
@@ -174,15 +189,6 @@ export function NotesEditorDialog() {
   const userName = useMemo(() => {
     return name || user?.displayName || "Unknown";
   }, [name]);
-
-  const handleConfirmSchedule = async (date: Date) => {
-    setScheduledDate(date);
-    return handleSave({
-      schedule: {
-        to: date,
-      },
-    });
-  };
 
   const isPlagiarism = () => {
     const unformattedBody = unformatText(editor?.getHTML() || "");
@@ -431,8 +437,13 @@ export function NotesEditorDialog() {
   );
 
   const canSendNote = useMemo(() => {
-    return !loadingEditNote && !loadingScheduleNote && !isSendingNote;
-  }, [loadingEditNote, loadingScheduleNote, isSendingNote]);
+    return (
+      !loadingEditNote &&
+      !loadingScheduleNote &&
+      !isSendingNote &&
+      !isInspiration
+    );
+  }, [loadingEditNote, loadingScheduleNote, isSendingNote, isInspiration]);
 
   return (
     <>
@@ -455,12 +466,15 @@ export function NotesEditorDialog() {
 
             <div className="flex items-start p-4 gap-3">
               <Avatar className="h-10 w-10 border">
-                <AvatarImage src={thumbnail || user?.image || ""} alt="User" />
+                <AvatarImage
+                  src={noteThumbnail || user?.image || ""}
+                  alt="User"
+                />
                 <AvatarFallback>{userInitials}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <h3 className="font-medium text-foreground">
-                  {name || userName}
+                  {noteAuthorName || userName}
                 </h3>
                 {editor && (
                   <NoteEditor
@@ -491,8 +505,19 @@ export function NotesEditorDialog() {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center justify-between p-4 border-t border-border gap-4 md:gap-0">
-              <div className="h-full flex gap-2 items-center">
+            <div
+              className={cn(
+                "flex flex-col md:flex-row items-center justify-between p-4 border-t border-border gap-4 md:gap-0",
+                {
+                  "justify-end": isInspiration,
+                },
+              )}
+            >
+              <div
+                className={cn("h-full flex gap-2 items-center", {
+                  hidden: isInspiration,
+                })}
+              >
                 <AIToolsDropdown
                   note={selectedNote}
                   onImprovement={handleImprovement}
@@ -540,21 +565,17 @@ export function NotesEditorDialog() {
                 </TooltipButton>
               </div>
               <div className="flex gap-3">
-                <InstantPostButton
-                  onSave={() => handleSave({ closeOnSave: false })}
-                  noteId={selectedNote?.id || null}
-                  source="note-editor-dialog"
-                  onLoadingChange={setIsSendingNote}
-                  disabled={!canSendNote}
-                />
-                <ScheduleNote
-                  open={scheduleDialogOpen}
-                  onOpenChange={setScheduleDialogOpen}
-                  initialScheduledDate={scheduledDate}
-                  onScheduleConfirm={handleConfirmSchedule}
-                />
+                {!isInspiration && (
+                  <InstantPostButton
+                    onSave={() => handleSave({ closeOnSave: false })}
+                    noteId={selectedNote?.id || null}
+                    source="note-editor-dialog"
+                    onLoadingChange={setIsSendingNote}
+                    disabled={!canSendNote}
+                  />
+                )}
                 <SaveDropdown
-                  onSaveAndClose={() => handleSave({ closeOnSave: true })}
+                  onSave={({ closeOnSave }) => handleSave({ closeOnSave })}
                   onSchedule={() => {
                     setScheduleDialogOpen(true);
                   }}
@@ -571,6 +592,7 @@ export function NotesEditorDialog() {
                     loadingEditNote || loadingScheduleNote || isSendingNote
                   }
                   saving={loadingEditNote}
+                  isInspiration={isInspiration}
                 />
               </div>
             </div>

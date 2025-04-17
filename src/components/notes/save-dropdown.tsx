@@ -8,12 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  ChevronDown,
-  CircleArrowRight,
-  Clock4,
-  Save,
-} from "lucide-react";
+import { ChevronDown, CircleArrowRight, Clock4, Save } from "lucide-react";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { format } from "date-fns";
 import { NoteDraft } from "@/types/note";
@@ -21,22 +16,24 @@ import { cn } from "@/lib/utils";
 
 interface SaveDropdownProps {
   selectedNote?: NoteDraft | null;
-  onSaveAndClose: () => Promise<unknown>;
+  onSave: ({ closeOnSave }: { closeOnSave?: boolean }) => Promise<unknown>;
   onSchedule: () => unknown;
   onAddToQueue: (date: Date) => Promise<unknown>;
   presetSchedule?: Date;
   disabled?: boolean;
   confirmedSchedule?: boolean;
   saving?: boolean;
+  isInspiration?: boolean;
 }
 
 export function SaveDropdown({
-  onSaveAndClose,
+  onSave,
   onSchedule,
   onAddToQueue,
   presetSchedule,
   disabled = false,
   saving = false,
+  isInspiration = false,
 }: SaveDropdownProps) {
   const { getNextAvailableSchedule, loading: queueLoading } = useQueue();
   const [loading, setLoading] = useState(false);
@@ -82,6 +79,21 @@ export function SaveDropdown({
     }
   };
 
+  if (isInspiration) {
+    return (
+      <Button
+        variant="default"
+        className="px-5 !py-2 flex items-center gap-1 "
+        disabled={disabled || loading || queueLoading}
+        onClick={() => {
+          onSave({ closeOnSave: false });
+        }}
+      >
+        Save to drafts
+      </Button>
+    );
+  }
+
   return (
     <div className="h-full flex">
       <Button
@@ -124,7 +136,7 @@ export function SaveDropdown({
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            onClick={onSaveAndClose}
+            onClick={() => onSave({ closeOnSave: true })}
             disabled={disabled || loading}
             className="text-muted-foreground"
           >

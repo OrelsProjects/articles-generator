@@ -214,13 +214,13 @@ export function inspirationNoteToNoteDraft(
   const attachment = note.attachments?.pop() || note.attachment;
   return {
     id: "",
-    thumbnail: "",
+    thumbnail: note.thumbnail || "",
     body: note.body,
     jsonBody: note.jsonBody,
     createdAt: new Date(),
     authorId: null,
     status: "inspiration",
-    authorName: "",
+    authorName: note.authorName,
     scheduledTo: note.scheduledTo,
     wasSentViaSchedule: !!note.sentViaScheduleAt,
     handle: note.handle,
@@ -255,7 +255,6 @@ export const NOTE_EMPTY: NoteDraft = {
   wasSentViaSchedule: false,
   attachments: [],
 };
-
 
 /**
  * {
