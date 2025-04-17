@@ -268,7 +268,7 @@ export function QueuePage() {
               >
                 {format(
                   new Date(scheduledNotes[0].scheduledTo),
-                  "EEEE MMMM do",
+                  "EEEE MMMM do, HH:mm",
                 )}
               </strong>
             ) : scheduledNotes.length > 1 ? (
