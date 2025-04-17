@@ -1,8 +1,9 @@
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { FeatureFlag, Plan, PrismaClient } from "@prisma/client";
+import { FeatureFlag, Plan, PrismaClient, Subscription } from "@prisma/client";
 import { createDefaultUserSchedule } from "@/lib/dal/user-schedule";
+import { getActiveSubscription } from "@/lib/dal/subscription";
 
 const prisma = new PrismaClient();
 
@@ -29,42 +30,18 @@ export const authOptions: AuthOptions = {
             isAdmin: true,
           },
         }),
-        prisma.subscription.findMany({
-          where: {
-            userId: token.sub as string,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          select: {
-            plan: true,
-            currentPeriodStart: true,
-            currentPeriodEnd: true,
-            cancelAtPeriodEnd: true,
-            status: true,
-          },
-        }),
+        getActiveSubscription(token.sub as string),
       ];
-      const [userMetadata, subscriptions] = (await Promise.all(promises)) as [
+      const [userMetadata, activeSubscription] = (await Promise.all(
+        promises,
+      )) as [
         {
           publicationId: string | null;
           featureFlags: FeatureFlag[];
           isAdmin: boolean;
         } | null,
-        {
-          plan: string;
-          currentPeriodStart: Date;
-          currentPeriodEnd: Date;
-          cancelAtPeriodEnd: boolean;
-          status: string;
-        }[],
+        Subscription | null,
       ];
-
-      const activeSubscription = subscriptions.find(
-        subscription =>
-          subscription.status === "active" ||
-          subscription.status === "trialing",
-      );
 
       session.user.meta = {
         plan: activeSubscription?.plan
@@ -74,7 +51,7 @@ export const authOptions: AuthOptions = {
         currentPeriodEnd: activeSubscription?.currentPeriodEnd || null,
         cancelAtPeriodEnd: activeSubscription?.cancelAtPeriodEnd || false,
         featureFlags: userMetadata?.featureFlags || [],
-        hadSubscription: subscriptions.length > 0,
+        hadSubscription: activeSubscription !== null,
         isAdmin: userMetadata?.isAdmin || false,
       };
       session.user.publicationId = userMetadata?.publicationId || "";

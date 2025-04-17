@@ -1,10 +1,9 @@
-import prisma, { prismaArticles } from "@/app/api/_db/db";
+import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
-import { setUserNotesDescription as setUserNotesDescription } from "@/lib/dal/analysis";
-import { getAuthorId } from "@/lib/dal/publication";
-import { runPrompt } from "@/lib/open-router";
-import { generateNotesDescriptionPrompt } from "@/lib/prompts";
-import { parseJson } from "@/lib/utils/json";
+import {
+  setUserNotesDescription as setUserNotesDescription,
+  shouldRefreshUserMetadata,
+} from "@/lib/dal/analysis";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -16,6 +15,8 @@ export async function POST(req: NextRequest) {
   // const userId = "67d015d26230c417488f62ed";
   const userId = session.user.id;
   try {
+    const body = await req.json();
+    const { userTriggered } = body;
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId: userId,
@@ -36,7 +37,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (userMetadata.noteTopics && userMetadata.noteWritingStyle) {
+    if (
+      !userTriggered &&
+      userMetadata.noteTopics &&
+      userMetadata.noteWritingStyle
+    ) {
       return NextResponse.json({
         success: true,
         descriptionObject: {
@@ -46,6 +51,19 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    if (userTriggered) {
+      const shouldRefresh = shouldRefreshUserMetadata(userMetadata);
+      if (!shouldRefresh) {
+        return NextResponse.json({
+          success: true,
+          descriptionObject: {
+            noteTopics: userMetadata.noteTopics,
+            noteWritingStyle: userMetadata.noteWritingStyle,
+          },
+        });
+      }
+    }
+    
     const descriptionResponse = await setUserNotesDescription(userId);
 
     if ("error" in descriptionResponse) {

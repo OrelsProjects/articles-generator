@@ -1,22 +1,10 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
+import { shouldRefreshUserMetadata } from "@/lib/dal/analysis";
 import { fetchAuthor } from "@/lib/utils/lambda";
 import loggerServer from "@/loggerServer";
-import { UserMetadata } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-
-// 24 hours passed?
-const shouldRefreshUserMetadata = (userMetadata: UserMetadata) => {
-  const now = new Date();
-  const lastUpdatedAt = userMetadata.dataUpdatedAt;
-  if (!lastUpdatedAt) {
-    return true;
-  }
-  const diffTime = Math.abs(now.getTime() - lastUpdatedAt.getTime());
-  const diffHours = diffTime / (1000 * 60 * 60);
-  return diffHours > 24;
-};
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);

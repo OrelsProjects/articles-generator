@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -38,8 +37,7 @@ export function GenerateNotesDialog() {
   const { generateNewNotes, isLoadingGenerateNotes, errorGenerateNotes } =
     useNotes();
 
-  const [selectedModel, setSelectedModel] =
-    useState<FrontendModel>("claude-3.7");
+  const [selectedModel, setSelectedModel] = useState<FrontendModel>("auto");
 
   useEffect(() => {
     if (errorGenerateNotes) {

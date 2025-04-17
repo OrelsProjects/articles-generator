@@ -805,7 +805,9 @@ export const generateNotesPrompt = (
     Response must follow the following rules:
   - Must use new lines when needed, avoid using hashtags
   - Write with human-writing style, natural language, and avoid sounding like AI generated note
-  - Reponse body must have less than ${maxLength} characters, unless the writing style demands more
+  - Reponse body must have less than ${maxLength} characters, unless the writing style demands more.
+  - *Important for Response body:* Follow the user writing style and notes examples. If they write in a very short/long style, follow it.
+  - If user uses profanity, use profanity.
   - Body has to be in markdown format.
   - At least one note has to be clean from emojis.
   - Include emojis ONLY if the user's past written notes include them.

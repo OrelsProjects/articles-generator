@@ -20,3 +20,24 @@ export async function getActiveSubscription(userId: string) {
 
   return subscription;
 }
+
+export async function getActiveSubscriptionByStripeSubId(stripeSubId: string) {
+  const subscription = await prisma.subscription.findFirst({
+    where: {
+      stripeSubId,
+      OR: [
+        {
+          status: "active",
+        },
+        {
+          status: "trialing",
+        },
+      ],
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return subscription;
+}

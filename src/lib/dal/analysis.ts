@@ -4,6 +4,7 @@ import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { generateNotesDescriptionPrompt } from "@/lib/prompts";
 import { runPrompt } from "@/lib/open-router";
 import { getAuthorId } from "@/lib/dal/publication";
+import { UserMetadata } from "@prisma/client";
 
 export async function setUserNotesDescription(userId: string): Promise<
   | {
@@ -55,3 +56,15 @@ export async function setUserNotesDescription(userId: string): Promise<
     noteTopics: descriptionObject.noteTopics,
   };
 }
+
+// 24 hours passed?
+export const shouldRefreshUserMetadata = (userMetadata: UserMetadata) => {
+  const now = new Date();
+  const lastUpdatedAt = userMetadata.dataUpdatedAt;
+  if (!lastUpdatedAt) {
+    return true;
+  }
+  const diffTime = Math.abs(now.getTime() - lastUpdatedAt.getTime());
+  const diffHours = diffTime / (1000 * 60 * 60);
+  return diffHours > 24;
+};

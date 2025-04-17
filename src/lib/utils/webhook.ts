@@ -1,5 +1,8 @@
 import prisma from "@/app/api/_db/db";
-import { getActiveSubscription } from "@/lib/dal/subscription";
+import {
+  getActiveSubscription,
+  getActiveSubscriptionByStripeSubId,
+} from "@/lib/dal/subscription";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addUserToList, sendMail } from "@/lib/mail/mail";
 import {
@@ -55,20 +58,6 @@ export const getPlanByProductId = async (
 
 export async function handleSubscriptionCreated(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription;
-  const existingSubscription = await prisma.subscription.findUnique({
-    where: {
-      stripeSubId: subscription.id,
-      status: "active",
-    },
-  });
-
-  if (existingSubscription) {
-    loggerServer.info("Subscription already exists", {
-      subscriptionId: subscription.id,
-    });
-    return;
-  }
-
   const product = await getStripeInstance().products.retrieve(
     subscription.items.data[0].plan.product as string,
   );
@@ -107,36 +96,46 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
       ? creditsPerPlan[plan]
       : 0;
 
-  await prisma.subscription.create({
-    data: {
-      status: "active",
-      userId: user?.id,
-      plan: plan,
+  const subscriptionData = {
+    status: "active",
+    userId: user?.id,
+    plan: plan,
+    stripeSubId: subscriptionId,
+    startDate: new Date(),
+    endDate: null,
+    isTrialing: isTrialing,
+    trialStart: isTrialing ? new Date() : null,
+    trialEnd: isTrialing ? new Date(subscription.trial_end! * 1000) : null,
+
+    // Credits information
+    creditsPerPeriod: creditsPerPlan[plan],
+    creditsRemaining: newCredits + priorCredits,
+    lastCreditReset: new Date(),
+
+    currentPeriodStart: new Date(subscription.current_period_start * 1000),
+    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    cancelAtPeriodEnd: subscription.cancel_at_period_end,
+  };
+
+  await prisma.subscription.upsert({
+    where: {
       stripeSubId: subscriptionId,
-      startDate: new Date(),
-      endDate: null,
-      isTrialing: isTrialing,
-      trialStart: isTrialing ? new Date() : null,
-      trialEnd: isTrialing ? new Date(subscription.trial_end! * 1000) : null,
-
-      // Credits information
-      creditsPerPeriod: creditsPerPlan[plan],
-      creditsRemaining: newCredits + priorCredits,
-      lastCreditReset: new Date(),
-
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
+    create: subscriptionData,
+    update: subscriptionData,
   });
 
   await setFeatureFlagsByPlan(plan, user.id);
 
   if (user.email && user.name) {
-    await addUserToList({
-      email: user.email!,
-      fullName: user.name!,
-    });
+    try {
+      await addUserToList({
+        email: user.email!,
+        fullName: user.name!,
+      });
+    } catch (error) {
+      loggerServer.error("Error adding user to list", { error });
+    }
   } else {
     loggerServer.error("No email or name found for user" + user.id, {
       userId: user.id,
@@ -382,7 +381,7 @@ export async function handleSubscriptionTrialEnding(event: any) {
     subject = emailTemplate.subject;
     body = emailTemplate.body;
   }
-  if (subject && body) {
+  if (subject)
     await sendMail({
       to: userEmail,
       from: "support",
@@ -390,7 +389,6 @@ export async function handleSubscriptionTrialEnding(event: any) {
       template: body,
       cc: ["orelsmail@gmail.com"],
     });
-  }
 }
 
 //

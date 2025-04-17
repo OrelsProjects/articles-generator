@@ -129,7 +129,7 @@ export async function runPrompt(
     llmResponse = llmResponse.replace(/```json|```/g, "").trim();
   }
   const outputTokens = getTokenCount(llmResponse);
-  const priceOutput = getPrice(model, 0, outputTokens);
+  const priceOutput =  getPrice(model, 0, outputTokens);
   console.log("Output tokens:", outputTokens);
   console.log("Actual price:", `$${(priceInput + priceOutput).toFixed(4)}`);
   return llmResponse;

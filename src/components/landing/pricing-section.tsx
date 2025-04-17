@@ -13,6 +13,9 @@ import PriceContainer from "@/components/ui/price-container";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
+import { featureFlagsPerPlan } from "@/lib/plans-consts";
+import { Plan } from "@prisma/client";
+import PlanComparisonDialog from "./plan-comparison-dialog";
 
 const basicFeatures = (credits: number) => [
   `${credits} WriteRoom AI Credits/Month`,
@@ -78,8 +81,44 @@ export default function Pricing({
   const { user } = useAppSelector(state => state.auth);
   const { updateSubscription, goToCheckout } = usePayments();
   const [loading, setLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+
+  const getFeaturesLost = (newPlan: Plan, oldPlan: Plan) => {
+    const newPlanFeatures = featureFlagsPerPlan[newPlan];
+    const oldPlanFeatures = featureFlagsPerPlan[oldPlan];
+    return oldPlanFeatures?.filter(
+      feature => !newPlanFeatures?.includes(feature),
+    );
+  };
+
+  const getFeaturesGained = (newPlan: Plan, oldPlan: Plan) => {
+    const newPlanFeatures = featureFlagsPerPlan[newPlan];
+    const oldPlanFeatures = featureFlagsPerPlan[oldPlan];
+    const mergedFeatures = [...newPlanFeatures, ...oldPlanFeatures].filter(
+      (feature, index, self) => self.indexOf(feature) === index,
+    );
+    return mergedFeatures;
+  };
 
   const handleGetStarted = async (plan: string) => {
+    // If user is not authenticated or onboarding, proceed without showing dialog
+    if (onboarding || !user) {
+      processPlanChange(plan);
+      return;
+    }
+
+    // If user already has a plan, show comparison dialog
+    if (user?.meta?.plan) {
+      setSelectedPlan(plan as Plan);
+      setDialogOpen(true);
+    } else {
+      // New user getting their first plan
+      processPlanChange(plan);
+    }
+  };
+
+  const processPlanChange = async (plan: string) => {
     setLoading(true);
     try {
       if (onboarding) {
@@ -96,6 +135,14 @@ export default function Pricing({
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const confirmPlanChange = async () => {
+    if (selectedPlan) {
+      await processPlanChange(selectedPlan);
+      setDialogOpen(false);
+      setSelectedPlan(null);
     }
   };
 
@@ -289,6 +336,19 @@ export default function Pricing({
           ))}
         </div>
       </div>
+
+      {/* Plan comparison dialog */}
+      {selectedPlan && user?.meta?.plan && (
+        <PlanComparisonDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          currentPlan={user?.meta?.plan || null}
+          targetPlan={selectedPlan as Plan}
+          onConfirm={confirmPlanChange}
+          loading={loading}
+        />
+      )}
+
       {/* {onboarding && (
         <div className="absolute inset-0 z-10" id="onboarding-background">
           <Image
