@@ -284,7 +284,7 @@ export function QueuePage() {
                     className="underline cursor-pointer"
                     onClick={scrollToLatestNote}
                   >
-                    {format(new Date(latestNote.scheduledTo), "EEEE MMMM do")}
+                    {format(new Date(latestNote.scheduledTo), "EEEE MMMM do, HH:mm")}
                   </strong>
                 ) : null;
               })()
