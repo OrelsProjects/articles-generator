@@ -148,8 +148,8 @@ function App() {
             className="text-xl lg:text-2xl p-6 lg:p-8"
             asChild
           >
-            <Link href="#pricing">
-              Start growing for free <ArrowRight className="ml-2 mt-1" />
+            <Link href="/login">
+              Start growing now <ArrowRight className="ml-2 mt-1" />
             </Link>
           </Button>
         </DividerPrimary>
@@ -251,7 +251,7 @@ function App() {
               </h2>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" asChild>
-                  <Link href="#pricing">Try It Free</Link>
+                  <Link href="/login">Try It For Free</Link>
                 </Button>
               </div>
             </div>

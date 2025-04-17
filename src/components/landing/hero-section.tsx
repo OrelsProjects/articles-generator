@@ -98,7 +98,7 @@ export const HeroSection = () => {
                     className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground mt-6 px-8 sm:px-16 lg:mt-0 py-6 font-bold rounded-xl w-full sm:w-auto"
                     asChild
                   >
-                    <Link href="#pricing">Start growing for free</Link>
+                    <Link href="/login">Start growing now</Link>
                   </Button>
                 </div>
                 {topFiveImages.length > 0 && (
