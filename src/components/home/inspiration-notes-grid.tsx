@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { TooltipButton } from "@/components/ui/tooltip-button";
+import { useSettings } from "@/lib/hooks/useSettings";
 
 // New component to display active filters
 const ActiveFilters = ({
@@ -474,7 +475,7 @@ export default function InspirationGrid() {
                   </div>
                 )}
                 {!loadingMore &&
-                  (hasMoreInspirationNotes ? (
+                  (hasMoreInspirationNotes && hasAdvancedFiltering ? (
                     <div className="flex justify-center mt-8">
                       <Button
                         variant="ghost"
