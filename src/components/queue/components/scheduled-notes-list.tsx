@@ -6,7 +6,6 @@ import { DaySchedule } from "./day-schedule";
 import {
   DndContext,
   DragEndEvent,
-  DragOverlay,
   DragStartEvent,
   PointerSensor,
   TouchSensor,
@@ -24,6 +23,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
+import { CustomDragOverlay } from "./custom-drag-overlay";
+import { useDragOverlay } from "../hooks/useDragOverlay";
 
 interface ScheduledNotesListProps {
   days: Date[];
@@ -44,9 +45,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
 }) => {
   const { updateNoteStatus, createDraftNote } = useNotes();
   const { scheduleNoteById } = useNotesSchedule();
-  const [activeDragNote, setActiveDragNote] = useState<NoteDraft | null>(null);
-  const [activeDropTarget, setActiveDropTarget] = useState<string | null>(null);
-
+  
   // Configure basic sensors for drag detection
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
 
@@ -60,6 +59,17 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     }
     return null;
   };
+
+  // Use our custom drag overlay hook
+  const {
+    activeDragItem: activeDragNote,
+    activeDropTarget,
+    handleDragStart,
+    handleDragEnd: onDragEnd,
+    setActiveDropTarget
+  } = useDragOverlay({
+    findItemById: findNoteById
+  });
 
   // Prepare a map of all empty slots
   const emptySlotMap = React.useMemo(() => {
@@ -96,17 +106,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     return ids;
   }, [groupedNotes]);
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    // Find which note is being dragged
-    const noteId = active.id as string;
-    const note = findNoteById(noteId);
-
-    if (note) {
-      setActiveDragNote(note);
-    }
-  };
-
+  // Handle dragOver to update the active drop target
   const handleDragOver = (event: DragOverEvent) => {
     const { over } = event;
     if (over) {
@@ -116,11 +116,12 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     }
   };
 
+  // Handle final drag end with rescheduling logic
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-
-    setActiveDragNote(null);
-    setActiveDropTarget(null);
+    
+    // Run the base drag end handler from our hook
+    onDragEnd(event);
 
     if (!over) return; // Dropped outside a valid target
 
@@ -247,8 +248,8 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         </div>
       </SortableContext>
 
-      {/* Drag Overlay - shown while dragging */}
-      <DragOverlay>
+      {/* Using our custom drag overlay component */}
+      <CustomDragOverlay>
         {activeDragNote && (
           <div className="opacity-90">
             <ScheduleNoteRow
@@ -258,7 +259,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
             />
           </div>
         )}
-      </DragOverlay>
+      </CustomDragOverlay>
     </DndContext>
   );
 };

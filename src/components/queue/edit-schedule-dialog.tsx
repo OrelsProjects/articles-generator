@@ -72,13 +72,18 @@ export function EditScheduleDialog({
   const [hours, setHours] = useState(12);
   const [minutes, setMinutes] = useState(0);
 
+  const updateOpen = (open: boolean) => {
+    setIsOpen(open);
+    onOpenChange(open);
+  };
+
   useEffect(() => {
     setIsOpen(open);
   }, [open]);
 
   useEffect(() => {
     if (showCreateScheduleDialog) {
-      setIsOpen(true);
+      updateOpen(true);
       updateShowCreateScheduleDialog(false);
     }
   }, [showCreateScheduleDialog]);
@@ -307,7 +312,7 @@ export function EditScheduleDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={updateOpen}>
       <DialogContent className="sm:max-w-[600px] max-h-screen md:max-h-[90%] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-medium">
