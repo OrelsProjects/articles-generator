@@ -104,8 +104,8 @@ const faq = [
     answer: `No! ${appName} will automatically publish your notes at anytime you choose!`,
   },
   {
-    question: `Can I tell WriteRoom's AI on which topic I want to generate notes?`,
-    answer: `Absolutely! You can tell WriteRoom's AI on which topic you want to generate notes and it will generate 3 unique and original notes for you.`,
+    question: `Can I tell WriteStack's AI on which topic I want to generate notes?`,
+    answer: `Absolutely! You can tell WriteStack's AI on which topic you want to generate notes and it will generate 3 unique and original notes for you.`,
   },
   {
     question: `Can I specify the outline and let ${appName} work with it for my articles?`,

@@ -12,7 +12,7 @@ import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-pu
 import Logo from "@/components/ui/logo";
 import Image from "next/image";
 
-const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteRoom";
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
 
 export function PublicationOnboarding() {
   return (

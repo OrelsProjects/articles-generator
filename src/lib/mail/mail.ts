@@ -35,7 +35,7 @@ export const sendMail = async ({
   cc?: string[];
 }) => {
   const message: MessagesMessage = {
-    from_email: `${from}@writeroom.co`,
+    from_email: `${from}@writestack.io`,
     subject,
     html: template,
     to: Array.isArray(to)
@@ -65,7 +65,7 @@ export const addUserToList = async (user: ListUser) => {
   const response = await client.lists.addListMember(listId, {
     email_address: user.email,
     status: "subscribed",
-    tags: ["WriteRoom"],
+    tags: ["WriteStack"],
     merge_fields: {
       FNAME: firstName,
       LNAME: lastName,

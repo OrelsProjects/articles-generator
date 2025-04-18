@@ -3,7 +3,7 @@ import { Metadata } from "next";
 export let metadata: Metadata = {
   title: {
     default: "Writer",
-    template: "%s | WriteRoom",
+    template: "%s | WriteStack",
   },
   description: "Writer",
 };

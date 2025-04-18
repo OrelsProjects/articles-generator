@@ -60,7 +60,7 @@ const Auth = () => {
           </Button>
           <div className="grid gap-4 mt-4">
             {[
-              "Use WriteRoom's AI to outline your notes (with your voice)",
+              "Use WriteStack's AI to outline your notes (with your voice)",
               "Break through writer's block",
               "Grow 2.7x faster",
             ].map((perk, index) => (

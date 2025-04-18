@@ -18,16 +18,20 @@ import { Plan } from "@prisma/client";
 import PlanComparisonDialog from "./plan-comparison-dialog";
 
 const basicFeatures = (credits: number) => [
-  `${credits} WriteRoom AI Credits/Month`,
+  `${credits} WriteStack AI Credits/Month`,
   "Easy one-click posting",
   "Specialized AI-Powered Substack editor",
   "Growing Notes Inspirations (5m+)",
-  "<span class='text-primary'>Notes scheduling (No need to keep browser open, Requires Chrome)</span>",
+];
+
+const hobbyistFeatures = [
+  "Notes scheduling, up to 10 at a time (Requires Chrome)",
 ];
 
 const advancedFeatures = [
   "Choose your LLM (Includes GPT-4.5)",
   "Access to The Best Notes Templates",
+  "Notes scheduling, <span class='text-primary'>unlimited</span> (Requires Chrome)",
 ];
 
 const premiumFeatures = [
@@ -41,30 +45,30 @@ const pricingPlans = [
     name: "Hobbyist",
     description:
       "The essentials to start building your Substack business today.",
-    monthlyPrice: 20.0,
-    yearlyPlanPrice: 16.0,
-    features: [...basicFeatures(50)],
-    annualSavings: 47.98,
+    monthlyPrice: 12.99,
+    yearlyPlanPrice: 9.99,
+    features: [...basicFeatures(50), ...hobbyistFeatures],
+    annualSavings: 35.98,
     popular: false,
   },
   {
     name: "Standard",
     description:
       "Scale your Substack presence and business.<br/>Ideal for accounts looking to grow.",
-    monthlyPrice: 40.0,
-    yearlyPlanPrice: 32.0,
+    monthlyPrice: 29.99,
+    yearlyPlanPrice: 23.99,
     features: [...basicFeatures(200), ...advancedFeatures],
-    annualSavings: 95.98,
+    annualSavings: 71.98,
     popular: true,
   },
   {
     name: "Premium",
     description:
       "Supercharge your Substack activity.<br/>Ideal for large, active accounts.",
-    monthlyPrice: 120.0,
-    yearlyPlanPrice: 98.0,
+    monthlyPrice: 49.99,
+    yearlyPlanPrice: 39.99,
     features: [...basicFeatures(350), ...advancedFeatures, ...premiumFeatures],
-    annualSavings: 263.98,
+    annualSavings: 119.98,
     popular: false,
   },
 ];
@@ -237,103 +241,105 @@ export default function Pricing({
             </div>
           </RadioGroup>
         </motion.div>
-        <div className="isolate mx-auto mt-10 grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-          {pricingPlans.map((plan, index) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: index * 0.1 + (onboarding ? 0.6 : 0.1),
-                duration: 0.8,
-              }}
-              className="h-full"
-            >
-              <Card
-                className={cn(
-                  "h-full ring-1 ring-gray-200 rounded-3xl p-8 xl:p-10 border-none",
-                  plan.popular && "ring-2 ring-primary",
-                )}
+        <div className="w-full flex justify-center">
+          <div className="isolate mx-auto mt-10 grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-6xl lg:grid-cols-3">
+            {pricingPlans.map((plan, index) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: index * 0.1 + (onboarding ? 0.6 : 0.1),
+                  duration: 0.8,
+                }}
+                className="h-full"
               >
-                <CardHeader className="flex flex-col gap-4 p-0">
-                  <CardTitle
-                    className={cn(
-                      "w-full text-xl flex justify-between",
-                      plan.popular && "text-primary",
-                    )}
-                  >
-                    <span className=" text-lg/8 font-semibold">
-                      {plan.name}
-                    </span>
-                    {plan.popular && (
-                      <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs/5">
-                        Most popular
-                      </div>
-                    )}
-                  </CardTitle>
-                  <p
-                    className="text-xs text-muted-foreground"
-                    dangerouslySetInnerHTML={{
-                      __html: plan.description,
-                    }}
-                  />
-                  <div className="!mt-2">
-                    <PriceContainer
-                      originalPrice={plan.monthlyPrice}
-                      discountPrice={
-                        billingCycle === "month"
-                          ? undefined
-                          : plan.yearlyPlanPrice
-                      }
-                      isPrimary={plan.popular}
-                      annualSavings={
-                        billingCycle === "month"
-                          ? undefined
-                          : plan.annualSavings
-                      }
+                <Card
+                  className={cn(
+                    "h-full ring-1 ring-gray-200 rounded-3xl p-8 xl:p-10 border-none",
+                    plan.popular && "ring-2 ring-primary",
+                  )}
+                >
+                  <CardHeader className="flex flex-col gap-4 p-0">
+                    <CardTitle
+                      className={cn(
+                        "w-full text-xl flex justify-between",
+                        plan.popular && "text-primary",
+                      )}
+                    >
+                      <span className=" text-lg/8 font-semibold">
+                        {plan.name}
+                      </span>
+                      {plan.popular && (
+                        <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs/5">
+                          Most popular
+                        </div>
+                      )}
+                    </CardTitle>
+                    <p
+                      className="text-xs text-muted-foreground"
+                      dangerouslySetInnerHTML={{
+                        __html: plan.description,
+                      }}
                     />
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6 p-0">
-                  <Button
-                    className={cn(
-                      "mt-8 w-full",
-                      plan.popular
-                        ? "bg-primary hover:bg-primary/90"
-                        : "bg-background hover:bg-accent",
-                    )}
-                    variant={plan.popular ? "default" : "outline-primary"}
-                    disabled={
-                      loading || user?.meta?.plan === plan.name.toLowerCase()
-                    }
-                    onClick={() => handleGetStarted(plan.name.toLowerCase())}
-                  >
-                    {loading && (
-                      <RefreshCw className="mr-2 w-4 h-4 animate-spin" />
-                    )}
-                    {hadSubscription
-                      ? user?.meta?.plan === plan.name.toLowerCase()
-                        ? "Your plan"
-                        : "Update plan"
-                      : "Start free trial"}
-                  </Button>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                        <span
-                          className="text-sm"
-                          dangerouslySetInnerHTML={{
-                            __html: feature,
-                          }}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                    <div className="!mt-2">
+                      <PriceContainer
+                        originalPrice={plan.monthlyPrice}
+                        discountPrice={
+                          billingCycle === "month"
+                            ? undefined
+                            : plan.yearlyPlanPrice
+                        }
+                        isPrimary={plan.popular}
+                        annualSavings={
+                          billingCycle === "month"
+                            ? undefined
+                            : plan.annualSavings
+                        }
+                      />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6 p-0">
+                    <Button
+                      className={cn(
+                        "mt-8 w-full",
+                        plan.popular
+                          ? "bg-primary hover:bg-primary/90"
+                          : "bg-background hover:bg-accent",
+                      )}
+                      variant={plan.popular ? "default" : "outline-primary"}
+                      disabled={
+                        loading || user?.meta?.plan === plan.name.toLowerCase()
+                      }
+                      onClick={() => handleGetStarted(plan.name.toLowerCase())}
+                    >
+                      {loading && (
+                        <RefreshCw className="mr-2 w-4 h-4 animate-spin" />
+                      )}
+                      {hadSubscription
+                        ? user?.meta?.plan === plan.name.toLowerCase()
+                          ? "Your plan"
+                          : "Update plan"
+                        : "Start free trial"}
+                    </Button>
+                    <ul className="space-y-3">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                          <span
+                            className="text-sm"
+                            dangerouslySetInnerHTML={{
+                              __html: feature,
+                            }}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
 

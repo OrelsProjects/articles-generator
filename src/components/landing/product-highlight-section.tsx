@@ -170,14 +170,14 @@ export default function FeatureSection() {
           />
           <FeatureSectionCard
             src="/landing/features/notes-editor-doggo.png"
-            title="Use WriteRoom's AI to outline and write <span class='highlight-feature-text'>100% of your note</span>"
-            description="Generate notes that are tailored exactly to your audience with WriteRoom's AI that's trained on millions of notes and post them instantly from WriteRoom."
+            title="Use WriteStack's AI to outline and write <span class='highlight-feature-text'>100% of your note</span>"
+            description="Generate notes that are tailored exactly to your audience with WriteStack's AI that's trained on millions of notes and post them instantly from WriteStack."
             direction="rtl"
           />
           <FeatureSectionCard
             src="/landing/features/inspirations.png"
             title="<span class='highlight-feature-text'>Get inspired</span> by top viral posts in your specific niche"
-            description="WriteRoom curates the top viral posts in your specific niche and shows you the best of them so you never run out of ideas."
+            description="WriteStack curates the top viral posts in your specific niche and shows you the best of them so you never run out of ideas."
             direction="ltr"
           />
           <FeatureSectionCard

@@ -160,7 +160,7 @@ export async function GET() {
 
     // const mailResult = await sendMail({
     //   to: "orelsmail@gmail.com",
-    //   from: "Orel from WriteRoom",
+    //   from: "Orel from WriteStack",
     //   subject: "Your Trial is Ending Soon",
     //   template: generateFailedToSendNoteEmail(
     //     "67f772a23b037dc651e2e072",

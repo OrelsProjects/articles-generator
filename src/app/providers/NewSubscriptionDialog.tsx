@@ -45,7 +45,7 @@ import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
         </DialogHeader>
 
         <p className="text-start text-lg">
-          You’re all set! Thank you for choosing <strong>WriteRoom</strong>.
+          You’re all set! Thank you for choosing <strong>WriteStack</strong>.
           Ready to write smarter?
         </p>
 

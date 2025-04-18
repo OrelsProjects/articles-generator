@@ -88,8 +88,8 @@ export async function runPrompt(
       headers: {
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://www.writeroom.co",
-        "X-Title": "WriteRoom",
+        "HTTP-Referer": "https://www.writestack.io",
+        "X-Title": "WriteStack",
       },
     },
   );

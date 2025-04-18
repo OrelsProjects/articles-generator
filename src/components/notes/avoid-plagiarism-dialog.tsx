@@ -44,7 +44,7 @@ export function AvoidPlagiarismDialog({
                   <p>
                     Copying someone else&apos;s work without modification can be
                     considered plagiarism.
-                    <br /> WriteRoom encourages you to use others notes, but
+                    <br /> WriteStack encourages you to use others notes, but
                     make sure to make it your own.
                   </p>
                 </TooltipContent>

@@ -50,7 +50,7 @@ export async function POST(req: Request) {
             currency: "usd",
             product_data: {
               name: `${credits} credits pack`,
-              description: `Purchase of ${credits} credits for WriteRoom`,
+              description: `Purchase of ${credits} credits for WriteStack`,
             },
             unit_amount: price * 100,
           },
@@ -65,11 +65,11 @@ export async function POST(req: Request) {
       success_url:
         env === "development"
           ? "http://localhost:3000/home"
-          : "https://www.writeroom.co/home",
+          : "https://www.writestack.io/home",
       cancel_url:
         env === "development"
           ? "http://localhost:3000/home"
-          : "https://www.writeroom.co/home",
+          : "https://www.writestack.io/home",
     });
 
     return NextResponse.json({ sessionId: paymentSession.id }, { status: 200 });

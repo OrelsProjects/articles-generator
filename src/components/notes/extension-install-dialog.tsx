@@ -47,7 +47,7 @@ export function ExtensionInstallDialog({
             Chrome Extension Required
           </DialogTitle>
           <DialogDescription>
-            To post directly to Substack, you need to install WriteRoom&apos;s
+            To post directly to Substack, you need to install WriteStack&apos;s
             Chrome extension. It only takes a minute and enables scheduling
             notes.
             <br />
