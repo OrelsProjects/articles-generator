@@ -25,7 +25,7 @@ const basicFeatures = (credits: number) => [
 ];
 
 const hobbyistFeatures = [
-  "Notes scheduling, up to 10 at a time (Requires Chrome)",
+  "Notes scheduling, up to 20 at a time (Requires Chrome)",
 ];
 
 const advancedFeatures = [
