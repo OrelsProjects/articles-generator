@@ -416,7 +416,7 @@ export function EditScheduleDialog({
             variant="link"
             className="text-foreground"
             onClick={handleMakeNatural}
-            disabled={loading}
+            disabled={loading || schedule.length === 0}
           >
             Make my schedule more natural
           </Button>
@@ -430,7 +430,11 @@ export function EditScheduleDialog({
               <Button variant="outline" disabled={loading}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add a new slot
-                <ChevronDown className="ml-2 h-4 w-4" />
+                {isAddingSlot ? (
+                  <ChevronUp className="ml-2 h-4 w-4" />
+                ) : (
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                )}
               </Button>
             </CollapsibleTrigger>
 
@@ -446,7 +450,7 @@ export function EditScheduleDialog({
                   >
                     {/* Modern Time Picker */}
                     <motion.div
-                      className="bg-white dark:bg-black border border-border rounded-lg p-6 shadow-lg w-full max-w-[280px]"
+                      className="bg-card/60 border border-border rounded-lg p-6 shadow-lg w-full max-w-[280px]"
                       initial={{ y: -20 }}
                       animate={{ y: 0 }}
                       transition={{ delay: 0.1 }}
@@ -489,7 +493,7 @@ export function EditScheduleDialog({
                                 setHours(23); // Cap at 23
                               }
                             }}
-                            className="text-2xl font-bold my-2 w-12 text-center bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-primary rounded"
+                            className="text-2xl font-bold my-2 w-12 text-center bg-transparent !border !border-border/80 focus-visible:outline-none rounded-md p-1"
                             aria-label="Hours"
                           />
                           <Button
@@ -537,7 +541,7 @@ export function EditScheduleDialog({
                                 setMinutes(59); // Cap at 59
                               }
                             }}
-                            className="text-2xl font-bold my-2 w-12 text-center bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-primary rounded"
+                            className="text-2xl font-bold my-2 w-12 text-center bg-transparent !border !border-border/80 focus-visible:outline-none rounded-md p-1"
                             aria-label="Minutes"
                           />
                           <Button

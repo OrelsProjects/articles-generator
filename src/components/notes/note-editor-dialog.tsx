@@ -25,12 +25,10 @@ import {
 import { getScheduleTimeText } from "@/lib/utils/date/schedule";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
-import { NoSubstackCookiesError } from "@/types/errors/NoSubstackCookiesError";
 import EmojiPopover from "@/components/notes/emoji-popover";
 import { Skin } from "@emoji-mart/data";
 import { copyHTMLToClipboard } from "@/lib/utils/copy";
 import { selectAuth } from "@/lib/features/auth/authSlice";
-import ScheduleNote from "@/components/notes/schedule-note";
 import ImageDropOverlay from "@/components/notes/image-drop-overlay";
 import { NoteImageContainer } from "@/components/notes/note-image-container";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,8 +39,8 @@ import { SaveDropdown } from "@/components/notes/save-dropdown";
 import { AvoidPlagiarismDialog } from "@/components/notes/avoid-plagiarism-dialog";
 import slugify from "slugify";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
-import { useQueue } from "@/lib/hooks/useQueue";
 import { cn } from "@/lib/utils";
+import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
@@ -604,6 +602,17 @@ export function NotesEditorDialog() {
         onOpenChange={setShowAvoidPlagiarismDialog}
         onConfirm={() => {
           setShowAvoidPlagiarismDialog(false);
+        }}
+      />
+      <ScheduleNoteModal
+        open={scheduleDialogOpen}
+        onOpenChange={setScheduleDialogOpen}
+        onScheduleConfirm={async (date: Date) => {
+          return handleSave({
+            schedule: {
+              to: date,
+            },
+          });
         }}
       />
     </>

@@ -37,19 +37,22 @@ import {
 import { useUi } from "@/lib/hooks/useUi";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { useQueue } from "@/lib/hooks/useQueue";
+import { cn } from "@/lib/utils";
 
 interface ScheduleNoteProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   initialScheduledDate?: Date | null;
   onScheduleConfirm: (date: Date) => Promise<unknown>;
+  className?: string;
 }
 
-export function ScheduleNote({
+export function ScheduleNoteModal({
   open,
   onOpenChange,
   initialScheduledDate,
   onScheduleConfirm,
+  className,
 }: ScheduleNoteProps) {
   const { hasQueue } = useQueue();
 
@@ -62,7 +65,7 @@ export function ScheduleNote({
     "hide_schedule_alert",
     false,
   );
-
+  const [isOpen, setIsOpen] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(
     initialScheduledDate ? new Date(initialScheduledDate) : undefined,
   );
@@ -70,8 +73,15 @@ export function ScheduleNote({
   const [timeError, setTimeError] = useState<string | null>(null);
 
   const handleOpenChange = (open: boolean) => {
-    onOpenChange(open);
+    onOpenChange?.(open);
+    setIsOpen(open);
   };
+
+  useEffect(() => {
+    if (open !== isOpen) {
+      setIsOpen(open || false);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (showScheduleModal) {
@@ -201,8 +211,8 @@ export function ScheduleNote({
   const isTimeValid = !timeError;
 
   return (
-    <div className="hidden md:flex">
-      <Dialog open={open} onOpenChange={handleOpenChange}>
+    <div className={cn("flex", className)}>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent
           hideCloseButton
           className="max-w-[550px] p-0 gap-0 border-border bg-background rounded-xl"
@@ -420,4 +430,4 @@ export function ScheduleNote({
   );
 }
 
-export default ScheduleNote;
+export default ScheduleNoteModal;
