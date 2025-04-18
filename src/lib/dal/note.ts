@@ -111,6 +111,18 @@ export const getNoteById = async (noteId: string): Promise<Note | null> => {
   return note;
 };
 
+export const getScheduledNotesNotSent = async (userId: string) => {
+  const notes = await prisma.note.findMany({
+    where: {
+      userId,
+      // scheduleTo > now and not null and sentViaScheduleAt is null
+      scheduledTo: { not: null, gt: new Date() },
+      sentViaScheduleAt: null,
+    },
+  });
+  return notes;
+};
+
 // export const getNoteImages = async (
 //   noteId: string,
 // ): Promise<SubstackImage[]> => {

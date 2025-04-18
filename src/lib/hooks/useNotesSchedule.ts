@@ -7,6 +7,7 @@ import { Logger } from "@/logger";
 import { useExtension } from "@/lib/hooks/useExtension";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 import { extensionApiRequest } from "@/lib/api/api";
+import { ScheduleLimitExceededError } from "@/types/errors/ScheduleLimitExceededError";
 
 export const useNotesSchedule = () => {
   const dispatch = useAppDispatch();
@@ -94,6 +95,12 @@ export const useNotesSchedule = () => {
         );
       } catch (error: any) {
         Logger.error("Error updating note date:", error);
+        // if error is 429, show a toast
+        if (error.response.status === 429) {
+          throw new ScheduleLimitExceededError(
+            "You have reached the maximum number of scheduled notes",
+          );
+        }
         dispatch(
           updateNote({
             id: note.id,

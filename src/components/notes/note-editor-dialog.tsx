@@ -41,6 +41,7 @@ import slugify from "slugify";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 import { cn } from "@/lib/utils";
 import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
+import { ScheduleLimitExceededError } from "@/types/errors/ScheduleLimitExceededError";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
@@ -287,6 +288,11 @@ export function NotesEditorDialog() {
           }
           if (e instanceof ScheduleFailedEmptyNoteBodyError) {
             toast.error("Note body is empty");
+            return null;
+          } else if (e instanceof ScheduleLimitExceededError) {
+            toast.error(
+              "You have reached the maximum number of scheduled notes",
+            );
             return null;
           } else {
             toast.error("Failed to schedule note. Try again please.");

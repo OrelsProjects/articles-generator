@@ -13,7 +13,10 @@ import PriceContainer from "@/components/ui/price-container";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
-import { featureFlagsPerPlan } from "@/lib/plans-consts";
+import {
+  featureFlagsPerPlan,
+  maxNotesShceduledPerPlan,
+} from "@/lib/plans-consts";
 import { Plan } from "@prisma/client";
 import PlanComparisonDialog from "./plan-comparison-dialog";
 
@@ -25,7 +28,7 @@ const basicFeatures = (credits: number) => [
 ];
 
 const hobbyistFeatures = [
-  "Notes scheduling, up to 20 at a time (Requires Chrome)",
+  `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time (Requires Chrome)`,
 ];
 
 const advancedFeatures = [

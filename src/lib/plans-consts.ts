@@ -13,6 +13,12 @@ export const creditsPerPlan: PlanCredits = {
   premium: 350,
 };
 
+export const maxNotesShceduledPerPlan = {
+  hobbyist: 100,
+  standard: INFINITY,
+  premium: INFINITY,
+};
+
 export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
   hobbyist: [FeatureFlag.instantPost],
   standard: [

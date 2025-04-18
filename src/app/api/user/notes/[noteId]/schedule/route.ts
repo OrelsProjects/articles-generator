@@ -1,12 +1,17 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
-import { isOwnerOfNote } from "@/lib/dal/note";
+import {
+  getNoteById,
+  getScheduledNotesNotSent,
+  isOwnerOfNote,
+} from "@/lib/dal/note";
+import { maxNotesShceduledPerPlan } from "@/lib/plans-consts";
 import {
   createScheduleForNote,
   deleteScheduleForNote,
 } from "@/lib/dal/note-schedule";
 import loggerServer from "@/loggerServer";
-import { NoteStatus } from "@prisma/client";
+import { NoteStatus, Plan } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -33,15 +38,23 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const note = await prisma.note.findUnique({
-      where: {
-        id: noteId,
-      },
-    });
+    const note = await getNoteById(noteId);
     if (!note || note.body.length === 0) {
       return NextResponse.json(
         { error: "Note body is empty" },
         { status: 400 },
+      );
+    }
+
+    const scheduledNotes = await getScheduledNotesNotSent(session.user.id);
+    if (
+      session.user.meta?.plan &&
+      scheduledNotes.length >=
+        maxNotesShceduledPerPlan[session.user.meta.plan as Plan]
+    ) {
+      return NextResponse.json(
+        { error: "You have reached the maximum number of scheduled notes" },
+        { status: 429 },
       );
     }
 
