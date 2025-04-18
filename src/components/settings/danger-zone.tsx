@@ -37,7 +37,6 @@ export function DangerZone() {
 
   const handleDeleteAccount = async () => {
     // Validate the confirmation text
-    debugger;
     if (user?.email) {
       if (confirmText !== user.email) {
         toast.error("Please type your email to confirm");

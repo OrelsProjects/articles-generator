@@ -6,7 +6,6 @@ import { DaySchedule } from "./day-schedule";
 import {
   DndContext,
   DragEndEvent,
-  DragStartEvent,
   PointerSensor,
   TouchSensor,
   useSensor,
@@ -45,7 +44,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
 }) => {
   const { updateNoteStatus, createDraftNote } = useNotes();
   const { scheduleNoteById } = useNotesSchedule();
-  
+
   // Configure basic sensors for drag detection
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
 
@@ -66,9 +65,9 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     activeDropTarget,
     handleDragStart,
     handleDragEnd: onDragEnd,
-    setActiveDropTarget
+    setActiveDropTarget,
   } = useDragOverlay({
-    findItemById: findNoteById
+    findItemById: findNoteById,
   });
 
   // Prepare a map of all empty slots
@@ -119,7 +118,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   // Handle final drag end with rescheduling logic
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     // Run the base drag end handler from our hook
     onDragEnd(event);
 
@@ -150,8 +149,8 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         handleRescheduleNote(noteId, newDate);
       }
     }
-    // Handle dropping on another note (for swapping schedules)
-    else if (typeof over.id === "string" && over.id !== noteId) {
+    // Handle dropping on another note
+    else if (typeof over.id === "string") {
       const targetNote = findNoteById(over.id);
 
       if (targetNote && targetNote.scheduledTo) {
@@ -163,6 +162,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         handleRescheduleNote(noteId, targetDate);
       }
     }
+    // Remove handling for dropping directly on other notes to prevent swapping
   };
 
   const handleRescheduleNote = async (noteId: string, newTime: Date) => {
@@ -219,34 +219,34 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       sensors={sensors}
       collisionDetection={closestCenter}
     >
-      <SortableContext
+      {/* <SortableContext
         items={allDraggableIds}
         strategy={verticalListSortingStrategy}
-      >
-        <div className="space-y-6">
-          {days.map(day => {
-            const dateKey = format(day, "yyyy-MM-dd");
-            const notesForDay = groupedNotes[dateKey] || [];
-            const schedulesForDay = groupedSchedules[dateKey] || [];
+      > */}
+      <div className="space-y-6">
+        {days.map(day => {
+          const dateKey = format(day, "yyyy-MM-dd");
+          const notesForDay = groupedNotes[dateKey] || [];
+          const schedulesForDay = groupedSchedules[dateKey] || [];
 
-            return (
-              <DaySchedule
-                key={dateKey}
-                day={day}
-                notes={notesForDay}
-                schedules={schedulesForDay}
-                onSelectNote={onSelectNote}
-                onUnscheduleNote={handleUnscheduleNote}
-                lastNoteRef={lastNoteRef}
-                lastNoteId={lastNoteId}
-                onEmptySlotClick={handleCreateDraftNote}
-                activeDropTarget={activeDropTarget}
-                useDndContext={false} // Don't create another DndContext
-              />
-            );
-          })}
-        </div>
-      </SortableContext>
+          return (
+            <DaySchedule
+              key={dateKey}
+              day={day}
+              notes={notesForDay}
+              schedules={schedulesForDay}
+              onSelectNote={onSelectNote}
+              onUnscheduleNote={handleUnscheduleNote}
+              lastNoteRef={lastNoteRef}
+              lastNoteId={lastNoteId}
+              onEmptySlotClick={handleCreateDraftNote}
+              activeDropTarget={activeDropTarget}
+              useDndContext={false} // Don't create another DndContext
+            />
+          );
+        })}
+      </div>
+      {/* </SortableContext> */}
 
       {/* Using our custom drag overlay component */}
       <CustomDragOverlay>

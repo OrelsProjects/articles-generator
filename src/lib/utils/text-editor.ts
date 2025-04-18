@@ -463,7 +463,6 @@ export const notesTextEditorOptions = (
   onUpdate: ({ editor }) => {
     let html = editor.getHTML();
     // convert a since \n to a double \n
-    debugger;
     // replace <br> with ps
     const newHtml = html.replace(/<br\s*\/?>/g, "</p><p>");
     if (html !== newHtml) {

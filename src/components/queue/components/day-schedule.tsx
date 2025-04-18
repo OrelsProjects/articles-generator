@@ -78,7 +78,7 @@ export const DaySchedule = ({
     let hour24 = schedule.hour;
     if (schedule.ampm === "pm" && hour24 < 12) hour24 += 12;
     if (schedule.ampm === "am" && hour24 === 12) hour24 = 0;
-    
+
     return `${hour24.toString().padStart(2, "0")}:${schedule.minute.toString().padStart(2, "0")}`;
   };
 
@@ -93,18 +93,18 @@ export const DaySchedule = ({
     try {
       // Parse different time formats
       let date = new Date();
-      
+
       if (timeStr.includes(":")) {
         const [hourStr, minuteStr] = timeStr.split(":");
         const hour = parseInt(hourStr, 10);
         const minute = parseInt(minuteStr, 10);
-        
+
         if (!isNaN(hour) && !isNaN(minute)) {
           date.setHours(hour, minute, 0, 0);
           return hour * 60 + minute;
         }
       }
-      
+
       // Fallback if format is unexpected
       return 0;
     } catch (e) {
@@ -126,7 +126,7 @@ export const DaySchedule = ({
 
       // Set the hours and minutes
       date.setHours(hour, minute, 0, 0);
-      
+
       return date;
     } catch (e) {
       console.error("Error parsing time to date:", timeStr, e);
@@ -220,13 +220,11 @@ export const DaySchedule = ({
       return;
     }
 
-    // Three possible scenarios for the drop target:
+    // Two possible scenarios for the drop target:
     // 1. Empty slot - use its time directly
-    // 2. Filled slot (another note) - use that note's time
-    // 3. Invalid target - do nothing
+    // 2. Droppable area of another note - use that note's time
 
     // Check if dropped on an empty slot (id starts with "empty-")
-    
     if (typeof over.id === "string" && over.id.startsWith("empty-")) {
       const emptySlot = allScheduledItems.find(item => item.id === over.id);
       if (emptySlot && emptySlot.time) {
@@ -234,7 +232,7 @@ export const DaySchedule = ({
         onRescheduleNote(activeNoteId, newDateTime);
       }
     }
-    // Check if dropped on another note (id starts with "droppable-")
+    // Check if dropped on another note's droppable area
     else if (typeof over.id === "string" && over.id.startsWith("droppable-")) {
       const targetNoteId = over.id.replace("droppable-", "");
       const targetNote = notes.find(note => note.id === targetNoteId);
@@ -266,47 +264,50 @@ export const DaySchedule = ({
   }
 
   // Render content with or without DndContext
-  const renderScheduleItems = () => (
-    <SortableContext 
-      items={allScheduledItems.map(item => item.id)}
-      strategy={verticalListSortingStrategy}
-    >
-      {/* Render all scheduled items in order */}
-      {allScheduledItems.map(item => (
-        <React.Fragment key={item.id}>
-          {item.type === "note" && item.note && (
-            <div
-              ref={item.note.id === lastNoteId ? lastNoteRef : undefined}
-              className={activeDropTarget === item.id ? "ring-2 ring-primary rounded-md" : ""}
-            >
-              <ScheduleNoteRow
-                note={item.note}
-                onSelect={onSelectNote}
-                onUnschedule={onUnscheduleNote}
-              />
-            </div>
-          )}
-          {item.type === "empty" && (
-            <div className={activeDropTarget === item.id ? "ring-2 ring-primary rounded-md" : ""}>
-              <EmptyScheduleSlot
-                id={item.id}
-                time={item.time}
-                date={day}
-                onClick={onEmptySlotClick}
-              />
-            </div>
-          )}
-        </React.Fragment>
-      ))}
-    </SortableContext>
-  );
+  const renderScheduleItems = () =>
+    allScheduledItems.map(item => (
+      <React.Fragment key={item.id}>
+        {item.type === "note" && item.note && (
+          <div
+            ref={item.note.id === lastNoteId ? lastNoteRef : undefined}
+            className={
+              activeDropTarget === item.id || activeDropTarget === `droppable-${item.id}`
+                ? "ring-2 ring-primary rounded-md"
+                : ""
+            }
+          >
+            <ScheduleNoteRow
+              note={item.note}
+              onSelect={onSelectNote}
+              onUnschedule={onUnscheduleNote}
+            />
+          </div>
+        )}
+        {item.type === "empty" && (
+          <div
+            className={
+              activeDropTarget === item.id
+                ? "ring-2 ring-primary rounded-md"
+                : ""
+            }
+          >
+            <EmptyScheduleSlot
+              id={item.id}
+              time={item.time}
+              date={day}
+              onClick={onEmptySlotClick}
+            />
+          </div>
+        )}
+      </React.Fragment>
+    ));
 
   return (
     <div className="mb-6">
       {dayTitle}
 
       {useDndContext ? (
-        <DndContext 
+        <DndContext
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
@@ -317,7 +318,7 @@ export const DaySchedule = ({
       ) : (
         renderScheduleItems()
       )}
-      
+
       {/* If no items were found and not today, show generic message */}
       {allScheduledItems.length === 0 && !isToday && (
         <EmptyScheduleSlot
