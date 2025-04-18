@@ -27,7 +27,7 @@ export default function Error({
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold">Something went wrong</h2>
           <p className="text-muted-foreground">
-            We've encountered an unexpected issue.
+            We&apos;ve encountered an unexpected issue.
           </p>
         </div>
         <div className="flex gap-4 mt-4">
