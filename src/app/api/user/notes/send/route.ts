@@ -44,25 +44,22 @@ export async function POST(request: NextRequest) {
   console.log(body);
   const parse = schema.safeParse(body);
   if (!parse.success) {
+    console.log("Invalid request", body);
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
   let { userId, noteId } = parse.data;
-  const secret = request.headers.get("x-substack-schedule-secret");
 
-  const textNgrok = await fetch("http://54.84.38.186/api/user/notes/send", {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: {
-      "x-substack-schedule-secret": secret || "",
-    },
-  });
+  // const textNgrok = await fetch("http://54.84.38.186/api/user/notes/send", {
+  //   method: "POST",
+  //   body: JSON.stringify(body),
+  // });
 
-  if (textNgrok.ok) {
-    const data = await textNgrok.json();
+  // if (textNgrok.ok) {
+  //   const data = await textNgrok.json();
 
-    // Call self, but in ngrok
-    return NextResponse.json({ success: data.success, result: data.result });
-  }
+  //   // Call self, but in ngrok
+  //   return NextResponse.json({ success: data.success, result: data.result });
+  // }
   // console.log("textNgrok: " + (await textNgrok.text()));
 
   try {
@@ -132,6 +129,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Cookie not found" }, { status: 404 });
     }
 
+    console.log("ABout to make adf");
+
     const adf = await markdownToADF(note.body);
     let messageData: {
       bodyJson: any;
@@ -149,6 +148,7 @@ export async function POST(request: NextRequest) {
     let didSucceed = false;
     let response: any;
     while (retries > 0 && !didSucceed) {
+      console.log("About to make fetch");
       response = await fetch("https://substack.com/api/v1/comment/feed", {
         headers: {
           "Content-Type": "application/json",
