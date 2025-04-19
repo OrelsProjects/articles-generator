@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
       );
       return NextResponse.json({ error: "Cookie not found" }, { status: 404 });
     }
-    while (retries > 0 && !didSucceed) {
+    while (!didSucceed) {
       console.log("Sending note: " + noteId + " with retries: " + retries);
       console.log("Cookie: " + cookies);
       console.log("Message data: " + JSON.stringify(messageData));
