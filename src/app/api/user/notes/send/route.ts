@@ -58,7 +58,9 @@ export async function POST(request: NextRequest) {
 
   if (textNgrok.ok) {
     const data = await textNgrok.json();
-    return NextResponse.json({ success: true, result: data });
+
+    // Call self, but in ngrok
+    return NextResponse.json({ success: data.success, result: data.result });
   }
   // console.log("textNgrok: " + (await textNgrok.text()));
 
