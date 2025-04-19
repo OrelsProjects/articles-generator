@@ -48,12 +48,21 @@ export async function POST(request: NextRequest) {
   }
   let { userId, noteId } = parse.data;
 
+  const textNgrok = await fetch(
+    "https://ac52-2-54-20-150.ngrok-free.app/api/user/notes/send",
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+  );
+  console.log("textNgrok: " + (await textNgrok.text()));
+
   try {
     if (!session) {
-      // const secret = request.headers.get("x-substack-schedule-secret");
-      // if (secret !== process.env.SUBSTACK_SCHEDULE_SECRET) {
-      //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      // }
+      const secret = request.headers.get("x-substack-schedule-secret");
+      if (secret !== process.env.SUBSTACK_SCHEDULE_SECRET) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
     } else {
       userId = session.user.id;
     }
