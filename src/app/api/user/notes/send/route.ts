@@ -26,13 +26,13 @@ const doesBodyContainLink = (body: string) => {
 const sendFailure = async (noteBody: string, noteId: string, email: string) => {
   try {
     const emailTemplate = generateFailedToSendNoteEmail(noteBody, noteId);
-    await sendMail({
-      to: email,
-      from: "support",
-      subject: emailTemplate.subject,
-      template: emailTemplate.body,
-      cc: ["orelsmail@gmail.com"],
-    });
+    // await sendMail({
+    //   to: email,
+    //   from: "support",
+    //   subject: emailTemplate.subject,
+    //   template: emailTemplate.body,
+    //   cc: ["orelsmail@gmail.com"],
+    // });
   } catch (error) {
     loggerServer.error("Error to send note: " + error);
   }
