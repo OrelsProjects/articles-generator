@@ -153,8 +153,8 @@ export async function POST(request: NextRequest) {
       if (!didSucceed) {
         const text = await response.text();
         console.log("Response: " + text);
-        const errorMessage = await response.json();
-        console.log("Error to send note: " + JSON.stringify(errorMessage));
+        // const errorMessage = await response.json();
+        // console.log("Error to send note: " + JSON.stringify(errorMessage));
       }
       retries--;
     }
