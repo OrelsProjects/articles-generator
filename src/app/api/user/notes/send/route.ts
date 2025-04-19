@@ -47,10 +47,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
   let { userId, noteId } = parse.data;
+  const secret = request.headers.get("x-substack-schedule-secret");
 
   const textNgrok = await fetch("http://54.84.38.186/api/user/notes/send", {
     method: "POST",
     body: JSON.stringify(body),
+    headers: {
+      "x-substack-schedule-secret": secret || "",
+    },
   });
 
   if (textNgrok.ok) {
