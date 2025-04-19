@@ -142,6 +142,7 @@ export async function POST(request: NextRequest) {
           "Referrer-Policy": "strict-origin-when-cross-origin",
           Cookie: `substack.sid=${cookie.value}`,
         },
+        credentials: "include", // <<< THIS IS LIFE
         body: JSON.stringify(messageData),
         method: "POST",
       });
