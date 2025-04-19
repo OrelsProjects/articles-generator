@@ -141,6 +141,8 @@ export async function POST(request: NextRequest) {
           Referer: "https://substack.com/home",
           "Referrer-Policy": "strict-origin-when-cross-origin",
           Cookie: `substack.sid=${cookie.value}`,
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
         },
         credentials: "include", // <<< THIS IS LIFE
         body: JSON.stringify(messageData),
@@ -149,6 +151,8 @@ export async function POST(request: NextRequest) {
       console.log("Ran fetch to send note: " + retries + " retries left");
       didSucceed = response.ok;
       if (!didSucceed) {
+        const text = await response.text();
+        console.log("Response: " + text);
         const errorMessage = await response.json();
         console.log("Error to send note: " + JSON.stringify(errorMessage));
       }
