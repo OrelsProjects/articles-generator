@@ -132,6 +132,9 @@ export async function POST(request: NextRequest) {
     let didSucceed = false;
     let response: any;
     while (retries > 0 && !didSucceed) {
+      console.log("Sending note: " + noteId + " with retries: " + retries);
+      console.log("Cookie: " + cookie.value);
+      console.log("Message data: " + JSON.stringify(messageData));
       response = await fetch("https://substack.com/api/v1/comment/feed", {
         headers: {
           "Content-Type": "application/json",
