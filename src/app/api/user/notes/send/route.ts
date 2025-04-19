@@ -10,6 +10,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { SubstackPostNoteResponse } from "@/types/note";
+import { text } from "stream/consumers";
 
 const schema = z.object({
   userId: z.string().optional(),
@@ -55,14 +56,19 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     },
   );
-  console.log("textNgrok: " + (await textNgrok.text()));
+
+  if (textNgrok.ok) {
+    const data = await textNgrok.json();
+    return NextResponse.json({ success: true, result: data });
+  }
+  // console.log("textNgrok: " + (await textNgrok.text()));
 
   try {
     if (!session) {
-      const secret = request.headers.get("x-substack-schedule-secret");
-      if (secret !== process.env.SUBSTACK_SCHEDULE_SECRET) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
+      // const secret = request.headers.get("x-substack-schedule-secret");
+      // if (secret !== process.env.SUBSTACK_SCHEDULE_SECRET) {
+      //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      // }
     } else {
       userId = session.user.id;
     }
