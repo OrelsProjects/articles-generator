@@ -135,7 +135,10 @@ export async function POST(request: NextRequest) {
     const cookieSubstackSid = cookies.find(
       cookie => cookie.name === CookieName.substackSid,
     );
-    if (!cookieCfBm || !cookieLli || !cookieSubstackSid) {
+    const cookieCfClearance = cookies.find(
+      cookie => cookie.name === CookieName.cfClearance,
+    );
+    if (!cookieCfBm || !cookieLli || !cookieSubstackSid || !cookieCfClearance) {
       // await sendFailure(note.body, noteId, user.email);
       loggerServer.error(
         "Cookie not found: " + noteId + " for user: " + userId,
@@ -155,6 +158,7 @@ export async function POST(request: NextRequest) {
             `substack.sid=${cookieSubstackSid.value}`,
             `_cf_bm=${cookieCfBm.value}`,
             `substack.lli=${cookieLli.value}`,
+            `cf_clearance=mdrvkaQKqnWJ36ExXH29D1SErweDuidIOiWY6bDB20w-1745090797-1.2.1.1-_mWT1RD6hbG48mfGOKZlW6E7rpIluhcsSCN5joxPzoGchlSjTTeSuZS1WoMx0aiVPGjegiWcj8kGsRtuH0m1mS_mM95FtEJdWF3KMmbz0dlVbXIy8IgdQrASfy85ttpOhDFUxlbudi9uCjWc0OzUvpvHbqQU7BuAYWGH3p9tVWu.WNF026vc_ipSh9tlgfLp1FiRGL1NB19w86ksdOB8euuqDCw03fwt0JHtZVlSy1ecZGYnbkvo8tHmHvU0_T3SFZTvbKvMXd2bYs87XaaxcYqLgwMKGpxp5kX7GIg4TVF3oAuishohsZ_dIth5cRjM58kYLIItknmFH8ZyGJu.v.vNoQh1vKwhXkgVKXuS3wE`,
           ].join("; "),
         },
         credentials: "include", // <<< THIS IS LIFE
