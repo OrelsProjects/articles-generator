@@ -141,8 +141,6 @@ export async function POST(request: NextRequest) {
           Referer: "https://substack.com/home",
           "Referrer-Policy": "strict-origin-when-cross-origin",
           Cookie: `substack.sid=${cookie.value}`,
-          "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
         },
         credentials: "include", // <<< THIS IS LIFE
         body: JSON.stringify(messageData),
