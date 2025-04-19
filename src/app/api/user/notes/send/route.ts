@@ -48,13 +48,10 @@ export async function POST(request: NextRequest) {
   }
   let { userId, noteId } = parse.data;
 
-  const textNgrok = await fetch(
-    "https://ac52-2-54-20-150.ngrok-free.app/api/user/notes/send",
-    {
-      method: "POST",
-      body: JSON.stringify(body),
-    },
-  );
+  const textNgrok = await fetch("http://54.84.38.186/api/user/notes/send", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 
   if (textNgrok.ok) {
     const data = await textNgrok.json();
