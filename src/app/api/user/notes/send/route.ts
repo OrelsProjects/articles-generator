@@ -10,7 +10,6 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { SubstackPostNoteResponse } from "@/types/note";
-import { text } from "stream/consumers";
 
 const schema = z.object({
   userId: z.string().optional(),
