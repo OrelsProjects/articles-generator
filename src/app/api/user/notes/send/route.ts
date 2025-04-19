@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     const cookieCfClearance = cookies.find(
       cookie => cookie.name === CookieName.cfClearance,
     );
-    if (!cookieCfBm || !cookieLli || !cookieSubstackSid || !cookieCfClearance) {
+    if (!cookieCfBm || !cookieLli || !cookieSubstackSid) {
       // await sendFailure(note.body, noteId, user.email);
       loggerServer.error(
         "Cookie not found: " + noteId + " for user: " + userId,
