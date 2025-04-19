@@ -72,12 +72,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const cookie = await prisma.substackCookie.findUnique({
+    const cookies = await prisma.substackCookie.findMany({
       where: {
-        name_userId: {
-          name: CookieName.substackSid,
-          userId,
-        },
+        userId,
       },
     });
 
@@ -106,7 +103,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!cookie) {
+    if (!cookies) {
       console.error("Cookie not found");
       await sendFailure(note.body, noteId, user.email);
       loggerServer.error(
@@ -131,16 +128,34 @@ export async function POST(request: NextRequest) {
     let retries = 3;
     let didSucceed = false;
     let response: any;
+    const cookieCfBm = cookies.find(cookie => cookie.name === CookieName.cfBm);
+    const cookieLli = cookies.find(
+      cookie => cookie.name === CookieName.substackLl,
+    );
+    const cookieSubstackSid = cookies.find(
+      cookie => cookie.name === CookieName.substackSid,
+    );
+    if (!cookieCfBm || !cookieLli || !cookieSubstackSid) {
+      // await sendFailure(note.body, noteId, user.email);
+      loggerServer.error(
+        "Cookie not found: " + noteId + " for user: " + userId,
+      );
+      return NextResponse.json({ error: "Cookie not found" }, { status: 404 });
+    }
     while (retries > 0 && !didSucceed) {
       console.log("Sending note: " + noteId + " with retries: " + retries);
-      console.log("Cookie: " + cookie.value);
+      console.log("Cookie: " + cookies);
       console.log("Message data: " + JSON.stringify(messageData));
       response = await fetch("https://substack.com/api/v1/comment/feed", {
         headers: {
           "Content-Type": "application/json",
           Referer: "https://substack.com/home",
           "Referrer-Policy": "strict-origin-when-cross-origin",
-          Cookie: `substack.sid=${cookie.value}`,
+          Cookie: [
+            `substack.sid=${cookieSubstackSid.value}`,
+            `_cf_bm=${cookieCfBm.value}`,
+            `substack.lli=${cookieLli.value}`,
+          ].join("; "),
         },
         credentials: "include", // <<< THIS IS LIFE
         body: JSON.stringify(messageData),
@@ -192,18 +207,7 @@ export async function POST(request: NextRequest) {
             "Content-Type": "application/json",
             Referer: "https://substack.com/home",
             "Referrer-Policy": "strict-origin-when-cross-origin",
-            Cookie: `substack.sid=${cookie.value}`,
-            "sec-ch-ua":
-              '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"macOS"',
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            priority: "u=1, i",
-            "user-agent":
-              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-            referer: "https://substack.com/home",
+            Cookie: `substack.sid=${cookieSubstackSid.value}`,
           },
           body: JSON.stringify(messageData),
         },
