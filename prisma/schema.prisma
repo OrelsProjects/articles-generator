@@ -75,6 +75,7 @@ enum CookieName {
   substackSid
   substackLl
   cfBm
+  cfClearance
 }
 
 enum CookieSameSite {
