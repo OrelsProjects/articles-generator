@@ -304,18 +304,9 @@ export function QueuePage() {
               </DialogHeader>
               <DialogDescription className="text-sm">
                 <p>
-                  Substack has decided to add a bot-detection system to their
-                  notes sending system.
-                </p>
-                <p>
-                  This bots stops me from sending any notes on your behalf and
-                  therefore I cannot schedule notes your notes.{" "}
-                </p>
-                <p>
-                  <br />I am working on a solution to this and will update you
+                  I am working on a solution and will update you
                   as soon as I have more information.
-                </p>
-                <p>
+                
                   You can keep using the scheduling, but make sure to be
                   available to post notes manually.
                 </p>
