@@ -131,6 +131,7 @@ export function useExtension(): UseExtension {
             process.env.NEXT_PUBLIC_EXTENSION_ID as string,
             pingMessage,
             (response: any) => {
+              console.log("response", response);
               if (response?.success) {
                 resolve("success");
               } else {
