@@ -153,7 +153,9 @@ export async function POST(request: NextRequest) {
       console.log("About to make fetch");
       try {
         const proxy =
-          "http://user-orelz7_r5sBA-country-US:8evBfV+LF_x4u=pa@dc.oxylabs.io:8000";
+          "http://orelz7_jgRif:8evBfV+LF_x4u=pa@unblock.oxylabs.io:60000";
+
+        // Create the agent
         const agent = new HttpsProxyAgent(proxy);
 
         response = await axios.post(
