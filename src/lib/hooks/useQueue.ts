@@ -30,13 +30,11 @@ export function useQueue() {
   const loadingBestNotesRef = useRef(false);
 
   const scheduledNotes = useMemo(() => {
-    const yesterdayDayStart = subDays(startOfDay(new Date()), 10);
-
+    // We want to show all scheduled notes, regardless of date
     return userNotes.filter(
       note =>
         note.status === "scheduled" &&
-        note.scheduledTo &&
-        isAfter(note.scheduledTo, yesterdayDayStart),
+        note.scheduledTo
     );
   }, [userNotes]);
 

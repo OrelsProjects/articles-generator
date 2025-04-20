@@ -143,16 +143,14 @@ export const DaySchedule = ({
       const timeStr = getNoteTimeString(note);
       const timestamp = timeStringToTimestamp(timeStr);
 
-      // For today, only include notes scheduled for later
-      if (!isToday || timestamp >= currentMinutes) {
-        allScheduledItems.push({
-          type: "note",
-          time: timeStr,
-          timestamp,
-          note,
-          id: note.id,
-        });
-      }
+      // Show all notes regardless of the time
+      allScheduledItems.push({
+        type: "note",
+        time: timeStr,
+        timestamp,
+        note,
+        id: note.id,
+      });
     }
   });
 
@@ -161,24 +159,21 @@ export const DaySchedule = ({
     const timeStr = getScheduleTimeString(schedule);
     const timestamp = timeStringToTimestamp(timeStr);
 
-    // For today, only include schedules for later
-    if (!isToday || timestamp >= currentMinutes) {
-      // Check if there's already a note scheduled at this time
-      const existingNoteIndex = allScheduledItems.findIndex(
-        item =>
-          item.type === "note" && Math.abs(item.timestamp - timestamp) < 5, // Within 5 minutes
-      );
+    // Check if there's already a note scheduled at this time
+    const existingNoteIndex = allScheduledItems.findIndex(
+      item =>
+        item.type === "note" && Math.abs(item.timestamp - timestamp) < 5, // Within 5 minutes
+    );
 
-      if (existingNoteIndex === -1) {
-        // No note at this time, add an empty slot
-        allScheduledItems.push({
-          type: "empty",
-          time: timeStr,
-          timestamp,
-          schedule,
-          id: `empty-${day.toISOString()}-${timeStr}-${index}`,
-        });
-      }
+    if (existingNoteIndex === -1) {
+      // No note at this time, add an empty slot
+      allScheduledItems.push({
+        type: "empty",
+        time: timeStr,
+        timestamp,
+        schedule,
+        id: `empty-${day.toISOString()}-${timeStr}-${index}`,
+      });
     }
     // If there's a note, we already have it in the list so we don't add a duplicate
   });
@@ -252,11 +247,6 @@ export const DaySchedule = ({
       {format(day, "MMMM d")}
     </h2>
   );
-
-  // If today and no future items, just show the title
-  if (isToday && allScheduledItems.length === 0) {
-    return <div className="mb-6">{dayTitle}</div>;
-  }
 
   // Skip days with no notes or schedules
   if (notes.length === 0 && schedules.length === 0) {

@@ -598,11 +598,11 @@ export const useNotes = () => {
       if (!user) return;
       let sendResponse: any;
       try {
-        debugger;
         setLoadingSendNote(true);
         const note = userNotes.find(note => note.id === noteId);
         if (!note) return;
         // await axios.get(`/api/user/notes/${noteId}/should-send`);
+        console.log("Sending note", note);
         const response = await sendNoteExtension({
           message: note.body,
           moveNoteToPublished: {

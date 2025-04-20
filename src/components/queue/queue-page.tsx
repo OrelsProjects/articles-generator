@@ -185,7 +185,7 @@ export function QueuePage() {
   // Group schedules by date for empty slots
   const groupedSchedules = () => {
     const grouped: Record<string, UserSchedule[]> = {};
-
+    debugger;
     userSchedules.forEach(schedule => {
       // Check each active day and add applicable schedules
       activeDays.forEach(day => {
@@ -290,7 +290,10 @@ export function QueuePage() {
                     className="underline cursor-pointer"
                     onClick={scrollToLatestNote}
                   >
-                    {format(new Date(latestNote.scheduledTo), "EEEE MMMM do, HH:mm")}
+                    {format(
+                      new Date(latestNote.scheduledTo),
+                      "EEEE MMMM do, HH:mm",
+                    )}
                   </strong>
                 ) : null;
               })()

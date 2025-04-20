@@ -224,6 +224,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
           const dateKey = format(day, "yyyy-MM-dd");
           const notesForDay = groupedNotes[dateKey] || [];
           const schedulesForDay = groupedSchedules[dateKey] || [];
+          
           return (
             <DaySchedule
               key={dateKey}

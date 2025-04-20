@@ -181,16 +181,17 @@ export function useExtension(): UseExtension {
   const sendExtensionMessage = useCallback(
     async <T>(message: ExtensionMessage): Promise<ExtensionResponse<T>> => {
       return new Promise(async (resolve, reject) => {
-        // const verificationStatus = await verifyExtension();
-
-        // if (verificationStatus === "error") {
-        //   reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
-        //   return;
-        // }
-        // if (verificationStatus === "pending") {
-        //   reject(new Error(SubstackError.PENDING));
-        //   return;
-        // }
+        console.log("Sending extension message", message);
+        const verificationStatus = await verifyExtension();
+        console.log("Verification status", verificationStatus);
+        if (verificationStatus === "error") {
+          reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
+          return;
+        }
+        if (verificationStatus === "pending") {
+          reject(new Error(SubstackError.PENDING));
+          return;
+        }
 
         // Set timeout for response
         const timeoutId = setTimeout(() => {
@@ -276,6 +277,7 @@ export function useExtension(): UseExtension {
       setError(null);
 
       try {
+        console.log("Sending note from useExtension", params);
         // Validate parameters
         if (!params.message || params.message.trim().length === 0) {
           throw new Error(SubstackError.INVALID_PARAMETERS);
@@ -293,6 +295,7 @@ export function useExtension(): UseExtension {
         };
 
         // Send message to extension
+        console.log("Sending message to extension", message);
         const sendMessageResponse =
           await sendExtensionMessage<CreatePostResponse>(message);
         console.log("sendMessageResponse", sendMessageResponse);
