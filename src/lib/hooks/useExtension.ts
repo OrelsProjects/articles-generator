@@ -181,19 +181,19 @@ export function useExtension(): UseExtension {
   const sendExtensionMessage = useCallback(
     async <T>(message: ExtensionMessage): Promise<ExtensionResponse<T>> => {
       return new Promise(async (resolve, reject) => {
-        console.log("Sending extension message", message);
-        const verificationStatus = await verifyExtension();
-        console.log("Verification status", verificationStatus);
-        if (verificationStatus === "error") {
-          reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
-          return;
-        }
-        if (verificationStatus === "pending") {
-          reject(new Error(SubstackError.PENDING));
-          return;
-        }
+        // console.log("Sending extension message", message);
+        // const verificationStatus = await verifyExtension();
+        // console.log("Verification status", verificationStatus);
+        // if (verificationStatus === "error") {
+        //   reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
+        //   return;
+        // }
+        // if (verificationStatus === "pending") {
+        //   reject(new Error(SubstackError.PENDING));
+        //   return;
+        // }
 
-        // Set timeout for response
+        // // Set timeout for response
         const timeoutId = setTimeout(() => {
           reject(new Error(SubstackError.NETWORK_ERROR));
         }, 10000); // 10 second timeout
@@ -237,6 +237,7 @@ export function useExtension(): UseExtension {
               process.env.NEXT_PUBLIC_EXTENSION_ID as string,
               { ...message },
               (response: any) => {
+                console.log("Response from chrome", response);
                 clearTimeout(timeoutId);
                 if (response.success) {
                   const result = JSON.parse(response.data.result) as T;

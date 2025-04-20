@@ -344,7 +344,7 @@ export function generatePaymentConfirmationEmail(
     <p>Your subscription is active and you have full access to all WriteStack features to help elevate your writing:</p>
     <ul>
       <li>Smart, powerful notes outline and writer</li>
-      <li>Easy notes scheduling (Doesn't require a chrome tab open)</li>
+      <li>Easy notes scheduling</li>
       <li>Publication analytics and insights</li>
       <li>Inspiration notes from 5m+ pool of notes</li>
     </ul>
