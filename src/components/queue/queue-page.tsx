@@ -407,6 +407,14 @@ export function QueuePage() {
           >
             Published ({counters.publishedCount})
           </TabsTrigger>
+          <TabsTrigger
+            value="all"
+            className={cn(
+              "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+            )}
+          >
+            All ({counters.scheduledCount + counters.draftCount + counters.publishedCount})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="scheduled" className="mt-0">
@@ -442,6 +450,38 @@ export function QueuePage() {
               {publishedNotes.map(note => (
                 <NoteComponent key={note.id} note={note} />
               ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="all">
+          {scheduledNotes.length === 0 && draftNotes.length === 0 && publishedNotes.length === 0 ? (
+            <div className="text-center py-8 text-zinc-500">No notes yet</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Combine all notes and sort them as specified */}
+              {[...scheduledNotes, ...draftNotes, ...publishedNotes]
+                .sort((a, b) => {
+                  // Sort by type first: scheduled > drafts > published
+                  const getTypeOrder = (note: NoteDraft) => {
+                    if (note.scheduledTo) return 0; // Scheduled notes first
+                    if (note.status !== "published") return 1; // Then drafts
+                    return 2; // Then published notes
+                  };
+                  
+                  const typeA = getTypeOrder(a);
+                  const typeB = getTypeOrder(b);
+                  
+                  if (typeA !== typeB) return typeA - typeB;
+                  
+                  // If same type, sort by createdAt date (newest first)
+                  const dateA = new Date(a.createdAt || 0).getTime();
+                  const dateB = new Date(b.createdAt || 0).getTime();
+                  return dateB - dateA;
+                })
+                .map(note => (
+                  <NoteComponent key={note.id} note={note} />
+                ))}
             </div>
           )}
         </TabsContent>
