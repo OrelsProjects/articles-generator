@@ -5,7 +5,7 @@ import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { AlertCircle, Plus } from "lucide-react";
+import { AlertCircle, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditScheduleDialog } from "./edit-schedule-dialog";
@@ -18,6 +18,14 @@ import { TooltipButton } from "@/components/ui/tooltip-button";
 import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
+import {
+  Dialog,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { DialogContent } from "@/components/ui/dialog";
+import Link from "next/link";
 
 export function QueuePage() {
   const [activeTabCache, setActiveTabCache] = useLocalStorage(
@@ -32,11 +40,17 @@ export function QueuePage() {
     nextPage,
     resetPage,
   } = useQueue();
+  const [didSeeWarning, setDidSeeWarning] = useLocalStorage(
+    "queue_did_see_warning",
+    false,
+  );
   const { selectNote, createDraftNote } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [activeDays, setActiveDays] = useState<Date[]>([]);
   const [activeTab, setActiveTab] = useState("scheduled");
+
+  const [showWarningDialog, setShowWarningDialog] = useState(false);
 
   const lastNoteRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -248,6 +262,78 @@ export function QueuePage() {
           )}
         </div>
       </div>
+
+      {/* // Write a warning (yellow) telling users that scheduling notes are not working at the moment, with a see more button that will explain:
+      // Substack has decided to add a bot-detection system to their notes sending system.
+      // This bots stops me from sending any notes on your behalf and therefore I cannot schedule notes your notes.
+      // I am working on a solution to this and will update you as soon as I have more information.
+      //You can keep using the scheduling, but make sure to be available to post notes manually.
+      // Feel free to contact me via a DM on Substack or email at support@writestack.io.
+
+      Sorry for any inconvenience this may cause.
+      //  */}
+
+      {!didSeeWarning && (
+        <>
+          <div className="bg-yellow-50 dark:bg-yellow-950/25 border border-yellow-200 dark:border-yellow-900 p-4 rounded-md mb-6 flex items-center justify-between text-yellow-800 dark:text-yellow-400">
+            <div className="flex items-center">
+              <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+              <span>
+                Scheduling notes is not working at the moment. post notes
+                manually.
+                <Button
+                  variant="link"
+                  onClick={() => setShowWarningDialog(true)}
+                  className="text-yellow-800 dark:text-yellow-400"
+                >
+                  See more
+                </Button>
+              </span>
+            </div>
+            <Button variant="ghost" onClick={() => setDidSeeWarning(true)}>
+              <X size={16} />
+            </Button>
+          </div>
+
+          <Dialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  Scheduling notes is not working at the moment.
+                </DialogTitle>
+              </DialogHeader>
+              <DialogDescription className="text-sm">
+                <p>
+                  Substack has decided to add a bot-detection system to their
+                  notes sending system.
+                </p>
+                <p>
+                  This bots stops me from sending any notes on your behalf and
+                  therefore I cannot schedule notes your notes.{" "}
+                </p>
+                <p>
+                  <br />I am working on a solution to this and will update you
+                  as soon as I have more information.
+                </p>
+                <p>
+                  You can keep using the scheduling, but make sure to be
+                  available to post notes manually.
+                </p>
+                <p>
+                  <br />
+                  Feel free to contact me via a DM on Substack or email at{" "}
+                  <Button variant="link" asChild>
+                    <Link href="mailto:support@writestack.io">
+                      support@writestack.io
+                    </Link>
+                  </Button>
+                  .
+                </p>
+              </DialogDescription>
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
 
       {scheduledNotes.length === 0 && (
         <div className="bg-red-50 dark:bg-red-950/25 border border-red-200 dark:border-red-900 p-4 rounded-md mb-6 flex items-center text-red-800 dark:text-red-400">
