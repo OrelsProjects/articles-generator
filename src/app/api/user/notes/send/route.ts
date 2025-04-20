@@ -173,6 +173,7 @@ export async function POST(request: NextRequest) {
               "Sec-Ch-Ua": '"Chromium";v="120", "Not:A-Brand";v="99"',
               "Sec-Ch-Ua-Mobile": "?0",
               "Sec-Ch-Ua-Platform": "macOS",
+              Origin: "https://substack.com",
             },
             httpsAgent: agent,
           },
