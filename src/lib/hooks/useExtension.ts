@@ -178,95 +178,39 @@ export function useExtension(): UseExtension {
     }
   }, [browserType]);
 
-  const sendExtensionMessage = useCallback(
-    async <T>(message: ExtensionMessage): Promise<ExtensionResponse<T>> => {
-      return new Promise(async (resolve, reject) => {
-        // console.log("Sending extension message", message);
-        // const verificationStatus = await verifyExtension();
-        // console.log("Verification status", verificationStatus);
-        // if (verificationStatus === "error") {
-        //   reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
-        //   return;
-        // }
-        // if (verificationStatus === "pending") {
-        //   reject(new Error(SubstackError.PENDING));
-        //   return;
-        // }
-
-        // // Set timeout for response
-        const timeoutId = setTimeout(() => {
-          reject(new Error(SubstackError.NETWORK_ERROR));
-        }, 10000); // 10 second timeout
-
-        try {
-          // Firefox implementation
-          if (browserType === "firefox" && typeof browser !== "undefined") {
-            browser.runtime
-              .sendMessage(process.env.NEXT_PUBLIC_EXTENSION_ID as string, {
-                ...message,
-              })
-              .then((response: any) => {
-                clearTimeout(timeoutId);
-                if (response.success) {
-                  const result = JSON.parse(response.data.result) as T;
-                  resolve({
-                    success: response.success,
-                    result,
-                    message: response.message,
-                    action: response.action,
-                    error: response.error,
-                  });
-                } else {
-                  reject(
-                    new Error(response.error || SubstackError.UNKNOWN_ERROR),
-                  );
-                }
-              })
-              .catch((error: unknown) => {
-                clearTimeout(timeoutId);
-                reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
-              });
-          }
-          // Chrome implementation
-          else if (
-            browserType === "chrome" &&
-            typeof chrome !== "undefined" &&
-            chrome.runtime
-          ) {
-            chrome.runtime.sendMessage(
-              process.env.NEXT_PUBLIC_EXTENSION_ID as string,
-              { ...message },
-              (response: any) => {
-                console.log("Response from chrome", response);
-                clearTimeout(timeoutId);
-                if (response.success) {
-                  const result = JSON.parse(response.data.result) as T;
-                  resolve({
-                    success: response.success,
-                    result,
-                    message: response.message,
-                    action: response.action,
-                    error: response.error,
-                  });
-                } else {
-                  reject(
-                    new Error(response.error || SubstackError.UNKNOWN_ERROR),
-                  );
-                }
-              },
-            );
-          } else {
-            clearTimeout(timeoutId);
-            reject(new Error(SubstackError.BROWSER_NOT_SUPPORTED));
-          }
-        } catch (error) {
+const sendExtensionMessage = async <T>(
+  message: ExtensionMessage,
+): Promise<ExtensionResponse<T>> => {
+  return new Promise((resolve, reject) => {
+    if (
+      typeof chrome !== "undefined" &&
+      chrome.runtime &&
+      chrome.runtime.sendMessage
+    ) {
+      const timeoutId = setTimeout(
+        () => reject(new Error(SubstackError.NETWORK_ERROR)),
+        10000,
+      );
+      chrome.runtime.sendMessage(
+        process.env.NEXT_PUBLIC_EXTENSION_ID!,
+        message,
+        (response: any) => {
           clearTimeout(timeoutId);
-          reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
-        }
-      });
-    },
-    [browserType, verifyExtension],
-  );
+          if (response.success)
+            resolve({
+              success: true,
+              result: JSON.parse(response.data.result),
+              message: response.message,
+              action: response.action,
+            });
+          else reject(new Error(response.error || SubstackError.UNKNOWN_ERROR));
+        },
+      );
+    } else {
+      reject(new Error(SubstackError.BROWSER_NOT_SUPPORTED));
+    }
+  });
+};
 
   /**
    * Create a new Substack post
