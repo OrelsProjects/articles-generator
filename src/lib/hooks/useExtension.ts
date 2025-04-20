@@ -178,15 +178,15 @@ export function useExtension(): UseExtension {
     }
   }, [browserType]);
 
-const sendExtensionMessage = async <T>(
-  message: ExtensionMessage,
-): Promise<ExtensionResponse<T>> => {
-  return new Promise((resolve, reject) => {
-    if (
-      typeof chrome !== "undefined" &&
-      chrome.runtime &&
-      chrome.runtime.sendMessage
-    ) {
+  const sendExtensionMessage = async <T>(
+    message: ExtensionMessage,
+  ): Promise<ExtensionResponse<T>> => {
+    return new Promise((resolve, reject) => {
+      // if (
+      //   typeof chrome !== "undefined" &&
+      //   chrome.runtime &&
+      //   chrome.runtime.sendMessage
+      // ) {
       const timeoutId = setTimeout(
         () => reject(new Error(SubstackError.NETWORK_ERROR)),
         10000,
@@ -206,11 +206,11 @@ const sendExtensionMessage = async <T>(
           else reject(new Error(response.error || SubstackError.UNKNOWN_ERROR));
         },
       );
-    } else {
-      reject(new Error(SubstackError.BROWSER_NOT_SUPPORTED));
-    }
-  });
-};
+      // } else {
+      //   reject(new Error(SubstackError.BROWSER_NOT_SUPPORTED));
+      // }
+    });
+  };
 
   /**
    * Create a new Substack post
