@@ -127,6 +127,10 @@ export function useExtension(): UseExtension {
           typeof chrome !== "undefined" &&
           chrome.runtime
         ) {
+          console.log(
+            "Extension is chrome, with id: ",
+            process.env.NEXT_PUBLIC_EXTENSION_ID,
+          );
           chrome.runtime.sendMessage(
             process.env.NEXT_PUBLIC_EXTENSION_ID as string,
             pingMessage,
