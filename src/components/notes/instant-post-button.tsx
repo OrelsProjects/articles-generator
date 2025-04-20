@@ -43,7 +43,7 @@ export function InstantPostButton({
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const handleSendNote = async () => {
-    debugger;
+    
     EventTracker.track("note_post_button_clicked_" + source);
     let sendNoteId = noteId;
     try {

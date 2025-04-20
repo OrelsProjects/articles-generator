@@ -114,9 +114,11 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   // Handle final drag end with rescheduling logic
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-
+    debugger;
     // Run the base drag end handler from our hook
     onDragEnd(event);
+
+    if (active.id === over?.id) return;
 
     if (!over) return; // Dropped outside a valid target
 
@@ -224,7 +226,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
           const dateKey = format(day, "yyyy-MM-dd");
           const notesForDay = groupedNotes[dateKey] || [];
           const schedulesForDay = groupedSchedules[dateKey] || [];
-          
+
           return (
             <DaySchedule
               key={dateKey}

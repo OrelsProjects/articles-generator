@@ -24,10 +24,10 @@ export async function createScheduleForNote(
   if (!note) {
     throw new Error("Note not found");
   }
-  const now = new Date();
-  if (now > date) {
-    throw new Error("Date is in the past");
-  }
+  // const now = new Date();
+  // if (now > date) {
+  //   throw new Error("Date is in the past");
+  // }
   const dateNoSeconds = new Date(date);
   dateNoSeconds.setSeconds(0);
   dateNoSeconds.setMilliseconds(0);

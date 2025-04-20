@@ -161,8 +161,7 @@ export const DaySchedule = ({
 
     // Check if there's already a note scheduled at this time
     const existingNoteIndex = allScheduledItems.findIndex(
-      item =>
-        item.type === "note" && Math.abs(item.timestamp - timestamp) < 5, // Within 5 minutes
+      item => item.type === "note" && Math.abs(item.timestamp - timestamp) < 5, // Within 5 minutes
     );
 
     if (existingNoteIndex === -1) {
@@ -190,7 +189,7 @@ export const DaySchedule = ({
   // Handle drag end event
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-
+    debugger;
     if (!over || active.id === over.id) {
       // If dropped in empty space or same location, do nothing
       setDragOrigin(null);
@@ -261,7 +260,8 @@ export const DaySchedule = ({
           <div
             ref={item.note.id === lastNoteId ? lastNoteRef : undefined}
             className={
-              activeDropTarget === item.id || activeDropTarget === `droppable-${item.id}`
+              activeDropTarget === item.id ||
+              activeDropTarget === `droppable-${item.id}`
                 ? "ring-2 ring-primary rounded-md"
                 : ""
             }

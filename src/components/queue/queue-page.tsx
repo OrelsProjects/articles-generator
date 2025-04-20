@@ -199,7 +199,7 @@ export function QueuePage() {
   // Group schedules by date for empty slots
   const groupedSchedules = () => {
     const grouped: Record<string, UserSchedule[]> = {};
-    debugger;
+    
     userSchedules.forEach(schedule => {
       // Check each active day and add applicable schedules
       activeDays.forEach(day => {
@@ -279,8 +279,7 @@ export function QueuePage() {
             <div className="flex items-center">
               <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
               <span>
-                Scheduling notes is not working at the moment. post notes
-                manually.
+                Scheduling notes is not working at the moment.
                 <Button
                   variant="link"
                   onClick={() => setShowWarningDialog(true)}
@@ -304,11 +303,9 @@ export function QueuePage() {
               </DialogHeader>
               <DialogDescription className="text-sm">
                 <p>
-                  I am working on a solution and will update you
-                  as soon as I have more information.
-                
-                  You can keep using the scheduling, but make sure to be
-                  available to post notes manually.
+                  I am working on a solution and will update you as soon as I
+                  have more information. You can keep using the scheduling, but
+                  make sure to be available to post notes manually.
                 </p>
                 <p>
                   <br />

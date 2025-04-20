@@ -290,7 +290,7 @@ export function useExtension(): UseExtension {
     if (!cookiesValid.valid) {
       const userHasExtension = await hasExtension();
       if (!userHasExtension) {
-        debugger;
+        
         dispatch(setShowExtensionDialog(true));
         throw new NoExtensionError(
           "Authentication required. Please log in to Substack.",
