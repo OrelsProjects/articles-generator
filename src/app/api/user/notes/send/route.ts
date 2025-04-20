@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { SubstackPostNoteResponse } from "@/types/note";
 import { HttpsProxyAgent } from "https-proxy-agent";
+import axios from "axios";
 
 const schema = z.object({
   userId: z.string().optional(),
@@ -150,50 +151,58 @@ export async function POST(request: NextRequest) {
     let response: any;
     while (retries > 0 && !didSucceed) {
       console.log("About to make fetch");
+      try {
             const proxy =
               "http://user-orelz7_r5sBA-country-US:8evBfV+LF_x4u=pa@dc.oxylabs.io:8000";
             const agent = new HttpsProxyAgent(proxy);
-      response = await fetch("https://substack.com/api/v1/comment/feed", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Referer: "https://substack.com/home",
-          "Referrer-Policy": "strict-origin-when-cross-origin",
-          Cookie: `substack.sid=${cookie.value}`,
-        },
-        body: JSON.stringify(messageData),
-        // @ts-ignore - agent is valid in Node.js environments but not recognized by the TypeScript types
-        agent,
-      });
-      console.log("Ran fetch to send note: " + retries + " retries left");
-      didSucceed = response.ok;
+            
+            response = await axios.post(
+              "https://substack.com/api/v1/comment/feed",
+              messageData,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Referer: "https://substack.com/home",
+                  "Referrer-Policy": "strict-origin-when-cross-origin",
+                  Cookie: `substack.sid=${cookie.value}`,
+                },
+                httpsAgent: agent,
+              }
+            );
+            
+            console.log("Ran axios to send note: " + retries + " retries left");
+            didSucceed = response.status >= 200 && response.status < 300;
+      } catch (error) {
+            console.log("Error sending note:", error);
+            retries--;
+            continue;
+      }
+      
       if (!didSucceed) {
-        const errorMessage = await response.json();
-        console.log("Error to send note: " + JSON.stringify(errorMessage));
+        console.log("Request failed with status:", response?.status);
       }
       retries--;
     }
 
     if (!didSucceed) {
-      const errorMessage = await response.json();
       await sendFailure(note.body, note.id, user.email);
       loggerServer.error(
         "Error to send note: " +
-          response.statusText +
+          (response?.statusText || "Unknown error") +
           "response: " +
-          JSON.stringify(errorMessage) +
+          JSON.stringify(response?.data || {}) +
           " for note: " +
           noteId +
           " for user: " +
           userId,
       );
       return NextResponse.json(
-        { error: "Failed to send note: " + errorMessage },
+        { error: "Failed to send note: " + JSON.stringify(response?.data || {}) },
         { status: 500 },
       );
     }
 
-    const data = (await response.json()) as SubstackPostNoteResponse;
+    const data = response.data as SubstackPostNoteResponse;
     // if contains link, update the note so it removes the OG
     if (
       data.attachments.length > 0 &&
@@ -201,24 +210,39 @@ export async function POST(request: NextRequest) {
       doesBodyContainLink(note.body)
     ) {
       // path https://substack.com/api/v1/feed/comment/commentId
-      const response = await fetch(
-        `https://substack.com/api/v1/feed/comment/${data.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Referer: "https://substack.com/home",
-            "Referrer-Policy": "strict-origin-when-cross-origin",
-            Cookie: `substack.sid=${cookie.value}`,
-          },
-          body: JSON.stringify(messageData),
-        },
-      );
+      try {
+        const proxy =
+          "http://user-orelz7_r5sBA-country-US:8evBfV+LF_x4u=pa@dc.oxylabs.io:8000";
+        const agent = new HttpsProxyAgent(proxy);
+        
+        const response = await axios.patch(
+          `https://substack.com/api/v1/feed/comment/${data.id}`,
+          messageData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Referer: "https://substack.com/home",
+              "Referrer-Policy": "strict-origin-when-cross-origin",
+              Cookie: `substack.sid=${cookie.value}`,
+            },
+            httpsAgent: agent,
+          }
+        );
 
-      if (!response.ok) {
+        if (response.status >= 400) {
+          loggerServer.error(
+            "Error to remove OG: " +
+              response.statusText +
+              " for note: " +
+              noteId +
+              " for user: " +
+              userId,
+          );
+        }
+      } catch (error) {
         loggerServer.error(
           "Error to remove OG: " +
-            response.statusText +
+            error +
             " for note: " +
             noteId +
             " for user: " +
