@@ -295,7 +295,9 @@ export function NotesEditorDialog() {
             );
             return null;
           } else {
-            toast.error("Failed to schedule note. Try again please.");
+            toast.error("Failed to schedule note. Try again please.", {
+              autoClose: 2000,
+            });
           }
           return null;
         }

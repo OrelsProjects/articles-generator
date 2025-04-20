@@ -5,7 +5,7 @@ export type UserSchedule = Omit<
   "userId" | "createdAt" | "updatedAt"
 >;
 
-export type CreateUserSchedule =  Omit<UserSchedule, "id">
+export type CreateUserSchedule = Omit<UserSchedule, "id">;
 
 export type Days = {
   sunday: boolean;

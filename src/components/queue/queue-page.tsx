@@ -46,20 +46,26 @@ export function QueuePage() {
     const today = startOfToday();
     const days = [];
 
-    // Find the latest scheduled note date
+    // Find the earliest and latest scheduled note dates
+    let earliestScheduledDate = today;
     let latestScheduledDate = addDays(today, 28); // Default to 28 days ahead
 
     scheduledNotes.forEach(note => {
       if (note.scheduledTo) {
         const noteDate = new Date(note.scheduledTo);
+        // Check for notes in the past
+        if (noteDate < earliestScheduledDate) {
+          earliestScheduledDate = noteDate;
+        }
+        // Check for notes far in the future
         if (noteDate > latestScheduledDate) {
           latestScheduledDate = noteDate;
         }
       }
     });
 
-    // Ensure we show at least up to the furthest scheduled note
-    let currentDay = today;
+    // Ensure we show dates from the earliest scheduled note up to the furthest scheduled note
+    let currentDay = earliestScheduledDate;
     while (currentDay <= latestScheduledDate) {
       days.push(currentDay);
       currentDay = addDays(currentDay, 1);

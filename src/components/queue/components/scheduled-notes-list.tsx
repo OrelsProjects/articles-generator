@@ -17,10 +17,6 @@ import { ScheduleNoteRow } from "./schedule-note-row";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { toast } from "react-toastify";
 import { useNotes } from "@/lib/hooks/useNotes";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 import { CustomDragOverlay } from "./custom-drag-overlay";
 import { useDragOverlay } from "../hooks/useDragOverlay";
@@ -228,7 +224,8 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
           const dateKey = format(day, "yyyy-MM-dd");
           const notesForDay = groupedNotes[dateKey] || [];
           const schedulesForDay = groupedSchedules[dateKey] || [];
-
+          console.log("date key: ", dateKey);
+          console.log("notesForDay: ", notesForDay);
           return (
             <DaySchedule
               key={dateKey}

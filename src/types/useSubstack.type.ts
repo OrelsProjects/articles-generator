@@ -100,4 +100,5 @@ export interface UseSubstackPost {
     body: RouteBody<T>,
     config?: AxiosRequestConfig,
   ) => Promise<AxiosResponse<R>>;
+  sendNote: (params: CreatePostParams) => Promise<CreatePostResponse | null>;
 }

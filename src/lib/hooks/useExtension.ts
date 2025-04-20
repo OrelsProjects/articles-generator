@@ -271,6 +271,7 @@ export function useExtension(): UseExtension {
       setError(null);
 
       try {
+        debugger;
         // Validate parameters
         if (!params.message || params.message.trim().length === 0) {
           throw new Error(SubstackError.INVALID_PARAMETERS);
@@ -279,7 +280,7 @@ export function useExtension(): UseExtension {
         const adf = await axios.post("/api/markdown-to-adf", {
           markdown: params.message,
         });
-
+        debugger;
         const messageData = { bodyJson: adf.data };
         // Prepare message for extension
         const message: ExtensionMessage = {
@@ -338,6 +339,7 @@ export function useExtension(): UseExtension {
     if (!cookiesValid.valid) {
       const userHasExtension = await hasExtension();
       if (!userHasExtension) {
+        debugger;
         dispatch(setShowExtensionDialog(true));
         throw new NoExtensionError(
           "Authentication required. Please log in to Substack.",
@@ -362,5 +364,6 @@ export function useExtension(): UseExtension {
     hasExtension,
     setUserSubstackCookies,
     sendExtensionApiRequest,
+    sendNote,
   };
 }

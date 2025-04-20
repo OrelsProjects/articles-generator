@@ -52,6 +52,7 @@ import {
   updateNoteDraft,
 } from "@/lib/api/api";
 import { useExtension } from "@/lib/hooks/useExtension";
+import { toast } from "react-toastify";
 
 export const useNotes = () => {
   const { user } = useAppSelector(selectAuth);
@@ -78,7 +79,8 @@ export const useNotes = () => {
   const [, setShouldCancelUpdate] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [loadingSendNote, setLoadingSendNote] = useState(false);
-  const { sendExtensionApiRequest } = useExtension();
+  const { sendExtensionApiRequest, sendNote: sendNoteExtension } =
+    useExtension();
 
   const loadingCreateNote = useRef(false);
   const loadingNotesRef = useRef(false);
@@ -594,19 +596,35 @@ export const useNotes = () => {
   const sendNote = useCallback(
     async (noteId: string) => {
       if (!user) return;
+      let sendResponse: any;
       try {
+        debugger;
         setLoadingSendNote(true);
-        const response = await sendExtensionApiRequest("send", {
-          noteId,
-          userId: user.userId,
+        const note = userNotes.find(note => note.id === noteId);
+        if (!note) return;
+        // await axios.get(`/api/user/notes/${noteId}/should-send`);
+        const response = await sendNoteExtension({
+          message: note.body,
+          moveNoteToPublished: {
+            noteId,
+          },
         });
-        return response.data.result;
+        sendResponse = response;
       } catch (error: any) {
         Logger.error("Error sending note:", error);
         throw error;
       } finally {
         setLoadingSendNote(false);
       }
+      try {
+        await updateNoteStatus(noteId, "published");
+      } catch (error: any) {
+        Logger.error("Error updating note status:", error);
+        toast.error(
+          "Your note was sent but schedule didn't cancel. Please, cancel it manually.",
+        );
+      }
+      return sendResponse;
     },
     [user],
   );

@@ -43,17 +43,19 @@ export function InstantPostButton({
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const handleSendNote = async () => {
+    debugger;
     EventTracker.track("note_post_button_clicked_" + source);
     let sendNoteId = noteId;
     try {
       onLoadingChange?.(true);
       const customNoteId = await onSave?.();
-      if (!customNoteId) return;
       if (customNoteId) {
         sendNoteId = customNoteId;
       }
       const response = await sendNote(sendNoteId!);
+
       if (response) {
+        toast.success("Note posted successfully");
         setPostResponse(response);
         setShowSuccessDialog(true);
       }

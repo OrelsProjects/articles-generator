@@ -12,6 +12,7 @@ import axios from "axios";
 import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
 import { HourlyStats } from "@/types/notes-status";
 import { setBestTimeToPublish } from "@/lib/features/statistics/statisticsSlice";
+import { isAfter, startOfDay, subDays } from "date-fns";
 
 export function useQueue() {
   const dispatch = useAppDispatch();
@@ -29,12 +30,13 @@ export function useQueue() {
   const loadingBestNotesRef = useRef(false);
 
   const scheduledNotes = useMemo(() => {
-    const now = new Date();
+    const yesterdayDayStart = subDays(startOfDay(new Date()), 10);
+
     return userNotes.filter(
       note =>
         note.status === "scheduled" &&
         note.scheduledTo &&
-        new Date(note.scheduledTo) > now,
+        isAfter(note.scheduledTo, yesterdayDayStart),
     );
   }, [userNotes]);
 

@@ -14,6 +14,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
+import { InstantPostButton } from "@/components/notes/instant-post-button";
 
 interface ScheduleNoteRowProps {
   note: NoteDraft;
@@ -175,6 +176,11 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
 
       {/* Action buttons on the right */}
       <div className="flex items-center gap-2 mr-2" onClick={handleActionClick}>
+        <InstantPostButton
+          noteId={note.id}
+          source="schedule"
+          className="text-muted-foreground hover:text-primary transition-colors p-2 z-10"
+        />
         {/* Edit button */}
         <TooltipButton
           variant="ghost"

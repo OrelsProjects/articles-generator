@@ -62,7 +62,7 @@ const Auth = () => {
             {[
               "Use WriteStack's AI to outline your notes (with your voice)",
               "Break through writer's block",
-              "Grow 2.7x faster",
+            "Grow 2.7x faster",
             ].map((perk, index) => (
               <div key={index} className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />

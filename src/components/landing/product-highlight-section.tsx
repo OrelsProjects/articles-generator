@@ -1,9 +1,16 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { MotionImage } from "@/components/ui/motion-components";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { StaticImport } from "next/dist/shared/lib/get-img-props";
+
+type ImageSource = string | StaticImport;
 
 interface FeatureSectionProps {
-  src: string;
+  src: ImageSource | ImageSource[];
   title: string;
   description: string;
   direction?: "ltr" | "rtl";
@@ -39,6 +46,102 @@ const itemVariantsSideViewImage = {
 const itemVariantsSideViewImageMobile = {
   hidden: { opacity: 0, x: 150, scale: 1.6, rotate: -12 },
   visible: { opacity: 1, x: 20, scale: 1.6 },
+};
+
+const ImagesContainer = ({
+  src,
+  alt,
+  width = 500,
+  height = 370,
+  className,
+  variants,
+  imageVariants,
+}: {
+  src: ImageSource | ImageSource[];
+  alt: string;
+  width?: number;
+  height?: number;
+  className?: string;
+  variants?: any;
+  imageVariants?: any;
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const isGallery = Array.isArray(src) && src.length > 1;
+
+  // Auto-rotate images every 3 seconds for galleries
+  useEffect(() => {
+    if (!isGallery) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex(prevIndex => (prevIndex + 1) % src.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isGallery, src]);
+
+  const nextImage = () => {
+    if (!isGallery) return;
+    setCurrentIndex(prevIndex => (prevIndex + 1) % src.length);
+  };
+
+  const prevImage = () => {
+    if (!isGallery) return;
+    setCurrentIndex(prevIndex => (prevIndex - 1 + src.length) % src.length);
+  };
+
+  // Ensure we have a single ImageSource for the MotionImage component
+  const currentSrc: ImageSource = isGallery
+    ? (src as ImageSource[])[currentIndex]
+    : (src as ImageSource);
+
+  return (
+    <motion.div className={cn("relative", className)} variants={variants}>
+      <MotionImage
+        src={currentSrc || "/placeholder.svg"}
+        alt={alt}
+        width={width}
+        height={height}
+        variants={imageVariants}
+        transition={{ duration: 0.5 }}
+        initial="hidden"
+        whileInView="visible"
+        className={cn("rounded-2xl")}
+      />
+
+      {isGallery && (
+        <>
+          {/* <Button
+            variant="outline"
+            size="icon"
+            className="absolute left-2 top-1/2 -translate-y-1/2 opacity-80 hover:opacity-100 bg-background"
+            onClick={prevImage}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute right-2 top-1/2 -translate-y-1/2 opacity-80 hover:opacity-100 bg-background"
+            onClick={nextImage}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button> */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 opacity-60">
+            {Array.isArray(src) &&
+              src.map((_, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    "w-2 h-2 rounded-full bg-primary/50",
+                    index === currentIndex && "bg-primary",
+                  )}
+                />
+              ))}
+          </div>
+        </>
+      )}
+    </motion.div>
+  );
 };
 
 function FeatureSectionCard({
@@ -88,18 +191,8 @@ function FeatureSectionCard({
             sideViewImage && "overflow-hidden",
           )}
         >
-          <MotionImage
-            variants={
-              sideViewImage
-                ? itemVariantsSideViewImage
-                : longImage
-                  ? itemVariantsLongImage(rotateImage)
-                  : itemVariants
-            }
-            transition={{ duration: 0.5 }}
-            initial="hidden"
-            whileInView="visible"
-            src={src || "/placeholder.svg"}
+          <ImagesContainer
+            src={src}
             alt={title}
             width={500}
             height={370}
@@ -108,10 +201,23 @@ function FeatureSectionCard({
               rotateImage && "rotate-12",
               sideViewImage && "object-cover",
             )}
+            variants={
+              sideViewImage
+                ? itemVariantsSideViewImage
+                : longImage
+                  ? itemVariantsLongImage(rotateImage)
+                  : itemVariants
+            }
+            imageVariants={itemVariants}
           />
         </motion.div>
         <motion.div className="block sm:hidden rounded-2xl">
-          <MotionImage
+          <ImagesContainer
+            src={src}
+            alt={title}
+            width={500}
+            height={370}
+            className={cn("rounded-2xl", rotateImage && "rotate-12")}
             variants={
               sideViewImage
                 ? itemVariantsSideViewImageMobile
@@ -119,14 +225,7 @@ function FeatureSectionCard({
                   ? itemVariantsMobileLongImage(rotateImage)
                   : itemVariantsMobile
             }
-            transition={{ duration: 0.5 }}
-            initial="hidden"
-            whileInView="visible"
-            src={src || "/placeholder.svg"}
-            alt={title}
-            width={500}
-            height={370}
-            className={cn("rounded-2xl", rotateImage && "rotate-12")}
+            imageVariants={itemVariantsMobile}
           />
         </motion.div>
       </div>
@@ -163,7 +262,11 @@ export default function FeatureSection() {
         </p>
         <div className="flex flex-col gap-12">
           <FeatureSectionCard
-            src="/landing/features/schedule-notes.png"
+            src={[
+              "/landing/features/schedule-notes.png",
+              "/landing/features/queue.png",
+              "/landing/features/queue-edit.png",
+            ]}
             title="<span class='highlight-feature-text'>Schedule your notes</span>"
             description="Schedule your notes to publish at the best time for your audience.<br/><span class='text-foreground font-medium'> No need to keep your browser open (or you computer on).</span>"
             direction="ltr"
