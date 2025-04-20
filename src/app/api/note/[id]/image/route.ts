@@ -1,11 +1,11 @@
 import prisma from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { uploadImage } from "@/lib/files-note";
+import { uploadImageSubstack } from "@/lib/substack";
 import loggerServer from "@/loggerServer";
 import { NoteDraftImage } from "@/types/note";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-
 
 export async function POST(
   req: NextRequest,
@@ -60,6 +60,12 @@ export async function POST(
       id: s3Attachment.id,
       url: s3Attachment.s3Url,
     };
+
+    const substackId = await uploadImageSubstack(buffer, {
+      userId: note.userId,
+      noteId: id,
+      s3AttachmentId: s3Attachment.id,
+    });
 
     return NextResponse.json(response, {
       status: 200,

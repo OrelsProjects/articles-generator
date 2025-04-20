@@ -29,6 +29,7 @@ export interface CreatePostParams {
   scheduleSeconds?: number;
   /** Optional: Automatically close the tab after posting */
   autoCloseTab?: boolean;
+  attachmentIds: string[];
 }
 
 /**

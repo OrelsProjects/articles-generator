@@ -603,11 +603,19 @@ export const useNotes = () => {
         if (!note) return;
         // await axios.get(`/api/user/notes/${noteId}/should-send`);
         console.log("Sending note", note);
+        const attachmentIds: string[] = [];
+        debugger;
+        const responseAttachment = await axios.get<{
+          attachmentIds: string[];
+        }>(`/api/note/${noteId}/image/${note.attachments?.[0]?.id}`);
+        attachmentIds.push(...responseAttachment.data.attachmentIds);
+
         const response = await sendNoteExtension({
           message: note.body,
           moveNoteToPublished: {
             noteId,
           },
+          attachmentIds,
         });
         sendResponse = response;
       } catch (error: any) {

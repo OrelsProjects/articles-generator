@@ -231,7 +231,10 @@ export function useExtension(): UseExtension {
         const adf = await axios.post("/api/markdown-to-adf", {
           markdown: params.message,
         });
-        const messageData = { bodyJson: adf.data };
+        const messageData = {
+          bodyJson: adf.data,
+          attachmentIds: params.attachmentIds,
+        };
         // Prepare message for extension
         const message: ExtensionMessage = {
           type: "API_REQUEST",
@@ -290,7 +293,6 @@ export function useExtension(): UseExtension {
     if (!cookiesValid.valid) {
       const userHasExtension = await hasExtension();
       if (!userHasExtension) {
-        
         dispatch(setShowExtensionDialog(true));
         throw new NoExtensionError(
           "Authentication required. Please log in to Substack.",
