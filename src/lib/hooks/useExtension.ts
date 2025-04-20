@@ -181,16 +181,16 @@ export function useExtension(): UseExtension {
   const sendExtensionMessage = useCallback(
     async <T>(message: ExtensionMessage): Promise<ExtensionResponse<T>> => {
       return new Promise(async (resolve, reject) => {
-        const verificationStatus = await verifyExtension();
+        // const verificationStatus = await verifyExtension();
 
-        if (verificationStatus === "error") {
-          reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
-          return;
-        }
-        if (verificationStatus === "pending") {
-          reject(new Error(SubstackError.PENDING));
-          return;
-        }
+        // if (verificationStatus === "error") {
+        //   reject(new Error(SubstackError.EXTENSION_NOT_FOUND));
+        //   return;
+        // }
+        // if (verificationStatus === "pending") {
+        //   reject(new Error(SubstackError.PENDING));
+        //   return;
+        // }
 
         // Set timeout for response
         const timeoutId = setTimeout(() => {
