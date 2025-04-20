@@ -10,6 +10,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { SubstackPostNoteResponse } from "@/types/note";
+import { HttpsProxyAgent } from "https-proxy-agent";
 
 const schema = z.object({
   userId: z.string().optional(),
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
       // if (secret !== process.env.SUBSTACK_SCHEDULE_SECRET) {
       //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       // }
-    } else {
+  } else {
       userId = session.user.id;
     }
 
@@ -149,7 +150,11 @@ export async function POST(request: NextRequest) {
     let response: any;
     while (retries > 0 && !didSucceed) {
       console.log("About to make fetch");
+            const proxy =
+              "http://user-orelz7_r5sBA-country-US:8evBfV+LF_x4u=pa@dc.oxylabs.io:8000";
+            const agent = new HttpsProxyAgent(proxy);
       response = await fetch("https://substack.com/api/v1/comment/feed", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Referer: "https://substack.com/home",
@@ -157,7 +162,8 @@ export async function POST(request: NextRequest) {
           Cookie: `substack.sid=${cookie.value}`,
         },
         body: JSON.stringify(messageData),
-        method: "POST",
+        // @ts-ignore - agent is valid in Node.js environments but not recognized by the TypeScript types
+        agent,
       });
       console.log("Ran fetch to send note: " + retries + " retries left");
       didSucceed = response.ok;
