@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       // if (secret !== process.env.SUBSTACK_SCHEDULE_SECRET) {
       //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       // }
-  } else {
+    } else {
       userId = session.user.id;
     }
 
@@ -152,32 +152,40 @@ export async function POST(request: NextRequest) {
     while (retries > 0 && !didSucceed) {
       console.log("About to make fetch");
       try {
-            const proxy =
-              "http://user-orelz7_r5sBA-country-US:8evBfV+LF_x4u=pa@dc.oxylabs.io:8000";
-            const agent = new HttpsProxyAgent(proxy);
-            
-            response = await axios.post(
-              "https://substack.com/api/v1/comment/feed",
-              messageData,
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                  Referer: "https://substack.com/home",
-                  "Referrer-Policy": "strict-origin-when-cross-origin",
-                  Cookie: `substack.sid=${cookie.value}`,
-                },
-                httpsAgent: agent,
-              }
-            );
-            
-            console.log("Ran axios to send note: " + retries + " retries left");
-            didSucceed = response.status >= 200 && response.status < 300;
+        const proxy =
+          "http://user-orelz7_r5sBA-country-US:8evBfV+LF_x4u=pa@dc.oxylabs.io:8000";
+        const agent = new HttpsProxyAgent(proxy);
+
+        response = await axios.post(
+          "https://substack.com/api/v1/comment/feed",
+          messageData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Referer: "https://substack.com/home",
+              "Referrer-Policy": "strict-origin-when-cross-origin",
+              Cookie: `substack.sid=${cookie.value}`,
+              "User-Agent":
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+              "Sec-Fetch-Dest": "empty",
+              "Sec-Fetch-Mode": "cors",
+              "Sec-Fetch-Site": "same-origin",
+              "Sec-Ch-Ua": '"Chromium";v="120", "Not:A-Brand";v="99"',
+              "Sec-Ch-Ua-Mobile": "?0",
+              "Sec-Ch-Ua-Platform": "macOS",
+            },
+            httpsAgent: agent,
+          },
+        );
+
+        console.log("Ran axios to send note: " + retries + " retries left");
+        didSucceed = response.status >= 200 && response.status < 300;
       } catch (error) {
-            console.log("Error sending note:", error);
-            retries--;
-            continue;
+        console.log("Error sending note:", error);
+        retries--;
+        continue;
       }
-      
+
       if (!didSucceed) {
         console.log("Request failed with status:", response?.status);
       }
@@ -197,7 +205,9 @@ export async function POST(request: NextRequest) {
           userId,
       );
       return NextResponse.json(
-        { error: "Failed to send note: " + JSON.stringify(response?.data || {}) },
+        {
+          error: "Failed to send note: " + JSON.stringify(response?.data || {}),
+        },
         { status: 500 },
       );
     }
@@ -214,7 +224,7 @@ export async function POST(request: NextRequest) {
         const proxy =
           "http://user-orelz7_r5sBA-country-US:8evBfV+LF_x4u=pa@dc.oxylabs.io:8000";
         const agent = new HttpsProxyAgent(proxy);
-        
+
         const response = await axios.patch(
           `https://substack.com/api/v1/feed/comment/${data.id}`,
           messageData,
@@ -226,7 +236,7 @@ export async function POST(request: NextRequest) {
               Cookie: `substack.sid=${cookie.value}`,
             },
             httpsAgent: agent,
-          }
+          },
         );
 
         if (response.status >= 400) {
