@@ -261,7 +261,7 @@ export default function FeatureSection() {
           and get more subscribers.
         </p>
         <div className="flex flex-col gap-12">
-          <FeatureSectionCard
+          {/* <FeatureSectionCard
             src={[
               "/landing/features/schedule-notes.png",
               "/landing/features/queue.png",
@@ -270,7 +270,7 @@ export default function FeatureSection() {
             title="<span class='highlight-feature-text'>Schedule your notes</span>"
             description="Schedule your notes to publish at the best time for your audience.<br/><span class='text-foreground font-medium'> No need to keep your browser open (or you computer on).</span>"
             direction="ltr"
-          />
+          /> */}
           <FeatureSectionCard
             src="/landing/features/notes-editor-doggo.png"
             title="Use WriteStack's AI to outline and write <span class='highlight-feature-text'>100% of your note</span>"

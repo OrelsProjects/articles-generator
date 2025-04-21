@@ -28,7 +28,7 @@ const basicFeatures = (credits: number) => [
 ];
 
 const hobbyistFeatures = [
-  `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time (Requires Chrome)`,
+  // `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time (Requires Chrome)`,
 ];
 
 const advancedFeatures = [
@@ -50,7 +50,7 @@ const pricingPlans = [
       "The essentials to start building your Substack business today.",
     monthlyPrice: 12.99,
     yearlyPlanPrice: 9.99,
-    features: [...basicFeatures(50), ...hobbyistFeatures],
+    features: [...basicFeatures(50)],
     annualSavings: 35.98,
     popular: false,
   },
