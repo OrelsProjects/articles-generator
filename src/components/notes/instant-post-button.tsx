@@ -36,18 +36,26 @@ export function InstantPostButton({
   children,
 }: SubstackPostButtonProps) {
   const { updateNoteStatus, sendNote, loadingSendNote } = useNotes();
-
+  const [loading, setLoading] = useState(false);
   const [postResponse, setPostResponse] = useState<CreatePostResponse | null>(
     null,
   );
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
+  useEffect(() => {
+    if (loadingSendNote) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }, [loadingSendNote]);
+
   const handleSendNote = async () => {
-    
     EventTracker.track("note_post_button_clicked_" + source);
     let sendNoteId = noteId;
     try {
       onLoadingChange?.(true);
+      setLoading(true);
       const customNoteId = await onSave?.();
       if (customNoteId) {
         sendNoteId = customNoteId;
@@ -64,6 +72,7 @@ export function InstantPostButton({
       toast.error("Error sending post");
     } finally {
       onLoadingChange?.(false);
+      setLoading(false);
     }
   };
 
@@ -86,7 +95,7 @@ export function InstantPostButton({
               tooltipContent="Post note now"
               variant={variant}
               size={size}
-              disabled={loadingSendNote || disabled}
+              disabled={loading || disabled}
               onClick={handleSendNote}
               className={cn("flex items-center gap-2", className)}
             >
@@ -95,7 +104,7 @@ export function InstantPostButton({
                   Post now
                 </motion.span>
               </AnimatePresence>
-              {loadingSendNote ? (
+              {loading ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
               ) : (
                 <Send className="h-4 w-4" />

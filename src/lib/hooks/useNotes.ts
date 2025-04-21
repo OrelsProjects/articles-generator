@@ -605,18 +605,27 @@ export const useNotes = () => {
         console.log("Sending note", note);
         const attachmentIds: string[] = [];
         debugger;
-        const responseAttachment = await axios.get<{
-          attachmentIds: string[];
-        }>(`/api/note/${noteId}/image/${note.attachments?.[0]?.id}`);
-        attachmentIds.push(...responseAttachment.data.attachmentIds);
-
-        const response = await sendNoteExtension({
-          message: note.body,
-          moveNoteToPublished: {
-            noteId,
-          },
-          attachmentIds,
-        });
+        if (note.attachments?.length) {
+          const responseAttachment = await axios.get<{
+            attachmentIds: string[];
+          }>(`/api/note/${noteId}/image/${note.attachments?.[0]?.id}`);
+          attachmentIds.push(...responseAttachment.data.attachmentIds);
+        }
+        const body = attachmentIds
+          ? {
+              message: note.body,
+              moveNoteToPublished: {
+                noteId,
+              },
+              attachmentIds,
+            }
+          : {
+              message: note.body,
+              moveNoteToPublished: {
+                noteId,
+              },
+            };
+        const response = await sendNoteExtension(body);
         sendResponse = response;
       } catch (error: any) {
         Logger.error("Error sending note:", error);
