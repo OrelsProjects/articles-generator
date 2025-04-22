@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Copy, Image as ImageIcon } from "lucide-react";
+import { Copy, Image as ImageIcon, Undo, Redo } from "lucide-react";
 import { selectNotes } from "@/lib/features/notes/notesSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { TooltipButton } from "@/components/ui/tooltip-button";
@@ -328,6 +328,7 @@ export function NotesEditorDialog() {
   };
 
   const handleImprovement = (improvedText: string) => {
+    debugger;
     const formattedText = formatText(improvedText);
     updateEditorBody(formattedText);
     editor?.commands.focus();
@@ -524,6 +525,26 @@ export function NotesEditorDialog() {
                   hidden: isInspiration,
                 })}
               >
+                <TooltipButton
+                  tooltipContent="Undo"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => editor?.chain().focus().undo().run()}
+                  disabled={!editor?.can().undo()}
+                >
+                  <Undo className="h-5 w-5 text-muted-foreground" />
+                </TooltipButton>
+                <TooltipButton
+                  tooltipContent="Redo"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => editor?.chain().focus().redo().run()}
+                  disabled={!editor?.can().redo()}
+                >
+                  <Redo className="h-5 w-5 text-muted-foreground" />
+                </TooltipButton>
                 <AIToolsDropdown
                   note={selectedNote}
                   onImprovement={handleImprovement}

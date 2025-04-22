@@ -32,9 +32,7 @@ export function useQueue() {
   const scheduledNotes = useMemo(() => {
     // We want to show all scheduled notes, regardless of date
     return userNotes.filter(
-      note =>
-        note.status === "scheduled" &&
-        note.scheduledTo
+      note => note.status === "scheduled" && note.scheduledTo,
     );
   }, [userNotes]);
 
@@ -186,6 +184,7 @@ export function useQueue() {
   // go over schedules and return the first one that has no note scheduled to it.
   // Doesn't have to be bigger than now
   const getNextAvailableSchedule = () => {
+    debugger;
     // Start from today
     const today = new Date();
     const currentHour = today.getHours();

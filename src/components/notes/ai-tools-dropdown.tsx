@@ -14,8 +14,7 @@ interface AIToolsDropdownProps {
 export function AIToolsDropdown({ note, onImprovement }: AIToolsDropdownProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { hasAdvancedGPT } = useUi();
-  const [selectedModel, setSelectedModel] =
-    useState<FrontendModel>("claude-3.7");
+  const [selectedModel, setSelectedModel] = useState<FrontendModel>("auto");
 
   return (
     <div
@@ -42,7 +41,7 @@ export function AIToolsDropdown({ note, onImprovement }: AIToolsDropdownProps) {
             classNameTrigger="!text-muted-foreground"
           />
         </motion.div>
-        {hasAdvancedGPT && (
+        {/* {hasAdvancedGPT && (
           <AnimatePresence>
             {isHovered && (
               <motion.div
@@ -60,7 +59,7 @@ export function AIToolsDropdown({ note, onImprovement }: AIToolsDropdownProps) {
               </motion.div>
             )}
           </AnimatePresence>
-        )}
+        )} */}
       </div>
     </div>
   );

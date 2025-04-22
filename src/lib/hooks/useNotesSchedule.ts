@@ -75,7 +75,7 @@ export const useNotesSchedule = () => {
       );
       const schedule = scheduleResponse.data;
       if (!schedule) {
-        throw new Error("Schedule not found");
+        return;
       }
       await deleteScheduleExtension(schedule.id);
       await axios.delete(`/api/v1/schedule/${schedule.id}`);
