@@ -31,9 +31,15 @@ export function useQueue() {
 
   const scheduledNotes = useMemo(() => {
     // We want to show all scheduled notes, regardless of date
-    return userNotes.filter(
+    const scheduledNotes = userNotes.filter(
       note => note.status === "scheduled" && note.scheduledTo,
     );
+    console.log("scheduledNotes", scheduledNotes);
+    return scheduledNotes.sort((a, b) => {
+      return (
+        new Date(a.scheduledTo!).getTime() - new Date(b.scheduledTo!).getTime()
+      );
+    });
   }, [userNotes]);
 
   const draftNotes = useMemo(() => {

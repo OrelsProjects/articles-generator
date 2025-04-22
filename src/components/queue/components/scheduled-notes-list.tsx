@@ -14,7 +14,6 @@ import {
   closestCenter,
 } from "@dnd-kit/core";
 import { ScheduleNoteRow } from "./schedule-note-row";
-import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { toast } from "react-toastify";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";

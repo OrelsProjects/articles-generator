@@ -1,13 +1,5 @@
-import React, { useState, useCallback, RefObject } from "react";
-import {
-  format,
-  addDays,
-  startOfToday,
-  isSameDay,
-  parse,
-  setHours,
-  setMinutes,
-} from "date-fns";
+import React, { useState, RefObject } from "react";
+import { format, addDays, startOfToday, isSameDay } from "date-fns";
 import { NoteDraft } from "@/types/note";
 import { UserSchedule } from "@/types/schedule";
 import { ScheduleNoteRow } from "./schedule-note-row";
@@ -21,10 +13,6 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 
 interface DayScheduleProps {
   day: Date;
@@ -189,7 +177,7 @@ export const DaySchedule = ({
   // Handle drag end event
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     if (!over || active.id === over.id) {
       // If dropped in empty space or same location, do nothing
       setDragOrigin(null);
