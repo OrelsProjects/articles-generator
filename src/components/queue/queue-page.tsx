@@ -42,7 +42,7 @@ export function QueuePage() {
     resetPage,
   } = useQueue();
   const [didSeeWarning, setDidSeeWarning] = useLocalStorage(
-    "queue_did_see_warning",
+    "queue_did_see_new_system",
     false,
   );
   const { selectNote, createDraftNote } = useNotes();

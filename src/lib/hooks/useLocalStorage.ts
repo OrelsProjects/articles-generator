@@ -8,7 +8,8 @@ export type LocalStorageKey =
   | "last_note"
   | "queue_active_tab"
   | "hide_schedule_alert"
-  | "queue_did_see_warning";
+  | "queue_did_see_warning"
+  | "queue_did_see_new_system";
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue
