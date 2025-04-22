@@ -20,17 +20,16 @@ import {
 import { Plan } from "@prisma/client";
 import PlanComparisonDialog from "./plan-comparison-dialog";
 
-const hobbyistFeatures = [
-  `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time (Requires Chrome Extension)`,
-  `One-click note posting (Requires Chrome Extension)`,
-];
-
 const basicFeatures = (credits: number) => [
   `${credits} WriteStack AI Credits/Month`,
   "Easy one-click posting",
   "Specialized AI-Powered Substack editor",
   "Growing Notes Inspirations (5m+)",
-  ...hobbyistFeatures,
+];
+
+const hobbyistFeatures = [
+  `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time (Requires Chrome Extension)`,
+  `One-click note posting (Requires Chrome Extension)`,
 ];
 
 const advancedFeatures = [
@@ -52,7 +51,7 @@ const pricingPlans = [
       "The essentials to start building your Substack business today.",
     monthlyPrice: 12.99,
     yearlyPlanPrice: 9.99,
-    features: [...basicFeatures(50)],
+    features: [...basicFeatures(50), ...hobbyistFeatures],
     annualSavings: 35.98,
     popular: false,
   },
