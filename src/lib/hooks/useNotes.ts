@@ -275,8 +275,8 @@ export const useNotes = () => {
               note: { status: validStatus, scheduledTo },
             }),
           );
-          await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
         }
+        await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
       } catch (error: any) {
         Logger.error("Error updating status:", error);
         if (status === "archived") {

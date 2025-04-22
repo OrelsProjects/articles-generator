@@ -7,7 +7,6 @@ import { useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import {
   GripVertical,
-  Calendar,
   X,
   CalendarClock,
   Loader2,
