@@ -61,13 +61,28 @@ export interface SubstackCookie {
 }
 
 export type GetSubstackCookiesResponse = SubstackCookie[];
+
+/**
+ * Schedule data interface
+ */
+export interface Schedule {
+  scheduleId: string;
+  userId: string;
+  timestamp: number;
+}
+
 /**
  * Message to send to the extension
  */
 export interface ExtensionMessage {
   type: "API_REQUEST" | "PING";
-  action?: "createSubstackPost" | "getSubstackCookies";
-  params?: [any];
+  action?:
+    | "createSubstackPost"
+    | "getSubstackCookies"
+    | "createSchedule"
+    | "deleteSchedule"
+    | "getSchedules";
+  params?: any[];
 }
 
 /**
@@ -87,7 +102,7 @@ export enum SubstackError {
 /**
  * Hook return type
  */
-export interface UseSubstackPost {
+export interface UseExtension {
   isLoading: boolean;
   error: string | null;
   postResponse: CreatePostResponse | null;
@@ -102,4 +117,11 @@ export interface UseSubstackPost {
     config?: AxiosRequestConfig,
   ) => Promise<AxiosResponse<R>>;
   sendNote: (params: CreatePostParams) => Promise<CreatePostResponse | null>;
+  createSchedule: (
+    scheduleId: string,
+    userId: string,
+    timestamp: number,
+  ) => Promise<Schedule | null>;
+  deleteSchedule: (scheduleId: string) => Promise<boolean>;
+  getSchedules: () => Promise<Schedule[]>;
 }

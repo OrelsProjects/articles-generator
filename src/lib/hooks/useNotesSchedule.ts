@@ -6,13 +6,18 @@ import axios from "axios";
 import { Logger } from "@/logger";
 import { useExtension } from "@/lib/hooks/useExtension";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
-import { extensionApiRequest } from "@/lib/api/api";
 import { ScheduleLimitExceededError } from "@/types/errors/ScheduleLimitExceededError";
+import { selectAuth } from "@/lib/features/auth/authSlice";
 
 export const useNotesSchedule = () => {
+  const { user } = useAppSelector(selectAuth);
   const dispatch = useAppDispatch();
   const { userNotes, loadingNotes, error } = useAppSelector(selectNotes);
-  const { setUserSubstackCookies, sendExtensionApiRequest } = useExtension();
+  const {
+    setUserSubstackCookies,
+    createSchedule,
+    deleteSchedule: deleteScheduleExtension,
+  } = useExtension();
 
   const [loadingScheduleNote, setLoadingScheduleNote] = useState(false);
   const [isIntervalRunning, setIsIntervalRunning] = useState(false);
@@ -63,99 +68,88 @@ export const useNotesSchedule = () => {
       }, 3000);
     });
   };
-
-  const scheduleNote = useCallback(
-    async (note: NoteDraft) => {
-      if (!note.body || note.body.length === 0) {
-        throw new ScheduleFailedEmptyNoteBodyError("Note body is empty");
+  const deleteSchedule = useCallback(async (noteId: string) => {
+    try {
+      const scheduleResponse = await axios.get(
+        `/api/user/notes/${noteId}/schedule`,
+      );
+      const schedule = scheduleResponse.data;
+      if (!schedule) {
+        throw new Error("Schedule not found");
       }
-      setLoadingScheduleNote(true);
+      await deleteScheduleExtension(schedule.id);
+      await axios.delete(`/api/v1/schedule/${schedule.id}`);
+    } catch (error: any) {
+      throw error;
+    }
+  }, []);
 
-      const previousNote = userNotes.find(n => n.id === note.id);
+  const scheduleNote = useCallback(async (note: NoteDraft) => {
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (!note.body || note.body.length === 0) {
+      throw new ScheduleFailedEmptyNoteBodyError("Note body is empty");
+    }
+    setLoadingScheduleNote(true);
 
-      try {
-        if (!note.scheduledTo) {
-          throw new ScheduleFailedEmptyNoteBodyError(
-            "Note scheduledTo is empty",
-          );
-        }
-        // Then update on server
-        await sendExtensionApiRequest("schedule", {
-          date: note.scheduledTo,
-          noteId: note.id,
-        });
-        dispatch(
-          updateNote({
-            id: note.id,
-            note: {
-              scheduledTo: note.scheduledTo,
-              status: "scheduled",
-            },
-          }),
-        );
-      } catch (error: any) {
-        Logger.error("Error updating note date:", error);
-        // if error is 429, show a toast
-        if (error.response.status === 429) {
-          throw new ScheduleLimitExceededError(
-            "You have reached the maximum number of scheduled notes",
-          );
-        }
-        dispatch(
-          updateNote({
-            id: note.id,
-            note: {
-              scheduledTo: previousNote?.scheduledTo,
-              status: previousNote?.status,
-            },
-          }),
-        );
-        throw error;
-      } finally {
-        setLoadingScheduleNote(false);
+    const previousNote = userNotes.find(n => n.id === note.id);
+
+    try {
+      if (!note.scheduledTo) {
+        throw new ScheduleFailedEmptyNoteBodyError("Note scheduledTo is empty");
       }
-    },
-    [dispatch],
-  );
-
-  const scheduleNoteById = useCallback(
-    async (noteId: string, scheduledTo: Date) => {
-      const note = userNotes.find(n => n.id === noteId);
-      if (!note) return;
+      const existingSchedule = await axios.get(
+        `/api/user/notes/${note.id}/schedule`,
+      );
+      if (existingSchedule.data) {
+        const deletedScheduleId = existingSchedule.data.id;
+        await axios.delete(`/api/user/notes/${note.id}/schedule`);
+        await deleteScheduleExtension(deletedScheduleId);
+      }
+      const newScheduleResponse = await axios.post("/api/v1/schedule", {
+        noteId: note.id,
+        scheduledTo: note.scheduledTo,
+      });
+      const newSchedule = newScheduleResponse.data.schedule;
+      // Then update on extension
+      await createSchedule(
+        newSchedule.id,
+        user.userId,
+        note.scheduledTo.getTime(),
+      );
+    } catch (error: any) {
+      Logger.error("Error updating note date:", error);
+      // if error is 429, show a toast
+      if (error.response.status === 429) {
+        throw new ScheduleLimitExceededError(
+          "You have reached the maximum number of scheduled notes",
+        );
+      }
       dispatch(
         updateNote({
-          id: noteId,
+          id: note.id,
           note: {
-            scheduledTo,
+            scheduledTo: previousNote?.scheduledTo,
+            status: previousNote?.status,
           },
         }),
       );
-      try {
-        await scheduleNote({
-          ...note,
-          scheduledTo,
-        });
-      } catch (error) {
-        dispatch(
-          updateNote({
-            id: noteId,
-            note: { scheduledTo: note.scheduledTo },
-          }),
-        );
-        throw error;
-      }
-    },
-    [scheduleNote],
-  );
+      throw error;
+    } finally {
+      setLoadingScheduleNote(false);
+    }
+  }, []);
+
   return {
     notes: userNotes,
     loading: loadingNotes,
     error,
-    scheduleNote,
     loadingScheduleNote,
     initCanUserScheduleInterval,
     isIntervalRunning,
     cancelCanUserScheduleInterval,
-    scheduleNoteById,
+    scheduleNote,
+    deleteSchedule,
   };
 };

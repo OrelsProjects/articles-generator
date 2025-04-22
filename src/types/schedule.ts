@@ -34,3 +34,18 @@ export const daysStringArrayToDaysObject = (days: string[]) => {
     },
   );
 };
+
+export type ScheduleErrorMessage =
+  | "FAILED_TO_CREATE_NOTE"
+  | "GENERAL_ERROR"
+  | "EMPTY_BODY"
+  | "FAILED_TO_PREPARE_ATTACHMENTS"
+  | "FAILED_TO_POST_TO_SUBSTACK";
+
+export const ERROR_MESSAGES: Record<ScheduleErrorMessage, string> = {
+  FAILED_TO_CREATE_NOTE: "Failed to create note",
+  GENERAL_ERROR: "An error occurred",
+  EMPTY_BODY: "Note body is empty",
+  FAILED_TO_PREPARE_ATTACHMENTS: "Failed to prepare attachments",
+  FAILED_TO_POST_TO_SUBSTACK: "Failed to post to Substack",
+};

@@ -44,15 +44,12 @@ import { ImprovementType } from "@/lib/prompts";
 import { debounce } from "lodash";
 import { Byline } from "@/types/article";
 import { selectAuth } from "@/lib/features/auth/authSlice";
-import { CreatePostResponse } from "@/types/createPostResponse";
 import { CancelError } from "@/types/errors/CancelError";
-import {
-  createNoteDraft,
-  extensionApiRequest,
-  updateNoteDraft,
-} from "@/lib/api/api";
+import { createNoteDraft, updateNoteDraft } from "@/lib/api/api";
 import { useExtension } from "@/lib/hooks/useExtension";
 import { toast } from "react-toastify";
+import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
+import { setNotePostedData } from "@/lib/features/ui/uiSlice";
 
 export const useNotes = () => {
   const { user } = useAppSelector(selectAuth);
@@ -79,8 +76,12 @@ export const useNotes = () => {
   const [, setShouldCancelUpdate] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [loadingSendNote, setLoadingSendNote] = useState(false);
-  const { sendExtensionApiRequest, sendNote: sendNoteExtension } =
-    useExtension();
+  const { sendNote: sendNoteExtension } = useExtension();
+  const {
+    deleteSchedule,
+    scheduleNote: createSchedule,
+    loadingScheduleNote,
+  } = useNotesSchedule();
 
   const loadingCreateNote = useRef(false);
   const loadingNotesRef = useRef(false);
@@ -234,7 +235,12 @@ export const useNotes = () => {
   );
 
   const updateNoteStatus = useCallback(
-    async (noteId: string, status: NoteStatus | "archived") => {
+    async (
+      noteId: string,
+      status: NoteStatus | "archived",
+      scheduledTo?: Date,
+    ) => {
+      debugger;
       EventTracker.track("notes_update_note_status_" + status);
       const previousNote = userNotes.find(note => note.id === noteId);
       const previousStatus = previousNote?.status;
@@ -249,18 +255,27 @@ export const useNotes = () => {
             selectNote(null);
           }
         }
-        const body = status === "archived" ? { isArchived: true } : { status };
+        const body: {
+          isArchived?: boolean;
+          status?: NoteStatus;
+          scheduledTo?: Date;
+        } = status === "archived" ? { isArchived: true } : { status };
 
-        if (previousStatus === "scheduled") {
-          await sendExtensionApiRequest("schedule-delete", {
-            noteId,
-            status,
-          });
+        if (previousStatus === "scheduled" && status !== "scheduled") {
           dispatch(updateNote({ id: noteId, note: { status: "draft" } }));
+          await deleteSchedule(noteId);
         } else {
           // Previous status is not scheduled, so it can be published/draft
           const validStatus = status === "archived" ? "draft" : status;
-          dispatch(updateNote({ id: noteId, note: { status: validStatus } }));
+          if (scheduledTo) {
+            body.scheduledTo = scheduledTo;
+          }
+          dispatch(
+            updateNote({
+              id: noteId,
+              note: { status: validStatus, scheduledTo },
+            }),
+          );
           await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
         }
       } catch (error: any) {
@@ -604,7 +619,7 @@ export const useNotes = () => {
         // await axios.get(`/api/user/notes/${noteId}/should-send`);
         console.log("Sending note", note);
         const attachmentIds: string[] = [];
-        debugger;
+
         if (note.attachments?.length) {
           const responseAttachment = await axios.get<{
             attachmentIds: string[];
@@ -641,9 +656,46 @@ export const useNotes = () => {
           "Your note was sent but schedule didn't cancel. Please, cancel it manually.",
         );
       }
+
+      dispatch(setNotePostedData(sendResponse));
+
       return sendResponse;
     },
     [user],
+  );
+
+  const scheduleNote = useCallback(
+    async (
+      note: NoteDraft,
+      scheduledTo: Date,
+      options?: {
+        considerSeconds?: boolean;
+      },
+    ) => {
+      try {
+        let validScheduledTo = scheduledTo;
+        if (!options?.considerSeconds) {
+          // reset seconds to 0
+          validScheduledTo = new Date(
+            validScheduledTo.getFullYear(),
+            validScheduledTo.getMonth(),
+            validScheduledTo.getDate(),
+            validScheduledTo.getHours(),
+            validScheduledTo.getMinutes(),
+            0,
+          );
+        }
+        await createSchedule({
+          ...note,
+          scheduledTo: validScheduledTo,
+        });
+        await updateNoteStatus(note.id, "scheduled", scheduledTo);
+      } catch (error: any) {
+        Logger.error("Error scheduling note:", error);
+        throw error;
+      }
+    },
+    [createSchedule, updateNoteStatus],
   );
 
   return {
@@ -675,5 +727,7 @@ export const useNotes = () => {
     deleteImage,
     sendNote,
     loadingSendNote,
+    scheduleNote,
+    loadingScheduleNote,
   };
 };

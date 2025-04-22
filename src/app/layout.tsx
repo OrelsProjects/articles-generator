@@ -101,7 +101,9 @@ export default function RootLayout({
               </Script>
               <AffiliateProvider>
                 <Analytics />
-                <AnimationProvider>{children}</AnimationProvider>
+                <AnimationProvider>
+                  {children}
+                </AnimationProvider>
                 <ClientTrackersProvider />
               </AffiliateProvider>
             </SessionWrapper>

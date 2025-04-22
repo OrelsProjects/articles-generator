@@ -21,7 +21,6 @@ export default function NotesCalendarPage() {
   const isSendingNote = useRef(false);
 
   useEffect(() => {
-    
     if (sendNoteId && !isSendingNote.current) {
       isSendingNote.current = true;
       getNoteByNoteId(sendNoteId)

@@ -7,7 +7,7 @@ import {
   SubstackCookie,
   CookieSameSite,
   CookieName,
-} from "@/types/useSubstack.type";
+} from "@/types/useExtension.type";
 import { toMilis } from "@/lib/utils/date";
 
 const cookieNameCookieNameToDB: Record<CookieName, CookieNameDB> = {

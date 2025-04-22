@@ -21,6 +21,7 @@ const featureFlagLabels: Record<FeatureFlag, string> = {
   populateNotes: "Automatic notes population",
   collaborativeNotes: "Collaborative note editing",
   initQueue: "Note queue initialization",
+  scheduleNotes: "Schedule notes",
 };
 
 interface PlanComparisonDialogProps {

@@ -56,10 +56,10 @@ export function NotesEditorDialog() {
     uploadingFile,
     uploadFile,
     deleteImage,
+    scheduleNote,
     cancelUpdateNoteBody,
+    loadingScheduleNote,
   } = useNotes();
-
-  const { scheduleNote, loadingScheduleNote } = useNotesSchedule();
 
   const editor = useEditor(
     notesTextEditorOptions(html => {
@@ -274,7 +274,7 @@ export function NotesEditorDialog() {
             render: "Scheduling note...",
             isLoading: true,
           });
-          await scheduleNote(newNote);
+          await scheduleNote(newNote, scheduledTo);
           handleOpenChange(false);
           toast.success(
             "Note scheduled to: " + getScheduleTimeText(scheduledTo, false),

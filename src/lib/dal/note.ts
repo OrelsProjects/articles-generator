@@ -1,6 +1,6 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { NoteDraft } from "@/types/note";
-import { Note, SubstackImage } from "@prisma/client";
+import { Note, S3Attachment, SubstackImage } from "@prisma/client";
 
 export type CreateNote = Omit<Note, "id" | "createdAt" | "updatedAt">;
 
@@ -132,3 +132,25 @@ export const getScheduledNotesNotSent = async (userId: string) => {
 //   });
 //   return note?.substackImage || [];
 // };
+
+export async function getNoteByScheduleId(
+  scheduleId: string,
+): Promise<Note | null> {
+  const schedule = await prisma.scheduledNote.findUnique({
+    where: { id: scheduleId },
+    select: { noteId: true },
+  });
+  if (!schedule) {
+    return null;
+  }
+  return getNoteById(schedule.noteId);
+}
+
+export async function getNoteAttachments(
+  noteId: string,
+): Promise<S3Attachment[]> {
+  const attachments = await prisma.s3Attachment.findMany({
+    where: { noteId },
+  });
+  return attachments;
+}

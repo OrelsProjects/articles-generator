@@ -189,7 +189,7 @@ export const DaySchedule = ({
   // Handle drag end event
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    debugger;
+    
     if (!over || active.id === over.id) {
       // If dropped in empty space or same location, do nothing
       setDragOrigin(null);

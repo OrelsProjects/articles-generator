@@ -1,6 +1,11 @@
 import prisma from "@/app/api/_db/db";
 import { getNoteById } from "@/lib/dal/note";
-import { createSchedule, deleteSchedule } from "@/lib/dal/schedules";
+import {
+  createSchedule,
+  deleteScheduleById,
+  deleteScheduleByName,
+  getLatestScheduleForNote,
+} from "@/lib/dal/schedules";
 import { getCronExpressionFromDate } from "@/lib/utils/cron";
 import {
   createEventBridgeSchedule,
@@ -37,7 +42,7 @@ export async function createScheduleForNote(
   const existingSchedule = await getEventBridgeSchedule({ name: scheduleName });
   if (existingSchedule) {
     await deleteEventBridgeSchedule(scheduleName);
-    await deleteSchedule(scheduleName);
+    await deleteScheduleByName(scheduleName);
   }
 
   await createEventBridgeSchedule({
@@ -79,7 +84,10 @@ export async function createScheduleForNote(
 export async function deleteScheduleForNote(
   noteId: string,
   newStatus?: NoteStatus | "archived",
-): Promise<void> {
+  options?: {
+    deleteIfSent?: boolean;
+  },
+): Promise<string | null> {
   const note = await getNoteById(noteId);
   if (!note) {
     throw new Error("Note not found");
@@ -89,7 +97,18 @@ export async function deleteScheduleForNote(
   if (currentSchedule) {
     await deleteEventBridgeSchedule(scheduleName);
   }
-  await deleteSchedule(scheduleName);
+
+  const schedule = await getLatestScheduleForNote(noteId);
+  const now = new Date();
+  if (schedule && schedule.scheduledAt < now && !options?.deleteIfSent) {
+    // schedule is in the past, so it was already sent. No need to delete it
+    return null;
+  }
+  if (!schedule) {
+    return null;
+  }
+
+  await deleteScheduleById(schedule.id);
   let data =
     newStatus === "archived" ? { isArchived: true } : { status: newStatus };
   if (newStatus) {
@@ -103,4 +122,5 @@ export async function deleteScheduleForNote(
       },
     });
   }
+  return schedule.id;
 }

@@ -1,5 +1,5 @@
 import { Logger } from "@/logger";
-import { BrowserType, ExtensionMessage } from "@/types/useSubstack.type";
+import { BrowserType, ExtensionMessage } from "@/types/useExtension.type";
 
 const detectBrowser = (): BrowserType => {
   if (typeof window === "undefined") return "unknown";

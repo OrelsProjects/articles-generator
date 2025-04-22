@@ -61,8 +61,6 @@ export interface SubstackImageResponse {
 export interface NoteDraftImage {
   id: string;
   url: string;
-  // width: number;
-  // height: number;
 }
 
 export interface NoteDraft {

@@ -1,16 +1,25 @@
 import prisma from "@/app/api/_db/db";
+import { getCronExpressionFromDate } from "@/lib/utils/cron";
 import { ScheduledNote } from "@prisma/client";
 
-export type CreateScheduledNote = Omit<
-  ScheduledNote,
-  "id" | "createdAt" | "updatedAt"
->;
+export type CreateScheduledNote =
+  | Omit<ScheduledNote, "id" | "createdAt" | "updatedAt">
+  | Omit<ScheduledNote, "id" | "createdAt" | "updatedAt" | "cronExpression">;
 
 export async function createSchedule(
   schedule: CreateScheduledNote,
 ): Promise<ScheduledNote> {
+  let cronExpression = "";
+  if ("cronExpression" in schedule) {
+    cronExpression = schedule.cronExpression;
+  } else {
+    cronExpression = getCronExpressionFromDate(schedule.scheduledAt);
+  }
   const createdSchedule = await prisma.scheduledNote.create({
-    data: schedule,
+    data: {
+      ...schedule,
+      cronExpression,
+    },
   });
   return createdSchedule;
 }
@@ -40,7 +49,24 @@ export async function getLatestSchedule(
   return latestSchedule;
 }
 
-export async function deleteSchedule(scheduleName: string): Promise<void> {
+export async function deleteLatestScheduleByNoteId(
+  noteId: string,
+): Promise<void> {
+  const latestSchedule = await getLatestSchedule(noteId);
+  if (latestSchedule) {
+    await deleteScheduleById(latestSchedule.id);
+  }
+}
+
+export async function deleteScheduleById(scheduleId: string): Promise<void> {
+  await prisma.scheduledNote.delete({
+    where: { id: scheduleId },
+  });
+}
+
+export async function deleteScheduleByName(
+  scheduleName: string,
+): Promise<string | null> {
   const latestSchedule = await prisma.scheduledNote.findFirst({
     where: {
       scheduleId: scheduleName,
@@ -53,7 +79,9 @@ export async function deleteSchedule(scheduleName: string): Promise<void> {
     await prisma.scheduledNote.delete({
       where: { id: latestSchedule?.id },
     });
+    return latestSchedule.id;
   }
+  return null;
 }
 
 export async function updateSchedule(
@@ -67,3 +95,12 @@ export async function updateSchedule(
   return updatedSchedule;
 }
 
+export async function getLatestScheduleForNote(
+  noteId: string,
+): Promise<ScheduledNote | null> {
+  const latestSchedule = await prisma.scheduledNote.findFirst({
+    where: { noteId },
+    orderBy: { createdAt: "desc" },
+  });
+  return latestSchedule;
+}

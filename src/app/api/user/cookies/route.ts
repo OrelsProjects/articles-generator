@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
-import { SubstackCookie } from "@/types/useSubstack.type";
+import { SubstackCookie } from "@/types/useExtension.type";
 import { z } from "zod";
 import { setSubstackCookies } from "@/lib/dal/substackCookies";
 

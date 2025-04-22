@@ -6,10 +6,11 @@ import {
   ExtensionMessage,
   ExtensionResponse,
   SubstackError,
-  UseSubstackPost as UseExtension,
+  UseExtension as UseExtension,
   BrowserType,
   GetSubstackCookiesResponse,
-} from "@/types/useSubstack.type";
+  Schedule,
+} from "@/types/useExtension.type";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { CreatePostResponse } from "@/types/createPostResponse";
 import { Logger } from "@/logger";
@@ -28,6 +29,7 @@ import {
   setShowNoSubstackCookiesDialog,
 } from "@/lib/features/ui/uiSlice";
 import { NoCookiesError } from "@/types/errors/NoCookiesError";
+import { useUi } from "@/lib/hooks/useUi";
 
 /**
  * Detects the current browser type
@@ -66,6 +68,8 @@ export function useExtension(): UseExtension {
     null,
   );
   const [browserType, setBrowserType] = useState<BrowserType>("unknown");
+
+  const { canScheduleNotes } = useUi();
 
   const loadingPing = useRef(false);
 
@@ -182,33 +186,37 @@ export function useExtension(): UseExtension {
     message: ExtensionMessage,
   ): Promise<ExtensionResponse<T>> => {
     return new Promise((resolve, reject) => {
-      // if (
-      //   typeof chrome !== "undefined" &&
-      //   chrome.runtime &&
-      //   chrome.runtime.sendMessage
-      // ) {
       const timeoutId = setTimeout(
         () => reject(new Error(SubstackError.NETWORK_ERROR)),
-        10000,
+        5000,
       );
       chrome.runtime.sendMessage(
         process.env.NEXT_PUBLIC_EXTENSION_ID!,
         message,
-        (response: any) => {
+        (response: {
+          success: boolean;
+          data: {
+            result: string;
+            message: string;
+            action: string;
+          };
+          error: string;
+        }) => {
           clearTimeout(timeoutId);
-          if (response.success)
+          if (response.success) {
+            const { result, message, action } = response.data;
+            const isResultString = typeof result === "string";
             resolve({
               success: true,
-              result: JSON.parse(response.data.result),
-              message: response.message,
-              action: response.action,
+              result: isResultString ? JSON.parse(result) : result,
+              message,
+              action,
             });
-          else reject(new Error(response.error || SubstackError.UNKNOWN_ERROR));
+          } else {
+            reject(new Error(response.error || SubstackError.UNKNOWN_ERROR));
+          }
         },
       );
-      // } else {
-      //   reject(new Error(SubstackError.BROWSER_NOT_SUPPORTED));
-      // }
     });
   };
 
@@ -278,6 +286,99 @@ export function useExtension(): UseExtension {
   );
 
   /**
+   * Create a new schedule
+   * @param {string} scheduleId Unique identifier for the schedule
+   * @param {string} userId User identifier
+   * @param {number} timestamp Unix timestamp when the schedule should trigger
+   * @returns {Promise<Schedule>} Promise resolving to the created schedule
+   */
+  const createSchedule = useCallback(
+    async (
+      scheduleId: string,
+      userId: string,
+      timestamp: number,
+    ): Promise<Schedule | null> => {
+      if (!canScheduleNotes) {
+        return null;
+      }
+      try {
+        const message: ExtensionMessage = {
+          type: "API_REQUEST",
+          action: "createSchedule",
+          params: [scheduleId, userId, timestamp],
+        };
+
+        const response = await sendExtensionMessage<Schedule>(message);
+
+        if (response.success && response.result) {
+          return response.result;
+        }
+        throw new Error("Failed to create schedule");
+      } catch (error) {
+        console.error("Error creating schedule:", error);
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error("Unknown error creating schedule");
+      }
+    },
+    [sendExtensionMessage],
+  );
+
+  /**
+   * Delete a schedule by ID
+   * @param {string} scheduleId ID of the schedule to delete
+   * @returns {Promise<boolean>} Promise resolving to boolean indicating success
+   */
+  const deleteSchedule = useCallback(
+    async (scheduleId: string): Promise<boolean> => {
+      if (!canScheduleNotes) {
+        return true;
+      }
+      try {
+        const message: ExtensionMessage = {
+          type: "API_REQUEST",
+          action: "deleteSchedule",
+          params: [scheduleId],
+        };
+
+        const response = await sendExtensionMessage<boolean>(message);
+        if (response.success && response.result !== undefined) {
+          return response.result;
+        }
+        return false;
+      } catch (error) {
+        console.error("Error deleting schedule:", error);
+        return false;
+      }
+    },
+    [sendExtensionMessage],
+  );
+
+  /**
+   * Get all schedules
+   * @returns {Promise<Schedule[]>} Promise resolving to array of schedules
+   */
+  const getSchedules = useCallback(async (): Promise<Schedule[]> => {
+    try {
+      const message: ExtensionMessage = {
+        type: "API_REQUEST",
+        action: "getSchedules",
+        params: [],
+      };
+
+      const response = await sendExtensionMessage<Schedule[]>(message);
+      if (response.success && response.result) {
+        return response.result;
+      }
+      return [];
+    } catch (error) {
+      console.error("Error getting schedules:", error);
+      return [];
+    }
+  }, [sendExtensionMessage]);
+
+  /**
  * <T extends ApiRoute, R = any>(
   route: T,
   body: RouteBody<T>,
@@ -318,5 +419,8 @@ export function useExtension(): UseExtension {
     setUserSubstackCookies,
     sendExtensionApiRequest,
     sendNote,
+    createSchedule,
+    deleteSchedule,
+    getSchedules,
   };
 }

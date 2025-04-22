@@ -15,6 +15,7 @@ import { NoteStatus, Plan } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { getLatestScheduleForNote } from "@/lib/dal/schedules";
 
 const schema = z.object({
   date: z.date().or(z.string()),
@@ -86,9 +87,38 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await deleteScheduleForNote(noteId, newStatus as NoteStatus | "archived");
+    const scheduleId = await deleteScheduleForNote(
+      noteId,
+      newStatus as NoteStatus | "archived",
+    );
 
-    return NextResponse.json({ message: "Schedule deleted" }, { status: 200 });
+    return NextResponse.json({ id: scheduleId }, { status: 200 });
+  } catch (error: any) {
+    loggerServer.error(error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { noteId: string } },
+) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  try {
+    const { noteId } = params;
+    const isOwner = await isOwnerOfNote(noteId, session.user.id);
+    if (!isOwner) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const schedule = await getLatestScheduleForNote(noteId);
+    return NextResponse.json(schedule, { status: 200 });
   } catch (error: any) {
     loggerServer.error(error);
     return NextResponse.json(

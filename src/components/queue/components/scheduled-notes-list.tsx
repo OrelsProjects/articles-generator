@@ -38,8 +38,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   lastNoteRef,
   lastNoteId,
 }) => {
-  const { updateNoteStatus, createDraftNote } = useNotes();
-  const { scheduleNoteById } = useNotesSchedule();
+  const { updateNoteStatus, createDraftNote, scheduleNote } = useNotes();
 
   // Configure basic sensors for drag detection
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
@@ -111,10 +110,45 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     }
   };
 
+  const handleRescheduleNote = async (noteId: string, newTime: Date) => {
+    const toastId = toast.loading("Rescheduling note...");
+    try {
+      const note = findNoteById(noteId);
+      if (!note) {
+        throw new Error("Note not found");
+      }
+
+      await scheduleNote(note, newTime);
+      toast.update(toastId, {
+        render: "Note rescheduled",
+        type: "success",
+        isLoading: false,
+        autoClose: 1500,
+      });
+    } catch (error) {
+      if (error instanceof ScheduleFailedEmptyNoteBodyError) {
+        toast.update(toastId, {
+          render: "Note body is empty",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      } else {
+        toast.update(toastId, {
+          render: "Failed to reschedule note",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      }
+      console.error(error);
+    }
+  };
+
   // Handle final drag end with rescheduling logic
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    debugger;
+
     // Run the base drag end handler from our hook
     onDragEnd(event);
 
@@ -161,35 +195,6 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       }
     }
     // Remove handling for dropping directly on other notes to prevent swapping
-  };
-
-  const handleRescheduleNote = async (noteId: string, newTime: Date) => {
-    const toastId = toast.loading("Rescheduling note...");
-    try {
-      await scheduleNoteById(noteId, newTime);
-      toast.update(toastId, {
-        render: "Note rescheduled",
-        type: "success",
-        isLoading: false,
-        autoClose: 1500,
-      });
-    } catch (error) {
-      if (error instanceof ScheduleFailedEmptyNoteBodyError) {
-        toast.update(toastId, {
-          render: "Note body is empty",
-          type: "error",
-          isLoading: false,
-          autoClose: 3000,
-        });
-      } else {
-        toast.update(toastId, {
-          render: "Failed to reschedule note",
-          type: "error",
-          isLoading: false,
-        });
-      }
-      console.error(error);
-    }
   };
 
   const handleUnscheduleNote = async (note: NoteDraft) => {

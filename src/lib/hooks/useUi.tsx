@@ -58,6 +58,10 @@ export function useUi() {
 
   const showCreateScheduleDialog = useAppSelector(selectUi).showCreateScheduleDialog;
 
+  const canScheduleNotes = user?.meta?.featureFlags.includes(
+    FeatureFlag.scheduleNotes,
+  );
+
   return {
     setState,
     hasAdvancedGPT,
@@ -72,5 +76,6 @@ export function useUi() {
     updateShowScheduleModal,
     updateShowCreateScheduleDialog,
     showCreateScheduleDialog,
+    canScheduleNotes,
   };
 }

@@ -2,15 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { Send, RefreshCw } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { useExtension } from "@/lib/hooks/useExtension";
-import { SuccessDialog } from "@/components/notes/success-dialog";
-import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
 import { Note, NoteDraft } from "@/types/note";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
 import { EventTracker } from "@/eventTracker";
-import { CreatePostResponse } from "@/types/createPostResponse";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
+import { useAppDispatch } from "@/lib/hooks/redux";
+import { setNotePostedData } from "@/lib/features/ui/uiSlice";
 
 interface SubstackPostButtonProps {
   onSave?: () => Promise<string | null>;
@@ -37,10 +36,7 @@ export function InstantPostButton({
 }: SubstackPostButtonProps) {
   const { updateNoteStatus, sendNote, loadingSendNote } = useNotes();
   const [loading, setLoading] = useState(false);
-  const [postResponse, setPostResponse] = useState<CreatePostResponse | null>(
-    null,
-  );
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (loadingSendNote) {
@@ -50,37 +46,33 @@ export function InstantPostButton({
     }
   }, [loadingSendNote]);
 
+  const updateLoading = (loading: boolean) => {
+    setLoading(loading);
+    onLoadingChange?.(loading);
+  };
+
   const handleSendNote = async () => {
     EventTracker.track("note_post_button_clicked_" + source);
     let sendNoteId = noteId;
     try {
-      onLoadingChange?.(true);
-      setLoading(true);
+      updateLoading(true);
       const customNoteId = await onSave?.();
       if (customNoteId) {
         sendNoteId = customNoteId;
       }
       const response = await sendNote(sendNoteId!);
-
       if (response) {
         toast.success("Note posted successfully");
-        setPostResponse(response);
-        setShowSuccessDialog(true);
+        dispatch(setNotePostedData(response));
+        if (sendNoteId) {
+          updateNoteStatus(sendNoteId, "published");
+        }
       }
+      updateLoading(false);
     } catch (error) {
       console.error("Error sending post:", error);
       toast.error("Error sending post");
-    } finally {
-      onLoadingChange?.(false);
-      setLoading(false);
-    }
-  };
-
-  const handleOpenChangeSuccessDialog = (open: boolean) => {
-    if (!noteId) return;
-    setShowSuccessDialog(open);
-    if (!open) {
-      updateNoteStatus(noteId, "published");
+      updateLoading(false);
     }
   };
 
@@ -113,12 +105,6 @@ export function InstantPostButton({
           )}
         </div>
       </div>
-
-      <SuccessDialog
-        open={showSuccessDialog}
-        onOpenChange={handleOpenChangeSuccessDialog}
-        response={postResponse}
-      />
     </div>
   );
 }

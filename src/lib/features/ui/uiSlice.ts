@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
+import { CreatePostResponse } from "@/types/createPostResponse";
 
 export interface UiState {
   state: "full" | "writing-mode";
@@ -13,6 +14,7 @@ export interface UiState {
   showExtensionDialog: boolean;
   showNoSubstackCookiesDialog: boolean;
   showCreateScheduleDialog: boolean;
+  notePostedData: CreatePostResponse | null;
 }
 
 export const initialState: UiState = {
@@ -27,6 +29,7 @@ export const initialState: UiState = {
   showExtensionDialog: false,
   showNoSubstackCookiesDialog: false,
   showCreateScheduleDialog: false,
+  notePostedData: null,
 };
 
 const uiSlice = createSlice({
@@ -66,6 +69,9 @@ const uiSlice = createSlice({
     setShowCreateScheduleDialog: (state, action) => {
       state.showCreateScheduleDialog = action.payload;
     },
+    setNotePostedData: (state, action) => {
+      state.notePostedData = action.payload;
+    },
   },
 });
 
@@ -81,6 +87,7 @@ export const {
   setShowExtensionDialog,
   setShowNoSubstackCookiesDialog,
   setShowCreateScheduleDialog,
+  setNotePostedData,
 } = uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;
