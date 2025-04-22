@@ -198,9 +198,12 @@ function App() {
                         <div className="font-semibold">
                           {testimonial.author}
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {testimonial.title}
-                        </div>
+                        <div
+                          className="text-sm text-muted-foreground"
+                          dangerouslySetInnerHTML={{
+                            __html: testimonial.title,
+                          }}
+                        />
                       </div>
                     </div>
                     <p
@@ -294,7 +297,7 @@ const testimonials = [
     `,
     author: "Tim Denning",
     image: "/tim-denning.jpg",
-    title: "Author of Unfiltered by Tim Denning (141k+ Subscribers)",
+    title: "Author of Unfiltered by Tim Denning<br/>(141k+ Subscribers)",
   },
   {
     quote: `${appName} is an amazing tool for any Substack writers who want to take some of the pain out of growing on the platform.
@@ -306,7 +309,7 @@ const testimonials = [
 `,
     author: "David McIlroy",
     image: "/testimonials/david-mcilroy.jpg",
-    title: "Writer of How to Write for a Living (22k+ subscribers)",
+    title: "Writer of How to Write for a Living<br/>(22k+ subscribers)",
   },
 
   {
