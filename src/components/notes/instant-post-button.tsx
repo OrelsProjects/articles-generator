@@ -77,7 +77,7 @@ export function InstantPostButton({
   };
 
   return (
-    <div className="flex">
+    <div className="hidden lg:flex">
       <div className="relative">
         <div className="flex items-center gap-0.5 rounded-lg">
           {children ? (
