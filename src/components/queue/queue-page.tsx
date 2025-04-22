@@ -5,7 +5,7 @@ import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { AlertCircle, Plus, X } from "lucide-react";
+import { AlertCircle, ExternalLinkIcon, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditScheduleDialog } from "./edit-schedule-dialog";
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { DialogContent } from "@/components/ui/dialog";
 import Link from "next/link";
+import Image from "next/image";
 
 export function QueuePage() {
   const [activeTabCache, setActiveTabCache] = useLocalStorage(
@@ -199,7 +200,7 @@ export function QueuePage() {
   // Group schedules by date for empty slots
   const groupedSchedules = () => {
     const grouped: Record<string, UserSchedule[]> = {};
-    
+
     userSchedules.forEach(schedule => {
       // Check each active day and add applicable schedules
       activeDays.forEach(day => {
@@ -263,27 +264,17 @@ export function QueuePage() {
         </div>
       </div>
 
-      {/* // Write a warning (yellow) telling users that scheduling notes are not working at the moment, with a see more button that will explain:
-      // Substack has decided to add a bot-detection system to their notes sending system.
-      // This bots stops me from sending any notes on your behalf and therefore I cannot schedule notes your notes.
-      // I am working on a solution to this and will update you as soon as I have more information.
-      //You can keep using the scheduling, but make sure to be available to post notes manually.
-      // Feel free to contact me via a DM on Substack or email at support@writestack.io.
-
-      Sorry for any inconvenience this may cause.
-      //  */}
-
       {!didSeeWarning && (
         <>
-          <div className="bg-yellow-50 dark:bg-yellow-950/25 border border-yellow-200 dark:border-yellow-900 p-4 rounded-md mb-6 flex items-center justify-between text-yellow-800 dark:text-yellow-400">
+          <div className="bg-blue-50 dark:bg-blue-800/25 border border-blue-200 dark:border-blue-900 p-4 rounded-md mb-6 flex items-center justify-between text-blue-800 dark:text-blue-300">
             <div className="flex items-center">
               <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
               <span>
-                Scheduling notes is not working at the moment.
+                New scheduling system
                 <Button
                   variant="link"
                   onClick={() => setShowWarningDialog(true)}
-                  className="text-yellow-800 dark:text-yellow-400"
+                  className="text-blue-800 dark:text-blue-300"
                 >
                   See more
                 </Button>
@@ -297,26 +288,49 @@ export function QueuePage() {
           <Dialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>
-                  Scheduling notes is not working at the moment.
-                </DialogTitle>
+                <DialogTitle>New Scheduling System</DialogTitle>
               </DialogHeader>
               <DialogDescription className="text-sm">
+                {/* Explain that the system is based on the Chrome extension and requires the user to have either a substack.com/writestack.io tab open to have the notes scheduled. */}
                 <p>
-                  I am working on a solution and will update you as soon as I
-                  have more information. You can keep using the scheduling, but
-                  make sure to be available to post notes manually.
+                  The new scheduling system is based on the Chrome extension and
+                  will require you to have either a substack.com or
+                  writestack.io tab open to have the notes sent on time.
+                </p>
+                <br />
+                <p>
+                  If you have some notes scheduled, you&apos;ll need to quickly
+                  reschedule them by clicking the Schedule button (It will have
+                  the correct date by default):
+                  <Image
+                    src="/add-to-queue.png"
+                    alt="Add to queue"
+                    width={200}
+                    height={200}
+                    className="rounded-md shadow-lg"
+                  />
+                </p>
+
+                <br />
+                <p>
+                  Make sure you have the extension installed and enabled with
+                  version of: <strong>1.2.6+.</strong>
                 </p>
                 <p>
-                  <br />
-                  Feel free to contact me via a DM on Substack or email at{" "}
-                  <Button variant="link" asChild>
-                    <Link href="mailto:support@writestack.io">
-                      support@writestack.io
-                    </Link>
-                  </Button>
-                  .
+                  In order to check if you have the correct version, go to
+                  chrome://extensions and find WriteStack.
                 </p>
+                <Button variant="link" className="px-0" asChild>
+                  <Link
+                    href={
+                      "https://chromewebstore.google.com/detail/writeroom/emdlbnkhjpfcooclfbodmhkhkohcjaoa"
+                    }
+                    target="_blank"
+                  >
+                    Download the extension{" "}
+                    <ExternalLinkIcon size={16} className="ml-2" />
+                  </Link>
+                </Button>
               </DialogDescription>
             </DialogContent>
           </Dialog>
@@ -413,7 +427,11 @@ export function QueuePage() {
               "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
             )}
           >
-            All ({counters.scheduledCount + counters.draftCount + counters.publishedCount})
+            All (
+            {counters.scheduledCount +
+              counters.draftCount +
+              counters.publishedCount}
+            )
           </TabsTrigger>
         </TabsList>
 
@@ -455,7 +473,9 @@ export function QueuePage() {
         </TabsContent>
 
         <TabsContent value="all">
-          {scheduledNotes.length === 0 && draftNotes.length === 0 && publishedNotes.length === 0 ? (
+          {scheduledNotes.length === 0 &&
+          draftNotes.length === 0 &&
+          publishedNotes.length === 0 ? (
             <div className="text-center py-8 text-zinc-500">No notes yet</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -468,12 +488,12 @@ export function QueuePage() {
                     if (note.status !== "published") return 1; // Then drafts
                     return 2; // Then published notes
                   };
-                  
+
                   const typeA = getTypeOrder(a);
                   const typeB = getTypeOrder(b);
-                  
+
                   if (typeA !== typeB) return typeA - typeB;
-                  
+
                   // If same type, sort by createdAt date (newest first)
                   const dateA = new Date(a.createdAt || 0).getTime();
                   const dateB = new Date(b.createdAt || 0).getTime();
