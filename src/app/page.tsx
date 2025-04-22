@@ -297,6 +297,19 @@ const testimonials = [
     title: "Author of Unfiltered by Tim Denning (141k+ Subscribers)",
   },
   {
+    quote: `${appName} is an amazing tool for any Substack writers who want to take some of the pain out of growing on the platform.
+   <br/><br/>
+   It's easy to use, very intuative and constantly improving.
+   <br/>If you want to build a Substack audience on a daily basis without the hassle (and have fun in the process), you need to try WriteRoom.
+   <br/><br/>
+   <strong>Highly recommended!</strong>
+`,
+    author: "David McIlroy",
+    image: "/testimonials/david-mcilroy.jpg",
+    title: "Writer of How to Write for a Living (22k+ subscribers)",
+  },
+
+  {
     quote: `${appName} allowed me to finally find my voice on Substack Notes, one that I'm satisfied with and I feel like. 
       <br/><br/> It resonates with readers.
       <br/><br/> It's also extremely easy to use, so it lets me post multiple notes a day, even if I have little to no time`,
