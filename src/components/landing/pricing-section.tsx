@@ -28,7 +28,8 @@ const basicFeatures = (credits: number) => [
 ];
 
 const hobbyistFeatures = [
-  // `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time (Requires Chrome)`,
+  `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time (Requires Chrome Extension)`,
+  `One-click note posting (Requires Chrome Extension)`,
 ];
 
 const advancedFeatures = [

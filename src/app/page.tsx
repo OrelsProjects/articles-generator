@@ -297,7 +297,8 @@ const testimonials = [
     `,
     author: "Tim Denning",
     image: "/tim-denning.jpg",
-    title: "Author of Unfiltered by Tim Denning<br/>(141k+ Subscribers)",
+    title:
+      "Author of Unfiltered by Tim Denning<br/>(<strong>141k+ Subscribers</strong>)",
   },
   {
     quote: `${appName} is an amazing tool for any Substack writers who want to take some of the pain out of growing on the platform.
@@ -309,7 +310,8 @@ const testimonials = [
 `,
     author: "David McIlroy",
     image: "/testimonials/david-mcilroy.jpg",
-    title: "Writer of How to Write for a Living<br/>(22k+ subscribers)",
+    title:
+      "Writer of How to Write for a Living<br/>(<strong>22k+ subscribers</strong>)",
   },
 
   {
