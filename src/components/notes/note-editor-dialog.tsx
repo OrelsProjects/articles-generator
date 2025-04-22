@@ -328,7 +328,7 @@ export function NotesEditorDialog() {
   };
 
   const handleImprovement = (improvedText: string) => {
-    debugger;
+    
     const formattedText = formatText(improvedText);
     updateEditorBody(formattedText);
     editor?.commands.focus();

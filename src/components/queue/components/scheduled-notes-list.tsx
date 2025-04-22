@@ -40,7 +40,14 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   const { updateNoteStatus, createDraftNote, scheduleNote } = useNotes();
 
   // Configure basic sensors for drag detection
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 6,
+      },
+    }),
+    useSensor(TouchSensor),
+  );
 
   // Find a note by its ID across all days
   const findNoteById = (noteId: string): NoteDraft | null => {
@@ -87,17 +94,6 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
 
     return map;
   }, [days, groupedSchedules]);
-
-  // Build a single list of all draggable notes across all days
-  const allDraggableIds = React.useMemo(() => {
-    const ids: string[] = [];
-    for (const dateKey in groupedNotes) {
-      groupedNotes[dateKey].forEach(note => {
-        ids.push(note.id);
-      });
-    }
-    return ids;
-  }, [groupedNotes]);
 
   // Handle dragOver to update the active drop target
   const handleDragOver = (event: DragOverEvent) => {
@@ -251,7 +247,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       {/* </SortableContext> */}
 
       {/* Using our custom drag overlay component */}
-      <CustomDragOverlay>
+      <CustomDragOverlay className="w-full">
         {activeDragNote && (
           <div className="opacity-90">
             <ScheduleNoteRow

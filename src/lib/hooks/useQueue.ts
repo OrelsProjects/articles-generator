@@ -190,7 +190,7 @@ export function useQueue() {
   // go over schedules and return the first one that has no note scheduled to it.
   // Doesn't have to be bigger than now
   const getNextAvailableSchedule = () => {
-    debugger;
+    
     // Start from today
     const today = new Date();
     const currentHour = today.getHours();

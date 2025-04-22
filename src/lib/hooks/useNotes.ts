@@ -248,12 +248,6 @@ export const useNotes = () => {
         throw new Error("Note not found");
       }
       try {
-        if (status === "archived") {
-          dispatch(removeNote(noteId));
-          if (selectedNote?.id === noteId) {
-            selectNote(null);
-          }
-        }
         const body: {
           isArchived?: boolean;
           status?: NoteStatus;
@@ -261,7 +255,6 @@ export const useNotes = () => {
         } = status === "archived" ? { isArchived: true } : { status };
 
         if (previousStatus === "scheduled" && status !== "scheduled") {
-          dispatch(updateNote({ id: noteId, note: { status: "draft" } }));
           await deleteSchedule(noteId);
         } else {
           // Previous status is not scheduled, so it can be published/draft
@@ -269,14 +262,16 @@ export const useNotes = () => {
           if (scheduledTo) {
             body.scheduledTo = scheduledTo;
           }
-          dispatch(
-            updateNote({
-              id: noteId,
-              note: { status: validStatus, scheduledTo },
-            }),
-          );
         }
         await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
+        if (status === "archived") {
+          dispatch(removeNote(noteId));
+          if (selectedNote?.id === noteId) {
+            selectNote(null);
+          }
+        } else {
+          dispatch(updateNote({ id: noteId, note: { ...body } }));
+        }
       } catch (error: any) {
         Logger.error("Error updating status:", error);
         if (status === "archived") {

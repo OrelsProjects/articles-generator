@@ -19,6 +19,7 @@ interface SubstackPostButtonProps {
   variant?: "ghost" | "default" | "outline";
   disabled?: boolean;
   source: string;
+  showText?: boolean;
   className?: string;
   children?: React.ReactNode;
 }
@@ -30,6 +31,7 @@ export function InstantPostButton({
   size = "sm",
   variant = "ghost",
   source,
+  showText = true,
   className,
   disabled,
   children,
@@ -92,9 +94,11 @@ export function InstantPostButton({
               className={cn("flex items-center gap-2", className)}
             >
               <AnimatePresence>
-                <motion.span className="overflow-hidden whitespace-nowrap">
-                  Post now
-                </motion.span>
+                {showText && (
+                  <motion.span className="overflow-hidden whitespace-nowrap">
+                    Post now
+                  </motion.span>
+                )}
               </AnimatePresence>
               {loading ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />

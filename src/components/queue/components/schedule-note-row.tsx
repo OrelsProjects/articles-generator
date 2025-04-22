@@ -5,15 +5,10 @@ import { NoteDraft } from "@/types/note";
 import { useSortable } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  GripVertical,
-  X,
-  CalendarClock,
-  Loader2,
-  Pencil,
-} from "lucide-react";
+import { GripVertical, X, CalendarClock, Loader2, Pencil } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
+import { cn } from "@/lib/utils";
 
 interface ScheduleNoteRowProps {
   note: NoteDraft;
@@ -141,14 +136,20 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`w-full flex justify-between items-center mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative ${
-        isOver ? "bg-secondary/40 border-primary" : ""
-      }`}
+      className={cn(
+        `w-full flex justify-between items-center mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative cursor-pointer ${
+          isOver ? "bg-secondary/40 border-primary" : ""
+        }`,
+        { "cursor-grabbing": isOver },
+      )}
       onClick={handleClick}
     >
       {/* Content area */}
       <div
-        className="flex flex-1 min-w-0 items-center p-3 cursor-grab"
+        className={cn(
+          "flex flex-1 min-w-0 items-center p-3 cursor-pointer active:cursor-grabbing",
+          { "cursor-grabbing": isOver },
+        )}
         {...attributes}
         {...listeners}
       >
@@ -176,21 +177,11 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
       {/* Action buttons on the right */}
       <div className="flex items-center gap-2 mr-2" onClick={handleActionClick}>
         <InstantPostButton
+          showText={false}
           noteId={note.id}
           source="schedule"
           className="text-muted-foreground hover:text-primary transition-colors p-2 z-10"
         />
-        {/* Edit button */}
-        <TooltipButton
-          variant="ghost"
-          tooltipContent="Edit"
-          onClick={handleClick}
-          className="text-muted-foreground hover:text-primary transition-colors p-2 z-10"
-          title="Edit"
-        >
-          <Pencil size={16} />
-        </TooltipButton>
-
         {/* Unschedule button */}
         {onUnschedule && (
           <TooltipButton
