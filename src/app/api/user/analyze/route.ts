@@ -101,20 +101,21 @@ export async function POST(req: NextRequest) {
       url = userMetadata?.publication?.publicationUrl;
     }
 
-    if (userMetadata?.publication?.generatedDescription) {
-      // It's not the first time we're running this.
-      if (!canUseAnalyze.result) {
-        return NextResponse.json(
-          {
-            error: "Not enough credits",
-            nextRefill: canUseAnalyze.nextRefill,
-          },
-          { status: canUseAnalyze.status },
-        );
-      }
-      await useCredits(session.user.id, "analyze");
-      didConsumeCredits = true;
-    }
+    // TODO: FIX IT. It sends 403 to some people
+    // if (userMetadata?.publication?.generatedDescription) {
+    //   // It's not the first time we're running this.
+    //   if (!canUseAnalyze.result) {
+    //     return NextResponse.json(
+    //       {
+    //         error: "Not enough credits",
+    //         nextRefill: canUseAnalyze.nextRefill,
+    //       },
+    //       { status: canUseAnalyze.status },
+    //     );
+    //   }
+    //   await useCredits(session.user.id, "analyze");
+    //   didConsumeCredits = true;
+    // }
 
     let publicationMetadata = userMetadata?.publication;
 
