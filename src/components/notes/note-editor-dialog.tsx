@@ -208,6 +208,7 @@ export function NotesEditorDialog() {
       selectedNote?.handle !== handle
     );
   };
+
   const handleSave = async (
     options: {
       schedule?: {
@@ -268,6 +269,7 @@ export function NotesEditorDialog() {
         toast.error("Failed to save note");
         return null;
       }
+
       if (shouldSchedule) {
         try {
           toast.update(toastId, {
@@ -309,7 +311,6 @@ export function NotesEditorDialog() {
           });
           await updateNoteStatus(selectedNote.id, "draft");
           toast.info("Note unscheduled");
-          handleOpenChange(false);
         } catch (e: any) {
           if (e instanceof CancelError) {
             return null;
@@ -328,7 +329,6 @@ export function NotesEditorDialog() {
   };
 
   const handleImprovement = (improvedText: string) => {
-    
     const formattedText = formatText(improvedText);
     updateEditorBody(formattedText);
     editor?.commands.focus();
@@ -599,6 +599,9 @@ export function NotesEditorDialog() {
                     source="note-editor-dialog"
                     onLoadingChange={setIsSendingNote}
                     disabled={!canSendNote}
+                    onNoteSent={() => {
+                      handleOpenChange(false);
+                    }}
                   />
                 )}
                 <SaveDropdown

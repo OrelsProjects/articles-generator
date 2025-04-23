@@ -62,11 +62,16 @@ export function SaveDropdown({
     );
   };
 
-  const handleAddToQueue = async () => {
+  const handleAddToQueue = async (
+    options: { forceNextDate?: boolean } = {},
+  ) => {
     try {
       const nextAvailableSlot = getNextAvailableSchedule();
+      debugger;
       setLoading(true);
-      const date = presetSchedule || nextAvailableSlot;
+      const date = options.forceNextDate
+        ? nextAvailableSlot
+        : presetSchedule || nextAvailableSlot;
       if (date) {
         await onAddToQueue(date);
       } else {
@@ -127,7 +132,7 @@ export function SaveDropdown({
             Schedule
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={handleAddToQueue}
+            onClick={() => handleAddToQueue({ forceNextDate: true })}
             disabled={disabled || loading}
             className="text-muted-foreground"
           >

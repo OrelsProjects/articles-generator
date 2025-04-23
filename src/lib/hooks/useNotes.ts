@@ -258,7 +258,6 @@ export const useNotes = () => {
           await deleteSchedule(noteId);
         } else {
           // Previous status is not scheduled, so it can be published/draft
-          const validStatus = status === "archived" ? "draft" : status;
           if (scheduledTo) {
             body.scheduledTo = scheduledTo;
           }

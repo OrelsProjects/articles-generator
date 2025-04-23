@@ -12,7 +12,8 @@ import { useAppDispatch } from "@/lib/hooks/redux";
 import { setNotePostedData } from "@/lib/features/ui/uiSlice";
 
 interface SubstackPostButtonProps {
-  onSave?: () => Promise<string | null>;
+  onSave?: () => Promise<string | null> | string | null;
+  onNoteSent?: () => void;
   onLoadingChange?: (loading: boolean) => void;
   noteId: string | null;
   size?: "sm" | "lg" | "default" | "icon";
@@ -28,6 +29,7 @@ export function InstantPostButton({
   noteId,
   onSave,
   onLoadingChange,
+  onNoteSent,
   size = "sm",
   variant = "ghost",
   source,
@@ -59,10 +61,12 @@ export function InstantPostButton({
     try {
       updateLoading(true);
       const customNoteId = await onSave?.();
+
       if (customNoteId) {
         sendNoteId = customNoteId;
       }
       const response = await sendNote(sendNoteId!);
+      onNoteSent?.();
       if (response) {
         toast.success("Note posted successfully");
         dispatch(setNotePostedData(response));

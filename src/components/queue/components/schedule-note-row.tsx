@@ -176,12 +176,7 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
 
       {/* Action buttons on the right */}
       <div className="flex items-center gap-2 mr-2" onClick={handleActionClick}>
-        <InstantPostButton
-          showText={false}
-          noteId={note.id}
-          source="schedule"
-          className="text-muted-foreground hover:text-primary transition-colors p-2 z-10"
-        />
+
         {/* Unschedule button */}
         {onUnschedule && (
           <TooltipButton
