@@ -194,7 +194,6 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
 
   const handleUnscheduleNote = async (note: NoteDraft) => {
     try {
-      debugger;
       await updateNoteStatus(note.id, "draft");
     } catch (error) {
       toast.error("Failed to unschedule note");
