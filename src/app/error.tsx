@@ -15,8 +15,18 @@ export default function Error({
 }) {
   // Log the error to console in development
   useEffect(() => {
-    Logger.error(error.message);
-    Logger.error(JSON.stringify(error, null, 2));
+    Logger.error("CRITICAL ERROR" + error.message);
+    Logger.error(
+      JSON.stringify(
+        {
+          error: error.message,
+          stack: error.stack,
+          message: "CRITICAL ERROR",
+        },
+        null,
+        2,
+      ),
+    );
   }, [error]);
 
   return (
