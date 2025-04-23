@@ -4,7 +4,7 @@ import { getStripeInstance } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { sendMail } from "@/lib/mail/mail";
 import {
-  welcomeTemplate,
+  welcomeTemplateTrial,
 } from "@/lib/mail/templates";
 
 export async function GET(req: NextRequest) {
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     const plan = product.metadata?.plan;
 
     try {
-      const welcomeEmail = welcomeTemplate();
+      const welcomeEmail = welcomeTemplateTrial();
       // send welcome email as well
       await sendMail({
         to: session.customer_email || "",

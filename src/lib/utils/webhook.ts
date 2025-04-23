@@ -12,7 +12,7 @@ import {
   generatePaymentConfirmationEmail,
   generateSubscriptionDeletedEmail,
   generateSubscriptionTrialEndingEmail,
-  welcomeTemplate,
+  welcomeTemplateTrial,
 } from "@/lib/mail/templates";
 import { creditsPerPlan } from "@/lib/plans-consts";
 import { getStripeInstance } from "@/lib/stripe";
@@ -211,7 +211,7 @@ export async function handleSubscriptionUpdated(event: any) {
   });
 
   if (user.email) {
-    const emailTemplate = welcomeTemplate(user.name || undefined);
+    const emailTemplate = welcomeTemplateTrial(user.name || undefined);
     await sendMail({
       to: user.email!,
       from: "support",

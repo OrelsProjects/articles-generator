@@ -17,7 +17,6 @@ export function baseEmailTemplate(content: string) {
         body {
           font-family: Arial, sans-serif;
           line-height: 1.6;
-          color: hsl(0, 0%, 13%);
           background-color: hsl(0, 0%, 98%);
           margin: 0;
           padding: 0;
@@ -44,25 +43,44 @@ export function baseEmailTemplate(content: string) {
         .content {
           padding: 20px;
         }
-        .button {
-          display: inline-block;
-          background-color: #ff661a; /* Deep burnt orange */
-          color: #ffffff;
-          padding: 10px 20px;
-          text-decoration: none;
-          border-radius: 0.5rem;
-          margin-top: 20px;
-        }
         .center-button-container {
           display: flex;
           justify-content: center;
           align-items: center;
         }
+        .title {
+            font-size: 18px;
+            color: #ff661a; /* Deep burnt orange */
+        }
+        .button-container {
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            color: #ffffff !important;
+            background-color: #ff661a; /* Deep burnt orange */
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
         .footer {
-          text-align: center;
-          padding: 20px;
-          color: hsl(0, 0%, 45.1%);
-          font-size: 12px;
+            font-size: 12px;
+            color: #777777;
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 10px;
+        }
+        .divider {
+            margin-top: 30px;
+            border-top: 1px solid #dddddd;
+            margin-bottom: 20px;
+        }
+        a {
+            color: #ffffff;
+            text-decoration: none;
+            cursor: pointer;
         }
       </style>
     </head>
@@ -83,101 +101,74 @@ export function baseEmailTemplate(content: string) {
   `;
 }
 
-export const welcomeTemplate = (name?: string): EmailTemplate => ({
-  body: `<!DOCTYPE html>
+// export const welcomeSignUp = (name?: string): EmailTemplate => ({
+//   body: `<!DOCTYPE html>
+//   <html>
+//   <head>
+//       <meta charset="UTF-8">
+//       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//       <title>Welcome to WriteStack</title>
+//       </head>
+//       <body>
+//         <div class="container">
+//           <h1 class="title">Hey ${name || "there"}, welcome to the WriteStack family!</h1>
+//         </div>
+//       </body>
+//       </html>`,
+//   subject: name
+//     ? `Welcome to WriteStack, ${name} :)`
+//     : "Welcome to WriteStack :)",
+// });
+
+export const welcomeTemplateTrial = (name?: string): EmailTemplate => ({
+  body: baseEmailTemplate(`<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to WriteStack</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333333;
-            line-height: 1.6;
-            padding: 0;
-            margin: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ff661a; /* Deep burnt orange */
-        }
-        .button-container {
-            text-align: center;
-        }
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            color: #ffffff;
-            background-color: #ff661a; /* Deep burnt orange */
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        .footer {
-            font-size: 12px;
-            color: #777777;
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 10px;
-        }
-        .divider {
-            margin-top: 30px;
-            border-top: 1px solid #dddddd;
-            margin-bottom: 20px;
-        }
-    </style>
+    <title>Hey ${name || "there"}, it's Orel from WriteStack!</title>
 </head>
 <body>
-    <div class="container">
-        <h1 class="title">Hey ${name || "there"}, welcome to the WriteStack family!</h1>
+    <div>
+        <h1 class="title">Hey ${name || "there"}, it's Orel from WriteStack!</h1>
         
-        <p><strong>Your payment is confirmed!</strong> Thanks so much for joining us – we're genuinely excited to be part of your writing journey.</p>
+        <p><strong>You're in!</strong> Thanks so much for joining. I'm genuinely excited to be part of your writing journey.</p>
 
-        <p>WriteStack was built for writers like you who want to maintain their authentic voice while getting a little AI magic to enhance your process. Whether you're crafting Substack newsletters, blog posts, or any creative content, our tools are designed to amplify your natural talent – never replace it.</p>
+        <p>WriteStack was built for writers like you who want to maintain their authentic voice while getting a little AI magic to enhance your process.
+        Whether you're writing posts or notes, WriteStack is designed to improve your natural talent. Never replace it.</p>
         
         <p>Here's what's waiting for you:</p>
         <ul>
-          <li><strong>AI-Powered Outlines & Titles:</strong> Get personalized suggestions that match your unique style and topic preferences.</li>
-          <li><strong>Smart Text Editor:</strong> Fine-tune your clarity, adjust your tone, and reshape your content without losing your distinctive voice.</li>
-          <li><strong>Complete Creative Control:</strong> You're always in the driver's seat – our AI is your co-pilot, not the other way around.</li>
+          <li>AI-powered notes outline and writing</li>
+          <li>Easy notes scheduling</li>
+          <li>Access to 5m+ inspiration notes</li>
+          <li>Notes AI enhancer</li>
+          <li>Smart text editor with style enhancements</li>
         </ul>
         
-        <p>We're constantly developing new features based on writer feedback. Keep an eye on your inbox for updates, tips, and inspiration to maximize your WriteStack experience.</p>
+        <p>I'm constantly developing new features based on writers' feedback. Keep an eye on your inbox for updates, tips, and inspiration to maximize your WriteStack experience.</p>
         
-        <p>Ready to dive in? Your blank canvas is waiting!</p>
+        <p>Ready to start growing your audience?</p>
 
-        <p><strong>P.S.</strong> Your feedback shapes WriteStack's future. Have ideas, questions, or just want to chat about writing? Just reply to this email – I read every message personally.</p>
         
         <div class="button-container">
-            <a class="button" href="https://writestack.io/home">Start creating</a>
+        <a class="button" href="https://writestack.io/home">Start growing</a>
         </div>
+
+        <p><strong>P.S.</strong> Your feedback shapes WriteStack's future. Have ideas, questions, or just want to chat about writing? Just reply to this email – I read every message personally.</p>
 
         <div class="divider"></div>
 
         <footer class="footer">
-            <p>Crafted with ❤️ by Orel and the WriteStack team</p>
-            <p>Questions or thoughts? Just hit reply. we're real humans who love hearing from you.</p>
+            <p>Crafted with ❤️ by Orel</p>
+            <p>Questions or thoughts? Just hit reply. I'm a real human who loves hearing from you.</p>
         </footer>
 
     </div>
 </body>
 </html>
-`,
-  subject: name
-    ? `Welcome to WriteStack, ${name} :)`
-    : "Welcome to WriteStack :)",
+`),
+  subject: name ? `${name}, you're in! 🎉` : "You're in! 🎉",
 });
 
 export function generateSubscriptionCanceledEmail(subscriptionId: string) {
@@ -211,13 +202,15 @@ export function generateSubscriptionTrialEndingEmail(
   const content = `
     <h2>Your WriteStack adventure continues soon!</h2>
     <p>Just a friendly heads-up that your trial of the <strong>${planString} Plan</strong> will wrap up on <strong>${formattedDate}</strong>.</p>
-    <p>We hope WriteStack has been helping your words flow and your creativity shine! If you're enjoying the experience, no action is needed – your subscription will continue seamlessly, and you can keep creating amazing content without interruption.</p>
+    <p>We hope WriteStack has been helping you find your voice and grow your audience!</p> 
+    <p>If you're enjoying the experience, no action is needed – your subscription will continue seamlessly, and you can keep creating amazing content without interruption.</p>
     <p>Not quite the right fit for your writing process? No problem at all – you can manage or cancel your subscription anytime before your trial ends.</p>
-    <p>Either way, we're here to support your writing journey!</p>
+    <p>Either way, I'm here to support you in any way. Respond to this email or send me a DM on my <a href="https://substack.com/@orelzilberman?utm_source=user-menu">Substack</a>.</p>
     <div class="center-button-container">
       <a href="https://writestack.io/settings" class="button">Manage My Subscription</a>
     </div>
   `;
+
   return {
     body: baseEmailTemplate(content),
     subject: "Your WriteStack trial is ending soon",

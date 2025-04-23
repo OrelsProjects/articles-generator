@@ -36,7 +36,7 @@ export async function POST(
   const body = await req.json();
   const countString = body.count;
   const requestedModel = body.model;
-  const useTopTypes = body.useTopTypes || false;
+  const useTopTypes = body.useTopTypes || true;
   const topic = body.topic;
   const featureFlags = session.user.meta?.featureFlags || [];
   let initialGeneratingModel: Model = "openrouter/auto";
