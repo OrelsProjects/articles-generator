@@ -1,7 +1,7 @@
 import Mailchimp, { MessagesMessage } from "@mailchimp/mailchimp_transactional";
 import client from "@mailchimp/mailchimp_marketing";
-import slugify from "slugify";
 
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
 const mailchimpTx = Mailchimp(process.env.MAILCHIMP_API_KEY || "");
 const config = {
   apiKey: process.env.MAILCHIMP_APP_KEY || "",
@@ -34,8 +34,9 @@ export const sendMail = async ({
   template: string;
   cc?: string[];
 }) => {
+  const fromWithCapital = from.charAt(0).toUpperCase() + from.slice(1);
   const message: MessagesMessage = {
-    from_email: `${from}@writestack.io`,
+    from_email: `${appName} - ${fromWithCapital}@writestack.io`,
     subject,
     html: template,
     to: Array.isArray(to)

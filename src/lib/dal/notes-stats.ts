@@ -1,5 +1,6 @@
 import { prismaArticles } from "@/app/api/_db/db";
-import { HourlyStats } from "@/types/notes-status";
+import { getAuthorId } from "@/lib/dal/publication";
+import { HourlyStats, Streak } from "@/types/notes-stats";
 
 export interface HourlyStatsDb {
   user_id: number;
@@ -28,4 +29,38 @@ export async function getBestTimesToPublish(
     hourOfDayUTC: item.hour_of_day.toString(),
     adjustedAvgReaction: Number(item.weighted_score), // This is now your new "score"
   }));
+}
+
+export async function getStreak(userId: string): Promise<Streak[]> {
+  const authorId = await getAuthorId(userId);
+  if (!authorId) {
+    throw new Error("Author not found");
+  }
+  const notes = await prismaArticles.notesComments.findMany({
+    where: {
+      authorId: authorId,
+    },
+  });
+  // set streak by dates. So if 4 notes were published on X date, it'll be: {date: X, notes: 4}
+  const streak: Streak[] = notes.reduce(
+    (acc: Streak[], note) => {
+      const date = new Date(note.date);
+      const streakDate = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+      );
+      const existingDateIndex = acc.findIndex(
+        item => item.date.getTime() === streakDate.getTime(),
+      );
+      if (existingDateIndex === -1) {
+        acc.push({ date: streakDate, notes: 1 });
+      } else {
+        acc[existingDateIndex].notes++;
+      }
+      return acc;
+    },
+    [],
+  );
+  return streak;
 }

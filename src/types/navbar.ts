@@ -5,6 +5,7 @@ import {
   Settings,
   Lightbulb,
   Calendar,
+  BarChart,
 } from "lucide-react";
 
 export const navItems = [
@@ -37,6 +38,13 @@ export const navItems = [
     href: "/editor",
     newTab: true,
     icon: PenTool,
+    locationInMobile: "sidebar",
+  },
+  {
+    name: "Statistics",
+    mobileName: "Stats",
+    href: "/statistics",
+    icon: BarChart,
     locationInMobile: "sidebar",
   },
   {

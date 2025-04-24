@@ -10,7 +10,7 @@ import {
 import { CreateUserSchedule, UserSchedule } from "@/types/schedule";
 import axios from "axios";
 import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
-import { HourlyStats } from "@/types/notes-status";
+import { HourlyStats } from "@/types/notes-stats";
 import { setBestTimeToPublish } from "@/lib/features/statistics/statisticsSlice";
 import { isAfter, startOfDay, subDays } from "date-fns";
 
