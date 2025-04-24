@@ -19,7 +19,7 @@ import { getByline } from "@/lib/dal/byline";
 import { noteTemplates } from "@/app/api/notes/generate/_consts";
 import { Model429Error } from "@/types/errors/Model429Error";
 
-export const maxDuration = 120; // This function can run for a maximum of 2 minutes
+export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
 export async function POST(
   req: NextRequest,
