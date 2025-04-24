@@ -37,7 +37,7 @@ export default function StatisticsPage() {
         <div className="p-6 border rounded-lg bg-card">
           <h2 className="text-xl font-semibold mb-4">Coming Soon</h2>
           <p className="text-muted-foreground">
-            We're working on more statistics and insights for your writing
+            We&apos;re working on more statistics and insights for your writing
             journey.
           </p>
         </div>
