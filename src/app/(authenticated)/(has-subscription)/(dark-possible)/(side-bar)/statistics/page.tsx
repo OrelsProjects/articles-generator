@@ -21,7 +21,7 @@ export default function StatisticsPage() {
             Failed to load streak data: {error}
           </div>
         ) : (
-          <ActivityHeatmap streakData={streak} loading={loading} />
+          <ActivityHeatmap streakData={streak || []} loading={loading} />
         )}
       </div>
 

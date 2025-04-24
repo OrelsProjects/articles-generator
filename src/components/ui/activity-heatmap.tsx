@@ -12,7 +12,7 @@ import { format, subDays, eachDayOfInterval } from "date-fns";
 import { Streak } from "@/types/notes-stats";
 
 interface ActivityHeatmapProps {
-  streakData?: Streak[];
+  streakData: Streak[];
   loading?: boolean;
 }
 

@@ -4,6 +4,7 @@ import {
   setUserNotesDescription as setUserNotesDescription,
   shouldRefreshUserMetadata,
 } from "@/lib/dal/analysis";
+import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
         });
       }
     }
-    
+
     const descriptionResponse = await setUserNotesDescription(userId);
 
     if ("error" in descriptionResponse) {
@@ -77,7 +78,8 @@ export async function POST(req: NextRequest) {
       success: true,
       descriptionObject: descriptionResponse,
     });
-  } catch (error) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (error: any) {
+    loggerServer.error(error);
+    return NextResponse.json({ error: "Invalid request" }, { status: 500 });
   }
 }
