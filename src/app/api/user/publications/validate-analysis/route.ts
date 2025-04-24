@@ -30,9 +30,12 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },

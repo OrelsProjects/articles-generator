@@ -12,15 +12,18 @@ import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-pu
 import Logo from "@/components/ui/logo";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { CheckCircle, RefreshCcw } from "lucide-react";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
 
 export function PublicationOnboarding({
   onAnalyzed,
   onAlreadyAnalyzed,
+  loadingAnalyzed = false,
 }: {
   onAnalyzed?: () => void;
   onAlreadyAnalyzed?: () => void;
+  loadingAnalyzed?: boolean;
 }) {
   return (
     <div className="w-screen h-screen flex flex-col items-center justify-center min-h-screen bg-background p-4 relative">
@@ -55,19 +58,25 @@ export function PublicationOnboarding({
           </p>
         </CardContent>
         <CardFooter className="w-full">
-          <div className="w-full flex items-center justify-end">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={onAlreadyAnalyzed}
-            >
-              I have already analyzed my publication
-            </Button>
+          <div className="w-full flex flex-col gap-2 items-center justify-center">
             <AnalyzePublicationButton
               variant="default"
               className="w-full"
               onAnalyzed={onAnalyzed}
             />
+            <Button
+              variant="ghost"
+              className="w-full"
+              onClick={onAlreadyAnalyzed}
+              disabled={loadingAnalyzed}
+            >
+              {loadingAnalyzed ? (
+                <RefreshCcw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <></>
+              )}
+              I have already analyzed my publication
+            </Button>
           </div>
         </CardFooter>
       </Card>

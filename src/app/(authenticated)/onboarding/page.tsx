@@ -17,9 +17,11 @@ import {
 import { Button } from "@/components/ui/button";
 import usePayments from "@/lib/hooks/usePayments";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function OnboardingPage() {
   const router = useCustomRouter();
+  const [loadingAnalyzed, setLoadingAnalyzed] = useState(false);
   const { user } = useAppSelector(state => state.auth);
   const { hasPublication } = useSettings();
   const { goToCheckout } = usePayments();
@@ -41,10 +43,14 @@ export default function OnboardingPage() {
 
   const handleAlreadyAnalyzed = async () => {
     try {
+      setLoadingAnalyzed(true);
       await axios.get("/api/user/publications/validate-analysis");
       handleNavigateNext();
     } catch (error) {
       console.error(error);
+      toast.error("It seems like you haven't analyzed your publication yet.");
+    } finally {
+      setLoadingAnalyzed(false);
     }
   };
 
@@ -78,6 +84,7 @@ export default function OnboardingPage() {
       <PublicationOnboarding
         onAnalyzed={handleAnalyzed}
         onAlreadyAnalyzed={handleAlreadyAnalyzed}
+        loadingAnalyzed={loadingAnalyzed}
       />
       <Dialog open={showPaymentDialog} onOpenChange={handlePaymentDialogChange}>
         <DialogContent closeOnOutsideClick={false}>
