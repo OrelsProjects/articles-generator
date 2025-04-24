@@ -92,9 +92,6 @@ export function baseEmailTemplate(content: string) {
         <div class="content">
           ${content}
         </div>
-        <div class="footer">
-          <p>This is an automated message from WriteStack. Please do not reply to this email.</p>
-        </div>
       </div>
     </body>
     </html>
