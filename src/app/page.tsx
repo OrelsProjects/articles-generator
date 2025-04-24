@@ -304,7 +304,7 @@ const testimonials = [
     quote: `${appName} is an amazing tool for any Substack writers who want to take some of the pain out of growing on the platform.
    <br/><br/>
    It's easy to use, very intuative and constantly improving.
-   <br/>If you want to build a Substack audience on a daily basis without the hassle (and have fun in the process), you need to try WriteRoom.
+   <br/>If you want to build a Substack audience on a daily basis without the hassle (and have fun in the process), you need to try ${appName}.
    <br/><br/>
    <strong>Highly recommended!</strong>
 `,
