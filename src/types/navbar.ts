@@ -8,7 +8,16 @@ import {
   BarChart,
 } from "lucide-react";
 
-export const navItems = [
+export const navItems: {
+  name: string;
+  mobileName: string;
+  href: string;
+  newTab?: boolean;
+  icon: React.ElementType;
+  locationInMobile: "bottom" | "sidebar";
+  disabled?: boolean;
+  adminOnly?: boolean;
+ }[] = [
   {
     name: "Inspiration",
     mobileName: "Inspiration",
@@ -46,6 +55,7 @@ export const navItems = [
     href: "/statistics",
     icon: BarChart,
     locationInMobile: "sidebar",
+    adminOnly: true,
   },
   {
     name: "Settings",
