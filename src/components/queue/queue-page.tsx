@@ -5,7 +5,7 @@ import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { AlertCircle, ExternalLinkIcon, Plus, X } from "lucide-react";
+import { AlertCircle, ExternalLinkIcon, Pencil, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditScheduleDialog } from "./edit-schedule-dialog";
@@ -247,20 +247,22 @@ export function QueuePage() {
         <div className="flex flex-col md:flex-row items-center gap-2">
           <TooltipButton
             tooltipContent="Start writing"
-            variant="outline"
+            variant="ghost"
             onClick={() => createDraftNote()}
             className="items-center gap-2"
           >
             <Plus size={16} />
             New draft
           </TooltipButton>
-          {activeTab === "scheduled" ? (
-            <Button onClick={() => setIsEditDialogOpen(true)}>
-              Edit queue
-            </Button>
-          ) : (
-            <GenerateNotesDialog />
-          )}
+          <Button
+            variant="outline"
+            onClick={() => setIsEditDialogOpen(true)}
+            className="items-center gap-2"
+          >
+            <Pencil size={16} />
+            Edit queue
+          </Button>
+          <GenerateNotesDialog />
         </div>
       </div>
 
