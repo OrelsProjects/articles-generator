@@ -1,5 +1,5 @@
 import React, { useState, RefObject } from "react";
-import { format, addDays, startOfToday, isSameDay } from "date-fns";
+import { format, addDays, startOfToday, isSameDay, startOfDay } from "date-fns";
 import { NoteDraft } from "@/types/note";
 import { UserSchedule } from "@/types/schedule";
 import { ScheduleNoteRow } from "./schedule-note-row";
@@ -52,7 +52,7 @@ export const DaySchedule = ({
   useDndContext = true, // Default to true for backward compatibility
 }: DayScheduleProps) => {
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentMinutes = startOfDay(now).getHours() * 60
   const isToday = isSameDay(day, startOfToday());
   const isTomorrow = isSameDay(day, addDays(startOfToday(), 1));
   const [dragOrigin, setDragOrigin] = useState<string | null>(null);
