@@ -41,7 +41,9 @@ const log = (
 ) => {
   printLog(type, message, error, logItem);
   try {
-    datadogLogs.logger.log(message, logItem?.data, type, logItem?.error);
+    // Build message from message, logItem, and error
+    const rawMessage = `${message} ${logItem?.data ? JSON.stringify(logItem.data) : ""} ${logItem?.error ? JSON.stringify(logItem.error) : ""}`;
+    datadogLogs.logger.log(rawMessage, logItem?.data, type, logItem?.error);
   } catch (error: any) {}
 };
 

@@ -11,10 +11,17 @@ import {
 import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
 import Logo from "@/components/ui/logo";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
 
-export function PublicationOnboarding() {
+export function PublicationOnboarding({
+  onAnalyzed,
+  onAlreadyAnalyzed,
+}: {
+  onAnalyzed?: () => void;
+  onAlreadyAnalyzed?: () => void;
+}) {
   return (
     <div className="w-screen h-screen flex flex-col items-center justify-center min-h-screen bg-background p-4 relative">
       <Image
@@ -47,8 +54,21 @@ export function PublicationOnboarding() {
             continue.
           </p>
         </CardContent>
-        <CardFooter>
-          <AnalyzePublicationButton variant="default" className="w-full" />
+        <CardFooter className="w-full">
+          <div className="w-full flex items-center justify-end">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={onAlreadyAnalyzed}
+            >
+              I have already analyzed my publication
+            </Button>
+            <AnalyzePublicationButton
+              variant="default"
+              className="w-full"
+              onAnalyzed={onAnalyzed}
+            />
+          </div>
         </CardFooter>
       </Card>
     </div>

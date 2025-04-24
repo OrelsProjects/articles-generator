@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import usePayments from "@/lib/hooks/usePayments";
+import axios from "axios";
 
 export default function OnboardingPage() {
   const router = useCustomRouter();
@@ -28,24 +29,33 @@ export default function OnboardingPage() {
 
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
-  useEffect(() => {
-    if (hasPublication) {
-      if (user?.meta?.plan) {
-        router.push("/home", { paramsToRemove: ["plan", "interval"] });
-      } else if (plan && interval) {
-        // goToCheckout(interval as "month" | "year", plan);
-        setShowPaymentDialog(true);
-      } else {
-        router.push("/pricing?onboarding=true");
-      }
+  const handleNavigateNext = () => {
+    if (user?.meta?.plan) {
+      router.push("/home", { paramsToRemove: ["plan", "interval"] });
+    } else if (plan && interval) {
+      setShowPaymentDialog(true);
+    } else {
+      router.push("/pricing?onboarding=true");
     }
-  }, [hasPublication, router, plan, interval]);
+  };
+
+  const handleAlreadyAnalyzed = async () => {
+    try {
+      await axios.get("/api/user/publications/validate-analysis");
+      handleNavigateNext();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     if (!user) {
       router.push("/");
     }
-  }, [user]);
+    if (hasPublication) {
+      handleNavigateNext();
+    }
+  }, [user, hasPublication, handleNavigateNext]);
 
   const handlePaymentDialogChange = (open: boolean) => {
     if (!open) {
@@ -58,15 +68,21 @@ export default function OnboardingPage() {
       setShowPaymentDialog(true);
     }
   };
+
+  const handleAnalyzed = () => {
+    setShowPaymentDialog(true);
+  };
+
   return (
     <>
-      <PublicationOnboarding />;
+      <PublicationOnboarding
+        onAnalyzed={handleAnalyzed}
+        onAlreadyAnalyzed={handleAlreadyAnalyzed}
+      />
       <Dialog open={showPaymentDialog} onOpenChange={handlePaymentDialogChange}>
         <DialogContent closeOnOutsideClick={false}>
           <DialogHeader>
-            <DialogTitle
-              aria-label="Almost done!"
-            >Almost done!</DialogTitle>
+            <DialogTitle aria-label="Almost done!">Almost done!</DialogTitle>
             <DialogDescription>
               The last step is to{" "}
               {plan && interval ? "confirm your payment" : "choose a plan"} and

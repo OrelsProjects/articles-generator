@@ -32,28 +32,26 @@ const loadingStatesConst = [
 export function AnalyzePublicationButton({
   variant = "default",
   className,
+  onAnalyzed,
 }: {
   variant?: "default" | "ghost";
   className?: string;
+  onAnalyzed?: () => void;
 }) {
   const { publications } = useAppSelector(state => state.publications);
   const [analyzing, setAnalyzing] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [showLoader, setShowLoader] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (publications.length > 0) {
       setOpen(false);
-      setIsProcessing(false);
       setShowLoader(false);
     }
   }, [publications]);
-  
+
   // Handle the analyzing state change from the dialog
   const handleAnalyzing = (isAnalyzing: boolean) => {
-    setIsProcessing(isAnalyzing);
-    
     // Only show the loader after a short delay
     if (isAnalyzing) {
       // Show the loader once processing starts
@@ -80,6 +78,7 @@ export function AnalyzePublicationButton({
         open={open}
         onOpenChange={setOpen}
         onAnalyzing={handleAnalyzing}
+        onAnalyzed={onAnalyzed}
       />
 
       {/* Only show the loader when showLoader is true */}

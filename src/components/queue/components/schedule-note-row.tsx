@@ -176,7 +176,6 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
 
       {/* Action buttons on the right */}
       <div className="flex items-center gap-2 mr-2" onClick={handleActionClick}>
-
         {/* Unschedule button */}
         {onUnschedule && (
           <TooltipButton

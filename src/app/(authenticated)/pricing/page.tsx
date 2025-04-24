@@ -13,9 +13,13 @@ export default function PricingPage() {
   const { verifySubscription } = usePayments();
 
   useEffect(() => {
-    verifySubscription().then(() => {
-      router.push("/home");
-    });
+    verifySubscription()
+      .then(() => {
+        router.push("/home");
+      })
+      .catch(() => {
+        // Do nothing
+      });
   }, []);
 
   return (

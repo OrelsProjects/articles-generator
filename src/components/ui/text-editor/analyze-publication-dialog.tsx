@@ -66,12 +66,14 @@ interface AnalyzePublicationDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onAnalyzing?: (analyzing: boolean) => void;
+  onAnalyzed?: () => void;
 }
 
 export function AnalyzePublicationDialog({
   open,
   onOpenChange,
   onAnalyzing,
+  onAnalyzed,
 }: AnalyzePublicationDialogProps) {
   const dispatch = useAppDispatch();
   const { analyzePublication, validatePublication } = usePublication();
@@ -160,6 +162,7 @@ export function AnalyzePublicationDialog({
     try {
       handleBylineSelect(byline);
       await analyzePublication(url, byline);
+      onAnalyzed?.();
     } catch (error: any) {
       Logger.error("Error analyzing publication:", error);
       if (error.response?.status === 404) {
@@ -302,7 +305,7 @@ export function AnalyzePublicationDialog({
         >
           <DialogHeader>
             <DialogTitle className="text-xl">
-              We&apos;re about to analyze your publication
+              Your publication is being analyzed
             </DialogTitle>
             <DialogDescription className="text-base pt-2">
               This process will take several minutes to complete as we analyze

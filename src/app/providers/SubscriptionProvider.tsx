@@ -17,7 +17,7 @@ export default function SubscriptionProvider({
       await verifySubscription();
       setHasSubscription(true);
     } catch (error) {
-      console.error(error);
+      // Do nothing
     } finally {
       setLoading(false);
     }
