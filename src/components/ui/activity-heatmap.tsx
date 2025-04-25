@@ -71,6 +71,12 @@ export default function ActivityHeatmap({
   const streak = useMemo(() => {
     let count = 0;
     let currentDate = today;
+    const todayKey = format(today, "yyyy-MM-dd");
+    
+    // Skip today if it's empty
+    if (activityData[todayKey] === 0) {
+      currentDate = subDays(currentDate, 1);
+    }
 
     while (true) {
       const dateKey = format(currentDate, "yyyy-MM-dd");

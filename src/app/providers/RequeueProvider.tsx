@@ -42,7 +42,6 @@ export default function RequeueProvider() {
     if (didResetSchedules) return;
     if (scheduledNotes.length === 0) return;
     if (!isChrome() || isMobile) return;
-    debugger;
     // if notes were loaded but no scheduled notes, set DidResetSchedules to true
     if (
       scheduledNotes.length === 0 &&
@@ -82,7 +81,7 @@ export default function RequeueProvider() {
         isScheduled.current = false;
         setLoading(false);
       });
-  }, [shouldReschedule]);
+}, [shouldReschedule]);
 
   const handleCloseDialog = (open: boolean) => {
     if (!open) {
