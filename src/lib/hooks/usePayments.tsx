@@ -17,7 +17,7 @@ export default function usePayments() {
   const dispatch = useAppDispatch();
   const loadingProducts = useRef(false);
   const [loadingCredits, setLoadingCredits] = useState(false);
-  const [referral, setReferral] = useLocalStorage("referral", null);
+  const [referral] = useLocalStorage("referral", null);
   const { user } = useAppSelector(selectAuth);
 
   const getProducts = async () => {
@@ -39,9 +39,11 @@ export default function usePayments() {
 
   const goToCheckout = async (interval: "month" | "year", plan: string) => {
     try {
+      const affiliate = Rewardful.affiliate;
+      debugger;
       const response = await axios.post<{ sessionId: string }>(
         "/api/stripe/checkout",
-        { interval, plan, referral },
+        { interval, plan, localReferral: referral, referralId: affiliate?.id },
       );
       console.log("response", response.data);
       const stripe = await stripePromise;

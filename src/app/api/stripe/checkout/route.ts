@@ -11,7 +11,8 @@ import { getLookupKey } from "@/lib/utils/plans";
 const checkoutSchema = z.object({
   plan: z.enum(["hobbyist", "standard", "premium"]),
   interval: z.enum(["month", "year"]),
-  referralCode: z.string().optional(),
+  localReferral: z.string().optional(),
+  referralId: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -21,9 +22,8 @@ export async function POST(req: NextRequest) {
   }
   try {
     const nextUrl = req.nextUrl;
-    const { plan, interval, referralCode } = checkoutSchema.parse(
-      await req.json(),
-    );
+    const { plan, interval, localReferral, referralId } =
+      checkoutSchema.parse(await req.json());
 
     const userPastSubscription = await prisma.subscription.findFirst({
       where: {
@@ -87,7 +87,8 @@ export async function POST(req: NextRequest) {
       email: session.user.email || null,
       name: session.user.name || null,
       freeTrial: userHasSubscription ? 0 : 7,
-      referralCode,
+      localReferral,
+      referralId,
       allowCoupon: true,
     });
 

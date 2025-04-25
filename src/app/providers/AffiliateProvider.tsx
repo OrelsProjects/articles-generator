@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import Script from "next/script";
 
 export default function AffiliateProvider({
   children,
@@ -23,6 +24,19 @@ export default function AffiliateProvider({
       });
     }
   }, [setReferral]);
-
-  return children;
+  // <script>(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');</script>
+  // <script async src="https://r.wdfl.co/rw.js" data-rewardful="00b47f"></script>;
+  return (
+    <>
+      <Script
+        src="https://r.wdfl.co/rw.js"
+        data-rewardful="00b47f"
+        strategy="beforeInteractive"
+      />
+      <Script id="rewardful-script" strategy="beforeInteractive">
+        {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
+      </Script>
+      {children}
+    </>
+  );
 }

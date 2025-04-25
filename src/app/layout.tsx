@@ -91,19 +91,9 @@ export default function RootLayout({
             <SessionWrapper>
               <TopLoaderProvider />
               <ToastProvider />
-              <Script
-                src="https://r.wdfl.co/rw.js"
-                data-rewardful="00b47f"
-                strategy="beforeInteractive"
-              />
-              <Script id="rewardful-queue" strategy="beforeInteractive">
-                {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
-              </Script>
               <AffiliateProvider>
                 <Analytics />
-                <AnimationProvider>
-                  {children}
-                </AnimationProvider>
+                <AnimationProvider>{children}</AnimationProvider>
                 <ClientTrackersProvider />
               </AffiliateProvider>
             </SessionWrapper>
