@@ -11,7 +11,7 @@ function fixJsonRepair<T>(json: string): T | null {
     const jsonFixedObject = JSON.parse(jsonFixed) as T;
     return jsonFixedObject;
   } catch (error: any) {
-    loggerServer.error("Error fixing JSON:", error);
+    loggerServer.warn("Error fixing JSON:", error);
     return null;
   }
 }
@@ -28,7 +28,7 @@ function fixJson<T>(json: string): T | null {
   try {
     return JSON.parse(jsonFixed);
   } catch (error: any) {
-    loggerServer.error("Error fixing JSON:", error);
+    loggerServer.warn("Error fixing JSON:", error);
     return null;
   }
 }
@@ -48,7 +48,7 @@ export async function parseJson<T>(
       let jsonFixed = jsonFixedString.replace("```json", "").replace("```", "");
       const jsonFixedObject = fixJson<{ json: T }>(jsonFixed);
       if (!jsonFixedObject) {
-        loggerServer.error("Failed to fix JSON:", { jsonFixed });
+        loggerServer.warn("Failed to fix JSON:", { jsonFixed });
         throw new Error("Failed to fix JSON");
       }
       const attemptParseJson = jsonFixedObject.json;

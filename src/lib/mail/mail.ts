@@ -1,5 +1,6 @@
 import Mailchimp, { MessagesMessage } from "@mailchimp/mailchimp_transactional";
 import client from "@mailchimp/mailchimp_marketing";
+import loggerServer from "@/loggerServer";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
 const mailchimpTx = Mailchimp(process.env.MAILCHIMP_API_KEY || "");
@@ -30,7 +31,7 @@ export const sendMail = async ({
 }: {
   to: string | string[];
   subject: string;
-  from: "support" | "noreply" | "welcome"
+  from: "support" | "noreply" | "welcome";
   template: string;
   cc?: string[];
 }) => {
@@ -51,7 +52,8 @@ export const sendMail = async ({
     console.log("Mail sent successfully:", response);
     return response;
   } catch (error: any) {
-    throw new Error(`Error sending mail: ${error.message}`);
+    loggerServer.error(`Error sending mail: ${error.message}`);
+    return null;
   }
 };
 

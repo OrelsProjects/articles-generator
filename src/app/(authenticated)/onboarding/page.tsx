@@ -44,7 +44,7 @@ export default function OnboardingPage() {
   const handleAlreadyAnalyzed = async () => {
     try {
       setLoadingAnalyzed(true);
-      await axios.get("/api/user/publications/validate-analysis");
+      await axios.post("/api/user/publications/validate-analysis");
       handleNavigateNext();
     } catch (error) {
       console.error(error);
