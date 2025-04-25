@@ -72,7 +72,7 @@ export default function ActivityHeatmap({
     let count = 0;
     let currentDate = today;
     const todayKey = format(today, "yyyy-MM-dd");
-    
+
     // Skip today if it's empty
     if (activityData[todayKey] === 0) {
       currentDate = subDays(currentDate, 1);
@@ -145,11 +145,11 @@ export default function ActivityHeatmap({
   const getCellColor = (normalizedLevel: number) => {
     return cn(
       "h-[20px] w-[20px] rounded-sm",
-      normalizedLevel === 0 && "bg-blue-50 dark:bg-slate-800",
-      normalizedLevel === 1 && "bg-orange-100",
-      normalizedLevel === 2 && "bg-orange-200",
-      normalizedLevel === 3 && "bg-orange-400",
-      normalizedLevel === 4 && "bg-orange-600",
+      normalizedLevel === 0 && "bg-muted-foreground/10",
+      normalizedLevel === 1 && "bg-orange-100 dark:bg-orange-300",
+      normalizedLevel === 2 && "bg-orange-200 dark:bg-orange-400",
+      normalizedLevel === 3 && "bg-orange-400 dark:bg-orange-500",
+      normalizedLevel === 4 && "bg-orange-600 dark:bg-orange-600",
     );
   };
 
@@ -165,7 +165,10 @@ export default function ActivityHeatmap({
           {/* Day labels skeleton */}
           <div className="flex flex-col text-xs pr-2 space-y-[22px]">
             {["Sun", "Tue", "Thu", "Sat"].map((day, i) => (
-              <div key={i} className="h-4 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              <div
+                key={i}
+                className="h-4 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
+              ></div>
             ))}
           </div>
 
@@ -174,7 +177,7 @@ export default function ActivityHeatmap({
               {/* Grid skeleton */}
               <div className="flex flex-col gap-[2px]">
                 <div className="grid grid-cols-[repeat(53,_minmax(0,_1fr))] gap-[24px]">
-                  {Array.from({ length: 53 }).map((_, weekIndex) => (
+                  {Array.from({ length: 40 }).map((_, weekIndex) => (
                     <div key={weekIndex} className="flex flex-col gap-[2px]">
                       {Array.from({ length: 7 }).map((_, dayIndex) => (
                         <div
@@ -183,17 +186,6 @@ export default function ActivityHeatmap({
                         ></div>
                       ))}
                     </div>
-                  ))}
-                </div>
-
-                {/* Month labels skeleton */}
-                <div className="flex text-xs mt-1 relative h-6">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="absolute h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
-                      style={{ left: `${i * 16}%` }}
-                    ></div>
                   ))}
                 </div>
               </div>
@@ -243,7 +235,10 @@ export default function ActivityHeatmap({
                   <div className="grid grid-cols-[repeat(53,_minmax(0,_1fr))] gap-[24px]">
                     <TooltipProvider>
                       {weeks.map((week, weekIndex) => (
-                        <div key={weekIndex} className="flex flex-col gap-[2px]">
+                        <div
+                          key={weekIndex}
+                          className="flex flex-col gap-[2px]"
+                        >
                           {Array.from({ length: 7 }).map((_, dayIndex) => {
                             const day = week[dayIndex];
                             if (!day)
@@ -275,7 +270,8 @@ export default function ActivityHeatmap({
                                 >
                                   <p>
                                     {activityValue}{" "}
-                                    {activityValue === 1 ? "note" : "notes"} <br />
+                                    {activityValue === 1 ? "note" : "notes"}{" "}
+                                    <br />
                                     on {format(day, "EEE, MMM d, yyyy")}
                                   </p>
                                 </TooltipContent>
@@ -315,26 +311,27 @@ export default function ActivityHeatmap({
 
           {/* Legend */}
           <div className="flex justify-end items-center gap-2 mt-2 text-xs text-muted-foreground">
-            <div className="w-[20px] h-[20px] rounded-sm bg-blue-50 dark:bg-slate-800"></div>
+            <div className="w-[20px] h-[20px] rounded-sm bg-muted-foreground/10"></div>
             <span>0</span>
-            <div className="w-[20px] h-[20px] rounded-sm bg-orange-100"></div>
+            <div className="w-[20px] h-[20px] rounded-sm bg-orange-100 dark:bg-orange-300"></div>
             <span>1-{Math.ceil(maxActivity / 4)}</span>
-            <div className="w-[20px] h-[20px] rounded-sm bg-orange-200"></div>
+            <div className="w-[20px] h-[20px] rounded-sm bg-orange-200 dark:bg-orange-400"></div>
             <span>
-              {Math.ceil(maxActivity / 4) + 1}-{Math.ceil(maxActivity / 2)}
+              {Math.ceil(maxActivity / 4)}-{Math.ceil(maxActivity / 2) - 1}
             </span>
-            <div className="w-[20px] h-[20px] rounded-sm bg-orange-400"></div>
+            <div className="w-[20px] h-[20px] rounded-sm bg-orange-400 dark:bg-orange-500"></div>
             <span>
-              {Math.ceil(maxActivity / 2) + 1}-{Math.ceil((3 * maxActivity) / 4)}
+              {Math.ceil(maxActivity / 2)}-
+              {Math.ceil((3 * maxActivity) / 4) -1}
             </span>
             <div className="w-[20px] h-[20px] rounded-sm bg-orange-600"></div>
             <span>
-              {Math.ceil((3 * maxActivity) / 4) + 1}-{maxActivity}
+              {Math.ceil((3 * maxActivity) / 4)}-{maxActivity}
             </span>
           </div>
         </>
       )}
-      
+
       {/* Disclaimer - shown always */}
       <div className="text-xs text-muted-foreground mt-4 italic">
         The data updates every 24 hours.

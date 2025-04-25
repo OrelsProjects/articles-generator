@@ -55,7 +55,7 @@ export const navItems: {
     href: "/statistics",
     icon: BarChart,
     locationInMobile: "sidebar",
-    adminOnly: true,
+    // adminOnly: true,
   },
   {
     name: "Settings",

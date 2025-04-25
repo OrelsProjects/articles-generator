@@ -8,7 +8,7 @@ export default function StatisticsPage() {
   const { streak, loading, error } = useNotesStats();
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="container mx-auto py-8 space-y-8 pb-20 md:pb-8">
       <div>
         <h1 className="text-3xl font-bold mb-4">Your Writing Activity</h1>
         <p className="text-muted-foreground mb-6">
