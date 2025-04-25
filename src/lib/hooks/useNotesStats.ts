@@ -38,7 +38,7 @@ export function useNotesStats() {
     }
 
     fetchStreakData();
-  }, [dispatch, streak.length, loading]);
+  }, []);
 
   return { streak, loading, error };
 }
