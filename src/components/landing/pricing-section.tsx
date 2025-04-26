@@ -92,23 +92,6 @@ export default function Pricing({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
-  const getFeaturesLost = (newPlan: Plan, oldPlan: Plan) => {
-    const newPlanFeatures = featureFlagsPerPlan[newPlan];
-    const oldPlanFeatures = featureFlagsPerPlan[oldPlan];
-    return oldPlanFeatures?.filter(
-      feature => !newPlanFeatures?.includes(feature),
-    );
-  };
-
-  const getFeaturesGained = (newPlan: Plan, oldPlan: Plan) => {
-    const newPlanFeatures = featureFlagsPerPlan[newPlan];
-    const oldPlanFeatures = featureFlagsPerPlan[oldPlan];
-    const mergedFeatures = [...newPlanFeatures, ...oldPlanFeatures].filter(
-      (feature, index, self) => self.indexOf(feature) === index,
-    );
-    return mergedFeatures;
-  };
-
   const handleGetStarted = async (plan: string) => {
     // If user is not authenticated or onboarding, proceed without showing dialog
     if (onboarding || !user) {
@@ -130,6 +113,7 @@ export default function Pricing({
     setLoading(true);
     try {
       if (onboarding) {
+        debugger;
         await goToCheckout(billingCycle, plan);
       } else {
         if (!user) {
