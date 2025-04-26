@@ -3,9 +3,7 @@ import loggerServer from "@/loggerServer";
 import { getStripeInstance } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { sendMail } from "@/lib/mail/mail";
-import {
-  welcomeTemplateTrial,
-} from "@/lib/mail/templates";
+import { welcomeTemplateTrial } from "@/lib/mail/templates";
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("session_id");
@@ -37,20 +35,24 @@ export async function GET(req: NextRequest) {
     const product = await getStripeInstance().products.retrieve(productId);
     const price = await getStripeInstance().prices.retrieve(priceId);
 
-    await prisma.payment.create({
-      data: {
-        sessionId,
-        productId,
-        priceId,
-        productName: product.name,
-        status: session.payment_status,
-        amountReceived: (price.unit_amount as number) / 100,
-        currency: price.currency as string,
-        user: {
-          connect: { id: userId },
+    try {
+      await prisma.payment.create({
+        data: {
+          sessionId,
+          productId,
+          priceId,
+          productName: product.name,
+          status: session.payment_status,
+          amountReceived: (price.unit_amount as number) / 100,
+          currency: price.currency as string,
+          user: {
+            connect: { id: userId },
+          },
         },
-      },
-    });
+      });
+    } catch (error: any) {
+      loggerServer.error("Failed to create payment", error);
+    }
 
     const plan = product.metadata?.plan;
 
