@@ -152,32 +152,27 @@ export async function POST(request: NextRequest) {
     while (retries > 0 && !didSucceed) {
       console.log("About to make fetch");
       try {
-        const proxy =
-          "http://orelz7_jgRif:8evBfV+LF_x4u=pa@unblock.oxylabs.io:60000";
+        // const proxy =
+        //   "http://orelz7_jgRif:8evBfV+LF_x4u=pa@unblock.oxylabs.io:60000";
 
         // Create the agent
-        const agent = new HttpsProxyAgent(proxy);
+        // const agent = new HttpsProxyAgent(proxy);
 
         response = await axios.post(
           "https://substack.com/api/v1/comment/feed",
           messageData,
           {
             headers: {
-              "Content-Type": "application/json",
+              "content-type": "application/json",
+              "sec-ch-ua":
+                '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": '"macOS"',
               Referer: "https://substack.com/home",
               "Referrer-Policy": "strict-origin-when-cross-origin",
               Cookie: `substack.sid=${cookie.value}`,
-              "User-Agent":
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-              "Sec-Fetch-Dest": "empty",
-              "Sec-Fetch-Mode": "cors",
-              "Sec-Fetch-Site": "same-origin",
-              "Sec-Ch-Ua": '"Chromium";v="120", "Not:A-Brand";v="99"',
-              "Sec-Ch-Ua-Mobile": "?0",
-              "Sec-Ch-Ua-Platform": "macOS",
-              Origin: "https://substack.com",
             },
-            httpsAgent: agent,
+            // httpsAgent: agent,
           },
         );
 

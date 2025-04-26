@@ -30,6 +30,9 @@ import Link from "next/link";
 import { StepSliderDialog } from "@/components/ui/step-slider-dialog";
 import usePayments from "@/lib/hooks/usePayments";
 import { DangerZone } from "@/components/settings/danger-zone";
+import { useBilling } from "@/lib/hooks/useBilling";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -37,6 +40,7 @@ export default function SettingsPage() {
   const { user } = useAppSelector(selectAuth);
   const { hasPublication } = useSettings();
   const { credits, cancelAt } = useAppSelector(selectSettings);
+  const { billingInfo, loading: loadingBilling } = useBilling();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showGetTokensDialog, setShowGetTokensDialog] = useState(false);
   const [loadingCancel, setLoadingCancel] = useState(false);
@@ -165,6 +169,90 @@ export default function SettingsPage() {
                     Cancel subscription
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Billing Section */}
+          <section>
+            <h2 className="text-2xl font-semibold mb-4">Billing Information</h2>
+            <Card>
+              <CardHeader>
+                <CardTitle>Subscription Details</CardTitle>
+                <CardDescription>
+                  Information about your current subscription plan and billing.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {loadingBilling ? (
+                  <div className="space-y-3">
+                    <Skeleton className="h-6 w-1/2" />
+                    <Skeleton className="h-6 w-2/3" />
+                    <Skeleton className="h-6 w-1/2" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Current Plan:</span>
+                        <Badge variant="outline" className="capitalize">
+                          {billingInfo?.plan || "Free"}
+                        </Badge>
+                        {billingInfo?.interval && (
+                          <span className="text-sm text-muted-foreground">
+                            (Billed {billingInfo.interval === "month" ? "monthly" : "yearly"})
+                          </span>
+                        )}
+                      </div>
+                      
+                      {billingInfo?.nextBillingDate && (
+                        <div>
+                          <span className="font-medium">Next Billing Date:</span>{" "}
+                          <span>
+                            {billingInfo.nextBillingDate.toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {billingInfo?.coupon && (
+                        <div className="mt-4 p-3 border border-border rounded-md bg-muted/30">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Applied Coupon:</span>
+                            <Badge 
+                              variant={billingInfo.coupon.isValid ? "default" : "outline"}
+                              className={billingInfo.coupon.isValid ? "bg-green-600" : "text-muted-foreground"}
+                            >
+                              {billingInfo.coupon.emoji} {billingInfo.coupon.name}
+                            </Badge>
+                          </div>
+                          <div className="mt-1">
+                            <span>{billingInfo.coupon.percentOff}% discount</span>
+                            {!billingInfo.coupon.isValid && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                This coupon is no longer active on your subscription.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="w-fit mt-4">
+                      <Button variant="outline" className="w-full" asChild>
+                        <Link
+                          href={"/settings/pricing"}
+                          className="text-foreground bg-card"
+                        >
+                          Update plan
+                        </Link>
+                      </Button>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </section>

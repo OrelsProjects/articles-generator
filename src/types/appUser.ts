@@ -6,6 +6,7 @@ export interface AppUserMeta {
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
   hadSubscription: boolean;
+  interval: "month" | "year";
   featureFlags: FeatureFlag[];
   isAdmin: boolean;
 }

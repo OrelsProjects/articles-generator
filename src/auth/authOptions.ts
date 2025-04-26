@@ -2,7 +2,7 @@ import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { FeatureFlag, Plan, PrismaClient, Subscription } from "@prisma/client";
-import { createDefaultUserSchedule } from "@/lib/dal/user-schedule";
+
 import { getActiveSubscription } from "@/lib/dal/subscription";
 
 const prisma = new PrismaClient();
@@ -52,6 +52,7 @@ export const authOptions: AuthOptions = {
         cancelAtPeriodEnd: activeSubscription?.cancelAtPeriodEnd || false,
         featureFlags: userMetadata?.featureFlags || [],
         hadSubscription: activeSubscription !== null,
+        interval: activeSubscription?.interval || "month",
         isAdmin: userMetadata?.isAdmin || false,
       };
       session.user.publicationId = userMetadata?.publicationId || "";

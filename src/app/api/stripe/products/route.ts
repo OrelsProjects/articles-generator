@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
       const priceYearlyCents = priceYearlyValue % 100;
 
       const priceStructure: Pricing = {
-        monthly: {
+        month: {
           id: priceMonthly.id,
           currency: priceMonthly.currency,
           price: priceMonthlyValue,
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
             priceWithCents: priceMonthlyValue,
           }),
         },
-        yearly: {
+        year: {
           id: priceYearly.id,
           currency: priceYearly.currency,
           price: priceYearlyValue,
@@ -95,7 +95,8 @@ export async function GET(req: NextRequest) {
     }
 
     const productsSortedByPrice = products.sort(
-      (a, b) => a.priceStructure.monthly.price - b.priceStructure.monthly.price,
+      (a, b) =>
+        a.priceStructure.month.price - b.priceStructure.month.price,
     );
 
     return NextResponse.json(

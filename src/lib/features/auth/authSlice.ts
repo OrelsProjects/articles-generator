@@ -58,6 +58,7 @@ const authSlice = createSlice({
           currentPeriodEnd: state.user.meta?.currentPeriodEnd || null,
           cancelAtPeriodEnd: state.user.meta?.cancelAtPeriodEnd || false,
           featureFlags: state.user.meta?.featureFlags || [],
+          interval: state.user.meta?.interval || "month",
           hadSubscription: state.user.meta?.hadSubscription || false,
           isAdmin: state.user.meta?.isAdmin || false,
         };

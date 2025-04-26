@@ -57,6 +57,7 @@ export default function AuthProvider({
           cancelAtPeriodEnd: session?.user?.meta?.cancelAtPeriodEnd || false,
           featureFlags: session?.user?.meta?.featureFlags || [],
           hadSubscription: session?.user?.meta?.hadSubscription || false,
+          interval: session?.user?.meta?.interval || "month",
           isAdmin: session?.user?.meta?.isAdmin || false,
         },
       };

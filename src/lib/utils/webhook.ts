@@ -18,7 +18,7 @@ import { creditsPerPlan } from "@/lib/plans-consts";
 import { getStripeInstance } from "@/lib/stripe";
 import { calculateNewPlanCreditsLeft } from "@/lib/utils/credits";
 import loggerServer from "@/loggerServer";
-import { Payment, Plan, Subscription } from "@prisma/client";
+import { Interval, Payment, Plan, Subscription } from "@prisma/client";
 import { Stripe } from "stripe";
 
 async function getUserBySubscription(subscription: Stripe.Subscription) {
@@ -58,6 +58,9 @@ export const getPlanByProductId = async (
 
 export async function handleSubscriptionCreated(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription;
+  const price = await getStripeInstance().prices.retrieve(
+    subscription.items.data[0].plan.id as string,
+  );
   const product = await getStripeInstance().products.retrieve(
     subscription.items.data[0].plan.product as string,
   );
@@ -115,6 +118,9 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
     currentPeriodStart: new Date(subscription.current_period_start * 1000),
     currentPeriodEnd: new Date(subscription.current_period_end * 1000),
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
+
+    interval: (price.recurring?.interval || "month") as Interval,
+    couponIdApplied: subscription.discount?.coupon?.id || null,
   };
 
   await prisma.subscription.upsert({
@@ -151,6 +157,9 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
 export async function handleSubscriptionUpdated(event: any) {
   const subscription = event.data.object as Stripe.Subscription;
   const subscriptionId = subscription.id;
+  const price = await getStripeInstance().prices.retrieve(
+    subscription.items.data[0].plan.id as string,
+  );
   const plan = await getPlanBySubscription(subscription);
   const user = await getUserBySubscription(subscription);
   if (!user) {
@@ -201,6 +210,8 @@ export async function handleSubscriptionUpdated(event: any) {
     trialEnd: subscription.trial_end
       ? new Date(subscription.trial_end * 1000)
       : currentSubscription.trialEnd,
+    interval: (price.recurring?.interval || "month") as Interval,
+    couponIdApplied: subscription.discount?.coupon?.id || null,
   };
 
   await prisma.subscription.update({

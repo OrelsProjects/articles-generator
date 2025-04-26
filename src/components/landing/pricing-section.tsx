@@ -313,7 +313,9 @@ export default function Pricing({
                       )}
                       variant={plan.popular ? "default" : "outline-primary"}
                       disabled={
-                        loading || user?.meta?.plan === plan.name.toLowerCase()
+                        loading ||
+                        (user?.meta?.plan === plan.name.toLowerCase() &&
+                          user?.meta?.interval === billingCycle)
                       }
                       onClick={() => handleGetStarted(plan.name.toLowerCase())}
                     >
@@ -321,7 +323,8 @@ export default function Pricing({
                         <RefreshCw className="mr-2 w-4 h-4 animate-spin" />
                       )}
                       {hadSubscription
-                        ? user?.meta?.plan === plan.name.toLowerCase()
+                        ? user?.meta?.plan === plan.name.toLowerCase() &&
+                          user?.meta?.interval === billingCycle
                           ? "Your plan"
                           : "Update plan"
                         : "Start free trial"}
