@@ -52,7 +52,10 @@ export const usePublicationSettings = () => {
     setError(null);
 
     try {
-      const response = await axios.post("/api/user/analyze");
+      const response = await axios.post(
+        "/api/user/publication-settings",
+        updatedSettings,
+      );
       setPublicationSettings(prev =>
         prev ? { ...prev, ...response.data.settings } : response.data.settings,
       );
