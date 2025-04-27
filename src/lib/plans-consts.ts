@@ -14,7 +14,7 @@ export const creditsPerPlan: PlanCredits = {
 };
 
 export const maxNotesShceduledPerPlan = {
-  hobbyist: 100,
+  hobbyist: 50,
   standard: INFINITY,
   premium: INFINITY,
 };
