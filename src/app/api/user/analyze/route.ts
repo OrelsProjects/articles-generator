@@ -199,7 +199,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { image, title, description } = await extractContent(
-      userPublication.customDomain || url,
+      url || userPublication.customDomain || "",
     );
 
     let top60Articles = (await getUserArticles(

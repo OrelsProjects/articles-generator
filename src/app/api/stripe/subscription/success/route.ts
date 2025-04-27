@@ -51,7 +51,17 @@ export async function GET(req: NextRequest) {
         },
       });
     } catch (error: any) {
-      loggerServer.error("Failed to create payment", error);
+      loggerServer.error(
+        "CRITICAL PAYMENT CREATION: Failed to create payment: " + error,
+        {
+          sessionId,
+          productId,
+          priceId,
+          productName: product.name,
+          status: session.payment_status,
+          amountReceived: (price.unit_amount as number) / 100,
+        },
+      );
     }
 
     const plan = product.metadata?.plan;
