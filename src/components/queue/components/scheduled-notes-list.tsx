@@ -19,6 +19,7 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 import { CustomDragOverlay } from "./custom-drag-overlay";
 import { useDragOverlay } from "../hooks/useDragOverlay";
+import { Logger } from "@/logger";
 
 interface ScheduledNotesListProps {
   days: Date[];
@@ -170,7 +171,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         const newDate = new Date(day);
         newDate.setHours(hour, minute, 0, 0);
 
-        console.log(`Rescheduling note ${noteId} to ${newDate.toISOString()}`);
+        Logger.info(`Rescheduling note ${noteId} to ${newDate.toISOString()}`);
 
         // Try to reschedule
         handleRescheduleNote(noteId, newDate);
@@ -182,7 +183,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
 
       if (targetNote && targetNote.scheduledTo) {
         const targetDate = new Date(targetNote.scheduledTo);
-        console.log(
+        Logger.info(
           `Rescheduling note ${noteId} to ${targetDate.toISOString()}`,
         );
 
@@ -197,7 +198,9 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       await updateNoteStatus(note.id, "draft");
     } catch (error) {
       toast.error("Failed to unschedule note");
-      console.error(error);
+      Logger.error("Failed to unschedule note", {
+        error: JSON.stringify(error),
+      });
     }
   };
 

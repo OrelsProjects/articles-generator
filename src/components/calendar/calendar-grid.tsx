@@ -29,6 +29,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { Logger } from "@/logger";
 
 interface CalendarGridProps {
   notes: NoteDraft[];
@@ -216,14 +217,16 @@ export function CalendarGrid({
 
     // If the event has an "over" property, update the drop target
     if (over) {
-      console.log("DRAG OVER", over.id);
+      Logger.info("DRAG OVER", {
+        overId: over.id,
+      });
       setDropTargetId(over.id as string);
 
       // Check if we've moved away from the edge zones
       if (over.id !== "left-edge-zone" && over.id !== "right-edge-zone") {
         // Clear edge detection if we're over something that's not an edge zone
         if (edgeDetection) {
-          console.log("EDGE DETECTION CLEARED");
+         Logger.info("EDGE DETECTION CLEARED");
           setEdgeDetection(null);
           setEdgeProgress(0);
           isOverEdgeRef.current = false;
@@ -247,7 +250,7 @@ export function CalendarGrid({
     } else {
       // If we're not over anything, also clear edge detection
       if (edgeDetection) {
-        console.log("EDGE DETECTION CLEARED (no over target)");
+       Logger.info("EDGE DETECTION CLEARED (no over target)");
         setEdgeDetection(null);
         setEdgeProgress(0);
         isOverEdgeRef.current = false;
@@ -273,7 +276,9 @@ export function CalendarGrid({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    console.log("DRAG END", over?.id);
+   Logger.info("DRAG END", {
+    overId: over?.id,
+   });
 
     // Clean up all timeouts and intervals
     if (monthChangeTimeout) {
@@ -306,10 +311,10 @@ export function CalendarGrid({
         !over.id.includes("T"))
     ) {
       // Date ISO strings contain 'T'
-      console.log("DROPPED OUTSIDE CALENDAR - RESTORING ORIGINAL POSITION");
+     Logger.info("DROPPED OUTSIDE CALENDAR - RESTORING ORIGINAL POSITION");
 
       if (draggedNote && originalNoteDate) {
-        console.log("Restoring to original date:", originalNoteDate);
+       Logger.info("Restoring to original date:", originalNoteDate);
         // Restore the note to its original date
         onNoteUpdate({
           ...draggedNote,
@@ -325,7 +330,7 @@ export function CalendarGrid({
 
     // Handle dropping on edge zones
     if (over.id === "left-edge-zone") {
-      console.log("DROPPED ON LEFT EDGE");
+     Logger.info("DROPPED ON LEFT EDGE");
       setSelectedDate(prevDate => subMonths(prevDate, 1));
       setDraggedNote(null);
       setDropTargetId(null);
@@ -334,7 +339,7 @@ export function CalendarGrid({
     }
 
     if (over.id === "right-edge-zone") {
-      console.log("DROPPED ON RIGHT EDGE");
+     Logger.info("DROPPED ON RIGHT EDGE");
       setSelectedDate(prevDate => addMonths(prevDate, 1));
       setDraggedNote(null);
       setDropTargetId(null);
@@ -365,7 +370,7 @@ export function CalendarGrid({
   };
 
   const handleDragCancel = () => {
-    console.log("DRAG CANCELLED");
+   Logger.info("DRAG CANCELLED");
 
     setDraggedNote(null);
     setDropTargetId(null);
@@ -392,13 +397,13 @@ export function CalendarGrid({
 
   // Edge detection handler for the left edge
   const handleLeftEdgeEnter = useCallback(() => {
-    console.log("LEFT EDGE ENTERED");
+   Logger.info("LEFT EDGE ENTERED");
     setEdgeDetection("left");
     isOverEdgeRef.current = true;
 
     // Start progress tracking
     if (!progressIntervalRef.current) {
-      console.log("Starting left edge progress tracking");
+     Logger.info("Starting left edge progress tracking");
       setEdgeProgress(0);
       const startTime = Date.now();
 
@@ -416,7 +421,7 @@ export function CalendarGrid({
 
         // When progress reaches 100%, change the month
         if (progress >= 100) {
-          console.log("Left edge progress complete, changing month");
+         Logger.info("Left edge progress complete, changing month");
           clearInterval(progressIntervalRef.current!);
           progressIntervalRef.current = null;
 
@@ -436,13 +441,13 @@ export function CalendarGrid({
 
   // Edge detection handler for the right edge
   const handleRightEdgeEnter = useCallback(() => {
-    console.log("RIGHT EDGE ENTERED");
+   Logger.info("RIGHT EDGE ENTERED");
     setEdgeDetection("right");
     isOverEdgeRef.current = true;
 
     // Start progress tracking
     if (!progressIntervalRef.current) {
-      console.log("Starting right edge progress tracking");
+     Logger.info("Starting right edge progress tracking");
       setEdgeProgress(0);
       const startTime = Date.now();
 
@@ -460,7 +465,7 @@ export function CalendarGrid({
 
         // When progress reaches 100%, change the month
         if (progress >= 100) {
-          console.log("Right edge progress complete, changing month");
+         Logger.info("Right edge progress complete, changing month");
           clearInterval(progressIntervalRef.current!);
           progressIntervalRef.current = null;
 

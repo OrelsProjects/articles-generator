@@ -34,7 +34,6 @@ export function useQueue() {
     const scheduledNotes = userNotes.filter(
       note => note.status === "scheduled" && note.scheduledTo,
     );
-    console.log("scheduledNotes", scheduledNotes);
     return scheduledNotes.sort((a, b) => {
       return (
         new Date(a.scheduledTo!).getTime() - new Date(b.scheduledTo!).getTime()
@@ -43,7 +42,6 @@ export function useQueue() {
   }, [userNotes]);
 
   const draftNotes = useMemo(() => {
-    console.log("Page", page);
     const drafts = userNotes.filter(note => note.status === "draft");
     const newSize = Math.min(page * pageSize, drafts.length);
     return drafts.slice(0, newSize);
@@ -275,7 +273,6 @@ export function useQueue() {
 
         // If no note is scheduled for this slot, return it
         if (!hasScheduledNote) {
-          console.log("scheduleDate", scheduleDate);
           return scheduleDate;
         }
       }
@@ -306,14 +303,12 @@ export function useQueue() {
   };
 
   const nextPage = () => {
-    console.log("next page. current page", pageRef.current);
     const newPage = pageRef.current + 1;
     pageRef.current = newPage;
     setPage(newPage);
   };
 
   const resetPage = () => {
-    console.log("resetting page. current page", page);
     pageRef.current = 1;
     setPage(1);
   };

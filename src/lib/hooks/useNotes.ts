@@ -178,7 +178,7 @@ export const useNotes = () => {
           model: hasAdvancedGPT ? model : undefined,
           preSelectedPostIds: options?.preSelectedPostIds || [],
         };
-        
+
         EventTracker.track("notes_generate_new_notes", { model });
         const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
           "/api/notes/generate",
@@ -616,7 +616,7 @@ export const useNotes = () => {
         const note = userNotes.find(note => note.id === noteId);
         if (!note) return;
         // await axios.get(`/api/user/notes/${noteId}/should-send`);
-        console.log("Sending note", note);
+        Logger.info("Sending note", note);
         const attachmentIds: string[] = [];
 
         if (note.attachments?.length) {
@@ -625,6 +625,7 @@ export const useNotes = () => {
           }>(`/api/note/${noteId}/image/${note.attachments?.[0]?.id}`);
           attachmentIds.push(...responseAttachment.data.attachmentIds);
         }
+        Logger.info("Attachment IDs", attachmentIds);
         const body = attachmentIds
           ? {
               message: note.body,
@@ -639,6 +640,7 @@ export const useNotes = () => {
                 noteId,
               },
             };
+        Logger.info("Body", body);
         const response = await sendNoteExtension(body);
         sendResponse = response;
       } catch (error: any) {

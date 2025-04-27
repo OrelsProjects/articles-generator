@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogDescription,
@@ -14,6 +16,7 @@ import { useQueue } from "@/lib/hooks/useQueue";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/hooks/redux";
+import { Logger } from "@/logger";
 
 export default function RequeueProvider() {
   const [didResetSchedules, setDidResetSchedules] = useLocalStorage(
@@ -58,16 +61,22 @@ export default function RequeueProvider() {
     if (didResetSchedules) return;
     if (isScheduled.current) return;
     isScheduled.current = true;
-    console.log("scheduling notes");
+    Logger.info("scheduling notes");
     const scheduleNotes = async () => {
       for (const note of scheduledNotes) {
         setNotesRescheduled(prev => prev + 1);
         if (!note.scheduledTo) continue;
-        console.log("deleting schedule", note.id);
+        Logger.info("deleting schedule", {
+          noteId: note.id,
+        });
         await deleteSchedule(note.id);
-        console.log("scheduling note", note.id);
+        Logger.info("scheduling note", {
+          noteId: note.id,
+        });
         await scheduleNote(note, note.scheduledTo);
-        console.log("scheduled note", note.id);
+        Logger.info("scheduled note", {
+          noteId: note.id,
+        });
       }
     };
     setLoading(true);
@@ -77,7 +86,7 @@ export default function RequeueProvider() {
         setShowDialog(false);
       })
       .finally(() => {
-        console.log("finished scheduling notes");
+        Logger.info("finished scheduling notes");
         isScheduled.current = false;
         setLoading(false);
       });

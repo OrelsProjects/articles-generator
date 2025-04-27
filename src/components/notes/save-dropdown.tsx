@@ -38,22 +38,17 @@ export function SaveDropdown({
   const { getNextAvailableSchedule, loading: queueLoading } = useQueue();
   const [loading, setLoading] = useState(false);
 
-  //   console.log("nextAvailableSlot", nextAvailableSlot);
-
   const nextAvailableSlotText = () => {
     if (saving) {
       return <span className="font-semibold">Saving...</span>;
     }
     const nextAvailableSlot = getNextAvailableSchedule();
-    console.log("nextAvailableSlot", nextAvailableSlot);
     let text = null;
     const date = presetSchedule || nextAvailableSlot;
 
     if (date) {
       text = format(date, "MMM do, yyyy, HH:mm");
     }
-    console.log("date", date);
-    console.log("text", text);
     return (
       <div className={cn("flex flex-col")}>
         <span className="font-semibold">Add to Queue</span>

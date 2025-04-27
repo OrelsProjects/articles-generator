@@ -108,7 +108,6 @@ export function InspirationFilterDialog({
   const handleFilterChange = (key: keyof InspirationFilters, value: string) => {
     let newType =
       key === "type" ? (value as "all" | "relevant-to-user") : filters?.type;
-    console.log(newType);
     newType = newType || "all";
     setNewFilters({
       ...newFilters,
@@ -168,7 +167,6 @@ export function InspirationFilterDialog({
         isDateLimited = differenceInDays(dateRange.to, dateRange.from) < 365;
       } else if (dateRange.from) {
         const difference = differenceInDays(new Date(), dateRange.from);
-        console.log(difference);
         isDateLimited = difference < 30;
       }
     }

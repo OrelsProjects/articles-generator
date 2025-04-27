@@ -111,6 +111,10 @@ export function useExtension(): UseExtension {
             )
             .then((response: any) => {
               if (response?.success) {
+                Logger.info("Extension is firefox, with id: ", {
+                  extensionId: process.env.NEXT_PUBLIC_EXTENSION_ID,
+                  response,
+                });
                 resolve("success");
               } else {
                 Logger.error(
@@ -131,15 +135,16 @@ export function useExtension(): UseExtension {
           typeof chrome !== "undefined" &&
           chrome.runtime
         ) {
-          console.log(
-            "Extension is chrome, with id: ",
-            process.env.NEXT_PUBLIC_EXTENSION_ID,
-          );
+          Logger.info("Extension is chrome, with id: ", {
+            extensionId: process.env.NEXT_PUBLIC_EXTENSION_ID,
+          });
           chrome.runtime.sendMessage(
             process.env.NEXT_PUBLIC_EXTENSION_ID as string,
             pingMessage,
             (response: any) => {
-              console.log("response", response);
+              Logger.info("response", {
+                response,
+              });
               if (response?.success) {
                 resolve("success");
               } else {
@@ -230,7 +235,7 @@ export function useExtension(): UseExtension {
       setError(null);
 
       try {
-        console.log("Sending note from useExtension", params);
+        Logger.info("Sending note from useExtension", params);
         // Validate parameters
         if (!params.message || params.message.trim().length === 0) {
           throw new Error(SubstackError.INVALID_PARAMETERS);
@@ -239,6 +244,10 @@ export function useExtension(): UseExtension {
         const adf = await axios.post("/api/markdown-to-adf", {
           markdown: params.message,
         });
+        Logger.info("adf", {
+          data: JSON.stringify(adf.data),
+        });
+
         const messageData = {
           bodyJson: adf.data,
           attachmentIds: params.attachmentIds,
@@ -251,10 +260,12 @@ export function useExtension(): UseExtension {
         };
 
         // Send message to extension
-        console.log("Sending message to extension", message);
+        Logger.info("Sending message to extension", message);
         const sendMessageResponse =
           await sendExtensionMessage<CreatePostResponse>(message);
-        console.log("sendMessageResponse", sendMessageResponse);
+        Logger.info("sendMessageResponse", {
+          data: JSON.stringify(sendMessageResponse),
+        });
         if (sendMessageResponse.success && sendMessageResponse.result) {
           setPostResponse(sendMessageResponse.result);
           setIsLoading(false);
@@ -265,7 +276,9 @@ export function useExtension(): UseExtension {
           );
         }
       } catch (error) {
-        console.log("Error in createNote", error);
+        Logger.error("Error in createNote", {
+          error: JSON.stringify(error),
+        });
         if (error instanceof Error) {
           setError(error.message);
         } else {

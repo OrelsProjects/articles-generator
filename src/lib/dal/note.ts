@@ -1,6 +1,6 @@
 import prisma, { prismaArticles } from "@/app/api/_db/db";
 import { NoteDraft } from "@/types/note";
-import { Note, S3Attachment, SubstackImage } from "@prisma/client";
+import { Note, S3Attachment } from "@prisma/client";
 
 export type CreateNote = Omit<Note, "id" | "createdAt" | "updatedAt">;
 

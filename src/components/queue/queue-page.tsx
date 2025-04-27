@@ -97,12 +97,6 @@ export function QueuePage() {
   // Make sure it doesn't trigger too many times, due to a fast scroll.
   useEffect(() => {
     const handleScroll = () => {
-      console.log(
-        "scroll",
-        window.innerHeight,
-        window.scroll,
-        document.body.scrollHeight,
-      );
       if (
         window.innerHeight + window.scrollY >=
         document.body.scrollHeight * 0.6
@@ -110,16 +104,13 @@ export function QueuePage() {
         if (scrollTimeoutRef.current) {
           clearTimeout(scrollTimeoutRef.current);
         }
-        console.log("fetching more scheduled notes");
         scrollTimeoutRef.current = setTimeout(() => {
-          console.log("fetching more scheduled notes 2");
           nextPage();
         }, 100);
       }
     };
     const mainContentScroll = document.getElementById("main-content-scroll");
     if (mainContentScroll) {
-      console.log("adding scroll event listener");
       mainContentScroll.addEventListener("scroll", handleScroll);
     }
     return () => {

@@ -29,6 +29,7 @@ import {
   FEEDBACK_OPTIONS,
 } from "@/components/ui/note-component/dislike-button";
 import { NoteImageContainer } from "@/components/notes/note-image-container";
+import { Logger } from "@/logger";
 
 export type NoteProps = {
   note: Note | NoteDraft;
@@ -316,7 +317,7 @@ export default function NoteComponent({
         : feedbackReason;
 
       // Log the feedback reason
-      console.log("Feedback reason:", reasonLabel);
+      Logger.info("Feedback reason:", { reasonLabel });
 
       // Show a more specific toast message based on the feedback reason
       toast.info(

@@ -30,6 +30,7 @@ import type {
 import { toast } from "react-toastify";
 import { Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Logger } from "@/logger";
 
 export function StatusBoard({
   initialColumns,
@@ -53,7 +54,7 @@ export function StatusBoard({
   // Logging helper
   const log = (...args: any[]) => {
     if (debug) {
-      console.log(...args);
+      Logger.info("logger status-board", ...args);
     }
   };
 

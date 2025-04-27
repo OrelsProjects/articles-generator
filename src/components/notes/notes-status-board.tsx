@@ -8,6 +8,7 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { toast } from "react-toastify";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { FileText, Clock, CheckCircle, Archive } from "lucide-react";
+import { Logger } from "@/logger";
 
 export interface NotesStatusBoardProps {
   notes: NoteDraft[];
@@ -90,7 +91,11 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
     ) => {
       if (isUpdating) return;
 
-      console.log("Status change requested:", item.id, "to", newStatus);
+      Logger.info("Status change requested:", {
+        itemId: item.id,
+        newStatus,
+        previousStatus,
+      });
 
       try {
         setIsUpdating(true);
@@ -98,7 +103,9 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
         // Find the note by id
         const note = notes.find(n => n.id === item.id);
         if (!note) {
-          console.error("Note not found:", item.id);
+          Logger.error("Note not found:", {
+            itemId: item.id,
+          });
           toast.error("Note not found");
           return;
         }
@@ -109,7 +116,9 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
           toast.info("Schedule was canceled");
         }
       } catch (error) {
-        console.error("Error updating note status:", error);
+        Logger.error("Error updating note status:", {
+          error: JSON.stringify(error),
+        });
         toast.error("Failed to update note status");
         throw error;
       } finally {

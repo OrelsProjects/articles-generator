@@ -49,15 +49,14 @@ export default function usePayments() {
         "/api/stripe/checkout",
         { interval, plan, localReferral: referral, referralId: affiliate?.id },
       );
-      console.log("response", response.data);
+      Logger.info("response", { response: response.data });
       const stripe = await stripePromise;
-      console.log("stripe", stripe);
+      Logger.info("stripe", { stripe });
       const { error } = await stripe!.redirectToCheckout({
         sessionId: response.data.sessionId,
       });
-      console.log("error", error);
+      Logger.info("error", { error });
       if (error) {
-        console.log("error", error);
         Logger.error("Error redirecting to checkout", { error });
         throw error;
       }
