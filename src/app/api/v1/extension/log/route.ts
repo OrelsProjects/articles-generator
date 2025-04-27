@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 
 interface LogPayload {
@@ -12,11 +12,16 @@ interface LogPayload {
 
 export async function POST(request: NextRequest) {
   // Verify authentication
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  let session: Session | null = null;
+  try {
+    session = await getServerSession(authOptions);
+  } catch (error) {
+    console.error("Error processing extension log:", error);
+    return NextResponse.json(
+      { error: "Failed to process log" },
+      { status: 500 },
+    );
   }
-
   try {
     // Parse the request body
     const payload: LogPayload = await request.json();
@@ -25,7 +30,7 @@ export async function POST(request: NextRequest) {
     const { message, data, timestamp, source, level } = payload;
 
     // Format log message with timestamp and user info
-    const logPrefix = `[${timestamp}] [${source}] [${session.user.name || session.user.email}]`;
+    const logPrefix = `[${timestamp}] [${source}] [${session?.user.name || session?.user.email || "unknown"}]`;
 
     // Log to console based on the message content
     if (level === "error") {
