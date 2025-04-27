@@ -60,13 +60,7 @@ export async function POST(
       id: s3Attachment.id,
       url: s3Attachment.s3Url,
     };
-
-    const substackId = await uploadImageSubstack(buffer, {
-      userId: note.userId,
-      noteId: id,
-      s3AttachmentId: s3Attachment.id,
-    });
-
+    
     return NextResponse.json(response, {
       status: 200,
     });
