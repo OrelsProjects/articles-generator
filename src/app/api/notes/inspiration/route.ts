@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
 
     const likes = filters.minLikes;
     const minLikes = likes ? likes : 50;
-    const extraMinLikes = likes ? likes : 50;
+    const extraMinLikes = likes ? likes : 150;
     const minRandom = likes ? Math.random() / 2 : Math.random();
     const maxLikes = likes ? likes * 2 : 5000;
     const extraMaxLikes = likes ? likes * 2 : 0;

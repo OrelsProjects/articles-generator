@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { PuzzleIcon } from "lucide-react";
 
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
+
 interface ExtensionInstallDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -47,7 +49,7 @@ export function ExtensionInstallDialog({
             Chrome Extension Required
           </DialogTitle>
           <DialogDescription>
-            To post directly to Substack, you need to install WriteStack&apos;s
+            The action you are trying to perform requires {appName}&apos;s
             Chrome extension. It only takes a minute and enables scheduling
             notes.
             <br />

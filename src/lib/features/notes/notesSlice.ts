@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
 import { Note, NoteDraft, NoteDraftImage } from "@/types/note";
 import { Filter } from "@/lib/dal/milvus";
-import { UserSchedule } from "@/types/schedule";
+import { Discrepancy, UserSchedule } from "@/types/schedule";
 
 export interface NotesState {
   userNotes: NoteDraft[];
@@ -25,6 +25,7 @@ export interface NotesState {
   thumbnail: string | null;
   name: string | null;
   userSchedules: UserSchedule[];
+  schedulesDiscrepancies: Discrepancy[];
 }
 
 export const initialState: NotesState = {
@@ -48,6 +49,7 @@ export const initialState: NotesState = {
   handle: null,
   thumbnail: null,
   name: null,
+  schedulesDiscrepancies: [], // TODO: remove this
 };
 
 const notesSlice = createSlice({
@@ -261,6 +263,12 @@ const notesSlice = createSlice({
         schedule.id === action.payload.id ? action.payload : schedule,
       );
     },
+    setSchedulesDiscrepancies: (
+      state,
+      action: PayloadAction<Discrepancy[]>,
+    ) => {
+      state.schedulesDiscrepancies = action.payload;
+    },
   },
 });
 
@@ -291,6 +299,7 @@ export const {
   addUserSchedule,
   removeUserSchedule,
   updateUserSchedule,
+  setSchedulesDiscrepancies,
 } = notesSlice.actions;
 
 export const selectNotes = (state: RootState) => state.notes;

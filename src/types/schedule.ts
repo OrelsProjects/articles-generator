@@ -1,3 +1,5 @@
+import { GetSchedulesResponse } from "@/types/useExtension.type";
+import { NoteDraft } from "@/types/note";
 import { UserSchedule as UserSchedulePrisma } from "@prisma/client";
 
 export type UserSchedule = Omit<
@@ -6,6 +8,16 @@ export type UserSchedule = Omit<
 >;
 
 export type CreateUserSchedule = Omit<UserSchedule, "id">;
+
+// Define discrepancy types
+export interface Discrepancy {
+  type: "missing_schedule" | "missing_alarm" | "time_mismatch" | "missing_note";
+  noteId?: string;
+  scheduleId?: string;
+  details: string;
+  note?: NoteDraft;
+  schedule?: GetSchedulesResponse;
+}
 
 export type Days = {
   sunday: boolean;

@@ -71,6 +71,17 @@ export interface Schedule {
   timestamp: number;
 }
 
+export interface Alarm {
+  name: string;
+  scheduledTime: number;
+  periodInMinutes?: number | undefined;
+}
+
+export interface GetSchedulesResponse {
+  schedules: Schedule[];
+  alarms: Alarm[];
+}
+
 /**
  * Message to send to the extension
  */
@@ -123,5 +134,5 @@ export interface UseExtension {
     timestamp: number,
   ) => Promise<Schedule | null>;
   deleteSchedule: (scheduleId: string) => Promise<boolean>;
-  getSchedules: () => Promise<Schedule[]>;
+  getSchedules: () => Promise<GetSchedulesResponse>;
 }

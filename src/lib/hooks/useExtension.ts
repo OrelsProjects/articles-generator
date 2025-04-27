@@ -10,6 +10,7 @@ import {
   BrowserType,
   GetSubstackCookiesResponse,
   Schedule,
+  GetSchedulesResponse,
 } from "@/types/useExtension.type";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { CreatePostResponse } from "@/types/createPostResponse";
@@ -98,68 +99,31 @@ export function useExtension(): UseExtension {
 
     setTimeout(() => {
       loadingPing.current = false;
-    }, 5000);
+    }, 3000);
 
     return new Promise(resolve => {
       try {
-        // Firefox implementation
-        if (browserType === "firefox" && typeof browser !== "undefined") {
-          browser.runtime
-            .sendMessage(
-              process.env.NEXT_PUBLIC_EXTENSION_ID as string,
-              pingMessage,
-            )
-            .then((response: any) => {
-              if (response?.success) {
-                Logger.info("Extension is firefox, with id: ", {
-                  extensionId: process.env.NEXT_PUBLIC_EXTENSION_ID,
-                  response,
-                });
-                resolve("success");
-              } else {
-                Logger.error(
-                  "Extension not found in Firefox: " +
-                    JSON.stringify(response || ""),
-                );
-                resolve("error");
-              }
-            })
-            .catch((err: unknown) => {
-              Logger.error("Firefox extension error: " + JSON.stringify(err));
-              resolve("error");
+        Logger.info("Extension is chrome, with id: ", {
+          extensionId: process.env.NEXT_PUBLIC_EXTENSION_ID,
+        });
+        chrome.runtime.sendMessage(
+          process.env.NEXT_PUBLIC_EXTENSION_ID as string,
+          pingMessage,
+          (response: any) => {
+            Logger.info("response", {
+              response,
             });
-        }
-        // Chrome implementation
-        else if (
-          browserType === "chrome" &&
-          typeof chrome !== "undefined" &&
-          chrome.runtime
-        ) {
-          Logger.info("Extension is chrome, with id: ", {
-            extensionId: process.env.NEXT_PUBLIC_EXTENSION_ID,
-          });
-          chrome.runtime.sendMessage(
-            process.env.NEXT_PUBLIC_EXTENSION_ID as string,
-            pingMessage,
-            (response: any) => {
-              Logger.info("response", {
-                response,
-              });
-              if (response?.success) {
-                resolve("success");
-              } else {
-                Logger.error(
-                  "Extension not found in Chrome: " +
-                    JSON.stringify(response || ""),
-                );
-                resolve("error");
-              }
-            },
-          );
-        } else {
-          Logger.error("Unsupported browser or extension API not available");
-          resolve("error");
-        }
+            if (response?.success) {
+              resolve("success");
+            } else {
+              Logger.error(
+                "Extension not found in Chrome: " +
+                  JSON.stringify(response || ""),
+              );
+              resolve("error");
+            }
+          },
+        );
       } catch (error) {
         Logger.error("Extension verify error: " + JSON.stringify(error));
         resolve("error");
@@ -167,17 +131,28 @@ export function useExtension(): UseExtension {
     });
   }, [browserType]);
 
-  const hasExtension = useCallback(async (): Promise<boolean> => {
-    const verificationStatus = await verifyExtension();
-    return verificationStatus === "success";
-  }, [verifyExtension]);
+  const hasExtension = useCallback(
+    async (options?: { showDialog?: boolean }): Promise<boolean> => {
+      const verificationStatus = await verifyExtension();
+      if (options?.showDialog && verificationStatus === "error") {
+        dispatch(setShowExtensionDialog(true));
+      }
+      return verificationStatus === "success";
+    },
+    [verifyExtension],
+  );
 
   // get substack cookies ("getSubstackCookies") from the extension. The name of the function is getSubstackCookies
   const setUserSubstackCookies = useCallback(async (): Promise<void> => {
-    const response = await sendExtensionMessage<GetSubstackCookiesResponse>({
-      type: "API_REQUEST",
-      action: "getSubstackCookies",
-    });
+    const response = await sendExtensionMessage<GetSubstackCookiesResponse>(
+      {
+        type: "API_REQUEST",
+        action: "getSubstackCookies",
+      },
+      {
+        showDialog: false,
+      },
+    );
     try {
       await axios.post("/api/user/cookies", response.result);
     } catch (error) {
@@ -189,8 +164,13 @@ export function useExtension(): UseExtension {
 
   const sendExtensionMessage = async <T>(
     message: ExtensionMessage,
+    options: { showDialog?: boolean },
   ): Promise<ExtensionResponse<T>> => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+      const canUseExtension = await hasExtension(options);
+      if (!canUseExtension) {
+        reject(new Error(SubstackError.EXTENSION_DISABLED));
+      }
       const timeoutId = setTimeout(
         () => reject(new Error(SubstackError.NETWORK_ERROR)),
         5000,
@@ -262,7 +242,9 @@ export function useExtension(): UseExtension {
         // Send message to extension
         Logger.info("Sending message to extension", message);
         const sendMessageResponse =
-          await sendExtensionMessage<CreatePostResponse>(message);
+          await sendExtensionMessage<CreatePostResponse>(message, {
+            showDialog: true,
+          });
         Logger.info("sendMessageResponse", {
           data: JSON.stringify(sendMessageResponse),
         });
@@ -321,7 +303,9 @@ export function useExtension(): UseExtension {
           params: [scheduleId, userId, timestamp],
         };
 
-        const response = await sendExtensionMessage<Schedule>(message);
+        const response = await sendExtensionMessage<Schedule>(message, {
+          showDialog: true,
+        });
 
         if (response.success && response.result) {
           return response.result;
@@ -355,7 +339,10 @@ export function useExtension(): UseExtension {
           params: [scheduleId],
         };
 
-        const response = await sendExtensionMessage<boolean>(message);
+        debugger;
+        const response = await sendExtensionMessage<boolean>(message, {
+          showDialog: true,
+        });
         if (response.success && response.result !== undefined) {
           return response.result;
         }
@@ -372,7 +359,7 @@ export function useExtension(): UseExtension {
    * Get all schedules
    * @returns {Promise<Schedule[]>} Promise resolving to array of schedules
    */
-  const getSchedules = useCallback(async (): Promise<Schedule[]> => {
+  const getSchedules = useCallback(async (): Promise<GetSchedulesResponse> => {
     try {
       const message: ExtensionMessage = {
         type: "API_REQUEST",
@@ -380,14 +367,24 @@ export function useExtension(): UseExtension {
         params: [],
       };
 
-      const response = await sendExtensionMessage<Schedule[]>(message);
-      if (response.success && response.result) {
-        return response.result;
+      const response = await sendExtensionMessage<GetSchedulesResponse>(
+        message,
+        {
+          showDialog: false,
+        },
+      );
+      debugger;
+      if (response.success) {
+        if (response.result) {
+          return response.result;
+        } else {
+          return { schedules: [], alarms: [] };
+        }
       }
-      return [];
+      throw new Error(response.error || SubstackError.UNKNOWN_ERROR);
     } catch (error) {
       console.error("Error getting schedules:", error);
-      return [];
+      throw error;
     }
   }, [sendExtensionMessage]);
 

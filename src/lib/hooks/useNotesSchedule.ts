@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { selectNotes, updateNote } from "@/lib/features/notes/notesSlice";
 import { NoteDraft } from "@/types/note";
@@ -8,6 +8,7 @@ import { useExtension } from "@/lib/hooks/useExtension";
 import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 import { ScheduleLimitExceededError } from "@/types/errors/ScheduleLimitExceededError";
 import { selectAuth } from "@/lib/features/auth/authSlice";
+import { GetSchedulesResponse, Schedule } from "@/types/useExtension.type";
 
 export const useNotesSchedule = () => {
   const { user } = useAppSelector(selectAuth);
@@ -16,12 +17,14 @@ export const useNotesSchedule = () => {
   const {
     setUserSubstackCookies,
     createSchedule,
+    getSchedules,
     deleteSchedule: deleteScheduleExtension,
   } = useExtension();
 
   const [loadingScheduleNote, setLoadingScheduleNote] = useState(false);
   const [isIntervalRunning, setIsIntervalRunning] = useState(false);
   const checkScheduleInterval = useRef<NodeJS.Timeout | null>(null);
+  const loadingGetSchedules = useRef(false);
 
   const canSchedule = async (options: { setCookiesIfVerified: boolean }) => {
     try {
@@ -141,6 +144,23 @@ export const useNotesSchedule = () => {
     }
   }, []);
 
+  const getSchedulesFromExtension =
+    useCallback(async (): Promise<GetSchedulesResponse> => {
+      try {
+        if (loadingGetSchedules.current) throw new Error("Loading schedules");
+        debugger;
+        loadingGetSchedules.current = true;
+        const schedules = await getSchedules();
+        return schedules;
+      } catch (error) {
+        Logger.error("Error getting schedules", { error });
+        loadingGetSchedules.current = false;
+        throw error;
+      } finally {
+        loadingGetSchedules.current = false;
+      }
+    }, []);
+
   return {
     notes: userNotes,
     loading: loadingNotes,
@@ -150,6 +170,7 @@ export const useNotesSchedule = () => {
     isIntervalRunning,
     cancelCanUserScheduleInterval,
     scheduleNote,
+    getSchedulesFromExtension,
     deleteSchedule,
   };
 };
