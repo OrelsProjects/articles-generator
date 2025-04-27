@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
     // Log to console based on the message content
     if (level === "error") {
       if (data) {
-        console.error(`${logPrefix} ERROR:`, message, JSON.parse(data));
+        console.log(`${logPrefix} ERROR:`, message, JSON.parse(data));
       } else {
-        console.error(`${logPrefix} ERROR:`, message);
+        console.log(`${logPrefix} ERROR:`, message);
       }
     } else {
       if (data) {
