@@ -9,7 +9,11 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { getTokenCount, runPrompt } from "@/lib/open-router";
 import { Publication } from "@/types/publication";
-import { getPublicationByUrl } from "@/lib/dal/publication";
+import {
+  getPublicationByUrl,
+  updatePublication,
+  updatePublicationCustomDomain
+} from "@/lib/dal/publication";
 import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
 import { Article, ArticleWithBody, DescriptionObject } from "@/types/article";
@@ -201,6 +205,20 @@ export async function POST(req: NextRequest) {
     const { image, title, description } = await extractContent(
       url || userPublication.customDomain || "",
     );
+
+    if (userPublication.customDomain) {
+      await updatePublicationCustomDomain(
+        userPublication.id.toString(),
+        userPublication.customDomain,
+        url,
+      );
+    }
+
+    await updatePublication(userPublication.id.toString(), {
+      logoUrl: image,
+      name: title,
+      heroText: description,
+    });
 
     let top60Articles = (await getUserArticles(
       { publicationId: Number(userPublication.id) },

@@ -264,3 +264,33 @@ export async function createPublication(url: string): Promise<number | null> {
 
   return Number(userPublication.id);
 }
+
+export async function updatePublication(publicationId: string, data: Partial<Publication>) {
+  await prismaArticles.publication.update({
+    where: { id: Number(publicationId) },
+    data,
+  });
+}
+
+export async function updatePublicationCustomDomain(publicationId: string, oldCustomDomain: string, customDomain: string) {
+  let isOldUrlValid = false;
+  let isNewUrlValid = false;
+  try {
+    const response = await fetch(oldCustomDomain);
+    isOldUrlValid = response.ok;
+  } catch (error) {
+    isOldUrlValid = false;
+  }
+  try {
+    const response = await fetch(customDomain);
+    isNewUrlValid = response.ok;
+  } catch (error) {
+    isNewUrlValid = false;
+  }
+  if (!isOldUrlValid && isNewUrlValid) {
+    await prismaArticles.publication.update({
+      where: { id: Number(publicationId) },
+      data: { customDomain },
+    });
+  }
+}
