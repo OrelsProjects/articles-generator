@@ -39,8 +39,12 @@ export default function usePayments() {
 
   const goToCheckout = async (interval: "month" | "year", plan: string) => {
     try {
-      const affiliate = Rewardful.affiliate;
-      debugger;
+      let affiliate = null;
+      try {
+        affiliate = await Rewardful.affiliate;
+      } catch (error) {
+        Logger.error("Error getting affiliate", { error });
+      }
       const response = await axios.post<{ sessionId: string }>(
         "/api/stripe/checkout",
         { interval, plan, localReferral: referral, referralId: affiliate?.id },
