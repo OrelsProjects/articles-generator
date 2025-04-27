@@ -113,7 +113,7 @@ export default function Pricing({
     setLoading(true);
     try {
       if (onboarding) {
-        debugger;
+        
         await goToCheckout(billingCycle, plan);
       } else {
         if (!user) {

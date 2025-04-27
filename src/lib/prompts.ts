@@ -3,6 +3,7 @@ import { Model } from "@/lib/open-router";
 import { ArticleWithBody } from "@/types/article";
 import { Idea } from "@/types/idea";
 import { Note, PublicationMetadata, UserMetadata } from "@prisma/client";
+import { Post, Publication } from "../../prisma/generated/articles";
 
 export type ImprovementType = keyof typeof improvementPromptTemplates;
 
@@ -744,11 +745,13 @@ export const generateNotesPrompt = (
     maxLength: number;
     noteTemplates: { description: string }[];
     topic?: string;
+    preSelectedArticles?: Post[];
   } = {
     noteCount: 3,
     maxLength: 280,
     noteTemplates: [],
     topic: "",
+    preSelectedArticles: [],
   },
 ) => {
   const allTopics = [...userNotes.map(note => note.topics).flat()];
@@ -758,6 +761,10 @@ export const generateNotesPrompt = (
     acc[topic] = (acc[topic] || 0) + 1;
     return acc;
   }, {});
+
+  const shouldUseTopic =
+    (options.preSelectedArticles?.length || 0) === 0 ? true : false;
+
   const likedTopicsCount = notesUserLiked
     .map(note => note.topics)
     .flat()
@@ -779,7 +786,7 @@ export const generateNotesPrompt = (
     Think about unique ideas and use the user's provided notes as inspiration only. Be original.
     Notes are like tweets. They need to have one core idea, very impactful and engaging with an amazing hook.
       ${
-        topic
+        topic && shouldUseTopic
           ? `
         The topic of the notes MUST BE ${topic}. Do not deviate from it.
         `
@@ -836,7 +843,15 @@ export const generateNotesPrompt = (
     {
       role: "user",
       content: `
-          Here are topics I write about and I want you to write about them: ${userMetadata.noteTopics}
+          ${
+            !shouldUseTopic
+              ? `I want you to write notes that are revolving around these articles.:
+            ${options.preSelectedArticles?.map(article => `(${article.bodyText}`).join("\\n")}
+            ${topic ? `Here's extra details for the notes: ${topic}` : ""}
+            `
+              : ""
+          }
+          ${shouldUseTopic ? `Here are topics I write about and I want you to write about them: ${userMetadata.noteTopics}` : ""}
           ${publication.personalDescription ? `Here's a description of me (Very important): ${publication.personalDescription}` : ""}
           ${publication.preferredTopics.length > 0 ? `Here are my preferred topics. Use them to generate notes about me: ${publication.preferredTopics.join(", ")}` : ""}
 

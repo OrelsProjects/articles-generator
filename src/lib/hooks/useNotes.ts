@@ -164,7 +164,11 @@ export const useNotes = () => {
   const generateNewNotes = useCallback(
     async (
       model?: string,
-      options?: { useTopTypes?: boolean; topic?: string },
+      options?: {
+        useTopTypes?: boolean;
+        topic?: string;
+        preSelectedPostIds?: string[];
+      },
     ) => {
       try {
         dispatch(setLoadingNotesGenerate(true));
@@ -172,7 +176,9 @@ export const useNotes = () => {
           ...options,
           useTopTypes: hasAdvancedGPT ? options?.useTopTypes : false,
           model: hasAdvancedGPT ? model : undefined,
+          preSelectedPostIds: options?.preSelectedPostIds || [],
         };
+        
         EventTracker.track("notes_generate_new_notes", { model });
         const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
           "/api/notes/generate",

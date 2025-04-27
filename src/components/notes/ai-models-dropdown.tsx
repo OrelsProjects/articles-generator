@@ -65,7 +65,6 @@ export function AiModelsDropdown({
   const currentModel = AI_MODELS.find(model => model.value === selectedModel);
 
   return (
-    hasAdvancedGPT && (
       <div className={cn(className)}>
         <Select
           value={selectedModel}
@@ -97,6 +96,5 @@ export function AiModelsDropdown({
           </SelectContent>
         </Select>
       </div>
-    )
   );
 }

@@ -67,7 +67,7 @@ export function SaveDropdown({
   ) => {
     try {
       const nextAvailableSlot = getNextAvailableSchedule();
-      debugger;
+      
       setLoading(true);
       const date = options.forceNextDate
         ? nextAvailableSlot

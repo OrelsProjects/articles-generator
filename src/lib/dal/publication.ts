@@ -294,3 +294,10 @@ export async function updatePublicationCustomDomain(publicationId: string, oldCu
     });
   }
 }
+
+export async function getPublicationByIds(publicationIds: string[]) {
+  const publications = await prismaArticles.post.findMany({
+    where: { id: { in: publicationIds } },
+  });
+  return publications;
+}

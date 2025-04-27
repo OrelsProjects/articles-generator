@@ -8,7 +8,7 @@ import {
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { NotesComments } from "@/../prisma/generated/articles";
+import { NotesComments, Post } from "@/../prisma/generated/articles";
 import { Model, runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
 import { FeatureFlag, Note, NoteStatus } from "@prisma/client";
@@ -18,6 +18,17 @@ import { AIUsageResponse } from "@/types/aiUsageResponse";
 import { getByline } from "@/lib/dal/byline";
 import { noteTemplates } from "@/app/api/notes/generate/_consts";
 import { Model429Error } from "@/types/errors/Model429Error";
+import { z } from "zod";
+import { Article } from "@/types/article";
+import { getPublicationByIds } from "@/lib/dal/publication";
+
+const generateNotesSchema = z.object({
+  count: z.number().or(z.string()).optional(),
+  model: z.string().optional(),
+  useTopTypes: z.boolean().optional(),
+  topic: z.string().optional(),
+  preSelectedPostIds: z.array(z.string()).optional(),
+});
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -34,10 +45,20 @@ export async function POST(
   }
 
   const body = await req.json();
-  const countString = body.count;
-  const requestedModel = body.model;
-  const useTopTypes = !!body.useTopTypes;
-  const topic = body.topic;
+
+  const parsedBody = generateNotesSchema.safeParse(body);
+  if (!parsedBody.success) {
+    return NextResponse.json(
+      { success: false, error: "Invalid request body" },
+      { status: 400 },
+    );
+  }
+
+  const countString = parsedBody.data.count?.toString() || "3";
+  const requestedModel = parsedBody.data.model;
+  const useTopTypes = !!parsedBody.data.useTopTypes;
+  const topic = parsedBody.data.topic;
+  const preSelectedPostIds = parsedBody.data.preSelectedPostIds;
   const featureFlags = session.user.meta?.featureFlags || [];
   let initialGeneratingModel: Model = "openrouter/auto";
   let model: Model = "openrouter/auto";
@@ -226,6 +247,11 @@ export async function POST(
         !notesUserLiked.some(like => like.body === note.body),
     );
 
+    let preSelectedArticles: Post[] = [];
+    if (preSelectedPostIds && preSelectedPostIds.length > 0) {
+      preSelectedArticles = await getPublicationByIds(preSelectedPostIds);
+    }
+
     const generateNotesMessages = generateNotesPrompt(
       userMetadata,
       userMetadata.publication,
@@ -239,6 +265,7 @@ export async function POST(
         maxLength: 280,
         noteTemplates: useTopTypes ? noteTemplates : [],
         topic,
+        preSelectedArticles,
       },
     );
 

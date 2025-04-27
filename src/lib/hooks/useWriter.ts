@@ -2,6 +2,7 @@ import { WriterWithData } from "@/types/writer";
 import { useCallback, useEffect, useRef } from "react";
 import axios from "axios";
 import { useState } from "react";
+import { Article } from "@/types/article";
 
 export const useWriter = (handle: string) => {
   const [writer, setWriter] = useState<WriterWithData | null>(null);
@@ -11,7 +12,15 @@ export const useWriter = (handle: string) => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  // Articles (posts) related state
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [isLoadingArticles, setIsLoadingArticles] = useState(false);
+  const [articlesPage, setArticlesPage] = useState(1);
+  const [hasMoreArticles, setHasMoreArticles] = useState(true);
+  const [articlesError, setArticlesError] = useState<Error | null>(null);
+
   const loadingRef = useRef(false);
+  const loadingArticlesRef = useRef(false);
 
   const fetchWriter = async (page: number = 1) => {
     if (!hasMore) return;
@@ -65,6 +74,45 @@ export const useWriter = (handle: string) => {
     }
   };
 
+  const fetchPosts = async (page: number = 1) => {
+    if (!hasMoreArticles) return;
+    if (loadingArticlesRef.current) return;
+    loadingArticlesRef.current = true;
+
+    setIsLoadingArticles(true);
+
+    try {
+      let newPage = page;
+      if (articles.length === 0) {
+        newPage = 1;
+      }
+      const response = await axios.get<{
+        articles: Article[];
+        hasMore: boolean;
+      }>(`/api/user/posts?page=${newPage}`);
+
+      setArticlesPage(newPage);
+      if (newPage === 1) {
+        setArticles(response.data.articles);
+      } else {
+        const newArticles = [...articles, ...response.data.articles];
+        const uniqueArticles = newArticles.filter(
+          (article, index, self) =>
+            index === self.findIndex(t => t.id === article.id),
+        );
+        setArticles(uniqueArticles);
+      }
+
+      setHasMoreArticles(response.data.hasMore);
+    } catch (err) {
+      console.error(err);
+      setArticlesError(err as Error);
+    } finally {
+      loadingArticlesRef.current = false;
+      setIsLoadingArticles(false);
+    }
+  };
+
   useEffect(() => {
     fetchWriter();
   }, [handle]);
@@ -72,6 +120,12 @@ export const useWriter = (handle: string) => {
   const fetchNextPage = () => {
     fetchWriter(page + 1).then(() => {
       setPage(page + 1);
+    });
+  };
+
+  const fetchNextArticlesPage = () => {
+    fetchPosts(articlesPage + 1).then(() => {
+      setArticlesPage(articlesPage + 1);
     });
   };
 
@@ -90,5 +144,13 @@ export const useWriter = (handle: string) => {
     fetchNextPage,
     hasMore,
     fetchAuthorNotes,
+
+    // Articles (posts) related data
+    articles,
+    isLoadingArticles,
+    hasMoreArticles,
+    articlesError,
+    fetchPosts,
+    fetchNextArticlesPage,
   };
 };

@@ -164,3 +164,39 @@ export async function getWriter(
 
   return writer;
 }
+
+export async function getWriterPosts(
+  authorId: number,
+  page: number,
+  take: number,
+) {
+
+  const byline = await prismaArticles.byline.findFirst({
+    where: {
+      id: authorId,
+    },
+  });
+
+  if (!byline) {
+    throw new Error("Byline not found");
+  }
+
+  const postBylines = await prismaArticles.postByline.findMany({
+    where: {
+      bylineId: byline.id,
+    },
+  });
+
+  const posts = await prismaArticles.post.findMany({
+    where: {
+      id: { in: postBylines.map(byline => byline.postId.toString()) },
+    },
+    take,
+    skip: (page - 1) * take,
+    orderBy: {
+      postDate: "desc", // Get newest posts first based on postDate field
+    },
+  });
+
+  return DBArticlesToArticles(posts.filter(post => post !== null) as Post[]);
+}
