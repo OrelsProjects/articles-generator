@@ -38,6 +38,7 @@ export default function RequeueProvider() {
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notesRescheduled, setNotesRescheduled] = useState(0);
+  const [timesTriedToFix, setTimesTriedToFix] = useState(0);
   // const [schedules, setSchedules] = useState<GetSchedulesResponse>({
   //   schedules: [],
   //   alarms: [],
@@ -188,10 +189,13 @@ export default function RequeueProvider() {
     setIsCheckingDiscrepancies(false);
 
     // Log the results
+    debugger;
     if (newDiscrepancies.length > 0) {
       Logger.info(`Found ${newDiscrepancies.length} schedule discrepancies`, {
         discrepancies: newDiscrepancies,
       });
+      // setShowDiscrepancyBar(true);
+      // setShowDialog(true);
     } else {
       Logger.info("No schedule discrepancies found");
     }
@@ -202,7 +206,7 @@ export default function RequeueProvider() {
    */
   const fixAllDiscrepancies = async () => {
     setLoading(true);
-
+    debugger;
     try {
       for (const discrepancy of schedulesDiscrepancies) {
         switch (discrepancy.type) {
@@ -236,7 +240,7 @@ export default function RequeueProvider() {
       // Refresh schedules and check again
       const updatedSchedules = await getSchedulesFromExtension();
       checkForDiscrepancies(updatedSchedules);
-
+      setTimesTriedToFix(prev => prev + 1);
       Logger.info(`Fixed ${currentIndexFixing} schedule discrepancies`);
     } catch (error: any) {
       Logger.error("Error fixing schedule discrepancies", error);
@@ -403,8 +407,9 @@ export default function RequeueProvider() {
           <br />
           <p>
             <strong>
-              You can auto reschedule your notes by clicking the Reschedule
-              button below{" "}
+              {timesTriedToFix > 0
+                ? "Okay, the fix didn't work. Let's try to reschedule everything."
+                : "You can reschedule your notes by clicking the Reschedule button below"}
             </strong>{" "}
             (It will have the correct date by default).
           </p>
@@ -430,24 +435,30 @@ export default function RequeueProvider() {
           <DialogFooter>
             <div className="w-full flex justify-end mt-4 gap-2">
               {schedulesDiscrepancies.length > 0 && (
-                <Button
-                  variant="outline"
-                  disabled={loading || isCheckingDiscrepancies}
-                  onClick={fixAllDiscrepancies}
-                >
-                  {loading ? "Fixing..." : "Fix Discrepancies"}
-                </Button>
+                <>
+                  {timesTriedToFix > 0 ? (
+                    <Button
+                      disabled={loading || isCheckingDiscrepancies}
+                      onClick={() => {
+                        setShouldReschedule(true);
+                      }}
+                    >
+                      {loading
+                        ? `Rescheduling... ${notesRescheduled}/${scheduledNotes.length}`
+                        : "Reschedule notes"}
+                    </Button>
+                  ) : (
+                    <Button
+                      disabled={loading || isCheckingDiscrepancies}
+                      onClick={fixAllDiscrepancies}
+                    >
+                      {loading
+                        ? `Fixing... ${currentIndexFixing}/${schedulesDiscrepancies.length}`
+                        : "Fix Discrepancies"}
+                    </Button>
+                  )}
+                </>
               )}
-              <Button
-                disabled={loading || isCheckingDiscrepancies}
-                onClick={() => {
-                  setShouldReschedule(true);
-                }}
-              >
-                {loading
-                  ? `Rescheduling... ${notesRescheduled}/${scheduledNotes.length}`
-                  : "Reschedule notes"}
-              </Button>
             </div>
           </DialogFooter>
         </DialogDescription>
