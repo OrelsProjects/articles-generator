@@ -20,17 +20,19 @@ export const maxNotesShceduledPerPlan = {
 };
 
 export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
-  hobbyist: [FeatureFlag.instantPost],
+  hobbyist: [FeatureFlag.instantPost, FeatureFlag.scheduleNotes],
   standard: [
     FeatureFlag.articles,
     FeatureFlag.instantPost,
     FeatureFlag.advancedGPT,
+    FeatureFlag.scheduleNotes,
   ],
   premium: [
     FeatureFlag.articles,
     FeatureFlag.instantPost,
     FeatureFlag.advancedGPT,
     FeatureFlag.advancedFiltering,
+    FeatureFlag.scheduleNotes,
   ],
 };
 
