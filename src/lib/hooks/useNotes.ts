@@ -50,6 +50,7 @@ import { useExtension } from "@/lib/hooks/useExtension";
 import { toast } from "react-toastify";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { setNotePostedData } from "@/lib/features/ui/uiSlice";
+import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
 
 export const useNotes = () => {
   const { user } = useAppSelector(selectAuth);
@@ -261,7 +262,7 @@ export const useNotes = () => {
         } = status === "archived" ? { isArchived: true } : { status };
 
         if (previousStatus === "scheduled" && status !== "scheduled") {
-          await deleteSchedule(noteId);
+          await deleteSchedule(noteId, { throwIfNotFound: false });
         } else {
           // Previous status is not scheduled, so it can be published/draft
           if (scheduledTo) {
@@ -705,19 +706,24 @@ export const useNotes = () => {
 
   const rescheduleNote = useCallback(
     async (noteId: string, newTime: Date) => {
+      const note = userNotes.find(note => note.id === noteId);
       try {
-        const note = userNotes.find(note => note.id === noteId);
         if (!note) {
           throw new Error("Note not found");
         }
-        debugger;
-        await deleteSchedule(noteId);
-        debugger;
+        try {
+          await deleteSchedule(noteId);
+        } catch (error: any) {
+          // If the schedule is not found, it's ok, we can continue
+          if (error instanceof ScheduleNotFoundError) {
+            Logger.error("Error deleting schedule:", error);
+          } else {
+            throw error;
+          }
+        }
         await scheduleNote(note, newTime);
-        debugger;
         await updateNoteStatus(noteId, "scheduled", newTime);
       } catch (error: any) {
-        debugger;
         Logger.error("Error rescheduling note:", error);
         throw error;
       }

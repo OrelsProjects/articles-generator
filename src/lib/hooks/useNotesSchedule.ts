@@ -9,6 +9,7 @@ import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedE
 import { ScheduleLimitExceededError } from "@/types/errors/ScheduleLimitExceededError";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { GetSchedulesResponse, Schedule } from "@/types/useExtension.type";
+import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
 
 export const useNotesSchedule = () => {
   const { user } = useAppSelector(selectAuth);
@@ -73,17 +74,24 @@ export const useNotesSchedule = () => {
     });
   };
 
-  const deleteSchedule = useCallback(async (noteId: string) => {
-    try {
-      const scheduleResponse = await axios.get(
-        `/api/user/notes/${noteId}/schedule`,
-      );
-      const schedule = scheduleResponse.data;
-      debugger;
-      if (!schedule) {
-        throw new Error("Schedule not found");
-      }
-      debugger;
+  const deleteSchedule = useCallback(
+    async (
+      noteId: string,
+      options: { throwIfNotFound: boolean } = {
+        throwIfNotFound: true,
+      },
+    ) => {
+      try {
+        const scheduleResponse = await axios.get(
+          `/api/user/notes/${noteId}/schedule`,
+        );
+        const schedule = scheduleResponse.data;
+        if (!schedule) {
+          if (options.throwIfNotFound) {
+            throw new ScheduleNotFoundError("Schedule not found");
+          }
+          return;
+        }
       await deleteScheduleExtension(schedule.id);
       await axios.delete(`/api/v1/schedule/${schedule.id}`);
     } catch (error: any) {
