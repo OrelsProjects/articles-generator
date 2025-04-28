@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { getStripeInstance } from "@/lib/stripe";
 import { stripeCouponToCoupon } from "@/types/payment";
 import { NextResponse } from "next/server";

@@ -10,7 +10,9 @@ export type LocalStorageKey =
   | "hide_schedule_alert"
   | "queue_did_see_warning"
   | "queue_did_see_new_system"
-  | "did_reset_schedules";
+  | "did_reset_schedules"
+  | "has_extension";
+
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue
   const readValue = (): T => {

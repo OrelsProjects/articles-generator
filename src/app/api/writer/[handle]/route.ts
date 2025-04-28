@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { canUseFeature } from "@/lib/plans-consts";
 import { getWriter } from "@/lib/publication";

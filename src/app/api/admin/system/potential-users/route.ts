@@ -1,4 +1,4 @@
-import prisma, { prismaArticles } from "@/app/api/_db/db";
+import {prisma, prismaArticles } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import loggerServer from "@/loggerServer";
 import { PotentialClientStatus } from "@prisma/client";

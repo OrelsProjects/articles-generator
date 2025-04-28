@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { ArticleContent } from "@/lib/dal/milvus";
 import { getSubstackArticleData } from "@/lib/utils/article";
 import { runPrompt } from "@/lib/open-router";

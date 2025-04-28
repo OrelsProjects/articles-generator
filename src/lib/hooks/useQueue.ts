@@ -13,6 +13,7 @@ import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
 import { HourlyStats } from "@/types/notes-stats";
 import { setBestTimeToPublish } from "@/lib/features/statistics/statisticsSlice";
 import { isAfter, startOfDay, subDays } from "date-fns";
+import { Logger } from "@/logger";
 
 export function useQueue() {
   const dispatch = useAppDispatch();
@@ -188,7 +189,6 @@ export function useQueue() {
   // go over schedules and return the first one that has no note scheduled to it.
   // Doesn't have to be bigger than now
   const getNextAvailableSchedule = () => {
-    
     // Start from today
     const today = new Date();
     const currentHour = today.getHours();
@@ -318,11 +318,23 @@ export function useQueue() {
   }, [userSchedules]);
 
   useEffect(() => {
-    if (userSchedules.length === 0) {
-      fetchSchedules();
+    try {
+      if (userSchedules.length === 0) {
+        fetchSchedules();
+      }
+    } catch (error) {
+      Logger.error("Error fetching schedules", {
+        error,
+      });
     }
-    if (scheduledNotes.length === 0) {
-      fetchBestTimeToPublish();
+    try {
+      if (scheduledNotes.length === 0) {
+        fetchBestTimeToPublish();
+      }
+    } catch (error) {
+      Logger.error("Error fetching best time to publish", {
+        error,
+      });
     }
   }, []);
 

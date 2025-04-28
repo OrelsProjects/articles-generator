@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { isIdeaBelongToUser } from "@/lib/dal/ideas";
 import loggerServer from "@/loggerServer";

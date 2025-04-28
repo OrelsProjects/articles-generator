@@ -31,6 +31,7 @@ import {
 } from "@/lib/features/ui/uiSlice";
 import { NoCookiesError } from "@/types/errors/NoCookiesError";
 import { useUi } from "@/lib/hooks/useUi";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 
 /**
  * Detects the current browser type
@@ -55,12 +56,18 @@ const detectBrowser = (): BrowserType => {
   return "unknown";
 };
 
+export const extensionVersion = "1.2.93";
+
 /**
  * Custom hook for creating Substack posts through a browser extension
  * @returns {UseExtension} Hook methods and state
  */
 export function useExtension(): UseExtension {
   const dispatch = useAppDispatch();
+  const [extensionAvailable] = useLocalStorage<{
+    version: string;
+    date: number;
+  } | null>("has_extension", null);
   const { user } = useAppSelector(state => state.auth);
   const { userNotes } = useAppSelector(state => state.notes);
   const [isLoading, setIsLoading] = useState(false);
@@ -86,11 +93,13 @@ export function useExtension(): UseExtension {
     }
   }, []);
 
-  const verifyExtension = useCallback(async (): Promise<
-    "success" | "error" | "pending" | "outdated"
-  > => {
-    if (typeof window === "undefined") return "error";
-    if (loadingPing.current) return "pending";
+  const verifyExtension = useCallback(async (): Promise<{
+    message: "success" | "error" | "pending" | "outdated";
+    version?: string;
+    date?: number;
+  }> => {
+    if (typeof window === "undefined") return { message: "error" };
+    if (loadingPing.current) return { message: "pending" };
 
     loadingPing.current = true;
     const pingMessage: ExtensionMessage = {
@@ -110,34 +119,54 @@ export function useExtension(): UseExtension {
           process.env.NEXT_PUBLIC_EXTENSION_ID as string,
           pingMessage,
           (response: any) => {
-            Logger.info("response", {
+            Logger.info("EXTENSION PING RESPONSE", {
               response,
             });
             if (response?.success) {
-              resolve("success");
+              resolve({
+                message: "success",
+                version: response.version,
+                date: response.timestamp,
+              });
+              return;
             } else {
               Logger.error(
                 "Extension not found in Chrome: " +
                   JSON.stringify(response || ""),
               );
-              resolve("error");
+              resolve({ message: "error" });
+              return;
             }
           },
         );
       } catch (error) {
         Logger.error("Extension verify error: " + JSON.stringify(error));
-        resolve("error");
+        resolve({ message: "error" });
       }
     });
   }, [browserType]);
 
   const hasExtension = useCallback(
-    async (options?: { showDialog?: boolean }): Promise<boolean> => {
-      const verificationStatus = await verifyExtension();
-      if (options?.showDialog && verificationStatus === "error") {
-        dispatch(setShowExtensionDialog(true));
+    async (options?: {
+      showDialog?: boolean;
+      throwIfNoExtension?: boolean;
+    }): Promise<boolean> => {
+      if (extensionAvailable?.version === extensionVersion) {
+        return true;
       }
-      return verificationStatus === "success";
+
+      const verificationStatus = await verifyExtension();
+      if (verificationStatus.message === "error") {
+        if (options?.showDialog) {
+          dispatch(setShowExtensionDialog(true));
+        }
+        if (options?.throwIfNoExtension) {
+          throw new NoExtensionError("Extension not found");
+        }
+        return false;
+      }
+
+      return verificationStatus.message === "success";
     },
     [verifyExtension],
   );
@@ -164,44 +193,51 @@ export function useExtension(): UseExtension {
 
   const sendExtensionMessage = async <T>(
     message: ExtensionMessage,
-    options: { showDialog?: boolean },
+    options: { showDialog?: boolean; throwIfNoExtension?: boolean },
   ): Promise<ExtensionResponse<T>> => {
     return new Promise(async (resolve, reject) => {
-      const canUseExtension = await hasExtension(options);
-      if (!canUseExtension) {
-        reject(new Error(SubstackError.EXTENSION_DISABLED));
+      try {
+        const canUseExtension = await hasExtension(options);
+        debugger;
+        if (!canUseExtension) {
+          reject(new Error(SubstackError.EXTENSION_DISABLED));
+          return;
+        }
+        const timeoutId = setTimeout(
+          () => reject(new Error(SubstackError.NETWORK_ERROR)),
+          5000,
+        );
+        chrome.runtime.sendMessage(
+          process.env.NEXT_PUBLIC_EXTENSION_ID!,
+          message,
+          (response?: {
+            success: boolean;
+            data: {
+              result: string;
+              message: string;
+              action: string;
+            };
+            error: string;
+          }) => {
+            clearTimeout(timeoutId);
+            if (response?.success) {
+              const { result, message, action } = response.data;
+              const isResultString = typeof result === "string";
+              resolve({
+                success: true,
+                result: isResultString ? JSON.parse(result) : result,
+                message,
+                action,
+              });
+            } else {
+              reject(new Error(response?.error || SubstackError.UNKNOWN_ERROR));
+            }
+          },
+        );
+      } catch (error) {
+        debugger;
+        reject(error);
       }
-      const timeoutId = setTimeout(
-        () => reject(new Error(SubstackError.NETWORK_ERROR)),
-        5000,
-      );
-      chrome.runtime.sendMessage(
-        process.env.NEXT_PUBLIC_EXTENSION_ID!,
-        message,
-        (response: {
-          success: boolean;
-          data: {
-            result: string;
-            message: string;
-            action: string;
-          };
-          error: string;
-        }) => {
-          clearTimeout(timeoutId);
-          if (response.success) {
-            const { result, message, action } = response.data;
-            const isResultString = typeof result === "string";
-            resolve({
-              success: true,
-              result: isResultString ? JSON.parse(result) : result,
-              message,
-              action,
-            });
-          } else {
-            reject(new Error(response.error || SubstackError.UNKNOWN_ERROR));
-          }
-        },
-      );
     });
   };
 
@@ -244,17 +280,18 @@ export function useExtension(): UseExtension {
         const sendMessageResponse =
           await sendExtensionMessage<CreatePostResponse>(message, {
             showDialog: true,
+            throwIfNoExtension: true,
           });
         Logger.info("sendMessageResponse", {
           data: JSON.stringify(sendMessageResponse),
         });
-        if (sendMessageResponse.success && sendMessageResponse.result) {
+        if (sendMessageResponse?.success && sendMessageResponse?.result) {
           setPostResponse(sendMessageResponse.result);
           setIsLoading(false);
           return sendMessageResponse.result;
         } else {
           throw new Error(
-            sendMessageResponse.error || SubstackError.UNKNOWN_ERROR,
+            sendMessageResponse?.error || SubstackError.UNKNOWN_ERROR,
           );
         }
       } catch (error) {
@@ -305,9 +342,10 @@ export function useExtension(): UseExtension {
 
         const response = await sendExtensionMessage<Schedule>(message, {
           showDialog: true,
+          throwIfNoExtension: true,
         });
 
-        if (response.success && response.result) {
+        if (response?.success && response?.result) {
           return response.result;
         }
         throw new Error("Failed to create schedule");
@@ -339,9 +377,9 @@ export function useExtension(): UseExtension {
           params: [scheduleId],
         };
 
-        debugger;
         const response = await sendExtensionMessage<boolean>(message, {
           showDialog: true,
+          throwIfNoExtension: true,
         });
         if (response.success && response.result !== undefined) {
           return response.result;
@@ -432,5 +470,6 @@ export function useExtension(): UseExtension {
     createSchedule,
     deleteSchedule,
     getSchedules,
+    verifyExtension,
   };
 }

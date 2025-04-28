@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { authOptions } from "@/auth/authOptions";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { NoteDraft } from "@/types/note";
 
 export async function GET(req: NextRequest) {

@@ -1,4 +1,4 @@
-import prisma, { prismaArticles } from "@/app/api/_db/db";
+import {prisma, prismaArticles } from "@/app/api/_db/db";
 import { Publication } from "../../../prisma/generated/articles";
 import { getUrlComponents, stripUrl } from "@/lib/utils/url";
 import { extractContent } from "@/app/api/user/analyze/_utils";

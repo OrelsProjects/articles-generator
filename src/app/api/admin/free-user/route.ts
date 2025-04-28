@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { NextRequest, NextResponse } from "next/server";
 import cuid from "cuid";
 import loggerServer from "@/loggerServer";

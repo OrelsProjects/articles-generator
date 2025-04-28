@@ -76,7 +76,7 @@ export const useNotes = () => {
   const [, setShouldCancelUpdate] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [loadingSendNote, setLoadingSendNote] = useState(false);
-  const { sendNote: sendNoteExtension } = useExtension();
+  const { sendNote: sendNoteExtension, hasExtension } = useExtension();
   const {
     deleteSchedule,
     scheduleNote: createSchedule,
@@ -612,6 +612,10 @@ export const useNotes = () => {
       if (!user) return;
       let sendResponse: any;
       try {
+        await hasExtension({
+          throwIfNoExtension: true,
+          showDialog: true,
+        });
         setLoadingSendNote(true);
         const note = userNotes.find(note => note.id === noteId);
         if (!note) return;
@@ -699,6 +703,28 @@ export const useNotes = () => {
     [createSchedule, updateNoteStatus],
   );
 
+  const rescheduleNote = useCallback(
+    async (noteId: string, newTime: Date) => {
+      try {
+        const note = userNotes.find(note => note.id === noteId);
+        if (!note) {
+          throw new Error("Note not found");
+        }
+        debugger;
+        await deleteSchedule(noteId);
+        debugger;
+        await scheduleNote(note, newTime);
+        debugger;
+        await updateNoteStatus(noteId, "scheduled", newTime);
+      } catch (error: any) {
+        debugger;
+        Logger.error("Error rescheduling note:", error);
+        throw error;
+      }
+    },
+    [scheduleNote, deleteSchedule],
+  );
+
   return {
     userNotes,
     selectedNote,
@@ -730,5 +756,6 @@ export const useNotes = () => {
     loadingSendNote,
     scheduleNote,
     loadingScheduleNote,
+    rescheduleNote,
   };
 };

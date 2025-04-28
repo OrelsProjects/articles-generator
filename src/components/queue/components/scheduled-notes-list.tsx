@@ -38,7 +38,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   lastNoteRef,
   lastNoteId,
 }) => {
-  const { updateNoteStatus, createDraftNote, scheduleNote } = useNotes();
+  const { updateNoteStatus, createDraftNote, rescheduleNote } = useNotes();
 
   // Configure basic sensors for drag detection
   const sensors = useSensors(
@@ -114,7 +114,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         throw new Error("Note not found");
       }
 
-      await scheduleNote(note, newTime);
+      await rescheduleNote(noteId, newTime);
       toast.update(toastId, {
         render: "Note rescheduled",
         type: "success",
@@ -122,6 +122,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         autoClose: 1500,
       });
     } catch (error) {
+      debugger;
       if (error instanceof ScheduleFailedEmptyNoteBodyError) {
         toast.update(toastId, {
           render: "Note body is empty",

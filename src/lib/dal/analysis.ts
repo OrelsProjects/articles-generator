@@ -1,6 +1,6 @@
 import { parseJson } from "@/lib/utils/json";
 
-import prisma, { prismaArticles } from "@/app/api/_db/db";
+import {prisma, prismaArticles } from "@/app/api/_db/db";
 import { generateNotesDescriptionPrompt } from "@/lib/prompts";
 import { runPrompt } from "@/lib/open-router";
 import { getAuthorId } from "@/lib/dal/publication";

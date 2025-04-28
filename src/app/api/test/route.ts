@@ -1,21 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
-import prisma, { prismaArticles } from "@/app/api/_db/db";
-import fs from "fs";
 import { NextResponse } from "next/server";
-import { runPrompt } from "@/lib/open-router";
-import { generateVectorSearchOptimizedDescriptionPrompt } from "@/lib/prompts";
-import { parseJson } from "@/lib/utils/json";
-import { addUserToList, sendMail, testEndpoint } from "@/lib/mail/mail";
-import {
-  generateFailedToSendNoteEmail,
-  generateFreeSubscriptionEndedEmail,
-  generateSubscriptionDeletedEmail,
-  generateSubscriptionPausedEmail,
-  generateSubscriptionTrialEndingEmail,
-  welcomeTemplateTrial,
-} from "@/lib/mail/templates";
-import { getActiveSubscription } from "@/lib/dal/subscription";
 
 // async function processUser(userId: string) {
 //   try {

@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { fetchAuthor } from "@/lib/utils/lambda";
 import { FeatureFlag } from "@prisma/client";

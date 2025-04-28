@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 
 export async function getActiveSubscription(userId: string) {
   const subscription = await prisma.subscription.findFirst({

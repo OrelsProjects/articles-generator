@@ -1,4 +1,4 @@
-import prisma, { prismaArticles } from "@/app/api/_db/db";
+import {prisma, prismaArticles } from "@/app/api/_db/db";
 import { extractContent } from "@/app/api/user/analyze/_utils";
 import { authOptions } from "@/auth/authOptions";
 import {

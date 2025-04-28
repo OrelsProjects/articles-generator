@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
-import prisma, { prismaArticles } from "@/app/api/_db/db";
+import {prisma, prismaArticles } from "@/app/api/_db/db";
 import { PublicationResponse } from "@/types/publication";
 import loggerServer from "@/loggerServer";
 import { buildSubstackUrl } from "@/lib/utils/url";

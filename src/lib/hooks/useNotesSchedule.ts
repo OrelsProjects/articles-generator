@@ -19,6 +19,7 @@ export const useNotesSchedule = () => {
     createSchedule,
     getSchedules,
     deleteSchedule: deleteScheduleExtension,
+    hasExtension,
   } = useExtension();
 
   const [loadingScheduleNote, setLoadingScheduleNote] = useState(false);
@@ -71,15 +72,18 @@ export const useNotesSchedule = () => {
       }, 3000);
     });
   };
+
   const deleteSchedule = useCallback(async (noteId: string) => {
     try {
       const scheduleResponse = await axios.get(
         `/api/user/notes/${noteId}/schedule`,
       );
       const schedule = scheduleResponse.data;
+      debugger;
       if (!schedule) {
-        return;
+        throw new Error("Schedule not found");
       }
+      debugger;
       await deleteScheduleExtension(schedule.id);
       await axios.delete(`/api/v1/schedule/${schedule.id}`);
     } catch (error: any) {
@@ -102,6 +106,10 @@ export const useNotesSchedule = () => {
       if (!note.scheduledTo) {
         throw new ScheduleFailedEmptyNoteBodyError("Note scheduledTo is empty");
       }
+      await hasExtension({
+        throwIfNoExtension: true,
+        showDialog: true,
+      });
       const existingSchedule = await axios.get(
         `/api/user/notes/${note.id}/schedule`,
       );
@@ -148,7 +156,6 @@ export const useNotesSchedule = () => {
     useCallback(async (): Promise<GetSchedulesResponse> => {
       try {
         if (loadingGetSchedules.current) throw new Error("Loading schedules");
-        debugger;
         loadingGetSchedules.current = true;
         const schedules = await getSchedules();
         return schedules;

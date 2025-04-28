@@ -9,9 +9,16 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { useExtension } from "@/lib/hooks/useExtension";
 import NoSubstackCookiesDialog from "@/components/notes/no-substack-cookies-dialog";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { Logger } from "@/logger";
 
 export function ExtensionProvider() {
   const dispatch = useAppDispatch();
+  const { user } = useAppSelector(state => state.auth);
+  const [, setExtensionAvailable] = useLocalStorage<{
+    version: string;
+    date: number;
+  } | null>("has_extension", null);
   const { showExtensionDialog, showNoSubstackCookiesDialog } = useAppSelector(
     state => state.ui,
   );
@@ -22,7 +29,29 @@ export function ExtensionProvider() {
     setShowNoSubstackCookiesDialogState,
   ] = useState(showNoSubstackCookiesDialog);
   const [loading, setLoading] = useState(false);
-  const { hasExtension, setUserSubstackCookies } = useExtension();
+  const { hasExtension, setUserSubstackCookies, verifyExtension } =
+    useExtension();
+
+  useEffect(() => {
+    verifyExtension().then(extensionDetails => {
+      Logger.info("Extension details", {
+        extensionDetails,
+        user: {
+          name: user?.displayName,
+          id: user?.userId,
+        },
+      });
+      if (extensionDetails.message === "success" && extensionDetails.version) {
+        setExtensionAvailable({
+          version: extensionDetails.version,
+          date: extensionDetails.date || Date.now(),
+        });
+      } else {
+        // No extension available, update local storage
+        setExtensionAvailable(null);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (showExtensionDialog) {

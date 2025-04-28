@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import loggerServer from "@/loggerServer";
 import { UserSchedule } from "@/types/schedule";
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       tuesday: schedule.tuesday,
       wednesday: schedule.wednesday,
       thursday: schedule.thursday,
-      friday: schedule.friday,
+    friday: schedule.friday,
       saturday: schedule.saturday,
       hour: schedule.hour,
       minute: schedule.minute,

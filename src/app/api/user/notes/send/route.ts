@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { sendMail } from "@/lib/mail/mail";
 import { generateFailedToSendNoteEmail } from "@/lib/mail/templates";

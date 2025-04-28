@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { FeatureFlag, Plan, PrismaClient, Subscription } from "@prisma/client";
 
 import { getActiveSubscription } from "@/lib/dal/subscription";
+import loggerServer from "@/loggerServer";
 
 const prisma = new PrismaClient();
 
@@ -18,45 +19,52 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async session({ session, token }) {
-      session.user.id = token.sub as string;
-      const promises = [
-        prisma.userMetadata.findUnique({
-          where: {
-            userId: token.sub as string,
-          },
-          select: {
-            publicationId: true,
-            featureFlags: true,
-            isAdmin: true,
-          },
-        }),
-        getActiveSubscription(token.sub as string),
-      ];
-      const [userMetadata, activeSubscription] = (await Promise.all(
-        promises,
-      )) as [
-        {
-          publicationId: string | null;
-          featureFlags: FeatureFlag[];
-          isAdmin: boolean;
-        } | null,
-        Subscription | null,
-      ];
+      try {
+        session.user.id = token.sub as string;
+        const promises = [
+          prisma.userMetadata.findUnique({
+            where: {
+              userId: token.sub as string,
+            },
+            select: {
+              publicationId: true,
+              featureFlags: true,
+              isAdmin: true,
+            },
+          }),
+          getActiveSubscription(token.sub as string),
+        ];
+        const [userMetadata, activeSubscription] = (await Promise.all(
+          promises,
+        )) as [
+          {
+            publicationId: string | null;
+            featureFlags: FeatureFlag[];
+            isAdmin: boolean;
+          } | null,
+          Subscription | null,
+        ];
 
-      session.user.meta = {
-        plan: activeSubscription?.plan
-          ? (activeSubscription.plan as Plan)
-          : null,
-        currentPeriodStart: activeSubscription?.currentPeriodStart || null,
-        currentPeriodEnd: activeSubscription?.currentPeriodEnd || null,
-        cancelAtPeriodEnd: activeSubscription?.cancelAtPeriodEnd || false,
-        featureFlags: userMetadata?.featureFlags || [],
-        hadSubscription: activeSubscription !== null,
-        interval: activeSubscription?.interval || "month",
-        isAdmin: userMetadata?.isAdmin || false,
-      };
-      session.user.publicationId = userMetadata?.publicationId || "";
-      return session;
+        session.user.meta = {
+          plan: activeSubscription?.plan
+            ? (activeSubscription.plan as Plan)
+            : null,
+          currentPeriodStart: activeSubscription?.currentPeriodStart || null,
+          currentPeriodEnd: activeSubscription?.currentPeriodEnd || null,
+          cancelAtPeriodEnd: activeSubscription?.cancelAtPeriodEnd || false,
+          featureFlags: userMetadata?.featureFlags || [],
+          hadSubscription: activeSubscription !== null,
+          interval: activeSubscription?.interval || "month",
+          isAdmin: userMetadata?.isAdmin || false,
+        };
+        session.user.publicationId = userMetadata?.publicationId || "";
+        return session;
+      } catch (error) {
+        loggerServer.error("Error in session callback", {
+          error,
+        });
+        throw error;
+      }
     },
   },
   session: {

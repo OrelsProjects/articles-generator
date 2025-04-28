@@ -1,4 +1,4 @@
-import prisma, { prismaArticles } from "@/app/api/_db/db";
+import { prisma, prismaArticles } from "@/app/api/_db/db";
 import { authOptions } from "@/auth/authOptions";
 import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
 import {

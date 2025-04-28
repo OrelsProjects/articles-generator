@@ -1,4 +1,4 @@
-import prisma, { prismaArticles } from "@/app/api/_db/db";
+import {prisma, prismaArticles } from "@/app/api/_db/db";
 import { Article, ArticleWithBody } from "@/types/article";
 import { Post } from "../../../prisma/generated/articles";
 import { ArticleContent } from "@/lib/dal/milvus";

@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { getActiveSubscription } from "@/lib/dal/subscription";
 import { creditCosts, creditsPerPlan } from "@/lib/plans-consts";
 import { getNextRefillDate } from "@/lib/services/creditService";

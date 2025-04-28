@@ -1,4 +1,4 @@
-import prisma from "@/app/api/_db/db";
+import { prisma } from "@/app/api/_db/db";
 import { getNoteById } from "@/lib/dal/note";
 import {
   createSchedule,

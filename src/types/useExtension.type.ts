@@ -121,7 +121,10 @@ export interface UseExtension {
   browserType: BrowserType;
   getNoteById: (noteId: string) => NoteDraft | null;
   setUserSubstackCookies: () => Promise<void>;
-  hasExtension: () => Promise<boolean>;
+  hasExtension: (options?: {
+    showDialog?: boolean;
+    throwIfNoExtension?: boolean;
+  }) => Promise<boolean>;
   sendExtensionApiRequest: <T extends ApiRoute, R = any>(
     route: T,
     body: RouteBody<T>,
@@ -135,4 +138,9 @@ export interface UseExtension {
   ) => Promise<Schedule | null>;
   deleteSchedule: (scheduleId: string) => Promise<boolean>;
   getSchedules: () => Promise<GetSchedulesResponse>;
+  verifyExtension: () => Promise<{
+    message: "success" | "error" | "pending" | "outdated";
+    version?: string;
+    date?: number;
+  }>;
 }
