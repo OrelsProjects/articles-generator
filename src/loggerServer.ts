@@ -10,8 +10,8 @@ interface Logger {
 }
 
 const httpTransportOptions = {
-  host: process.env.DATADOG_PATH,
-  path: process.env.DATADOG_HOST,
+  host: process.env.DATADOG_HOST,
+  path: process.env.DATADOG_PATH,
   ssl: true,
 };
 
