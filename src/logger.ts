@@ -36,8 +36,8 @@ export const initLogger = () => {
 const log = (
   type: StatusType,
   message: string,
-  error: any,
   logItem?: LogItem,
+  error?: any,
 ) => {
   printLog(type, message, error, logItem);
   try {
