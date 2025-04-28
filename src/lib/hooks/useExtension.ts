@@ -372,20 +372,31 @@ export function useExtension(): UseExtension {
           params: [scheduleId, userId, timestamp],
         };
 
+        Logger.info(
+          "ADDING-SCHEDULE: createScheduleExtension: About to send message",
+          {
+            message,
+          },
+        );
+
         const response = await sendExtensionMessage<Schedule>(message, {
           showDialog: true,
           throwIfNoExtension: true,
         });
 
+        Logger.info("ADDING-SCHEDULE: createScheduleExtension: response", {
+          response,
+        });
+
         if (response?.success && response?.result) {
-          Logger.info("ADDING-SCHEDULE: createSchedule: success", {
+          Logger.info("ADDING-SCHEDULE: createScheduleExtension: success", {
             response,
           });
           return response.result;
         }
         throw new Error("Failed to create schedule");
       } catch (error) {
-        Logger.error("ADDING-SCHEDULE: createSchedule: error", {
+        Logger.error("ADDING-SCHEDULE: createScheduleExtension: error", {
           error,
         });
         if (error instanceof Error) {
