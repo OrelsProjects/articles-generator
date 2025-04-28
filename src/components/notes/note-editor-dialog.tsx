@@ -42,6 +42,7 @@ import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedE
 import { cn } from "@/lib/utils";
 import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
 import { ScheduleLimitExceededError } from "@/types/errors/ScheduleLimitExceededError";
+import { Logger } from "@/logger";
 
 export function NotesEditorDialog() {
   const { user } = useAppSelector(selectAuth);
@@ -271,6 +272,10 @@ export function NotesEditorDialog() {
       }
 
       if (shouldSchedule) {
+        Logger.info("ADDING-SCHEDULE: handleSave", {
+          newNote,
+          scheduledTo,
+        });
         try {
           toast.update(toastId, {
             render: "Scheduling note...",

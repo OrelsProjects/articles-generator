@@ -679,6 +679,11 @@ export const useNotes = () => {
       },
     ) => {
       try {
+        Logger.info("ADDING-SCHEDULE: scheduleNote", {
+          note,
+          scheduledTo,
+          options,
+        });
         let validScheduledTo = new Date(scheduledTo);
         if (!options?.considerSeconds) {
           // reset seconds to 0
@@ -691,11 +696,18 @@ export const useNotes = () => {
             0,
           );
         }
+        Logger.info("ADDING-SCHEDULE: scheduleNote: validScheduledTo", {
+          validScheduledTo,
+        });
         await createSchedule({
           ...note,
           scheduledTo: validScheduledTo,
         });
+        Logger.info("ADDING-SCHEDULE: scheduleNote: created schedule");
         await updateNoteStatus(note.id, "scheduled", scheduledTo);
+        Logger.info("ADDING-SCHEDULE: scheduleNote: updated note status", {
+          note,
+        });
       } catch (error: any) {
         Logger.error("Error scheduling note:", error);
         throw error;

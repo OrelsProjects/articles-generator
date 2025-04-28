@@ -197,8 +197,20 @@ export function useExtension(): UseExtension {
   ): Promise<ExtensionResponse<T>> => {
     return new Promise(async (resolve, reject) => {
       try {
+        if (message.action === "createSchedule") {
+          Logger.info("ADDING-SCHEDULE: sendExtensionMessage: createSchedule", {
+            message,
+          });
+        }
         const canUseExtension = await hasExtension(options);
-        debugger;
+        if (message.action === "createSchedule") {
+          Logger.info(
+            "ADDING-SCHEDULE: sendExtensionMessage: canUseExtension",
+            {
+              canUseExtension,
+            },
+          );
+        }
         if (!canUseExtension) {
           reject(new Error(SubstackError.EXTENSION_DISABLED));
           return;
@@ -219,6 +231,11 @@ export function useExtension(): UseExtension {
             };
             error: string;
           }) => {
+            if (message.action === "createSchedule") {
+              Logger.info("ADDING-SCHEDULE: sendExtensionMessage: response", {
+                response,
+              });
+            }
             clearTimeout(timeoutId);
             if (response?.success) {
               const { result, message, action } = response.data;
@@ -235,7 +252,17 @@ export function useExtension(): UseExtension {
           },
         );
       } catch (error) {
-        debugger;
+        if (message.action === "createSchedule") {
+          Logger.error("ADDING-SCHEDULE: sendExtensionMessage: error", {
+            error,
+          });
+        } else {
+          Logger.error("EXTENSION MESSAGE ERROR: ", {
+            error,
+            message,
+            options,
+          });
+        }
         reject(error);
       }
     });
@@ -333,6 +360,11 @@ export function useExtension(): UseExtension {
       if (!canScheduleNotes) {
         return null;
       }
+      Logger.info("ADDING-SCHEDULE: createSchedule", {
+        scheduleId,
+        userId,
+        timestamp,
+      });
       try {
         const message: ExtensionMessage = {
           type: "API_REQUEST",
@@ -346,11 +378,16 @@ export function useExtension(): UseExtension {
         });
 
         if (response?.success && response?.result) {
+          Logger.info("ADDING-SCHEDULE: createSchedule: success", {
+            response,
+          });
           return response.result;
         }
         throw new Error("Failed to create schedule");
       } catch (error) {
-        console.error("Error creating schedule:", error);
+        Logger.error("ADDING-SCHEDULE: createSchedule: error", {
+          error,
+        });
         if (error instanceof Error) {
           throw error;
         }

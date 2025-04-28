@@ -13,6 +13,7 @@ import { useQueue } from "@/lib/hooks/useQueue";
 import { format } from "date-fns";
 import { NoteDraft } from "@/types/note";
 import { cn } from "@/lib/utils";
+import { Logger } from "@/logger";
 
 interface SaveDropdownProps {
   selectedNote?: NoteDraft | null;
@@ -61,8 +62,11 @@ export function SaveDropdown({
     options: { forceNextDate?: boolean } = {},
   ) => {
     try {
+      Logger.info("ADDING-SCHEDULE: handleAddToQueue", {
+        options,
+      });
       const nextAvailableSlot = getNextAvailableSchedule();
-      
+
       setLoading(true);
       const date = options.forceNextDate
         ? nextAvailableSlot

@@ -109,7 +109,11 @@ export const useNotesSchedule = () => {
       throw new ScheduleFailedEmptyNoteBodyError("Note body is empty");
     }
     setLoadingScheduleNote(true);
-
+    Logger.info("ADDING-SCHEDULE: scheduleNote", {
+      note,
+      userNotes,
+      user,
+    });
     const previousNote = userNotes.find(n => n.id === note.id);
 
     try {
@@ -120,26 +124,45 @@ export const useNotesSchedule = () => {
         throwIfNoExtension: true,
         showDialog: true,
       });
+      Logger.info("ADDING-SCHEDULE: scheduleNote: hasExtension passed")
       const existingSchedule = await axios.get(
         `/api/user/notes/${note.id}/schedule`,
       );
       if (existingSchedule.data) {
+        Logger.info("ADDING-SCHEDULE: scheduleNote: existingSchedule found", {
+          existingSchedule,
+        });
         const deletedScheduleId = existingSchedule.data.id;
         await axios.delete(`/api/user/notes/${note.id}/schedule`);
         await deleteScheduleExtension(deletedScheduleId);
+        Logger.info("ADDING-SCHEDULE: scheduleNote: deleted existing schedule", {
+          deletedScheduleId,
+        });
       }
       const newScheduleResponse = await axios.post("/api/v1/schedule", {
         noteId: note.id,
         scheduledTo: note.scheduledTo,
       });
+      Logger.info("ADDING-SCHEDULE: scheduleNote: newScheduleResponse", {
+        newScheduleResponse,
+      });
       const newSchedule = newScheduleResponse.data.schedule;
+      Logger.info("ADDING-SCHEDULE: scheduleNote: newSchedule", {
+        newSchedule,
+      });
       // Then update on extension
       await createSchedule(
         newSchedule.id,
         user.userId,
         note.scheduledTo.getTime(),
       );
+      Logger.info("ADDING-SCHEDULE: scheduleNote: created new schedule", {
+        newSchedule,
+      });
     } catch (error: any) {
+      Logger.error("ADDING-SCHEDULE: scheduleNote: error", {
+        error,
+      });
       Logger.error("Error updating note date:", error);
       // if error is 429, show a toast
       if (error.response.status === 429) {
