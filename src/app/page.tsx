@@ -312,7 +312,8 @@ const testimonials = [
     author: "Philip Hofmacher",
     image:
       "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdc125fa8-cfe4-438f-9b30-375d783f944b_865x865.jpeg",
-    title: "Author of Write Build Scale (<strong>10k+ Subscribers</strong>)",
+    title:
+      "Author of Write Build Scale<br/>(<strong>10k+ Subscribers</strong>)",
   },
   {
     quote: `${appName} is an amazing tool for any Substack writers who want to take some of the pain out of growing on the platform.
