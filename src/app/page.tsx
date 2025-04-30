@@ -171,7 +171,7 @@ function App() {
         <WhyNotesSection />
         <DividerPrimary>
           <h2 className="text-center text-primary-foreground text-3xl lg:text-[56px] lg:leading-[4rem] font-bold">
-            <span className="text-orange-950">Need more</span> than notes?
+            <span className="text-orange-950">Go beyond</span> notes
           </h2>
         </DividerPrimary>
         <FeaturesSection />
@@ -180,7 +180,7 @@ function App() {
           <div className="container mx-auto py-4 lg:py-24">
             <h2 className="text-center text-primary-foreground text-3xl lg:text-[56px] lg:leading-[4rem] font-bold mb-12">
               <span className="text-orange-950">
-                How they are growing their audience with {appName}
+                Meet the writers who grew with {appName}
               </span>
             </h2>
             <MasonryGrid
@@ -253,8 +253,10 @@ function App() {
           <div className="py-20 bg-gradient-to-r from-background to-muted-foreground/10">
             <div className="max-w-5xl mx-auto px-4 text-center">
               <h2 className="text-4xl font-bold mb-6">
-                Write Better. Grow Your Audience.{" "}
-                <span className="text-primary">Increase Your Income.</span>
+                Write Better. Grow Your Audience.Get Closer to <br />
+                <span className="text-primary">
+                  Financial & Creative Freedom.
+                </span>
               </h2>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" asChild>

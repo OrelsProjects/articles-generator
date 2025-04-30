@@ -18,39 +18,39 @@ interface SolutionCardProps {
 const solutionCards: SolutionCardProps[] = [
   {
     icon: Bot,
-    title: "ChatGPT is simply not good enough",
+    title: "ChatGPT can hurt your voice",
     description:
-      "ChatGPT generates robotic like text that is not good for your community.",
+      "It spits out robotic-sounding text that disconnects you from your readers.",
   },
   {
     icon: FileStack,
-    title: "Docs/Notion/Evernote waste time",
+    title: "Google Docs slows you down",
     description:
-      "Keeping all your articles and notes in Google Docs, or making a database in Notion is a mess.",
+      "Managing your ideas across Docs, Notion, or a custom database turns your workspace into digital chaos.",
   },
   {
     icon: Shuffle,
-    title: "Inconsistent notes quality",
+    title: "Custom GPTs aren’t magic",
     description:
-      "Even with a custom GPT, you still have to keep updating it with new information all the time.",
+      "Even with one, you’re constantly updating it with your latest work just to keep it useful.",
   },
   {
     icon: Clock,
-    title: "Hours lost finding inspiration",
+    title: "Finding ideas eats up time",
     description:
-      "Finding an idea for a new article takes time. And you have to find something that people will actually want to read.",
+      "It can take hours to decide on a topic—and you don’t know whether people actually want to read until you post it.",
   },
   {
     icon: Pen,
-    title: "Writing notes every day is hard",
+    title: "Daily notes are exhausting",
     description:
-      "Writing notes is the best way to build a community and grow your business. Damn hard to do it a few times a day.",
+      "Notes grow your audience. But writing them consistently? That’s the hard part.",
   },
   {
     icon: Copy,
-    title: "Copy/pastes are a pain",
+    title: "Copy & paste is a mess",
     description:
-      "Copying and pasting notes from Google Docs, Notion or Evernote is a time-consuming and the formatting is not always good.",
+      "Jumping between tools breaks your flow—and ruins your formatting.",
   },
 ];
 
@@ -73,14 +73,11 @@ export default function OtherSolutions() {
     <div className="landing-section-container bg-background rounded-[3rem] shadow-[0_0_10px_rgba(0,0,0,0.2)]">
       <div className="mx-auto px-6 md:px-0">
         <div className="landing-section-top">
-          <h2>
-            Building a Substack community is <br />
-            <span className="text-destructive">hard</span> enough already
-          </h2>
+          <h2>Stop Wasting Time & Energy on Solvable Problems</h2>
           <p>
-            Posting notes daily, writing an article a week and keeping up with
-            the hottest trends takes a lot of time. And the solutions out there
-            are not built for Substack.
+            You&apos;re posting notes, writing posts, and chasing trends—on top
+            of everything else. And most tools out there?{" "}
+            <strong>They&apos;re not made for Substack.</strong>
           </p>
         </div>
 

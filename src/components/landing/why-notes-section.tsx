@@ -58,8 +58,9 @@ export default function WhyNotesSection() {
     <section className="landing-section-container bg-background flex flex-col gap-4 rounded-[3rem] shadow-[0_0_10px_rgba(0,0,0,0.2)] px-6 md:px-0">
       <div className="mx-auto md:px-0 landing-section-top">
         <h2 className="mb-4">
-          Notes have one of the highest ROI when it comes to
-          <br /> <span className="text-primary">growing</span> on Substack
+          Writing Notes is one the fastest way to
+          <br /> <span className="text-primary">grow</span> (
+          <span className="text-primary">and make money</span>) on Substack
         </h2>
         <p className="text-center">But don&apos;t take it from me.</p>
       </div>

@@ -477,3 +477,21 @@ export function generateSubscriptionPausedEmail(
     subject: "Your WriteStack Subscription is Paused – Ready to Return Anytime",
   };
 }
+
+export function generatePrivateNewUserSignedUpEmail(
+  userName?: string,
+  userEmail?: string,
+) {
+  // This is an email to be sent to me when a new user signs up
+  const content = `
+    <h2>New User Signed Up</h2>
+    <p>Hi there,</p>
+    <p>A new user has signed up for WriteStack:</p>
+    <p>Name: ${userName}</p>
+    <p>Email: ${userEmail}</p>
+  `;
+  return {
+    body: baseEmailTemplate(content),
+    subject: "New User Signed Up",
+  };
+}

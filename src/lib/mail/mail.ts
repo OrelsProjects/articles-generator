@@ -9,6 +9,11 @@ const config = {
   server: process.env.MAILCHIMP_SERVER || "us13",
 };
 
+const tagMap = {
+  "signed-in": "WriteStack",
+  subscribed: "WriteStack-subscribed",
+};
+
 export interface ListUser {
   email: string;
   fullName: string;
@@ -76,5 +81,50 @@ export const addUserToList = async (user: ListUser) => {
     },
   });
 
+  return response;
+};
+
+export const sendMailSafe = async ({
+  to,
+  from,
+  subject,
+  template,
+}: {
+  to: string;
+  from: "support" | "noreply" | "welcome";
+  subject: string;
+  template: string;
+}): Promise<boolean> => {
+  try {
+    await sendMail({ to, from, subject, template });
+    return true;
+  } catch (error) {
+    loggerServer.error(`Error sending mail: ${error}`);
+    return false;
+  }
+};
+
+export const addTagToUser = async (
+  email: string,
+  tag: "signed-in" | "subscribed",
+) => {
+  client.setConfig(config);
+  const listId = process.env.MAILCHIMP_LIST_ID || "";
+  const membersResponse = await client.lists.getListMembersInfo(listId, {
+    count: 99,
+  });
+  // if has "status" in membersResponse, then it's an error
+  if ("status" in membersResponse) {
+    loggerServer.error(`Error getting list members: ${membersResponse.status}`);
+    return;
+  }
+  const member = membersResponse.members.find(m => m.email_address === email);
+  if (!member) {
+    return;
+  }
+
+  const response = await client.lists.updateListMemberTags(listId, member.id, {
+    tags: [tagMap[tag]],
+  });
   return response;
 };

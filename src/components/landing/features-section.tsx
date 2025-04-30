@@ -18,7 +18,7 @@ const SubstackLogo = ({ className }: { className?: string }) => (
 );
 const features = [
   {
-    title: "Newsletter idea generation",
+    title: "Generate Better Newsletter Ideas, Faster",
     description:
       "Never stare at a blank page again. Get unique ideas, customized titles and outlines suggestions <strong>based on millions of the best Substack newsletters in your niche</strong>. Perfect for writers with <strong>20+ published newsletters</strong>.",
     icon: Brain,
@@ -27,16 +27,16 @@ const features = [
     objectFit: "fit",
   },
   {
-    title: "Direct Substack integration",
+    title: "Stop Copying & Pasting",
     description:
-      "No more copying and pasting between ChatGPT and Substack. Write, enhance, and publish—all in one place. <strong>Save hours every week</strong> with our seamless workflow.",
+      "No more copying and pasting between ChatGPT and Substack. WriteStack is directly integrated with Substack. That means you can write, enhance, and publish—all in one place, and <strong>save hours every week</strong> with our seamless workflow.",
     icon: SubstackLogo,
     videoUrl:
       "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/substack-adjusted-full.mp4",
     objectFit: "cover",
   },
   {
-    title: "AI assistance that preserves your voice",
+    title: "Keep Your Voice Intact",
     description:
       "Refine your tone, improve readability, and add details without losing your unique writing style. <strong>Grow your audience</strong> with consistently high-quality newsletters.",
     icon: Pen,
@@ -45,7 +45,7 @@ const features = [
     objectFit: "fit",
   },
   {
-    title: "Easily organize your posts",
+    title: "Organize Your Posts With Ease",
     description: `Instead of having a massive list of drafts, you can easily organize your posts into folders. Fast.`,
     icon: Folders,
     videoUrl:
@@ -199,18 +199,13 @@ function FeaturesSection() {
       <div className="mx-auto relative">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
-            See how {appName} helps you write articles
-            <br /> <span className="text-primary">faster</span> and{" "}
-            <span className="text-primary">better</span>
+            {appName} Helps You Write Better Newsletter Posts,{" "}
+            <span className="text-primary">Faster</span>
           </h2>
           <p>
-            An AI-powered, Substack-like text editor that will make sure you
-            never stare at a blank page again.
-            <span className="hidden">
-              <br /> generates outlines and guide you when you&apos;re stuck.
-            </span>
-            <br />
-            Oh, and everything is ultra personalized to your writing style and
+            An AI-powered, Substack-like text editor that eliminates blank-page
+            syndrome. <br />
+            Plus, it’s ultra personalized to your unique writing style and
             topics.
           </p>
         </div>

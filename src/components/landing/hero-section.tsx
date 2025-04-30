@@ -47,7 +47,7 @@ export const HeroSection = () => {
           </div>
 
           {/* Horizontal lines */}
-          <div className="absolute inset-0 flex flex-col justify-end pb-5 gap-20 h-[33rem]">
+          <div className="absolute inset-0 flex flex-col justify-end pb-5 gap-20 h-[36rem]">
             {[...Array(2)].map((_, i) => (
               <div
                 key={`h-line-${i}`}
@@ -62,13 +62,18 @@ export const HeroSection = () => {
         <div className="w-screen container flex items-center justify-center relative z-10">
           <div className="flex-1 space-y-8 w-full">
             <div className="flex flex-col gap-16 items-center text-center lg:text-left">
-              <h1 className="text-center font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] lg:-mb-4">
-                Grow your Substack
-                <br />
-                {/* <span className="text-primary bg-primary/20 rounded-md p-1 py-0"> */}
-                With Viral Notes
-                {/* </span> */}
-              </h1>
+              <div className="flex flex-col gap-4">
+                <h1 className="text-center font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] lg:-mb-4">
+                  Turn Your Writing
+                  <br />
+                  {/* <span className="text-primary bg-primary/20 rounded-md p-1 py-0"> */}
+                  Into Income 5x Faster
+                  {/* </span> */}
+                </h1>
+                <h3 className="text-center text-lg">
+                  (With 10x more confidence)
+                </h3>
+              </div>
 
               {/* Feature list */}
               <ul className="w-full flex flex-col lg:flex-row gap-2 justify-center items-center">
