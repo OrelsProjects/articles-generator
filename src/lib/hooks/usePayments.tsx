@@ -41,7 +41,9 @@ export default function usePayments() {
     try {
       let affiliate = null;
       try {
+        Logger.info("Rewardful", { Rewardful });
         affiliate = await Rewardful.affiliate;
+        Logger.info("affiliate", { affiliate });
       } catch (error) {
         Logger.error("Error getting affiliate", { error });
       }
