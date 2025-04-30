@@ -5,6 +5,8 @@ import Script from "next/script";
 import { useSearchParams } from "next/navigation";
 import { Logger } from "@/logger";
 
+const API_KEY = process.env.NEXT_PUBLIC_AFFILIATE_API_KEY;
+
 export default function AffiliateProvider({
   children,
 }: {
@@ -37,7 +39,7 @@ export default function AffiliateProvider({
 
   return (
     <>
-      <Script src="https://r.wdfl.co/rw.js" data-rewardful="00b47f" />
+      <Script src="https://r.wdfl.co/rw.js" data-rewardful={API_KEY} />
       <Script id="rewardful-queue" strategy="beforeInteractive">
         {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
       </Script>
