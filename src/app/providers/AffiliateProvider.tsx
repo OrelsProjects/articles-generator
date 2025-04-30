@@ -19,18 +19,23 @@ export default function AffiliateProvider({
   );
 
   useEffect(() => {
+    debugger;
     // Check if rewardful is defined in the global scope
     if (typeof window !== "undefined" && typeof rewardful === "function") {
+      Logger.info(`[REFERRAL] Checking for referral`);
       rewardful("ready", function () {
         if (typeof Rewardful !== "undefined" && Rewardful.referral) {
+          Logger.info(`[REFERRAL] Setting referral`);
           setReferral(Rewardful.referral);
+        } else {
+          Logger.info(`[REFERRAL] No referral found`);
         }
       });
     }
   }, [setReferral]);
   useEffect(() => {
     if (via) {
-      Logger.info(`[NEW REFERRAL]Referral via ${via}`);
+      Logger.info(`[REFERRAL]Referral via ${via}`);
     }
   }, [via]);
 
