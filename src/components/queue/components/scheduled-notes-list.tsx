@@ -121,8 +121,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         isLoading: false,
         autoClose: 1500,
       });
-    } catch (error) {
-      debugger;
+    } catch (error: any) {
       if (error instanceof ScheduleFailedEmptyNoteBodyError) {
         toast.update(toastId, {
           render: "Note body is empty",
@@ -138,7 +137,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
           autoClose: 3000,
         });
       }
-      console.error(error);
+      Logger.error("Error rescheduling note", { error });
     }
   };
 

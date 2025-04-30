@@ -4,6 +4,7 @@ import { selectAuth } from "../features/auth/authSlice";
 import axios from "axios";
 import { Coupon } from "@/types/payment";
 import { Plan } from "@prisma/client";
+import { Logger } from "@/logger";
 
 interface BillingInfo {
   plan: Plan | null;
@@ -38,7 +39,7 @@ export const useBilling = () => {
       
       setBillingInfo(data);
     } catch (err) {
-      console.error("Error fetching billing information:", err);
+      Logger.error("Error fetching billing information:", { error: String(err) });
       setError("Failed to load billing information");
     } finally {
       setLoading(false);

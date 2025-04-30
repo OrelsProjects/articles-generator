@@ -68,7 +68,7 @@ export function useQueue() {
       const response = await axios.post<UserSchedule[]>("/api/user/queue/init");
       dispatch(setUserSchedule(response.data));
     } catch (error) {
-      console.error(error);
+      Logger.error(String(error));
       throw error;
     }
   };
@@ -89,7 +89,7 @@ export function useQueue() {
       const response = await axios.post("/api/user/queue", schedule);
       dispatch(addUserSchedule(response.data));
     } catch (error) {
-      console.error(error);
+      Logger.error(String(error));
       throw error;
     } finally {
       setLoading(false);
@@ -106,7 +106,7 @@ export function useQueue() {
       await axios.delete(`/api/user/queue/${id}`);
     } catch (error) {
       dispatch(updateUserSchedule(previousSchedule));
-      console.error(error);
+      Logger.error(String(error));
       throw error;
     }
   };
@@ -125,7 +125,7 @@ export function useQueue() {
     } catch (error) {
       // revert optimistic update
       dispatch(updateUserSchedule(previousSchedule));
-      console.error(error);
+      Logger.error(String(error));
       throw error;
     } finally {
       setLoading(false);
@@ -138,7 +138,7 @@ export function useQueue() {
       const response = await axios.get<UserSchedule[]>("/api/user/queue");
       dispatch(setUserSchedule(response.data));
     } catch (error) {
-      console.error(error);
+      Logger.error(String(error));
       throw error;
     } finally {
       setLoading(false);
@@ -179,7 +179,7 @@ export function useQueue() {
           },
         }),
       );
-      console.error("Failed to reschedule note:", error);
+      Logger.error("Failed to reschedule note:", { error: String(error) });
     } finally {
       setLoading(false);
     }
@@ -294,7 +294,7 @@ export function useQueue() {
       );
       dispatch(setBestTimeToPublish(response.data));
     } catch (error) {
-      console.error(error);
+      Logger.error(String(error));
       throw error;
     } finally {
       setLoadingBestTimeToPublish(false);
@@ -324,7 +324,7 @@ export function useQueue() {
       }
     } catch (error) {
       Logger.error("Error fetching schedules", {
-        error,
+        error: String(error),
       });
     }
     try {
@@ -333,7 +333,7 @@ export function useQueue() {
       }
     } catch (error) {
       Logger.error("Error fetching best time to publish", {
-        error,
+        error: String(error),
       });
     }
   }, []);

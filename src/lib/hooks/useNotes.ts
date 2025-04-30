@@ -122,7 +122,7 @@ export const useNotes = () => {
           error instanceof Error ? error.message : "An unknown error occurred",
         ),
       );
-      console.error("Error fetching notes:", error);
+      Logger.error("Error fetching notes:", { error: String(error) });
     } finally {
       dispatch(setLoadingNotes(false));
       loadingNotesRef.current = false;
@@ -226,7 +226,7 @@ export const useNotes = () => {
             });
           }
         }
-        console.error("Error generating new note:", error);
+        Logger.error("Error generating new note:", { error: String(error) });
       } finally {
         dispatch(setLoadingNotesGenerate(false));
       }
@@ -542,7 +542,7 @@ export const useNotes = () => {
         await axios.delete(`/api/note/${noteId}/image/${attachment.id}`);
       } catch (error) {
         dispatch(addAttachmentToNote({ noteId, attachment }));
-        console.error("Error deleting image:", error);
+        Logger.error("Error deleting image:", { error: String(error) });
         throw error;
       }
     },
@@ -736,7 +736,10 @@ export const useNotes = () => {
         await scheduleNote(note, newTime);
         await updateNoteStatus(noteId, "scheduled", newTime);
       } catch (error: any) {
-        Logger.error("Error rescheduling note:", error);
+        Logger.error(
+          `Error rescheduling note: ${noteId}, ${error}, ${newTime}`,
+          { error: String(error) },
+        );
         throw error;
       }
     },

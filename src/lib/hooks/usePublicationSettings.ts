@@ -6,6 +6,7 @@ import {
   selectSettings,
   setGeneratingDescription,
 } from "@/lib/features/settings/settingsSlice";
+import { Logger } from "@/logger";
 
 export interface PublicationSettings {
   preferredTopics: string[];
@@ -37,7 +38,7 @@ export const usePublicationSettings = () => {
       setError(
         err.response?.data?.error || "Failed to fetch publication settings",
       );
-      console.error("Error fetching publication settings:", err);
+      Logger.error("Error fetching publication settings:", err);
     } finally {
       setLoading(false);
     }
@@ -64,7 +65,7 @@ export const usePublicationSettings = () => {
       const errorMessage =
         err.response?.data?.error || "Failed to update publication settings";
       setError(errorMessage);
-      console.error("Error updating publication settings:", err);
+      Logger.error("Error updating publication settings:", err);
       throw err;
     } finally {
       setLoading(false);
@@ -81,7 +82,7 @@ export const usePublicationSettings = () => {
       setError(
         err.response?.data?.error || "Failed to refresh publication data",
       );
-      console.error("Error refreshing publication data:", err);
+      Logger.error("Error refreshing publication data:", err);
       dispatch(setGeneratingDescription(false));
       throw err;
     }

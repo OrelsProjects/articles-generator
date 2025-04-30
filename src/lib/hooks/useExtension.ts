@@ -434,7 +434,7 @@ export function useExtension(): UseExtension {
         }
         return false;
       } catch (error) {
-        console.error("Error deleting schedule:", error);
+        Logger.error("Error deleting schedule:", { error: String(error) });
         return false;
       }
     },
@@ -469,7 +469,7 @@ export function useExtension(): UseExtension {
       }
       throw new Error(response.error || SubstackError.UNKNOWN_ERROR);
     } catch (error) {
-      console.error("Error getting schedules:", error);
+      Logger.error("Error getting schedules:", { error: String(error) });
       throw error;
     }
   }, [sendExtensionMessage]);

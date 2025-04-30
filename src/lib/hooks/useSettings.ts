@@ -14,6 +14,7 @@ import { selectPublications } from "@/lib/features/publications/publicationSlice
 import { AIUsageType } from "@prisma/client";
 import { AllUsages, Settings } from "@/types/settings";
 import { SubscriptionInfo } from "@/types/settings";
+import { Logger } from "@/logger";
 
 export const useSettings = () => {
   const dispatch = useAppDispatch();
@@ -37,7 +38,7 @@ export const useSettings = () => {
       axios
         .post("/api/user/analyze/notes", { userTriggered: false })
         .catch(error => {
-          console.error(error);
+          Logger.error(error);
         });
 
       const response = await axios.get<{
@@ -50,8 +51,8 @@ export const useSettings = () => {
       dispatch(setUsages(usages));
       dispatch(setCancelAt(subscriptionInfo.cancelAt));
       dispatch(setGeneratingDescription(settings.generatingDescription));
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      Logger.error("Error initializing settings", { error });
     }
   };
 

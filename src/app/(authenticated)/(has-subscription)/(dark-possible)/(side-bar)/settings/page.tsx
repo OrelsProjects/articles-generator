@@ -33,6 +33,7 @@ import { DangerZone } from "@/components/settings/danger-zone";
 import { useBilling } from "@/lib/hooks/useBilling";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Logger } from "@/logger";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -68,7 +69,7 @@ export default function SettingsPage() {
       toast.success("Your subscription has been canceled");
       setShowCancelDialog(false);
     } catch (error) {
-      console.error("Error canceling subscription:", error);
+      Logger.error("Error canceling subscription:", { error });
       toast.error("Failed to cancel subscription. Please try again.");
     } finally {
       setLoadingCancel(false);
@@ -83,8 +84,8 @@ export default function SettingsPage() {
   const handlePurchaseCredits = async (credits: number) => {
     try {
       await purchaseCredits(credits);
-    } catch (error) {
-      console.error("Error purchasing credits:", error);
+    } catch (error: any) {
+      Logger.error("Error purchasing credits:", { error });
       toast.error("Failed to purchase credits. Please try again.");
     }
   };
@@ -200,47 +201,68 @@ export default function SettingsPage() {
                         </Badge>
                         {billingInfo?.interval && (
                           <span className="text-sm text-muted-foreground">
-                            (Billed {billingInfo.interval === "month" ? "monthly" : "yearly"})
+                            (Billed{" "}
+                            {billingInfo.interval === "month"
+                              ? "monthly"
+                              : "yearly"}
+                            )
                           </span>
                         )}
                       </div>
-                      
+
                       {billingInfo?.nextBillingDate && (
                         <div>
-                          <span className="font-medium">Next Billing Date:</span>{" "}
+                          <span className="font-medium">
+                            Next Billing Date:
+                          </span>{" "}
                           <span>
-                            {billingInfo.nextBillingDate.toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
+                            {billingInfo.nextBillingDate.toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              },
+                            )}
                           </span>
                         </div>
                       )}
-                      
+
                       {billingInfo?.coupon && (
                         <div className="mt-4 p-3 border border-border rounded-md bg-muted/30">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">Applied Coupon:</span>
-                            <Badge 
-                              variant={billingInfo.coupon.isValid ? "default" : "outline"}
-                              className={billingInfo.coupon.isValid ? "bg-green-600" : "text-muted-foreground"}
+                            <Badge
+                              variant={
+                                billingInfo.coupon.isValid
+                                  ? "default"
+                                  : "outline"
+                              }
+                              className={
+                                billingInfo.coupon.isValid
+                                  ? "bg-green-600"
+                                  : "text-muted-foreground"
+                              }
                             >
-                              {billingInfo.coupon.emoji} {billingInfo.coupon.name}
+                              {billingInfo.coupon.emoji}{" "}
+                              {billingInfo.coupon.name}
                             </Badge>
                           </div>
                           <div className="mt-1">
-                            <span>{billingInfo.coupon.percentOff}% discount</span>
+                            <span>
+                              {billingInfo.coupon.percentOff}% discount
+                            </span>
                             {!billingInfo.coupon.isValid && (
                               <p className="text-sm text-muted-foreground mt-1">
-                                This coupon is no longer active on your subscription.
+                                This coupon is no longer active on your
+                                subscription.
                               </p>
                             )}
                           </div>
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="w-fit mt-4">
                       <Button variant="outline" className="w-full" asChild>
                         <Link

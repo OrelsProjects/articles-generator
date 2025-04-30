@@ -19,6 +19,7 @@ import {
   InspirationSortType,
 } from "@/types/note";
 import { NotesComments } from "../../../prisma/generated/articles";
+import { Logger } from "@/logger";
 
 export function useInspiration() {
   const dispatch = useAppDispatch();
@@ -101,7 +102,7 @@ export function useInspiration() {
           error instanceof Error ? error.message : "An unknown error occurred",
         ),
       );
-      console.error("Error fetching inspiration notes:", error);
+      Logger.error("Error fetching inspiration notes:", { error: String(error) });
       dispatch(setLoadingInspiration(false));
       loadingInspirationRef.current = false;
     }

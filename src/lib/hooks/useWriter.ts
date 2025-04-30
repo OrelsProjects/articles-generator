@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from "react";
 import axios from "axios";
 import { useState } from "react";
 import { Article } from "@/types/article";
+import { Logger } from "@/logger";
 
 export const useWriter = (handle: string) => {
   const [writer, setWriter] = useState<WriterWithData | null>(null);
@@ -65,7 +66,7 @@ export const useWriter = (handle: string) => {
       }
       setHasMore(response.data.hasMore);
     } catch (err) {
-      console.error(err);
+      Logger.error(String(err));
       setError(err as Error);
     } finally {
       loadingRef.current = false;
@@ -105,7 +106,7 @@ export const useWriter = (handle: string) => {
 
       setHasMoreArticles(response.data.hasMore);
     } catch (err) {
-      console.error(err);
+      Logger.error(String(err));
       setArticlesError(err as Error);
     } finally {
       loadingArticlesRef.current = false;

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Logger } from "@/logger";
 
 export type LocalStorageKey =
   | "lastUsedIdea"
@@ -22,7 +23,7 @@ function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
       const storedValue = localStorage.getItem(key);
       return storedValue ? (JSON.parse(storedValue) as T) : initialValue;
     } catch (error) {
-      console.error(`Error reading localStorage key “${key}”:`, error);
+      Logger.error(`Error reading localStorage key “${key}”:`, { error: String(error) });
       return initialValue;
     }
   };
@@ -38,7 +39,7 @@ function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
         localStorage.setItem(key, JSON.stringify(newValue));
       }
     } catch (error) {
-      console.error(`Error setting localStorage key “${key}”:`, error);
+      Logger.error(`Error setting localStorage key “${key}”:`, { error: String(error) });
     }
   };
 

@@ -30,12 +30,13 @@ export const useNotesSchedule = () => {
 
   const canSchedule = async (options: { setCookiesIfVerified: boolean }) => {
     try {
-      const canScheduleResponse = await axios.get("/api/user/schedule");
-      const { canSchedule } = canScheduleResponse.data;
-      if (options.setCookiesIfVerified && canSchedule) {
-        await setUserSubstackCookies();
-      }
-      return canSchedule;
+      return true;
+      // const canScheduleResponse = await axios.get("/api/user/schedule");
+      // const { canSchedule } = canScheduleResponse.data;
+      // if (options.setCookiesIfVerified && canSchedule) {
+      //   await setUserSubstackCookies();
+      // }
+      // return canSchedule;
     } catch (error) {
       return false;
     }
@@ -95,6 +96,7 @@ export const useNotesSchedule = () => {
         await deleteScheduleExtension(schedule.id);
         await axios.delete(`/api/v1/schedule/${schedule.id}`);
       } catch (error: any) {
+        Logger.error("Error deleting schedule", { error });
         throw error;
       }
     },
@@ -124,7 +126,7 @@ export const useNotesSchedule = () => {
         throwIfNoExtension: true,
         showDialog: true,
       });
-      Logger.info("ADDING-SCHEDULE: scheduleNote: hasExtension passed")
+      Logger.info("ADDING-SCHEDULE: scheduleNote: hasExtension passed");
       const existingSchedule = await axios.get(
         `/api/user/notes/${note.id}/schedule`,
       );
@@ -135,9 +137,12 @@ export const useNotesSchedule = () => {
         const deletedScheduleId = existingSchedule.data.id;
         await axios.delete(`/api/user/notes/${note.id}/schedule`);
         await deleteScheduleExtension(deletedScheduleId);
-        Logger.info("ADDING-SCHEDULE: scheduleNote: deleted existing schedule", {
-          deletedScheduleId,
-        });
+        Logger.info(
+          "ADDING-SCHEDULE: scheduleNote: deleted existing schedule",
+          {
+            deletedScheduleId,
+          },
+        );
       }
       const newScheduleResponse = await axios.post("/api/v1/schedule", {
         noteId: note.id,

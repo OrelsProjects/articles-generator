@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { WriterSearchResult } from "@/types/writer";
 import axios, { AxiosError } from "axios";
+import { Logger } from "@/logger";
 
 const LIMIT = 20;
 
@@ -49,7 +50,7 @@ export function useSearchWriter() {
       if (error instanceof AxiosError) {
         // if it's a cancelled error, don't set an error
         if (error.code === "ERR_CANCELED") return;
-        console.error(error.response?.data);
+        Logger.error(error.response?.data);
       }
       setError(error instanceof Error ? error.message : "An error occurred");
       setLoading(false);
