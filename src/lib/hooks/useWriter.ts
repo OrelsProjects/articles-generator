@@ -75,9 +75,11 @@ export const useWriter = (handle: string) => {
     }
   };
 
-  const fetchPosts = async (page: number = 1) => {
-    if (!hasMoreArticles) return;
-    if (loadingArticlesRef.current) return;
+  const fetchPosts = async (page: number = 1, forceReload: boolean = false) => {
+    if (!forceReload) {
+      if (!hasMoreArticles) return;
+      if (loadingArticlesRef.current) return;
+    }
     loadingArticlesRef.current = true;
 
     setIsLoadingArticles(true);

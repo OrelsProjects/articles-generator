@@ -318,6 +318,7 @@ export function GenerateNotesDialog() {
         articles={articles}
         onArticlesSelected={handleArticlesSelected}
         loadMoreArticles={fetchNextArticlesPage}
+        reloadArticles={() => fetchPosts(1, true)}
         hasMoreArticles={hasMoreArticles}
         preSelectedArticles={selectedArticles}
         isLoading={isLoadingArticles}
