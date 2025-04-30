@@ -82,7 +82,12 @@ export default function RootLayout({
         <meta name="theme-color" content="#00000000" />
       </head>
       <body className="antialiased w-screen overflow-x-hidden">
-        <Script src="https://r.wdfl.co/rw.js" data-rewardful="00b47f" />
+        <Script
+          id="rewardful_api"
+          strategy="beforeInteractive"
+          src="https://r.wdfl.co/rw.js"
+          data-rewardful="00b47f"
+        />
         <Script id="rewardful-queue" strategy="beforeInteractive">
           {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
         </Script>
