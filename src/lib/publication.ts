@@ -1,4 +1,4 @@
-import { prismaArticles } from "@/app/api/_db/db";
+import { prismaArticles, prisma } from "@/app/api/_db/db";
 import { PostSchema, PublishedBylineSchema } from "@/lib/schema/posts.schema";
 import { getUrlComponents } from "@/lib/utils/url";
 import { Byline } from "@/types/article";
@@ -170,10 +170,15 @@ export async function getWriterPosts(
   page: number,
   take: number,
 ) {
-
   const byline = await prismaArticles.byline.findFirst({
     where: {
       id: authorId,
+    },
+  });
+
+  const publication = await prisma.publicationMetadata.findFirst({
+    where: {
+      authorId: authorId,
     },
   });
 
@@ -189,7 +194,10 @@ export async function getWriterPosts(
 
   const posts = await prismaArticles.post.findMany({
     where: {
-      id: { in: postBylines.map(byline => byline.postId.toString()) },
+      OR: [
+        { id: { in: postBylines.map(byline => byline.postId.toString()) } },
+        { publicationId: publication?.idInArticlesDb?.toString() },
+      ],
     },
     take,
     skip: (page - 1) * take,
