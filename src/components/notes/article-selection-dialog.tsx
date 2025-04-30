@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ArticleComponent from "@/components/ui/article-component";
 import { Article } from "@/types/article";
-import { Check, Loader, RefreshCcw, Search } from "lucide-react";
+import { Check, RefreshCcw, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ArticleSelectionDialogProps {

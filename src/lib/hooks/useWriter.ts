@@ -108,7 +108,7 @@ export const useWriter = (handle: string) => {
 
       setHasMoreArticles(response.data.hasMore);
     } catch (err) {
-      Logger.error(String(err));
+      Logger.error("Error fetching posts", { error: String(err) });
       setArticlesError(err as Error);
     } finally {
       loadingArticlesRef.current = false;

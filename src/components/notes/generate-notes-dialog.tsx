@@ -318,7 +318,13 @@ export function GenerateNotesDialog() {
         articles={articles}
         onArticlesSelected={handleArticlesSelected}
         loadMoreArticles={fetchNextArticlesPage}
-        reloadArticles={() => fetchPosts(1, true)}
+        reloadArticles={() => {
+          try {
+            fetchPosts(1, true);
+          } catch (e: any) {
+            toast.error(e.message);
+          }
+        }}
         hasMoreArticles={hasMoreArticles}
         preSelectedArticles={selectedArticles}
         isLoading={isLoadingArticles}

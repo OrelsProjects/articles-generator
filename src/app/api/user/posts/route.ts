@@ -3,6 +3,7 @@ import { authOptions } from "@/auth/authOptions";
 import { getAuthorId } from "@/lib/dal/publication";
 import { canUseFeature } from "@/lib/plans-consts";
 import { getWriterPosts } from "@/lib/publication";
+import { Logger } from "@/logger";
 import loggerServer from "@/loggerServer";
 import { FeatureFlag } from "@prisma/client";
 import { getServerSession } from "next-auth";
@@ -25,27 +26,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // const isAllowed = canUseFeature(
-    //   userMetadata,
-    //   FeatureFlag.advancedFiltering,
-    // );
-
-    // if (!isAllowed) {
-    //   loggerServer.error("User is not allowed to use advanced filtering", {
-    //     userId: session.user.id,
-    //     userMetadata,
-    //   });
-    //   return NextResponse.json({ error: "Not allowed" }, { status: 403 });
-    // }
-
     const authorId = await getAuthorId(session.user.id);
     if (!authorId) {
+      Logger.error("Author not found", {
+        userId: session.user.id,
+      });
       return NextResponse.json({ error: "Author not found" }, { status: 404 });
     }
     const pageSize = 30; // Show 30 articles per page
 
-    // This should ideally call a function that fetches only articles, not all writer data
-    // Let's assume getWriterPosts exists in the publication lib
+    Logger.info("Fetching writer posts", {
+      authorId,
+      page,
+      pageSize,
+    });
     const articles = await getWriterPosts(authorId, Number(page), pageSize);
 
     const hasMore = articles.length >= pageSize;
