@@ -2,10 +2,16 @@ import { getLookupKey } from "@/lib/utils/plans";
 import { Coupon } from "@/types/payment";
 import { Plan } from "@prisma/client";
 import Stripe from "stripe";
+import { Logger } from "@/logger";
+import { getUserLatestPayment } from "@/lib/dal/payment";
+import { getActiveSubscription } from "@/lib/dal/subscription";
 
 const LAUNCH_COUPON_NAME = "LAUNCH";
 const MAX_PERCENT_OFF = 20;
 const LAUNCH_EMOJI = "🚀";
+
+export const RETENTION_COUPON_ID = process.env.RETENTION_COUPON_ID as string;
+export const RETENTION_PERCENT_OFF = 50;
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME;
 
@@ -236,4 +242,61 @@ export const cancelSubscription = async (subscriptionId: string) => {
   if (subscription.status === "active" || subscription.status === "trialing") {
     await stripe.subscriptions.cancel(subscriptionId);
   }
+};
+
+export const getStripeSubscription = async (subscriptionId: string) => {
+  const stripe = getStripeInstance();
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  return subscription;
+};
+
+export const getStripeSubscriptionAppliedCoupon = async (subscriptionId: string) => {
+  const stripe = getStripeInstance();
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  return subscription.discount?.coupon;
+};
+
+/**
+ * Checks if a user is eligible for the retention discount coupon
+ * A user is eligible if:
+ * 1. They have an active subscription
+ * 2. They don't already have the retention coupon applied
+ * 3. They are on a trial but have made a payment before
+ */
+export const shouldApplyRetentionCoupon = async (
+  userId: string,
+): Promise<boolean> => {
+  try {
+    const subscription = await getActiveSubscription(userId);
+    if (!subscription) {
+      return false;
+    }
+
+    const subscriptionId = subscription.stripeSubId;
+    const payment = await getUserLatestPayment(userId);
+    const hasPaymentHistory = !!payment;
+
+    // Check if the user already has the retention coupon applied
+    const stripeSubscriptionCoupon = await getStripeSubscriptionAppliedCoupon(subscriptionId);
+    if (stripeSubscriptionCoupon?.id === RETENTION_COUPON_ID) {
+      return false;
+    }
+
+    // If they're on a trial, check if they've made a payment before
+    if (subscription.status === "trialing") {
+      return hasPaymentHistory;
+    }
+
+    // By default, users with active subscriptions are eligible
+    return true;
+  } catch (error) {
+    Logger.error("Error checking retention coupon eligibility:", { error: String(error) });
+    return false;
+  }
+};
+
+
+export const getRetentionCoupon = async (stripe: Stripe) => {
+  const coupon = await stripe.coupons.retrieve(RETENTION_COUPON_ID);
+  return coupon;
 };

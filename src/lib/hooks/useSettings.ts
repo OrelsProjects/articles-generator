@@ -7,7 +7,7 @@ import { useAppDispatch } from "@/lib/hooks/redux";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "../features/auth/authSlice";
 import { creditCosts } from "@/lib/plans-consts";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import axios from "axios";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
@@ -56,6 +56,20 @@ export const useSettings = () => {
     }
   };
 
+  const shouldShow50PercentOffOnCancel = useCallback(async () => {
+    try {
+      const response = await axios.get<{
+        isDiscountAvailable: boolean;
+      }>("/api/user/settings/discount/before-cancel");
+      return response.data.isDiscountAvailable;
+    } catch (error: any) {
+      Logger.error("Error checking if user should see 50% off on cancel", {
+        error,
+      });
+      return false;
+    }
+  }, []);
+
   // Check if user has enough credits for an operation
   const hasEnoughCredits = (usageType: AIUsageType) => {
     if (!user?.meta?.plan) {
@@ -74,5 +88,6 @@ export const useSettings = () => {
     hasPublication,
     hasEnoughCredits,
     credits,
+    shouldShow50PercentOffOnCancel,
   };
 };

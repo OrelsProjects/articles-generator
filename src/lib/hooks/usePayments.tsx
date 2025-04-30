@@ -145,6 +145,20 @@ export default function usePayments() {
     }
   };
 
+  const applyRetentionDiscount = async () => {
+    try {
+      await axios.post("/api/user/subscription/coupon/apply/retention");
+      // This would normally implement the discount application logic
+      Logger.info("Applying retention discount");
+      return true;
+    } catch (error) {
+      Logger.error("Failed to apply retention discount", {
+        error: String(error),
+      });
+      return false;
+    }
+  };
+
   return {
     getProducts,
     goToCheckout,
@@ -153,5 +167,6 @@ export default function usePayments() {
     purchaseCredits,
     loadingCredits,
     verifySubscription,
+    applyRetentionDiscount,
   };
 }

@@ -437,25 +437,6 @@ export async function handleInvoicePaymentSucceeded(event: any) {
     return;
   }
 
-  const payment: Omit<Payment, "id"> = {
-    invoiceId: invoice.id,
-    amountReceived: invoice.amount_paid,
-    currency: invoice.currency,
-    status: "succeeded",
-    userId: user.id,
-    paymentMethodId: null,
-    priceId: null,
-    sessionId: null,
-    productId: null,
-    productName: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-
-  await prisma.payment.create({
-    data: payment,
-  });
-
   const subscription = await prisma.subscription.findFirst({
     where: {
       userId: user.id,

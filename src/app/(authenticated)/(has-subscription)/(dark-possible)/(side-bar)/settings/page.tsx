@@ -34,17 +34,26 @@ import { useBilling } from "@/lib/hooks/useBilling";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Logger } from "@/logger";
+import { Check, Loader2, X } from "lucide-react";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
-  const { purchaseCredits, loadingCredits, cancelSubscription } = usePayments();
+  const {
+    purchaseCredits,
+    loadingCredits,
+    cancelSubscription,
+    applyRetentionDiscount,
+  } = usePayments();
   const { user } = useAppSelector(selectAuth);
-  const { hasPublication } = useSettings();
+  const { hasPublication, shouldShow50PercentOffOnCancel } = useSettings();
   const { credits, cancelAt } = useAppSelector(selectSettings);
   const { billingInfo, loading: loadingBilling } = useBilling();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showGetTokensDialog, setShowGetTokensDialog] = useState(false);
+  const [showDiscountDialog, setShowDiscountDialog] = useState(false);
   const [loadingCancel, setLoadingCancel] = useState(false);
+  const [loadingDiscount, setLoadingDiscount] = useState(false);
+  const [loadingCancelDiscount, setLoadingCancelDiscount] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash) {
@@ -62,6 +71,28 @@ export default function SettingsPage() {
     toast.success("Settings saved successfully");
   };
 
+  const handleCancelRequest = async () => {
+    try {
+      setLoadingCancelDiscount(true);
+      // Check if user is eligible for retention discount before cancelling
+      const isEligible = await shouldShow50PercentOffOnCancel();
+      setLoadingCancelDiscount(false);
+
+      if (isEligible) {
+        // Show discount dialog instead of cancelling
+        setShowDiscountDialog(true);
+      } else {
+        // Proceed with cancellation
+        await handleCancelSubscription();
+      }
+    } catch (error) {
+      setLoadingCancelDiscount(false);
+      Logger.error("Error checking for discount:", { error });
+      // Fall back to regular cancellation
+      await handleCancelSubscription();
+    }
+  };
+
   const handleCancelSubscription = async () => {
     try {
       setLoadingCancel(true);
@@ -73,6 +104,25 @@ export default function SettingsPage() {
       toast.error("Failed to cancel subscription. Please try again.");
     } finally {
       setLoadingCancel(false);
+    }
+  };
+
+  const handleApplyDiscount = async () => {
+    try {
+      setLoadingDiscount(true);
+      const success = await applyRetentionDiscount();
+      if (success) {
+        toast.success("50% discount applied to your subscription!");
+        setShowDiscountDialog(false);
+        setShowCancelDialog(false);
+      } else {
+        toast.error("Failed to apply discount. Please try again.");
+      }
+    } catch (error) {
+      Logger.error("Error applying discount:", { error });
+      toast.error("Failed to apply discount. Please try again.");
+    } finally {
+      setLoadingDiscount(false);
     }
   };
 
@@ -416,19 +466,112 @@ export default function SettingsPage() {
                 variant="outline"
                 className="flex items-center justify-center gap-2 border border-primary"
                 onClick={() => setShowCancelDialog(false)}
+                disabled={loadingCancelDiscount || loadingCancel}
               >
                 ← No, keep subscription
               </Button>
               <Button
                 variant="destructive"
-                disabled={loadingCancel}
-                onClick={handleCancelSubscription}
+                disabled={loadingCancelDiscount || loadingCancel}
+                onClick={handleCancelRequest}
+                className="flex items-center justify-center gap-2"
               >
-                Yes, cancel subscription
+                {loadingCancelDiscount ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Checking options...
+                  </>
+                ) : loadingCancel ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  "Yes, cancel subscription"
+                )}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* 50% Discount Offer Dialog */}
+        <Dialog
+          open={showDiscountDialog}
+          onOpenChange={open => {
+            if (!open && !loadingDiscount) {
+              setShowDiscountDialog(false);
+              // If they decline the discount, proceed with cancellation
+              if (!loadingDiscount) {
+                handleCancelSubscription();
+              }
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold flex items-center justify-center text-center">
+                <span className="text-2xl">🎁</span> Special Offer Just For You!
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="py-4">
+              <div className="bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+                <h3 className="font-semibold text-lg text-center mb-2">
+                  50% OFF Your Subscription
+                </h3>
+                <p className="text-center">
+                  We'd hate to see you go! Stay with us and get 50% off your
+                  current plan for the next month.
+                </p>
+              </div>
+
+              <div className="space-y-3 mt-4">
+                <div className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <p>Keep your scheduled notes and history</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <p>Continue with all your features</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <p>Pay only half the price</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4 border-t border-border">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDiscountDialog(false);
+                  handleCancelSubscription();
+                }}
+                className="flex items-center justify-center gap-2"
+                disabled={loadingDiscount}
+              >
+                <X className="h-4 w-4" />
+                Cancel subscription
+              </Button>
+              <Button
+                onClick={handleApplyDiscount}
+                disabled={loadingDiscount}
+                className="flex items-center justify-center gap-2"
+              >
+                {loadingDiscount ? (
+                  <>Applying discount...</>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Apply 50% discount
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <div className="w-full flex justify-end mt-2">
           <Button
             variant="link"
