@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession, Session } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
+import loggerServer from "@/loggerServer";
 
 interface LogPayload {
   message: string;
@@ -35,15 +36,15 @@ export async function POST(request: NextRequest) {
     // Log to console based on the message content
     if (level === "error") {
       if (data) {
-        console.log(`${logPrefix} ERROR:`, message, JSON.parse(data));
+        loggerServer.error(`${logPrefix} ERROR:`, { message, data });
       } else {
-        console.log(`${logPrefix} ERROR:`, message);
+        loggerServer.error(`${logPrefix} ERROR:`, { message });
       }
     } else {
       if (data) {
-        console.log(`${logPrefix}:`, message, JSON.parse(data));
+        loggerServer.info(`${logPrefix}:`, { message, data });
       } else {
-        console.log(`${logPrefix}:`, message);
+        loggerServer.info(`${logPrefix}:`, { message });
       }
     }
 
