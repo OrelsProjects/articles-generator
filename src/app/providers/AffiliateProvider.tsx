@@ -18,7 +18,7 @@ export default function AffiliateProvider() {
       Logger.info(`[REFERRAL] Checking for referral`);
       rewardful("ready", function () {
         if (typeof Rewardful !== "undefined" && Rewardful.referral) {
-          Logger.info(`[REFERRAL] Setting referral`);
+          Logger.info(`[REFERRAL] Setting referral ${Rewardful.referral}`);
           setReferral(Rewardful.referral);
         } else {
           Logger.info(`[REFERRAL] No referral found`);
