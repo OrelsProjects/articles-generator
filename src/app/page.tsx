@@ -303,6 +303,18 @@ const testimonials = [
       "Author of Unfiltered by Tim Denning<br/>(<strong>141k+ Subscribers</strong>)",
   },
   {
+    quote: `WriteStack is my go-to tool for figuring out what’s working on Substack—and what isn’t. 
+    <br/><br/>
+    It saves me hours of research and helps me stay ahead of the curve.
+    <br/><br/>
+    Orel has really helpful and always looking to improve WriteStack.
+`,
+    author: "Philip Hofmacher",
+    image:
+      "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdc125fa8-cfe4-438f-9b30-375d783f944b_865x865.jpeg",
+    title: "Author of Write Build Scale (<strong>10k+ Subscribers</strong>)",
+  },
+  {
     quote: `${appName} is an amazing tool for any Substack writers who want to take some of the pain out of growing on the platform.
    <br/><br/>
    It's easy to use, very intuative and constantly improving.
