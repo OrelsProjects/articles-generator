@@ -14,7 +14,6 @@ export default function AffiliateProvider({
   const via = searchParams.get("via");
   const [referral, setReferral] = useState<string | null>(null);
 
-
   useEffect(() => {
     // Check if rewardful is defined in the global scope
     if (typeof window !== "undefined" && typeof rewardful === "function") {
@@ -38,11 +37,7 @@ export default function AffiliateProvider({
 
   return (
     <>
-      <Script
-        src="https://r.wdfl.co/rw.js"
-        data-rewardful="00b47f"
-        strategy="beforeInteractive"
-      />
+      <Script src="https://r.wdfl.co/rw.js" data-rewardful="00b47f" />
       <Script id="rewardful-script" strategy="beforeInteractive">
         {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
       </Script>
