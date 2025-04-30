@@ -17,10 +17,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { scheduleId: string } },
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // const session = await getServerSession(authOptions);
+  // if (!session) {
+  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // }
 
   try {
     const { scheduleId } = params;
@@ -59,7 +59,7 @@ export async function POST(
       await prisma.substackPublishedNote.create({
         data: {
           substackNoteId: substackNoteId.toString(),
-          userId: session.user.id,
+          userId: note.userId,
           noteId: note.id,
         },
       });
