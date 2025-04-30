@@ -3,12 +3,16 @@
 import { useEffect } from "react";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import Script from "next/script";
+import { useSearchParams } from "next/navigation";
+import { Logger } from "@/logger";
 
 export default function AffiliateProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const searchParams = useSearchParams();
+  const via = searchParams.get("via");
   const [referral, setReferral] = useLocalStorage<string | null>(
     "referral",
     null,
@@ -24,6 +28,12 @@ export default function AffiliateProvider({
       });
     }
   }, [setReferral]);
+  useEffect(() => {
+    if (via) {
+      Logger.info(`Referral via ${via}`);
+    }
+  }, [via]);
+
   // <script>(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');</script>
   // <script async src="https://r.wdfl.co/rw.js" data-rewardful="00b47f"></script>;
   return (
