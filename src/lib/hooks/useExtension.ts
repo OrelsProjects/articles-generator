@@ -56,8 +56,6 @@ const detectBrowser = (): BrowserType => {
   return "unknown";
 };
 
-export const extensionVersion = "1.2.96";
-
 /**
  * Custom hook for creating Substack posts through a browser extension
  * @returns {UseExtension} Hook methods and state
@@ -151,7 +149,7 @@ export function useExtension(): UseExtension {
       showDialog?: boolean;
       throwIfNoExtension?: boolean;
     }): Promise<boolean> => {
-      if (extensionAvailable?.version === extensionVersion) {
+      if (!!extensionAvailable) {
         return true;
       }
 
