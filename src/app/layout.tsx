@@ -82,6 +82,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#00000000" />
       </head>
       <body className="antialiased w-screen overflow-x-hidden">
+        <AffiliateProvider />
         <Suspense
           fallback={
             <Loading spinnerClassName="absolute top-1/2 left-1/2 h-16 w-16" />
@@ -91,11 +92,9 @@ export default function RootLayout({
             <SessionWrapper>
               <TopLoaderProvider />
               <ToastProvider />
-              <AffiliateProvider>
-                <Analytics />
-                <AnimationProvider>{children}</AnimationProvider>
-                <ClientTrackersProvider />
-              </AffiliateProvider>
+              <Analytics />
+              <AnimationProvider>{children}</AnimationProvider>
+              <ClientTrackersProvider />
             </SessionWrapper>
           </StoreProvider>
         </Suspense>

@@ -5,11 +5,7 @@ import Script from "next/script";
 import { useSearchParams } from "next/navigation";
 import { Logger } from "@/logger";
 
-export default function AffiliateProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AffiliateProvider() {
   const searchParams = useSearchParams();
   const via = searchParams.get("via");
   const [referral, setReferral] = useState<string | null>(null);
@@ -42,7 +38,6 @@ export default function AffiliateProvider({
       <Script id="rewardful-queue" strategy="beforeInteractive">
         {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
       </Script>
-      {children}
     </>
   );
 }
