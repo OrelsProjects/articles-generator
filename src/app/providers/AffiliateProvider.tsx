@@ -32,12 +32,5 @@ export default function AffiliateProvider() {
     }
   }, [via]);
 
-  return (
-    <>
-      <Script src="https://r.wdfl.co/rw.js" data-rewardful="00b47f" />
-      <Script id="rewardful-queue" strategy="beforeInteractive">
-        {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
-      </Script>
-    </>
-  );
+  return null;
 }

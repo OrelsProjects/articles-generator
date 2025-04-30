@@ -82,6 +82,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#00000000" />
       </head>
       <body className="antialiased w-screen overflow-x-hidden">
+        <Script src="https://r.wdfl.co/rw.js" data-rewardful="00b47f" />
+        <Script id="rewardful-queue" strategy="beforeInteractive">
+          {`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}
+        </Script>
         <Suspense
           fallback={
             <Loading spinnerClassName="absolute top-1/2 left-1/2 h-16 w-16" />
