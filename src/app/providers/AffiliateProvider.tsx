@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { useEffect, useState } from "react";
 import Script from "next/script";
 import { useSearchParams } from "next/navigation";
 import { Logger } from "@/logger";
@@ -13,13 +12,10 @@ export default function AffiliateProvider({
 }) {
   const searchParams = useSearchParams();
   const via = searchParams.get("via");
-  const [referral, setReferral] = useLocalStorage<string | null>(
-    "referral",
-    null,
-  );
+  const [referral, setReferral] = useState<string | null>(null);
+
 
   useEffect(() => {
-    debugger;
     // Check if rewardful is defined in the global scope
     if (typeof window !== "undefined" && typeof rewardful === "function") {
       Logger.info(`[REFERRAL] Checking for referral`);
@@ -33,14 +29,13 @@ export default function AffiliateProvider({
       });
     }
   }, [setReferral]);
+
   useEffect(() => {
     if (via) {
       Logger.info(`[REFERRAL]Referral via ${via}`);
     }
   }, [via]);
 
-  // <script>(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');</script>
-  // <script async src="https://r.wdfl.co/rw.js" data-rewardful="00b47f"></script>;
   return (
     <>
       <Script
