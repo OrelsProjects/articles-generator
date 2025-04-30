@@ -30,7 +30,7 @@ export default function AffiliateProvider({
   }, [setReferral]);
   useEffect(() => {
     if (via) {
-      Logger.info(`Referral via ${via}`);
+      Logger.info(`[NEW REFERRAL]Referral via ${via}`);
     }
   }, [via]);
 
