@@ -14,6 +14,7 @@ export default function AffiliateProvider() {
     // Check if rewardful is defined in the global scope
     console.log("Type of rewardful", typeof rewardful);
     if (typeof window !== "undefined" && typeof rewardful === "function") {
+      console.log("Loaded rewardful");
       Logger.info(`[REFERRAL] Checking for referral`);
       rewardful("ready", function () {
         if (typeof Rewardful !== "undefined" && Rewardful.referral) {
