@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
     );
   }
   try {
+    const headers = request.headers;
     // Parse the request body
     const payload: LogPayload = await request.json();
 
@@ -36,15 +37,19 @@ export async function POST(request: NextRequest) {
     // Log to console based on the message content
     if (level === "error") {
       if (data) {
-        loggerServer.error(`${logPrefix} ERROR:`, { message, data });
+        loggerServer.error(`${logPrefix} ERROR:`, {
+          message,
+          data,
+          headers,
+        });
       } else {
-        loggerServer.error(`${logPrefix} ERROR:`, { message });
+        loggerServer.error(`${logPrefix} ERROR:`, { message, headers });
       }
     } else {
       if (data) {
-        loggerServer.info(`${logPrefix}:`, { message, data });
+        loggerServer.info(`${logPrefix}:`, { message, data, headers });
       } else {
-        loggerServer.info(`${logPrefix}:`, { message });
+        loggerServer.info(`${logPrefix}:`, { message, headers });
       }
     }
 
