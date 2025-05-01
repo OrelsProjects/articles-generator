@@ -55,11 +55,20 @@ export async function uploadImage(
 
 export async function deleteImage(params: DeleteImageParams) {
   const path = buildPath(params);
+  try {
   const command = new DeleteObjectCommand({
     Bucket: appBucketName,
     Key: path,
   });
   await s3Client.send(command);
+} catch (error) {
+    // mitigation, after changing to writeroom-app-dev. Try appBucketName to be writeroom-app if this fails
+    const command = new DeleteObjectCommand({
+      Bucket: "writeroom-app",
+      Key: path,
+    });
+    await s3Client.send(command);
+  }
 }
 
 export async function downloadImage(

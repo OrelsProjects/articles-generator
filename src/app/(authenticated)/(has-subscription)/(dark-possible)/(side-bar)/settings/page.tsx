@@ -520,7 +520,7 @@ export default function SettingsPage() {
                   50% OFF Your Subscription
                 </h3>
                 <p className="text-center">
-                  We'd hate to see you go! Stay with us and get 50% off your
+                  We&apos;d hate to see you go! Stay with us and get 50% off your
                   current plan for the next month.
                 </p>
               </div>
