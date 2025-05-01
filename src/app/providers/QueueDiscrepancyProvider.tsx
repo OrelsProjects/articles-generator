@@ -83,7 +83,10 @@ export default function QueueDiscrepancyProvider() {
         checkForDiscrepancies(schedules);
       })
       .catch(error => {
-        // Do nothing
+        checkForDiscrepancies({
+          schedules: [],
+          alarms: [],
+        });
       });
   }, [scheduledNotes]);
 
@@ -92,13 +95,25 @@ export default function QueueDiscrepancyProvider() {
    * @param currentSchedules The schedules from the extension
    */
   const checkForDiscrepancies = (currentSchedules: GetSchedulesResponse) => {
-    if (
-      !scheduledNotes.length &&
-      !currentSchedules.schedules.length &&
-      !currentSchedules.alarms.length
-    )
+    if (!scheduledNotes.length) {
       return;
+    }
+    if (!currentSchedules.schedules.length || !currentSchedules.alarms.length) {
+      // set discrapancy to to all scheduled notes
+      dispatch(
+        setSchedulesDiscrepancies(
+          scheduledNotes.map(note => ({
+            type: "missing_schedule",
+            noteId: note.id,
+            details: note.scheduledTo
+              ? `Note "${note.body?.substring(0, 30)}..." is scheduled for ${new Date(note.scheduledTo).toLocaleString()} but has no schedule`
+              : `Note "${note.body?.substring(0, 30)}..." is scheduled but has no schedule`,
 
+            note,
+          })),
+        ),
+      );
+    }
     setIsCheckingDiscrepancies(true);
     const newDiscrepancies: Discrepancy[] = [];
 
