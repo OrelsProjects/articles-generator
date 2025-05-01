@@ -9,6 +9,7 @@ const schema = z.object({
   error: z.string().optional(),
   text: z.string().optional(),
   substackNoteId: z.number().or(z.string()).optional(),
+  newStatus: z.enum(["draft", "published", "scheduled"]).optional().nullable(),
 });
 
 export async function POST(
@@ -34,7 +35,7 @@ export async function POST(
       );
     }
 
-    const { ok, error, text, substackNoteId } = parsedBody.data;
+    const { ok, error, text, substackNoteId, newStatus } = parsedBody.data;
 
     if (!ok) {
       Logger.error(
@@ -49,9 +50,15 @@ export async function POST(
       Logger.error(`Note not found for schedule: ${scheduleId}`);
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
-    await updateNote(note.id, {
-      status: "published",
-    });
+    if (newStatus) {
+      await updateNote(note.id, {
+        status: newStatus,
+      });
+    } else {
+      await updateNote(note.id, {
+        status: "published",
+      });
+    }
 
     if (substackNoteId) {
       await prisma.substackPublishedNote.create({

@@ -382,20 +382,18 @@ export function useExtension(): UseExtension {
           throwIfNoExtension: true,
         });
 
-        Logger.info("ADDING-SCHEDULE: createScheduleExtension: response", {
-          response,
-        });
+        Logger.info("ADDING-SCHEDULE: createScheduleExtension: response", {response: JSON.stringify(response)});
 
         if (response?.success && response?.result) {
           Logger.info("ADDING-SCHEDULE: createScheduleExtension: success", {
-            response,
+            response: JSON.stringify(response),
           });
           return response.result;
         }
         throw new Error("Failed to create schedule");
       } catch (error) {
         Logger.error("ADDING-SCHEDULE: createScheduleExtension: error", {
-          error,
+          error: JSON.stringify(error),
         });
         if (error instanceof Error) {
           throw error;
