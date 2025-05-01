@@ -10,16 +10,15 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  // const session = await getServerSession(authOptions);
-  // if (!session) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
-  const userId = "680e689d9166e8e606843a61";
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.user.id;
   try {
     const page = request.nextUrl.searchParams.get("page") || "1";
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
-        // userId: session.user.id,
         userId,
       },
     });
