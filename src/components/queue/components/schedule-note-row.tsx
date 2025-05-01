@@ -5,10 +5,24 @@ import { NoteDraft } from "@/types/note";
 import { useSortable } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, X, CalendarClock, Loader2, Pencil } from "lucide-react";
+import {
+  GripVertical,
+  X,
+  CalendarClock,
+  Loader2,
+  Pencil,
+  AlertTriangle,
+} from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
 import { cn } from "@/lib/utils";
+import { useAppSelector } from "@/lib/hooks/redux";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ScheduleNoteRowProps {
   note: NoteDraft;
@@ -33,19 +47,39 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
   onUnschedule,
   isDragOverlay = false,
 }) => {
+  const { schedulesDiscrepancies } = useAppSelector(state => state.notes);
   const [loadingUnschedule, setLoadingUnschedule] = useState(false);
   // Format the time from the note's scheduledTo date
   const time = note.scheduledTo
     ? format(new Date(note.scheduledTo), "HH:mm")
     : "";
 
+  const hasDiscrepancy = schedulesDiscrepancies.some(
+    discrepancy => discrepancy.noteId === note.id,
+  );
+
   // If used as drag overlay, don't use sortable/droppable functionality
   if (isDragOverlay) {
     return (
       <div className="flex justify-between items-center p-3 mb-2 rounded-md bg-card border border-border transition-colors">
         <div className="flex flex-1 min-w-0">
-          <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5">
+          <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5 flex flex-row items-center">
             <CalendarClock size={16} />
+            {hasDiscrepancy && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      Schedule discrepancy detected. Please reschedule this
+                      note.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
           <div className="text-sm text-muted-foreground min-w-[72px]">
             {time}
@@ -153,8 +187,24 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
         {...attributes}
         {...listeners}
       >
-        <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5">
-          <CalendarClock size={16} />
+        <div className="flex flex-row items-center gap-2">
+          {hasDiscrepancy && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Schedule discrepancy detected. Please reschedule this note.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5">
+            <CalendarClock size={16} />
+          </div>
         </div>
         <div className="text-sm text-muted-foreground min-w-[72px]">{time}</div>
         <div className="text-sm text-foreground ml-4 truncate">

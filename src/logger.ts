@@ -17,7 +17,7 @@ export const setUserLogger = (user?: AppUser | null) => {
 
 export const initLogger = () => {
   try {
-    const env = process.env.NODE_ENV ?? "development";
+    const env = process.env.NEXT_PUBLIC_ENV ?? "development";
     datadogLogs.init({
       clientToken: process.env.NEXT_PUBLIC_DATADOG_CLIENT_TOKEN ?? "",
       site: process.env.NEXT_PUBLIC_DATADOG_SITE ?? "",

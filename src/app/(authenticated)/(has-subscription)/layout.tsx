@@ -5,7 +5,7 @@ import DialogProvider from "@/app/providers/DialogProvider";
 import { ExtensionProvider } from "@/app/providers/ExtensionProvider";
 import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
 import NewSubscriptionDialog from "@/app/providers/NewSubscriptionDialog";
-import RequeueProvider from "@/app/providers/RequeueProvider";
+import QueueDiscrepancyProvider from "@/app/providers/QueueDiscrepancyProvider";
 import ShowNoteFromUrlProvider from "@/app/providers/ShowNoteFromUrlProvider";
 import SubscriptionProvider from "@/app/providers/SubscriptionProvider";
 import { SubstackCookiesProvider } from "@/app/providers/SubstackCookiesProvider";
@@ -26,7 +26,7 @@ export default function ContentLayout({
             <SubstackCookiesProvider>
               <ExtensionProvider />
               <DialogProvider />
-              <RequeueProvider/>
+              <QueueDiscrepancyProvider />
               {children}
             </SubstackCookiesProvider>
           </DataFetchProvider>

@@ -1,13 +1,11 @@
 import { prisma } from "@/app/api/_db/db";
-import { authOptions } from "@/auth/authOptions";
 import { getNoteByScheduleId, updateNote } from "@/lib/dal/note";
 import { Logger } from "@/logger";
-import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const schema = z.object({
-  ok: z.boolean(),
+  ok: z.boolean().optional(),
   error: z.string().optional(),
   text: z.string().optional(),
   substackNoteId: z.number().or(z.string()).optional(),
@@ -42,7 +40,7 @@ export async function POST(
       Logger.error(
         `Failed to trigger schedule: ${scheduleId}, error: ${error}, with text: ${text}`,
       );
-      return NextResponse.json({ error: error }, { status: 400 });
+      return NextResponse.json({}, { status: 200 });
     }
 
     // update schedule status to "published"

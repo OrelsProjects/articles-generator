@@ -22,7 +22,7 @@ import { TriangleAlertIcon } from "lucide-react";
 import { Discrepancy } from "@/types/schedule";
 import { setSchedulesDiscrepancies } from "@/lib/features/notes/notesSlice";
 
-export default function RequeueProvider() {
+export default function QueueDiscrepancyProvider() {
   const dispatch = useAppDispatch();
   const { schedulesDiscrepancies } = useAppSelector(state => state.notes);
   const [didResetSchedules, setDidResetSchedules] = useLocalStorage(
