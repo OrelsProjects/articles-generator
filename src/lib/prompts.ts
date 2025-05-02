@@ -790,7 +790,15 @@ export const generateNotesPrompt = (
           ? `
         The topic of the notes MUST BE ${topic}. Do not deviate from it.
         `
-          : ""
+          : (options.preSelectedArticles?.length || 0) > 0
+            ? `
+          The notes must be relevant to the articles provided. 
+          Do not repeat the same topics for each note and make sure they are different.
+          Rely on each article as a separate source of inspiration.
+          Write one note per article.
+          If less than ${noteCount} notes are provided, it's okay to repeat a note for the same article.
+          `
+            : ""
       }
     Each note to have as little cliches as possible and have insightful information that is not obvious.
     Make the note very non-obvious, so it's almost a clickbait.

@@ -97,9 +97,10 @@ export function ArticleSelectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-full max-w-4xl min-h-[400px] max-h-[80%] flex flex-col">
+      <DialogContent className="h-full max-w-4xl flex flex-col">
         <DialogHeader>
           <DialogTitle>Select up to {maxSelectedArticles} articles</DialogTitle>
+          <p className="text-sm text-amber-600/80 dark:text-amber-400/80 mt-1">Note: Article reaction counts may be inaccurate.</p>
         </DialogHeader>
 
         <div className="relative mb-4">
