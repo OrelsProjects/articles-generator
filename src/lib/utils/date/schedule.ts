@@ -26,7 +26,7 @@ export const months = [
 ];
 
 // Minimum scheduling time in minutes
-export const MIN_SCHEDULE_MINUTES = 0;
+export const MIN_SCHEDULE_MINUTES = 5;
 
 // Getter functions for schedule values
 export const getMonthValue = (date: Date): string => {
@@ -185,7 +185,6 @@ export const isValidScheduleTime = (
   scheduledDate: Date | undefined,
 ): boolean => {
   if (!scheduledDate) return false;
-
   const now = new Date();
   const minimumValidTime = addMinutes(now, MIN_SCHEDULE_MINUTES);
 
@@ -194,5 +193,5 @@ export const isValidScheduleTime = (
 
 // Get error message for invalid schedule time
 export const getInvalidTimeMessage = (): string => {
-  return `Schedule time must be at least ${MIN_SCHEDULE_MINUTES} minutes in the future.`;
+  return `Schedule time must be in the future. (at least ${MIN_SCHEDULE_MINUTES} minutes)`;
 };

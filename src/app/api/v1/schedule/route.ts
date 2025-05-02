@@ -3,7 +3,9 @@ import {
   createSchedule,
   deleteLatestScheduleByNoteId,
 } from "@/lib/dal/schedules";
+import { MIN_SCHEDULE_MINUTES } from "@/lib/utils/date/schedule";
 import { Logger } from "@/logger";
+import { isAfter, isBefore } from "date-fns";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -30,6 +32,20 @@ export async function POST(request: NextRequest) {
       );
     }
     const { noteId, scheduledTo, deleteIfExists } = parsedBody.data;
+    const now = new Date();
+    // add MIN_SCHEDULE_MINUTES to now
+    const minScheduledTo = new Date(
+      now.getTime() + MIN_SCHEDULE_MINUTES * 60000,
+    );
+    const scheduledToDate = new Date(scheduledTo);
+    if (isBefore(scheduledToDate, minScheduledTo)) {
+      return NextResponse.json(
+        {
+          error: `Schedule has to be at least ${MIN_SCHEDULE_MINUTES} minutes in the future`,
+        },
+        { status: 400 },
+      );
+    }
     if (deleteIfExists) {
       await deleteLatestScheduleByNoteId(noteId);
     }

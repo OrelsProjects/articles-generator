@@ -114,7 +114,9 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         throw new Error("Note not found");
       }
 
-      await rescheduleNote(noteId, newTime);
+      await rescheduleNote(noteId, newTime, {
+        showToast: true,
+      });
       toast.update(toastId, {
         render: "Note rescheduled",
         type: "success",
@@ -122,21 +124,21 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         autoClose: 1500,
       });
     } catch (error: any) {
-      if (error instanceof ScheduleFailedEmptyNoteBodyError) {
-        toast.update(toastId, {
-          render: "Note body is empty",
-          type: "error",
-          isLoading: false,
-          autoClose: 3000,
-        });
-      } else {
-        toast.update(toastId, {
-          render: "Failed to reschedule note",
-          type: "error",
-          isLoading: false,
-          autoClose: 3000,
-        });
-      }
+      // if (error instanceof ScheduleFailedEmptyNoteBodyError) {
+      //   toast.update(toastId, {
+      //     render: "Note body is empty",
+      //     type: "error",
+      //     isLoading: false,
+      //     autoClose: 3000,
+      //   });
+      // } else {
+      //   toast.update(toastId, {
+      //     render: "Failed to reschedule note",
+      //     type: "error",
+      //     isLoading: false,
+      //     autoClose: 3000,
+      //   });
+      // }
       Logger.error("Error rescheduling note", { error });
     }
   };

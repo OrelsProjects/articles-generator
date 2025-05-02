@@ -43,9 +43,9 @@ export function SaveDropdown({
     if (saving) {
       return <span className="font-semibold">Saving...</span>;
     }
-    const nextAvailableSlot = getNextAvailableSchedule();
+    const nextAvailableSlot = getNextAvailableSchedule(presetSchedule);
     let text = null;
-    const date = presetSchedule || nextAvailableSlot;
+    const date = nextAvailableSlot;
 
     if (date) {
       text = format(date, "MMM do, yyyy, HH:mm");
@@ -65,12 +65,14 @@ export function SaveDropdown({
       Logger.info("ADDING-SCHEDULE: handleAddToQueue", {
         options,
       });
-      const nextAvailableSlot = getNextAvailableSchedule();
+      debugger;
+      const nextAvailableSlot = getNextAvailableSchedule(presetSchedule);
+      const nextAvailableSlotNoPreset = getNextAvailableSchedule();
 
       setLoading(true);
       const date = options.forceNextDate
-        ? nextAvailableSlot
-        : presetSchedule || nextAvailableSlot;
+        ? nextAvailableSlotNoPreset
+        : nextAvailableSlot;
       if (date) {
         await onAddToQueue(date);
       } else {

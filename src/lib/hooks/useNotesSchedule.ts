@@ -10,6 +10,9 @@ import { ScheduleLimitExceededError } from "@/types/errors/ScheduleLimitExceeded
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { GetSchedulesResponse, Schedule } from "@/types/useExtension.type";
 import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
+import { ScheduleInPastError } from "@/types/errors/ScheduleInPastError";
+import { toast } from "react-toastify";
+import { humanMessage } from "@/lib/utils/human-message";
 
 export const useNotesSchedule = () => {
   const { user } = useAppSelector(selectAuth);
@@ -103,92 +106,131 @@ export const useNotesSchedule = () => {
     [],
   );
 
-  const scheduleNote = useCallback(async (note: NoteDraft) => {
-    if (!user) {
-      throw new Error("User not found");
-    }
-    if (!note.body || note.body.length === 0) {
-      throw new ScheduleFailedEmptyNoteBodyError("Note body is empty");
-    }
-    setLoadingScheduleNote(true);
-    Logger.info("ADDING-SCHEDULE: scheduleNote", {
-      note,
-      userNotes,
-      user,
-    });
-    const previousNote = userNotes.find(n => n.id === note.id);
-
-    try {
-      if (!note.scheduledTo) {
-        throw new ScheduleFailedEmptyNoteBodyError("Note scheduledTo is empty");
+  /**
+   * @throws Error
+   * @throws NoExtensionError
+   * @throws ScheduleInPastError
+   * @throws ScheduleLimitExceededError
+   * @throws ScheduleFailedEmptyNoteBodyError
+   */
+  const scheduleNote = useCallback(
+    async (note: NoteDraft, options?: { showToast?: boolean }) => {
+      if (!user) {
+        throw new Error("User not found");
       }
+      if (!note.body || note.body.length === 0) {
+        const error = new ScheduleFailedEmptyNoteBodyError(
+          "Note body is empty",
+        );
+        throw error;
+      }
+
       await hasExtension({
         throwIfNoExtension: true,
         showDialog: true,
       });
-      Logger.info("ADDING-SCHEDULE: scheduleNote: hasExtension passed");
-      const existingSchedule = await axios.get(
-        `/api/user/notes/${note.id}/schedule`,
-      );
-      if (existingSchedule.data) {
-        Logger.info("ADDING-SCHEDULE: scheduleNote: existingSchedule found", {
-          existingSchedule,
+
+      setLoadingScheduleNote(true);
+      Logger.info("ADDING-SCHEDULE: scheduleNote", {
+        note,
+        userNotes,
+        user,
+      });
+      const previousNote = userNotes.find(n => n.id === note.id);
+
+      try {
+        if (!note.scheduledTo) {
+          const error = new ScheduleFailedEmptyNoteBodyError(
+            "Note scheduledTo is empty",
+          );
+          throw error;
+        }
+
+        // if (note.scheduledTo < new Date()) {
+        //   const error = new ScheduleInPastError(
+        //     "Scheduled time cannot be in the past",
+        //   );
+        //   throw error;
+        // }
+
+        await hasExtension({
+          throwIfNoExtension: true,
+          showDialog: true,
         });
-        const deletedScheduleId = existingSchedule.data.id;
-        await axios.delete(`/api/user/notes/${note.id}/schedule`);
-        await deleteScheduleExtension(deletedScheduleId);
-        Logger.info(
-          "ADDING-SCHEDULE: scheduleNote: deleted existing schedule",
-          {
-            deletedScheduleId,
-          },
+
+        Logger.info("ADDING-SCHEDULE: scheduleNote: hasExtension passed");
+        const existingSchedule = await axios.get(
+          `/api/user/notes/${note.id}/schedule`,
         );
-      }
-      const newScheduleResponse = await axios.post("/api/v1/schedule", {
-        noteId: note.id,
-        scheduledTo: note.scheduledTo,
-      });
-      Logger.info("ADDING-SCHEDULE: scheduleNote: newScheduleResponse", {
-        newScheduleResponse,
-      });
-      const newSchedule = newScheduleResponse.data.schedule;
-      Logger.info("ADDING-SCHEDULE: scheduleNote: newSchedule", {
-        newSchedule,
-      });
-      // Then update on extension
-      await createSchedule(
-        newSchedule.id,
-        user.userId,
-        note.scheduledTo.getTime(),
-      );
-      Logger.info("ADDING-SCHEDULE: scheduleNote: created new schedule", {
-        newSchedule,
-      });
-    } catch (error: any) {
-      Logger.error("ADDING-SCHEDULE: scheduleNote: error", {
-        error,
-      });
-      Logger.error("Error updating note date:", error);
-      // if error is 429, show a toast
-      if (error.response.status === 429) {
-        throw new ScheduleLimitExceededError(
-          "You have reached the maximum number of scheduled notes",
+        if (existingSchedule.data) {
+          Logger.info("ADDING-SCHEDULE: scheduleNote: existingSchedule found", {
+            existingSchedule,
+          });
+          const deletedScheduleId = existingSchedule.data.id;
+          await axios.delete(`/api/user/notes/${note.id}/schedule`);
+          await deleteScheduleExtension(deletedScheduleId);
+          Logger.info(
+            "ADDING-SCHEDULE: scheduleNote: deleted existing schedule",
+            {
+              deletedScheduleId,
+            },
+          );
+        }
+        const newScheduleResponse = await axios.post("/api/v1/schedule", {
+          noteId: note.id,
+          scheduledTo: note.scheduledTo,
+        });
+        Logger.info("ADDING-SCHEDULE: scheduleNote: newScheduleResponse", {
+          newScheduleResponse,
+        });
+        const newSchedule = newScheduleResponse.data.schedule;
+        Logger.info("ADDING-SCHEDULE: scheduleNote: newSchedule", {
+          newSchedule,
+        });
+        // Then update on extension
+        await createSchedule(
+          newSchedule.id,
+          user.userId,
+          note.scheduledTo.getTime(),
         );
+        Logger.info("ADDING-SCHEDULE: scheduleNote: created new schedule", {
+          newSchedule,
+        });
+      } catch (error: any) {
+        Logger.error("ADDING-SCHEDULE: scheduleNote: error", {
+          error,
+        });
+        Logger.error("Error updating note date:", error);
+        if (options?.showToast) {
+          // if axioserror, get the response error
+          const fallback =
+            error.response?.data?.error ||
+            error.response?.data?.message ||
+            error.message;
+          toast.error(humanMessage(error, fallback));
+        }
+        // if error is 429, show a toast
+        if (error.response?.status === 429) {
+          throw new ScheduleLimitExceededError(
+            "You have reached the maximum number of scheduled notes",
+          );
+        }
+        dispatch(
+          updateNote({
+            id: note.id,
+            note: {
+              scheduledTo: previousNote?.scheduledTo,
+              status: previousNote?.status,
+            },
+          }),
+        );
+        throw error;
+      } finally {
+        setLoadingScheduleNote(false);
       }
-      dispatch(
-        updateNote({
-          id: note.id,
-          note: {
-            scheduledTo: previousNote?.scheduledTo,
-            status: previousNote?.status,
-          },
-        }),
-      );
-      throw error;
-    } finally {
-      setLoadingScheduleNote(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   const getSchedulesFromExtension =
     useCallback(async (): Promise<GetSchedulesResponse> => {

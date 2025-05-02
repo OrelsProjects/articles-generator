@@ -168,6 +168,10 @@ export function NotesEditorDialog() {
   ): Promise<NoteDraft | null> {
     const newBody = unformatText(html);
     if (selectedNote) {
+      const selectedNoteBody = selectedNote.body;
+      if (selectedNoteBody === newBody) {
+        return null;
+      }
       if (options?.immediate) {
         const note = await editNoteBody(selectedNote.id, newBody);
         return note;
@@ -281,7 +285,9 @@ export function NotesEditorDialog() {
             render: "Scheduling note...",
             isLoading: true,
           });
-          await scheduleNote(newNote, scheduledTo);
+          await scheduleNote(newNote, scheduledTo, {
+            showToast: true,
+          });
           handleOpenChange(false);
           toast.success(
             "Note scheduled to: " + getScheduleTimeText(scheduledTo, false),
@@ -290,22 +296,6 @@ export function NotesEditorDialog() {
             },
           );
         } catch (e: any) {
-          if (e instanceof CancelError) {
-            return null;
-          }
-          if (e instanceof ScheduleFailedEmptyNoteBodyError) {
-            toast.error("Note body is empty");
-            return null;
-          } else if (e instanceof ScheduleLimitExceededError) {
-            toast.error(
-              "You have reached the maximum number of scheduled notes",
-            );
-            return null;
-          } else {
-            toast.error("Failed to schedule note. Try again please.", {
-              autoClose: 2000,
-            });
-          }
           return null;
         }
       } else if (selectedNote?.status === "scheduled") {

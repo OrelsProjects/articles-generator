@@ -14,6 +14,7 @@ import { HourlyStats } from "@/types/notes-stats";
 import { setBestTimeToPublish } from "@/lib/features/statistics/statisticsSlice";
 import { isAfter, startOfDay, subDays } from "date-fns";
 import { Logger } from "@/logger";
+import { isValidScheduleTime } from "@/lib/utils/date/schedule";
 
 export function useQueue() {
   const dispatch = useAppDispatch();
@@ -188,8 +189,13 @@ export function useQueue() {
   // Returns the next available schedule in the queue that has no note scheduled to it
   // go over schedules and return the first one that has no note scheduled to it.
   // Doesn't have to be bigger than now
-  const getNextAvailableSchedule = () => {
+  const getNextAvailableSchedule = (currentDate?: Date) => {
     // Start from today
+    if (currentDate) {
+      if (isValidScheduleTime(currentDate)) {
+        return currentDate;
+      }
+    }
     const today = new Date();
     const currentHour = today.getHours();
     const currentMinute = today.getMinutes();

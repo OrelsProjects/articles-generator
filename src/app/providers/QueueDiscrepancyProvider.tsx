@@ -78,6 +78,7 @@ export default function QueueDiscrepancyProvider() {
 
   useEffect(() => {
     if (scheduledNotes.length === 0) return;
+  
     getSchedulesFromExtension()
       .then(schedules => {
         checkForDiscrepancies(schedules);
@@ -221,7 +222,6 @@ export default function QueueDiscrepancyProvider() {
    */
   const fixAllDiscrepancies = async () => {
     setLoading(true);
-    debugger;
     try {
       for (const discrepancy of schedulesDiscrepancies) {
         switch (discrepancy.type) {

@@ -659,7 +659,7 @@ export const useNotes = () => {
       } catch (error: any) {
         Logger.error("Error updating note status:", error);
         toast.error(
-          "Your note was sent but schedule didn't cancel. Please, cancel it manually.",
+          "Your note was sent but schedule didn't cancel. Please, cancel it manually in the app.",
         );
       }
 
@@ -676,6 +676,7 @@ export const useNotes = () => {
       scheduledTo: Date,
       options?: {
         considerSeconds?: boolean;
+        showToast?: boolean;
       },
     ) => {
       try {
@@ -684,6 +685,7 @@ export const useNotes = () => {
           scheduledTo,
           options,
         });
+        debugger;
         let validScheduledTo = new Date(scheduledTo);
         if (!options?.considerSeconds) {
           // reset seconds to 0
@@ -699,10 +701,15 @@ export const useNotes = () => {
         Logger.info("ADDING-SCHEDULE: scheduleNote: validScheduledTo", {
           validScheduledTo,
         });
-        await createSchedule({
-          ...note,
-          scheduledTo: validScheduledTo,
-        });
+        await createSchedule(
+          {
+            ...note,
+            scheduledTo: validScheduledTo,
+          },
+          {
+            showToast: options?.showToast,
+          },
+        );
         Logger.info("ADDING-SCHEDULE: scheduleNote: created schedule");
         await updateNoteStatus(note.id, "scheduled", scheduledTo);
         Logger.info("ADDING-SCHEDULE: scheduleNote: updated note status", {
@@ -717,7 +724,11 @@ export const useNotes = () => {
   );
 
   const rescheduleNote = useCallback(
-    async (noteId: string, newTime: Date) => {
+    async (
+      noteId: string,
+      newTime: Date,
+      options?: { showToast?: boolean },
+    ) => {
       const note = userNotes.find(note => note.id === noteId);
       try {
         if (!note) {
@@ -733,7 +744,9 @@ export const useNotes = () => {
             throw error;
           }
         }
-        await scheduleNote(note, newTime);
+        await scheduleNote(note, newTime, {
+          showToast: options?.showToast,
+        });
         await updateNoteStatus(noteId, "scheduled", newTime);
       } catch (error: any) {
         Logger.error(

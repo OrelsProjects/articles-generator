@@ -32,6 +32,7 @@ import {
 import { NoCookiesError } from "@/types/errors/NoCookiesError";
 import { useUi } from "@/lib/hooks/useUi";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { toast } from "react-toastify";
 
 /**
  * Detects the current browser type
@@ -215,9 +216,18 @@ export function useExtension(): UseExtension {
         }
         const timeoutId = setTimeout(
           () => reject(new Error(SubstackError.NETWORK_ERROR)),
-          5000,
+          30000,
         );
-        chrome.runtime.sendMessage(
+        const runtime = chrome.runtime;
+        if (!runtime) {
+          Logger.error("[CRITICAL]EXTENSION MESSAGE ERROR: ", {
+            error: "Runtime not found",
+          });
+          reject(new Error(SubstackError.NETWORK_ERROR));
+          // toast.error("Extension not found. Please, install the extension.");
+          return;
+        }
+        runtime.sendMessage(
           process.env.NEXT_PUBLIC_EXTENSION_ID!,
           message,
           (response?: {
@@ -251,11 +261,11 @@ export function useExtension(): UseExtension {
         );
       } catch (error) {
         if (message.action === "createSchedule") {
-          Logger.error("ADDING-SCHEDULE: sendExtensionMessage: error", {
+          Logger.error(`ADDING-SCHEDULE: sendExtensionMessage: error: ${JSON.stringify(error)}`, {
             error,
           });
         } else {
-          Logger.error("EXTENSION MESSAGE ERROR: ", {
+          Logger.error(`EXTENSION MESSAGE ERROR: ${JSON.stringify(error)}`, {
             error,
             message,
             options,
@@ -382,7 +392,9 @@ export function useExtension(): UseExtension {
           throwIfNoExtension: true,
         });
 
-        Logger.info("ADDING-SCHEDULE: createScheduleExtension: response", {response: JSON.stringify(response)});
+        Logger.info("ADDING-SCHEDULE: createScheduleExtension: response", {
+          response: JSON.stringify(response),
+        });
 
         if (response?.success && response?.result) {
           Logger.info("ADDING-SCHEDULE: createScheduleExtension: success", {
