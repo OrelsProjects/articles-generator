@@ -685,7 +685,6 @@ export const useNotes = () => {
           scheduledTo,
           options,
         });
-        debugger;
         let validScheduledTo = new Date(scheduledTo);
         if (!options?.considerSeconds) {
           // reset seconds to 0

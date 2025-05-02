@@ -13,6 +13,10 @@ import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
 import { ScheduleInPastError } from "@/types/errors/ScheduleInPastError";
 import { toast } from "react-toastify";
 import { humanMessage } from "@/lib/utils/human-message";
+import {
+  getInvalidTimeMessage,
+  isValidScheduleTime,
+} from "@/lib/utils/date/schedule";
 
 export const useNotesSchedule = () => {
   const { user } = useAppSelector(selectAuth);
@@ -146,12 +150,9 @@ export const useNotesSchedule = () => {
           throw error;
         }
 
-        // if (note.scheduledTo < new Date()) {
-        //   const error = new ScheduleInPastError(
-        //     "Scheduled time cannot be in the past",
-        //   );
-        //   throw error;
-        // }
+        if (!isValidScheduleTime(note.scheduledTo)) {
+          throw new Error(getInvalidTimeMessage());
+        }
 
         await hasExtension({
           throwIfNoExtension: true,
