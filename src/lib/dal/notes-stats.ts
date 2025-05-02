@@ -41,26 +41,26 @@ export async function getStreak(userId: string): Promise<Streak[]> {
       authorId: authorId,
     },
   });
-  // set streak by dates. So if 4 notes were published on X date, it'll be: {date: X, notes: 4}
-  const streak: Streak[] = notes.reduce(
-    (acc: Streak[], note) => {
-      const date = new Date(note.date);
-      const streakDate = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-      );
-      const existingDateIndex = acc.findIndex(
-        item => item.date.getTime() === streakDate.getTime(),
-      );
-      if (existingDateIndex === -1) {
-        acc.push({ date: streakDate, notes: 1 });
-      } else {
-        acc[existingDateIndex].notes++;
-      }
-      return acc;
-    },
-    [],
-  );
+
+  // Set streak by dates with the new format
+  const streak: Streak[] = notes.reduce((acc: Streak[], note) => {
+    const date = new Date(note.date);
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month is 0-indexed
+    const day = date.getDate().toString().padStart(2, "0");
+    const year = date.getFullYear().toString();
+
+    const existingDateIndex = acc.findIndex(
+      item => item.year === year && item.month === month && item.day === day,
+    );
+
+    if (existingDateIndex === -1) {
+      acc.push({ month, day, year, notes: 1 });
+    } else {
+      acc[existingDateIndex].notes++;
+    }
+
+    return acc;
+  }, []);
+
   return streak;
 }

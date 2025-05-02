@@ -44,8 +44,8 @@ export default function ActivityHeatmap({
 
     // Fill in the activity data from streakData
     streakData.forEach(item => {
-      if (item && item.date) {
-        const dateKey = format(new Date(item.date), "yyyy-MM-dd");
+      if (item) {
+        const dateKey = `${item.year}-${item.month}-${item.day}`;
         data[dateKey] = item.notes;
       }
     });

@@ -12,13 +12,13 @@ export async function GET() {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (
-    process.env.NODE_ENV === "development" &&
-    process.env.DATABASE_URL?.includes("production")
-  ) {
-    // Avoid messing with production database
-    return NextResponse.json({ error: "Unauthorized" }, { status: 407 });
-  }
+  // if (
+  //   process.env.NODE_ENV === "development" &&
+  //   process.env.DATABASE_URL?.includes("production")
+  // ) {
+  //   // Avoid messing with production database
+  //   return NextResponse.json({ error: "Unauthorized" }, { status: 407 });
+  // }
   try {
     const userPublication = await prisma.userMetadata.findFirst({
       where: {

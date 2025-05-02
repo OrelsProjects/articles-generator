@@ -5,6 +5,8 @@ export interface HourlyStats {
 }
 
 export interface Streak {
-  date: Date;
+  month: string;
+  day: string;
+  year: string;
   notes: number;
 }
