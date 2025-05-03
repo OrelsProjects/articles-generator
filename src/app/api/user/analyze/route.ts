@@ -1,4 +1,4 @@
-import {prisma, prismaArticles } from "@/app/api/_db/db";
+import { prisma, prismaArticles } from "@/app/api/_db/db";
 import { extractContent } from "@/app/api/user/analyze/_utils";
 import { authOptions } from "@/auth/authOptions";
 import {
@@ -12,7 +12,7 @@ import { Publication } from "@/types/publication";
 import {
   getPublicationByUrl,
   updatePublication,
-  updatePublicationCustomDomain
+  updatePublicationCustomDomain,
 } from "@/lib/dal/publication";
 import { getUserArticles, getUserArticlesBody } from "@/lib/dal/articles";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
@@ -25,7 +25,7 @@ import { z } from "zod";
 import { fetchAuthor } from "@/lib/utils/lambda";
 import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
 import { AIUsageType } from "@prisma/client";
-import { sendMail } from "@/lib/mail/mail";
+import { sendMailSafe } from "@/lib/mail/mail";
 import { generatePublicationAnalysisCompleteEmail } from "@/lib/mail/templates";
 import { getBylineByUserId } from "@/lib/dal/byline";
 import { setUserNotesDescription } from "@/lib/dal/analysis";
@@ -339,7 +339,7 @@ export async function POST(req: NextRequest) {
     if (session.user.email) {
       const email = generatePublicationAnalysisCompleteEmail();
       // send mail
-      await sendMail({
+      await sendMailSafe({
         to: session.user.email,
         from: "noreply",
         subject: email.subject,

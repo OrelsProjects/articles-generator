@@ -1,5 +1,5 @@
 import React, { useState, RefObject } from "react";
-import { format, isBefore, startOfDay } from "date-fns";
+import { format } from "date-fns";
 import { NoteDraft } from "@/types/note";
 import { UserSchedule } from "@/types/schedule";
 import { DaySchedule } from "./day-schedule";
@@ -16,7 +16,6 @@ import {
 import { ScheduleNoteRow } from "./schedule-note-row";
 import { toast } from "react-toastify";
 import { useNotes } from "@/lib/hooks/useNotes";
-import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 import { CustomDragOverlay } from "./custom-drag-overlay";
 import { useDragOverlay } from "../hooks/useDragOverlay";
 import { Logger } from "@/logger";
@@ -39,10 +38,6 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   lastNoteId,
 }) => {
   const { updateNoteStatus, createDraftNote, rescheduleNote } = useNotes();
-  const now = new Date();
-
-  // Filter out days that are before or equal to the current day
-  const futureDays = days.filter(day => !isBefore(day, startOfDay(now)));
 
   // Configure basic sensors for drag detection
   const sensors = useSensors(
@@ -80,27 +75,11 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   const emptySlotMap = React.useMemo(() => {
     const map = new Map<string, { day: Date; time: string }>();
 
-    futureDays.forEach(day => {
+    days.forEach(day => {
       const dateKey = format(day, "yyyy-MM-dd");
       const schedulesForDay = groupedSchedules[dateKey] || [];
 
-      // Filter schedules that are in the future for the current day
-      const filteredSchedules = day.getDate() === now.getDate() && 
-                               day.getMonth() === now.getMonth() && 
-                               day.getFullYear() === now.getFullYear() 
-        ? schedulesForDay.filter(schedule => {
-            // Convert schedule time to 24-hour format
-            let hour24 = schedule.hour;
-            if (schedule.ampm === "pm" && hour24 < 12) hour24 += 12;
-            if (schedule.ampm === "am" && hour24 === 12) hour24 = 0;
-            
-            // Compare with current time
-            return hour24 > now.getHours() || 
-                  (hour24 === now.getHours() && schedule.minute > now.getMinutes());
-          })
-        : schedulesForDay;
-
-      filteredSchedules.forEach((schedule, index) => {
+      schedulesForDay.forEach((schedule, index) => {
         // Convert to 24-hour format
         let hour24 = schedule.hour;
         if (schedule.ampm === "pm" && hour24 < 12) hour24 += 12;
@@ -114,7 +93,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     });
 
     return map;
-  }, [futureDays, groupedSchedules, now]);
+  }, [days, groupedSchedules]);
 
   // Handle dragOver to update the active drop target
   const handleDragOver = (event: DragOverEvent) => {
@@ -247,31 +226,10 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         strategy={verticalListSortingStrategy}
       > */}
       <div className="space-y-6">
-        {futureDays.map(day => {
+        {days.map(day => {
           const dateKey = format(day, "yyyy-MM-dd");
           const notesForDay = groupedNotes[dateKey] || [];
-          
-          // For the current day, filter out schedules that have already passed
-          let schedulesForDay = groupedSchedules[dateKey] || [];
-          
-          if (day.getDate() === now.getDate() && 
-              day.getMonth() === now.getMonth() && 
-              day.getFullYear() === now.getFullYear()) {
-            
-            schedulesForDay = schedulesForDay.filter(schedule => {
-              // Convert to 24-hour format
-              let hour24 = schedule.hour;
-              if (schedule.ampm === "pm" && hour24 < 12) hour24 += 12;
-              if (schedule.ampm === "am" && hour24 === 12) hour24 = 0;
-              
-              // Compare with current time
-              return hour24 > now.getHours() || 
-                    (hour24 === now.getHours() && schedule.minute > now.getMinutes());
-            });
-          }
-
-          // Skip rendering this day if there are no schedules left after filtering
-          if (schedulesForDay.length === 0) return null;
+          const schedulesForDay = groupedSchedules[dateKey] || [];
 
           return (
             <DaySchedule

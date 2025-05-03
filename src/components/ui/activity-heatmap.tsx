@@ -42,7 +42,7 @@ export default function ActivityHeatmap({
       data[format(day, "yyyy-MM-dd")] = 0;
     });
 
-    // Fill in the activity data from streakData
+    // Fill in the activity data from streakData using the raw string values
     streakData.forEach(item => {
       if (item) {
         const dateKey = `${item.year}-${item.month}-${item.day}`;
@@ -67,11 +67,14 @@ export default function ActivityHeatmap({
     return Math.ceil((value / maxActivity) * 4);
   };
 
-  // Calculate current streak
+  // Calculate current streak without relying on Date objects from streak data
   const streak = useMemo(() => {
     let count = 0;
     let currentDate = today;
-    const todayKey = format(today, "yyyy-MM-dd");
+    
+    // Create date keys in the format the streakData uses
+    const formatDateKey = (date: Date) => format(date, "yyyy-MM-dd");
+    const todayKey = formatDateKey(currentDate);
 
     // Skip today if it's empty
     if (activityData[todayKey] === 0) {
@@ -79,7 +82,7 @@ export default function ActivityHeatmap({
     }
 
     while (true) {
-      const dateKey = format(currentDate, "yyyy-MM-dd");
+      const dateKey = formatDateKey(currentDate);
       if (activityData[dateKey] > 0) {
         count++;
         currentDate = subDays(currentDate, 1);
@@ -206,6 +209,15 @@ export default function ActivityHeatmap({
     );
   };
 
+  // Format a date for tooltip display without timezone issues
+  const formatDateForDisplay = (date: Date) => {
+    const month = format(date, "MMM");
+    const day = format(date, "d");
+    const year = format(date, "yyyy");
+    const weekday = format(date, "EEE");
+    return `${weekday}, ${month} ${day}, ${year}`;
+  };
+
   return (
     <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm w-full">
       {loading ? (
@@ -272,7 +284,7 @@ export default function ActivityHeatmap({
                                     {activityValue}{" "}
                                     {activityValue === 1 ? "note" : "notes"}{" "}
                                     <br />
-                                    on {format(day, "EEE, MMM d, yyyy")}
+                                    on {formatDateForDisplay(day)}
                                   </p>
                                 </TooltipContent>
                               </Tooltip>

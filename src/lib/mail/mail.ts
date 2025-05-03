@@ -99,7 +99,7 @@ export const sendMailSafe = async ({
     await sendMail({ to, from, subject, template });
     return true;
   } catch (error) {
-    loggerServer.error(`Error sending mail: ${error}`);
+    loggerServer.error(`[MAIL-ERROR] Error sending mail: ${error}`);
     return false;
   }
 };
