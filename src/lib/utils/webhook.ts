@@ -4,7 +4,7 @@ import {
   getActiveSubscriptionByStripeSubId,
 } from "@/lib/dal/subscription";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
-import { addUserToList, sendMail } from "@/lib/mail/mail";
+import { sendMail } from "@/lib/mail/mail";
 import {
   generateFreeSubscriptionEndedEmail,
   generateFreeTrialEndingEmail,
@@ -133,20 +133,20 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
 
   await setFeatureFlagsByPlan(plan, user.id);
 
-  if (user.email && user.name) {
-    try {
-      await addUserToList({
-        email: user.email!,
-        fullName: user.name!,
-      });
-    } catch (error) {
-      loggerServer.error("Error adding user to list", { error });
-    }
-  } else {
-    loggerServer.error("No email or name found for user" + user.id, {
-      userId: user.id,
-    });
-  }
+  // if (user.email && user.name) {
+  //   try {
+  //     await addUserToList({
+  //       email: user.email!,
+  //       fullName: user.name!,
+  //     });
+  //   } catch (error) {
+  //     loggerServer.error("Error adding user to list", { error });
+  //   }
+  // } else {
+  //   loggerServer.error("No email or name found for user" + user.id, {
+  //     userId: user.id,
+  //   });
+  // }
 }
 
 // Cases when Update is called:
