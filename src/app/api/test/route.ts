@@ -1,6 +1,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 import { NextResponse } from "next/server";
+import { addTagToEmail, sendMailSafe } from "@/lib/mail/mail";
+import { generatePublicationAnalysisCompleteEmail } from "@/lib/mail/templates";
 
 // async function processUser(userId: string) {
 //   try {
@@ -49,6 +51,25 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // const email = generatePublicationAnalysisCompleteEmail();
+  // await sendMailSafe({
+  //   to: "wyndo.mitra@gmail.com",
+  //   from: "noreply",
+  //   subject: email.subject,
+  //   template: email.body,
+  // });\
+
+  // const email = generatePublicationAnalysisCompleteEmail();
+
+  // await sendMailSafe({
+  //   to: "orelsmail@gmail.com",
+  //   from: "noreply",
+  //   subject: email.subject,
+  //   template: email.body,
+  // });
+
+  // await addTagToEmail("orelsmail@gmail.com", "writestack-new-subscriber");
+
   // try {
   //   const deleteTemplates = generateSubscriptionDeletedEmail("Orel", "Pro");
   //   const freeTrialEndingTemplates = generateFreeSubscriptionEndedEmail("Orel");
@@ -78,11 +99,11 @@ export async function GET() {
   // const allBodys = topNotes.map(note => note.body);
   // const prompt = `
   // Act as a professional copywriter, with 20 years of experience.
-  // Your job is to analyze the following notes, ordered by their popularity, 
+  // Your job is to analyze the following notes, ordered by their popularity,
   // and figure out the top 15 templates to write notes.
-  
+
   // Example for a template:
-  // 'Start with what - Explain what you're going to talk about. 
+  // 'Start with what - Explain what you're going to talk about.
   // Continue with Why - Explain why this is important.
   // Then How - A few bullet points on how to do it.'
 
@@ -102,7 +123,6 @@ export async function GET() {
   // - Ignore notes that are asking for donations.
 
   // Make sure the templates are as generic as possible and as actionable as possible, so that they can be used in any context.
-
 
   // Here are the notes, separated by 2 newlines:
   // ${allBodys.join("\n\n")}

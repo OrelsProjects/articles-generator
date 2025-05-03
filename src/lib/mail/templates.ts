@@ -98,25 +98,6 @@ export function baseEmailTemplate(content: string) {
   `;
 }
 
-// export const welcomeSignUp = (name?: string): EmailTemplate => ({
-//   body: `<!DOCTYPE html>
-//   <html>
-//   <head>
-//       <meta charset="UTF-8">
-//       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//       <title>Welcome to WriteStack</title>
-//       </head>
-//       <body>
-//         <div class="container">
-//           <h1 class="title">Hey ${name || "there"}, welcome to the WriteStack family!</h1>
-//         </div>
-//       </body>
-//       </html>`,
-//   subject: name
-//     ? `Welcome to WriteStack, ${name} :)`
-//     : "Welcome to WriteStack :)",
-// });
-
 export const welcomeTemplateTrial = (name?: string): EmailTemplate => ({
   body: baseEmailTemplate(`<!DOCTYPE html>
 <html>

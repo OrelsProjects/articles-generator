@@ -1,31 +1,17 @@
-import Mailchimp, { MessagesMessage } from "@mailchimp/mailchimp_transactional";
-import client from "@mailchimp/mailchimp_marketing";
 import loggerServer from "@/loggerServer";
+import { MailClient } from "./client";
+import { SendEmailOptions, Tag } from "@/types/mail";
 
-const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
-const mailchimpTx = Mailchimp(process.env.MAILCHIMP_API_KEY || "");
-const config = {
-  apiKey: process.env.MAILCHIMP_APP_KEY || "",
-  server: process.env.MAILCHIMP_SERVER || "us13",
-};
-
-const tagMap = {
-  "signed-in": "WriteStack",
-  subscribed: "WriteStack-subscribed",
-};
+const client = new MailClient({
+  apiKey: process.env.KIT_API_KEY || "",
+  baseUrl: process.env.KIT_BASE_URL || "",
+  transactionalApiKey: process.env.RESEND_API_KEY || "",
+});
 
 export interface ListUser {
   email: string;
   fullName: string;
 }
-
-export const testEndpoint = async () => {
-  const response = await mailchimpTx.users.ping();
-  if (response === "PONG!") {
-    return true;
-  }
-  return false;
-};
 
 export const sendMail = async ({
   to,
@@ -33,55 +19,39 @@ export const sendMail = async ({
   subject,
   template,
   cc = [],
-}: {
-  to: string | string[];
-  subject: string;
-  from: "support" | "noreply" | "welcome";
-  template: string;
-  cc?: string[];
-}) => {
-  const fromWithCapital = from.charAt(0).toUpperCase() + from.slice(1);
-  const message: MessagesMessage = {
-    from_email: `${appName} - ${fromWithCapital}@writestack.io`,
+}: SendEmailOptions) => {
+  const response = await client.sendEmail({
+    to,
+    from,
     subject,
-    html: template,
-    to: Array.isArray(to)
-      ? to.map(t => ({ email: t, type: "to" }))
-      : [{ email: to, type: "to" }],
-  };
-  for (const c of cc) {
-    message.to.push({ email: c, type: "cc" });
-  }
-  try {
-    const response = await mailchimpTx.messages.send({ message });
-    console.log("Mail sent successfully:", response);
-    return response;
-  } catch (error: any) {
-    loggerServer.error(`Error sending mail: ${error.message}`);
-    return null;
-  }
+    template,
+    cc,
+  });
+  loggerServer.info(`Mail sent successfully: ${subject}, to: ${to}`);
+  return response;
 };
 
-export const addUserToList = async (user: ListUser) => {
-  client.setConfig(config);
-  const firstName = user.fullName.split(" ")[0];
-  const lastName = user.fullName.split(" ").slice(1).join(" ");
-  const listId = process.env.MAILCHIMP_LIST_ID || "";
+export const addTagToEmail = async (email: string, tag: Tag) => {
+  return client.addTagToEmail({ email, tag });
+};
 
-  const lists = await client.lists.getAllLists();
-  console.log(lists);
-  const response = await client.lists.addListMember(listId, {
-    email_address: user.email,
-    status: "subscribed",
-    tags: ["WriteStack"],
-    merge_fields: {
-      FNAME: firstName,
-      LNAME: lastName,
-      FULLNAME: user.fullName,
-    },
-  });
+export const removeTagFromEmail = async (email: string, tag: Tag) => {
+  return client.removeTagFromEmail({ email, tag });
+};
 
-  return response;
+export const addSubscriber = async (
+  email: string,
+  name:
+    | {
+        firstName: string;
+        lastName: string;
+      }
+    | {
+        fullName: string;
+      },
+  fields: Record<string, string>,
+) => {
+  return client.addSubscriber({ email, name, fields });
 };
 
 export const sendMailSafe = async ({
@@ -104,27 +74,4 @@ export const sendMailSafe = async ({
   }
 };
 
-export const addTagToUser = async (
-  email: string,
-  tag: "signed-in" | "subscribed",
-) => {
-  client.setConfig(config);
-  const listId = process.env.MAILCHIMP_LIST_ID || "";
-  const membersResponse = await client.lists.getListMembersInfo(listId, {
-    count: 99,
-  });
-  // if has "status" in membersResponse, then it's an error
-  if ("status" in membersResponse) {
-    loggerServer.error(`Error getting list members: ${membersResponse.status}`);
-    return;
-  }
-  const member = membersResponse.members.find(m => m.email_address === email);
-  if (!member) {
-    return;
-  }
-
-  const response = await client.lists.updateListMemberTags(listId, member.id, {
-    tags: [tagMap[tag]],
-  });
-  return response;
-};
+export default MailClient;
