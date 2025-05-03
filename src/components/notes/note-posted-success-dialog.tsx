@@ -41,7 +41,7 @@ export function NotePostedSuccessDialog() {
         <DialogFooter className="sm:justify-end">
           <Button asChild>
             <Link
-              href={`https://substack.com/@${notePostedData?.user_primary_publication.subdomain}/note/c-${notePostedData?.id}`}
+              href={`https://substack.com/@${notePostedData?.user_primary_publication?.subdomain}/note/c-${notePostedData?.id}`}
               target="_blank"
             >
               View note <ExternalLink className="w-4 h-4 ml-2" />

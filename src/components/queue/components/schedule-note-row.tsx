@@ -12,6 +12,7 @@ import {
   Loader2,
   Pencil,
   AlertTriangle,
+  Clock,
 } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
@@ -29,6 +30,8 @@ interface ScheduleNoteRowProps {
   onSelect: (note: NoteDraft) => void;
   onUnschedule?: (note: NoteDraft) => Promise<unknown>;
   isDragOverlay?: boolean;
+  isPastScheduled?: boolean;
+  isDropTarget?: boolean;
 }
 
 // Helper functions
@@ -46,6 +49,8 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
   onSelect,
   onUnschedule,
   isDragOverlay = false,
+  isPastScheduled = false,
+  isDropTarget = false,
 }) => {
   const { schedulesDiscrepancies } = useAppSelector(state => state.notes);
   const [loadingUnschedule, setLoadingUnschedule] = useState(false);
@@ -63,9 +68,9 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
     return (
       <div className="flex justify-between items-center p-3 mb-2 rounded-md bg-card border border-border transition-colors">
         <div className="flex flex-1 min-w-0">
-          <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5 flex flex-row items-center">
+          <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5 flex flex-row items-center hover:bg-foreground/20 transition-colors">
             <CalendarClock size={16} />
-            {hasDiscrepancy && (
+            {hasDiscrepancy && !isPastScheduled && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -81,7 +86,12 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
               </TooltipProvider>
             )}
           </div>
-          <div className="text-sm text-muted-foreground min-w-[72px]">
+          <div
+            className={cn(
+              "text-sm min-w-[72px]",
+              isPastScheduled ? "text-red-500" : "text-muted-foreground",
+            )}
+          >
             {time}
           </div>
           <div className="text-sm text-foreground ml-4 truncate max-w-md">
@@ -171,10 +181,13 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
       ref={setNodeRef}
       style={style}
       className={cn(
-        `w-full flex justify-between items-center mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative cursor-pointer ${
-          isOver ? "bg-secondary/40 border-primary" : ""
-        }`,
-        { "cursor-grabbing": isOver },
+        `w-full flex justify-between items-center mb-2 rounded-md bg-card hover:bg-card/80 border border-border transition-colors relative cursor-pointer`,
+        {
+          "cursor-grabbing": isOver,
+          "bg-secondary/40 border-primary": isOver,
+          "ring-2 ring-primary ring-offset-2 dark:ring-offset-slate-950":
+            isDropTarget,
+        },
       )}
       onClick={handleClick}
     >
@@ -188,7 +201,7 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
         {...listeners}
       >
         <div className="flex flex-row items-center gap-2">
-          {hasDiscrepancy && (
+          {hasDiscrepancy && !isPastScheduled && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -202,11 +215,27 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
               </Tooltip>
             </TooltipProvider>
           )}
-          <div className="text-primary mr-2 bg-primary/10 rounded-md p-1.5">
-            <CalendarClock size={16} />
+          <div
+            className={cn(
+              "text-primary mr-2 bg-primary/10 rounded-md p-1.5",
+              isPastScheduled && "text-red-500 bg-red-100 dark:bg-red-950/30",
+            )}
+          >
+            {isPastScheduled ? (
+              <Clock size={16} />
+            ) : (
+              <CalendarClock size={16} />
+            )}
           </div>
         </div>
-        <div className="text-sm text-muted-foreground min-w-[72px]">{time}</div>
+        <div
+          className={cn(
+            "text-sm min-w-[72px]",
+            isPastScheduled ? "text-red-500" : "text-muted-foreground",
+          )}
+        >
+          {time}
+        </div>
         <div className="text-sm text-foreground ml-4 truncate">
           {note.body || ""}
         </div>
@@ -226,6 +255,16 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
 
       {/* Action buttons on the right */}
       <div className="flex items-center gap-2 mr-2" onClick={handleActionClick}>
+        {/* Past schedule indicator */}
+        {isPastScheduled && (
+          <InstantPostButton
+            noteId={note.id}
+            source="schedule"
+            showText={false}
+            className="text-muted-foreground transition-colors p-2 z-10"
+          />
+        )}
+
         {/* Unschedule button */}
         {onUnschedule && (
           <TooltipButton

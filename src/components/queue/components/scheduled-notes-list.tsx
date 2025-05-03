@@ -1,5 +1,5 @@
 import React, { useState, RefObject } from "react";
-import { format } from "date-fns";
+import { format, isBefore, isToday } from "date-fns";
 import { NoteDraft } from "@/types/note";
 import { UserSchedule } from "@/types/schedule";
 import { DaySchedule } from "./day-schedule";
@@ -71,13 +71,49 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     findItemById: findNoteById,
   });
 
+  // Filter out schedules from today that have already passed and don't have a note
+  const filteredGroupedSchedules = React.useMemo(() => {
+    const now = new Date();
+    const filtered = { ...groupedSchedules };
+    
+    // Get today's date key
+    const todayKey = format(now, "yyyy-MM-dd");
+    
+    if (filtered[todayKey]) {
+      // Filter schedules for today
+      filtered[todayKey] = filtered[todayKey].filter(schedule => {
+        // Convert schedule time to a Date object for comparison
+        let scheduleHour = schedule.hour;
+        if (schedule.ampm === "pm" && scheduleHour < 12) scheduleHour += 12;
+        if (schedule.ampm === "am" && scheduleHour === 12) scheduleHour = 0;
+        
+        const scheduleDate = new Date(now);
+        scheduleDate.setHours(scheduleHour, schedule.minute, 0, 0);
+        
+        // Check if this time has a scheduled note
+        const notesForToday = groupedNotes[todayKey] || [];
+        const hasNoteAtThisTime = notesForToday.some(note => {
+          if (!note.scheduledTo) return false;
+          const noteDate = new Date(note.scheduledTo);
+          return noteDate.getHours() === scheduleHour && 
+                 noteDate.getMinutes() === schedule.minute;
+        });
+        
+        // Keep the schedule if it's in the future or has a note scheduled
+        return !isBefore(scheduleDate, now) || hasNoteAtThisTime;
+      });
+    }
+    
+    return filtered;
+  }, [groupedSchedules, groupedNotes]);
+
   // Prepare a map of all empty slots
   const emptySlotMap = React.useMemo(() => {
     const map = new Map<string, { day: Date; time: string }>();
 
     days.forEach(day => {
       const dateKey = format(day, "yyyy-MM-dd");
-      const schedulesForDay = groupedSchedules[dateKey] || [];
+      const schedulesForDay = filteredGroupedSchedules[dateKey] || [];
 
       schedulesForDay.forEach((schedule, index) => {
         // Convert to 24-hour format
@@ -93,7 +129,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     });
 
     return map;
-  }, [days, groupedSchedules]);
+  }, [days, filteredGroupedSchedules]);
 
   // Handle dragOver to update the active drop target
   const handleDragOver = (event: DragOverEvent) => {
@@ -123,21 +159,6 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         autoClose: 1500,
       });
     } catch (error: any) {
-      // if (error instanceof ScheduleFailedEmptyNoteBodyError) {
-      //   toast.update(toastId, {
-      //     render: "Note body is empty",
-      //     type: "error",
-      //     isLoading: false,
-      //     autoClose: 3000,
-      //   });
-      // } else {
-      //   toast.update(toastId, {
-      //     render: "Failed to reschedule note",
-      //     type: "error",
-      //     isLoading: false,
-      //     autoClose: 3000,
-      //   });
-      // }
       Logger.error("Error rescheduling note", { error });
     }
   };
@@ -213,6 +234,13 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     }
   };
 
+  // Check if a note is scheduled in the past
+  const isNotePastScheduled = (note: NoteDraft): boolean => {
+    if (!note.scheduledTo) return false;
+    const scheduleDate = new Date(note.scheduledTo);
+    return isBefore(scheduleDate, new Date());
+  };
+
   return (
     <DndContext
       onDragStart={handleDragStart}
@@ -221,15 +249,16 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       sensors={sensors}
       collisionDetection={closestCenter}
     >
-      {/* <SortableContext
-        items={allDraggableIds}
-        strategy={verticalListSortingStrategy}
-      > */}
       <div className="space-y-6">
         {days.map(day => {
           const dateKey = format(day, "yyyy-MM-dd");
           const notesForDay = groupedNotes[dateKey] || [];
-          const schedulesForDay = groupedSchedules[dateKey] || [];
+          const schedulesForDay = filteredGroupedSchedules[dateKey] || [];
+          
+          // Skip rendering empty days with no notes and no schedules
+          if (notesForDay.length === 0 && schedulesForDay.length === 0) {
+            return null;
+          }
 
           return (
             <DaySchedule
@@ -244,11 +273,11 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
               onEmptySlotClick={handleCreateDraftNote}
               activeDropTarget={activeDropTarget}
               useDndContext={false} // Don't create another DndContext
+              isPastScheduled={isNotePastScheduled} // Pass function to check past scheduled notes
             />
           );
         })}
       </div>
-      {/* </SortableContext> */}
 
       {/* Using our custom drag overlay component */}
       <CustomDragOverlay className="w-full">

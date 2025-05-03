@@ -1,27 +1,128 @@
 import loggerServer from "@/loggerServer";
-import axios from "axios";
-import {
-  MailClientConfig,
-  MailProvider,
-  AddSubscriberOptions,
-  AddTagToEmailOptions,
-  RemoveTagFromEmailOptions,
-} from "@/types/mail";
-import { Resend } from "resend";
 
-export class MailClient implements MailProvider {
+export interface MailClientConfig {
+  apiKey: string;
+  baseUrl: string;
+  transactionalApiKey: string;
+}
+
+export interface SubscriberName {
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+}
+
+export interface AddSubscriberParams {
+  email: string;
+  name: SubscriberName;
+  fields?: Record<string, string>;
+}
+
+export interface AddTagParams {
+  email: string;
+  tag: string;
+}
+
+export interface SendEmailParams {
+  to: string | string[];
+  from: string;
+  subject: string;
+  template: string;
+  cc?: string[];
+}
+
+export class MailClient {
   private config: MailClientConfig;
-  private baseHeaders: Record<string, string>;
-  private transactionalProvider: Resend;
 
   constructor(config: MailClientConfig) {
     this.config = config;
-    this.baseHeaders = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      Authorization: `Bearer ${this.config.apiKey}`,
-    };
-    this.transactionalProvider = new Resend(this.config.transactionalApiKey);
+  }
+
+  async addSubscriber({ email, name, fields = {} }: AddSubscriberParams) {
+    try {
+      // Here you would implement your provider-specific logic
+      // For example with fetch:
+      const response = await fetch(`${this.config.baseUrl}/subscribers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.config.apiKey}`
+        },
+        body: JSON.stringify({
+          email,
+          name,
+          fields
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to add subscriber: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      loggerServer.info(`Subscriber added: ${email}`);
+      return data;
+    } catch (error: any) {
+      loggerServer.error(`Error adding subscriber: ${error.message}`);
+      return null;
+    }
+  }
+
+  async addTagToEmail({ email, tag }: AddTagParams) {
+    try {
+      // Provider-specific implementation
+      const response = await fetch(`${this.config.baseUrl}/subscribers/tag`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.config.apiKey}`
+        },
+        body: JSON.stringify({
+          email,
+          tag,
+          status: 'active'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to add tag: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      loggerServer.info(`Tag added to email: ${email}, tag: ${tag}`);
+      return data;
+    } catch (error: any) {
+      loggerServer.error(`Error adding tag to email: ${error.message}`);
+      return null;
+    }
+  }
+
+  async removeTagFromEmail({ email, tag }: AddTagParams) {
+    try {
+      // Provider-specific implementation
+      const response = await fetch(`${this.config.baseUrl}/subscribers/untag`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.config.apiKey}`
+        },
+        body: JSON.stringify({
+          email,
+          tag
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to remove tag: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      loggerServer.info(`Tag removed from email: ${email}, tag: ${tag}`);
+      return data;
+    } catch (error: any) {
+      loggerServer.error(`Error removing tag from email: ${error.message}`);
+      return null;
+    }
   }
 
   async sendEmail({
@@ -29,106 +130,34 @@ export class MailClient implements MailProvider {
     from,
     subject,
     template,
-    cc = [],
-  }: {
-    to: string | string[];
-    subject: string;
-    from: string;
-    template: string;
-    cc?: string[];
-  }) {
-    const response = await this.transactionalProvider.emails.send({
-      from: `WriteStack <${from}@writestack.io>`,
-      to,
-      subject,
-      html: template,
-      cc,
-    });
-
-    if (response.error) {
-      loggerServer.error(`Error sending email: ${response.error}`);
-      throw new Error(response.error.message);
-    }
-
-    return response;
-  }
-
-  async addSubscriber(options: AddSubscriberOptions) {
-    const { email, name, fields } = options;
-    let firstName = "";
-    let lastName = "";
-    let fullName = "";
-
-    if ("firstName" in name) {
-      firstName = name.firstName;
-      lastName = name.lastName;
-      fullName = `${firstName} ${lastName}`;
-    } else {
-      firstName = name.fullName.split(" ")[0];
-      lastName = name.fullName.split(" ").slice(1).join(" ");
-      fullName = name.fullName;
-    }
-
+    cc = []
+  }: SendEmailParams) {
     try {
-      const body = {
-        first_name: firstName,
-        email_address: email,
-        state: "active",
-        fields: {
-          last_name: lastName,
-          full_name: fullName,
-          ...fields,
+      // Using the transactional API key for sending emails
+      const response = await fetch(`${this.config.baseUrl}/email/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.config.transactionalApiKey}`
         },
-      };
+        body: JSON.stringify({
+          to: Array.isArray(to) ? to : [to],
+          from,
+          subject,
+          html: template,
+          cc
+        })
+      });
 
-      const response = await axios.post(
-        `${this.config.baseUrl}/subscribers`,
-        body,
-        { headers: this.baseHeaders },
-      );
+      if (!response.ok) {
+        throw new Error(`Failed to send email: ${response.statusText}`);
+      }
 
-      return response;
+      const data = await response.json();
+      return data;
     } catch (error: any) {
-      loggerServer.error(`Error adding subscriber: ${error.message}`);
+      loggerServer.error(`Error sending email: ${error.message}`);
       return null;
-    }
-  }
-
-  async addTagToEmail(options: AddTagToEmailOptions) {
-    const { email, tag } = options;
-    try {
-      const body = {
-        email_address: email,
-      };
-
-      const response = await axios.post(
-        `${this.config.baseUrl}/tags/${tag}/subscribers`,
-        body,
-        { headers: this.baseHeaders },
-      );
-
-      return response;
-    } catch (error: any) {
-      loggerServer.error(`Error adding tag to email: ${error.message}`);
-      throw error;
-    }
-  }
-
-  async removeTagFromEmail(options: RemoveTagFromEmailOptions) {
-    const { email, tag } = options;
-    const body = {
-      email_address: email,
-    };
-    try {
-      const response = await axios.delete(
-        `${this.config.baseUrl}/tags/${tag}/subscribers/`,
-        { headers: this.baseHeaders, data: body },
-      );
-
-      return response;
-    } catch (error: any) {
-      loggerServer.error(`Error removing tag from email: ${error.message}`);
-      throw error;
     }
   }
 }

@@ -81,6 +81,7 @@ export function QueuePage() {
 
     // Ensure we show dates from the earliest scheduled note up to the furthest scheduled note
     let currentDay = earliestScheduledDate;
+
     while (currentDay <= latestScheduledDate) {
       days.push(currentDay);
       currentDay = addDays(currentDay, 1);
@@ -193,6 +194,7 @@ export function QueuePage() {
     const grouped: Record<string, UserSchedule[]> = {};
 
     userSchedules.forEach(schedule => {
+      
       // Check each active day and add applicable schedules
       activeDays.forEach(day => {
         const dateKey = format(day, "yyyy-MM-dd");

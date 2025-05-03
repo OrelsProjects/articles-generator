@@ -26,6 +26,7 @@ interface DayScheduleProps {
   lastNoteId?: string;
   activeDropTarget?: string | null;
   useDndContext?: boolean;
+  isPastScheduled?: (note: NoteDraft) => boolean;
 }
 
 // Helper type for combined items
@@ -50,6 +51,7 @@ export const DaySchedule = ({
   lastNoteId,
   activeDropTarget,
   useDndContext = true, // Default to true for backward compatibility
+  isPastScheduled,
 }: DayScheduleProps) => {
   const now = new Date();
   const currentMinutes = startOfDay(now).getHours() * 60
@@ -232,6 +234,7 @@ export const DaySchedule = ({
 
     setDragOrigin(null);
   };
+
   // Get the day title
   const dayTitle = (
     <h2 className="text-lg font-semibold mb-2">
@@ -267,6 +270,7 @@ export const DaySchedule = ({
               note={item.note}
               onSelect={onSelectNote}
               onUnschedule={onUnscheduleNote}
+              isPastScheduled={isPastScheduled ? isPastScheduled(item.note) : false}
             />
           </div>
         )}
