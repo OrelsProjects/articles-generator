@@ -613,6 +613,7 @@ export const useNotes = () => {
       if (!user) return;
       let sendResponse: any;
       try {
+        debugger;
         await hasExtension({
           throwIfNoExtension: true,
           showDialog: true,
@@ -622,22 +623,22 @@ export const useNotes = () => {
         if (!note) return;
         // await axios.get(`/api/user/notes/${noteId}/should-send`);
         Logger.info("Sending note", note);
-        const attachmentIds: string[] = [];
+        const attachmentUrls: string[] = [];
 
+        debugger;
         if (note.attachments?.length) {
-          const responseAttachment = await axios.get<{
-            attachmentIds: string[];
-          }>(`/api/note/${noteId}/image/${note.attachments?.[0]?.id}`);
-          attachmentIds.push(...responseAttachment.data.attachmentIds);
+          note.attachments.forEach(attachment => {
+            attachmentUrls.push(attachment.url);
+          });
         }
-        Logger.info("Attachment IDs", attachmentIds);
-        const body = attachmentIds
+        Logger.info("Attachment URLs", attachmentUrls);
+        const body = attachmentUrls
           ? {
               message: note.body,
               moveNoteToPublished: {
                 noteId,
               },
-              attachmentIds,
+              attachmentUrls,
             }
           : {
               message: note.body,

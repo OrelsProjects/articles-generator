@@ -25,11 +25,7 @@ export interface CreatePostParams {
   moveNoteToPublished?: {
     noteId: string;
   };
-  /** Optional: Schedule post for future (in seconds) */
-  scheduleSeconds?: number;
-  /** Optional: Automatically close the tab after posting */
-  autoCloseTab?: boolean;
-  attachmentIds?: string[];
+  attachmentUrls?: string[];
 }
 
 /**

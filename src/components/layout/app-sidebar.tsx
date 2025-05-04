@@ -38,6 +38,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUi } from "@/lib/hooks/useUi";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { UserStreak } from "@/components/ui/user-streak";
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const router = useCustomRouter();
@@ -172,7 +173,9 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             </ul>
           </nav>
           {/* User profile */}
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border flex flex-col gap-2 items-center">
+            <UserStreak showText={!sidebarCollapsed} />
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -196,9 +199,11 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                       <p className="truncate font-medium text-sm">
                         {user?.displayName || "User"}
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {user?.email}
-                      </p>
+                      <div className="flex items-center gap-1">
+                        <p className="truncate text-xs text-muted-foreground">
+                          {user?.email}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </Button>
@@ -211,6 +216,15 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                {sidebarCollapsed && (
+                  <>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <UserStreak />
+                      <span>Your Streak</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive flex items-center gap-2"
                   onClick={signOut}
@@ -304,9 +318,12 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                   <p className="truncate font-medium text-sm">
                     {user?.displayName || "User"}
                   </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {user?.email}
-                  </p>
+                  <div className="flex items-center gap-1">
+                    <p className="truncate text-xs text-muted-foreground">
+                      {user?.email}
+                    </p>
+                    <UserStreak />
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2 px-4">

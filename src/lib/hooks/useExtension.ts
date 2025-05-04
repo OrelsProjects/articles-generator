@@ -153,16 +153,26 @@ export function useExtension(): UseExtension {
       if (!!extensionAvailable) {
         return true;
       }
-
-      const verificationStatus = await verifyExtension();
-      if (verificationStatus.message === "error") {
-        if (options?.showDialog) {
-          dispatch(setShowExtensionDialog(true));
+      const maxRetries = 3;
+      let retries = 0;
+      let verificationStatus: {
+        message: "success" | "error" | "pending" | "outdated";
+      } = { message: "pending" };
+      while (retries < maxRetries) {
+        verificationStatus = await verifyExtension();
+        if (verificationStatus.message === "error") {
+          if (options?.showDialog) {
+            dispatch(setShowExtensionDialog(true));
+          }
+          if (options?.throwIfNoExtension) {
+            throw new NoExtensionError("Extension not found");
+          }
+          return false;
+        } else if (verificationStatus.message === "success") {
+          break;
         }
-        if (options?.throwIfNoExtension) {
-          throw new NoExtensionError("Extension not found");
-        }
-        return false;
+        retries++;
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
       return verificationStatus.message === "success";
@@ -261,9 +271,12 @@ export function useExtension(): UseExtension {
         );
       } catch (error) {
         if (message.action === "createSchedule") {
-          Logger.error(`ADDING-SCHEDULE: sendExtensionMessage: error: ${JSON.stringify(error)}`, {
-            error,
-          });
+          Logger.error(
+            `ADDING-SCHEDULE: sendExtensionMessage: error: ${JSON.stringify(error)}`,
+            {
+              error,
+            },
+          );
         } else {
           Logger.error(`EXTENSION MESSAGE ERROR: ${JSON.stringify(error)}`, {
             error,
@@ -301,7 +314,7 @@ export function useExtension(): UseExtension {
 
         const messageData = {
           bodyJson: adf.data,
-          attachmentIds: params.attachmentIds,
+          attachmentUrls: params.attachmentUrls,
         };
         // Prepare message for extension
         const message: ExtensionMessage = {
