@@ -64,7 +64,14 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
               //     autoplay={true}
               //     style={{ width: "100%", height: "100%" }}
               //   />
-              <></>
+              <FlameIcon
+                className={cn({
+                  "text-muted-foreground": !hasActiveStreak,
+                  "text-muted-foreground/70": hasActiveStreak && !isHovering,
+                  "text-primary": hasActiveStreak && isHovering,
+                })}
+                size={20}
+              />
             ) : (
               <FlameIcon
                 className={cn({
