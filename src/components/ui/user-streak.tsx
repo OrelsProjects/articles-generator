@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Lottie from "lottie-react";
+// import Lottie from "lottie-react";
 import { cn } from "@/lib/utils";
 import { FlameIcon } from "@/components/ui/flame-icon";
 import { useNotesStats } from "@/lib/hooks/useNotesStats";
@@ -57,13 +57,14 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
         <>
           <div className="relative w-5 h-5">
             {isHovering && animationData && streakCount > 0 ? (
-              <Lottie
-                lottieRef={lottieRef}
-                animationData={animationData}
-                loop={true}
-                autoplay={true}
-                style={{ width: "100%", height: "100%" }}
-              />
+              //   <Lottie
+              //     lottieRef={lottieRef}
+              //     animationData={animationData}
+              //     loop={true}
+              //     autoplay={true}
+              //     style={{ width: "100%", height: "100%" }}
+              //   />
+              <></>
             ) : (
               <FlameIcon
                 className={cn({
@@ -77,7 +78,12 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
           </div>
           <span className="text-sm font-medium select-none">
             {streakCount}
-            {showText && <span className="text-muted-foreground text-xs ml-1"> notes streak</span>}
+            {showText && (
+              <span className="text-muted-foreground text-xs ml-1">
+                {" "}
+                notes streak
+              </span>
+            )}
           </span>
         </>
       )}
