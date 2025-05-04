@@ -501,8 +501,8 @@ export function NotesEditorDialog() {
                       ))}
                       {/* There's currently a problem with sending notes with images. I'm looking into it. */}
                       <div className="text-sm text-destructive">
-                        There's currently a problem with sending notes with
-                        images. I'm looking into it.
+                        There&apos;s currently a problem with sending notes with
+                        images. I&apos;m looking into it.
                       </div>
                     </div>
                   )}
