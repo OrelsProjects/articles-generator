@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { FlameIcon } from "@/components/ui/flame-icon";
 import { useNotesStats } from "@/lib/hooks/useNotesStats";
@@ -12,6 +12,8 @@ interface UserStreakProps {
   showText?: boolean;
   className?: string;
 }
+
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export function UserStreak({ className, showText = true }: UserStreakProps) {
   const [isHovering, setIsHovering] = useState(false);
@@ -80,7 +82,12 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
           </div>
           <span className="text-sm font-medium select-none">
             {streakCount}
-            {showText && <span className="text-muted-foreground text-xs ml-1"> notes streak</span>}
+            {showText && (
+              <span className="text-muted-foreground text-xs ml-1">
+                {" "}
+                notes streak
+              </span>
+            )}
           </span>
         </>
       )}
