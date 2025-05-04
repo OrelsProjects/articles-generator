@@ -5,7 +5,7 @@ import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { AlertCircle, ExternalLinkIcon, Pencil, Plus, X } from "lucide-react";
+import { AlertCircle, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditScheduleDialog } from "./edit-schedule-dialog";
@@ -18,15 +18,6 @@ import { TooltipButton } from "@/components/ui/tooltip-button";
 import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { DialogContent } from "@/components/ui/dialog";
-import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
@@ -44,17 +35,11 @@ export function QueuePage() {
     nextPage,
     resetPage,
   } = useQueue();
-  const [didSeeWarning, setDidSeeWarning] = useLocalStorage(
-    "queue_did_see_new_system",
-    false,
-  );
   const { selectNote, createDraftNote } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [activeDays, setActiveDays] = useState<Date[]>([]);
   const [activeTab, setActiveTab] = useState("scheduled");
-
-  const [showWarningDialog, setShowWarningDialog] = useState(false);
 
   const lastNoteRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -63,7 +48,7 @@ export function QueuePage() {
   const pathname = usePathname();
 
   const generateParam = searchParams.get("generate");
-  const articlesParam = searchParams.get("articles");
+  const postParam = searchParams.get("post");
 
   // Generate an array of dates based on scheduled notes and minimum 28 days
   useEffect(() => {
@@ -241,7 +226,7 @@ export function QueuePage() {
     if (!open) {
       const paramsToRemove = [];
       if (generateParam) paramsToRemove.push("generate");
-      if (articlesParam) paramsToRemove.push("articles");
+      if (postParam) paramsToRemove.push("post");
       router.push(pathname, {
         paramsToRemove,
       });
@@ -277,7 +262,7 @@ export function QueuePage() {
           <GenerateNotesDialog
             onOpenChange={handleGenerateNotesOpenChange}
             defaultOpen={generateParam ? true : false}
-            defaultSource={articlesParam ? "articles" : "description"}
+            defaultSource={postParam ? "posts" : "description"}
           />
         </div>
       </div>

@@ -41,7 +41,7 @@ const ideaLoadingStates = [
   { text: "Finalizing the best notes..." },
 ];
 
-type GenerateSource = "description" | "articles";
+type GenerateSource = "description" | "posts";
 
 export interface GenerateNotesDialogProps {
   onOpenChange?: (open: boolean) => void;
@@ -84,7 +84,7 @@ export function GenerateNotesDialog({
 
   // Load articles when needed
   useEffect(() => {
-    if (handle && selectedSource === "articles" && articles.length === 0) {
+    if (handle && selectedSource === "posts" && articles.length === 0) {
       fetchPosts();
     }
   }, [handle, selectedSource, articles.length, fetchPosts]);
@@ -116,7 +116,7 @@ export function GenerateNotesDialog({
 
   const handleUpdateSelectedSource = (source: GenerateSource) => {
     setSelectedSource(source);
-    if (source === "articles") {
+    if (source === "posts") {
       if (articles.length <= 0) {
         fetchPosts();
       }
@@ -186,7 +186,7 @@ export function GenerateNotesDialog({
                       Your description
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => handleUpdateSelectedSource("articles")}
+                      onClick={() => handleUpdateSelectedSource("posts")}
                     >
                       Past articles
                     </DropdownMenuItem>
@@ -274,7 +274,7 @@ export function GenerateNotesDialog({
                   <div className="col-span-4 relative mt-2">
                     <Input
                       placeholder={
-                        selectedSource === "articles"
+                        selectedSource === "posts"
                           ? "Additional info (optional)"
                           : "Additional topic (optional)"
                       }
@@ -303,7 +303,7 @@ export function GenerateNotesDialog({
                   type="submit"
                   disabled={
                     isLoadingGenerateNotes ||
-                    (selectedSource === "articles" &&
+                    (selectedSource === "posts" &&
                       selectedArticles.length === 0)
                   }
                 >
