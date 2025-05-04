@@ -13,12 +13,14 @@ import { Streak } from "@/types/notes-stats";
 
 interface ActivityHeatmapProps {
   streakData: Streak[];
+  streakCount: number;
   loading?: boolean;
 }
 
 export default function ActivityHeatmap({
   streakData = [],
   loading = false,
+  streakCount = 0,
 }: ActivityHeatmapProps) {
   const today = useMemo(() => new Date(), []);
   const startDate = useMemo(() => subDays(today, 240), [today]); // About 8 months back
@@ -66,33 +68,6 @@ export default function ActivityHeatmap({
     if (value === 0) return 0;
     return Math.ceil((value / maxActivity) * 4);
   };
-
-  // Calculate current streak without relying on Date objects from streak data
-  const streak = useMemo(() => {
-    let count = 0;
-    let currentDate = today;
-    
-    // Create date keys in the format the streakData uses
-    const formatDateKey = (date: Date) => format(date, "yyyy-MM-dd");
-    const todayKey = formatDateKey(currentDate);
-
-    // Skip today if it's empty
-    if (activityData[todayKey] === 0) {
-      currentDate = subDays(currentDate, 1);
-    }
-
-    while (true) {
-      const dateKey = formatDateKey(currentDate);
-      if (activityData[dateKey] > 0) {
-        count++;
-        currentDate = subDays(currentDate, 1);
-      } else {
-        break;
-      }
-    }
-
-    return count;
-  }, [activityData, today]);
 
   // Group days by week for the grid layout
   const { weeks, monthLabels } = useMemo(() => {
@@ -227,7 +202,7 @@ export default function ActivityHeatmap({
           <div className="flex items-center gap-2 mb-4">
             <div className="h-4 w-4 rounded-full bg-orange-500"></div>
             <h3 className="text-lg font-medium">
-              {streak}-day streak, {streak === 0 ? "oh c'mon" : "keep it up!"}
+              {streakCount}-day streak, {streakCount === 0 ? "oh c'mon" : "keep it up!"}
             </h3>
           </div>
 

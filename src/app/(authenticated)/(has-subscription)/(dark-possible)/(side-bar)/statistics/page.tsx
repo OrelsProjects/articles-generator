@@ -5,7 +5,7 @@ import { useNotesStats } from "@/lib/hooks/useNotesStats";
 import ActivityHeatmap from "@/components/ui/activity-heatmap";
 
 export default function StatisticsPage() {
-  const { streak, loading, error } = useNotesStats();
+  const { streak, loading, error, streakCount } = useNotesStats();
 
   return (
     <div className="container mx-auto py-8 space-y-8 pb-20 md:pb-8">
@@ -21,7 +21,11 @@ export default function StatisticsPage() {
             Failed to load streak data: {error}
           </div>
         ) : (
-          <ActivityHeatmap streakData={streak || []} loading={loading} />
+          <ActivityHeatmap
+            streakData={streak || []}
+            loading={loading}
+            streakCount={streakCount}
+          />
         )}
       </div>
 {/* 
