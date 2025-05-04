@@ -48,7 +48,7 @@ export function QueuePage() {
   const pathname = usePathname();
 
   const generateParam = searchParams.get("generate");
-  const postParam = searchParams.get("post");
+  const postsParam = searchParams.get("posts");
 
   // Generate an array of dates based on scheduled notes and minimum 28 days
   useEffect(() => {
@@ -226,7 +226,7 @@ export function QueuePage() {
     if (!open) {
       const paramsToRemove = [];
       if (generateParam) paramsToRemove.push("generate");
-      if (postParam) paramsToRemove.push("post");
+      if (postsParam) paramsToRemove.push("post");
       router.push(pathname, {
         paramsToRemove,
       });
@@ -262,7 +262,7 @@ export function QueuePage() {
           <GenerateNotesDialog
             onOpenChange={handleGenerateNotesOpenChange}
             defaultOpen={generateParam ? true : false}
-            defaultSource={postParam ? "posts" : "description"}
+            defaultSource={postsParam ? "posts" : "description"}
           />
         </div>
       </div>
