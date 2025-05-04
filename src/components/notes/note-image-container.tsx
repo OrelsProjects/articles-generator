@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useRef, useCallback, useState } from "react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { NoteDraftImage } from "@/types/note";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface NoteImageContainerProps {
   imageUrl?: string | null;
@@ -100,16 +99,6 @@ export function NoteImageContainer({
           />
           {onImageDelete && allowDelete && (
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-              {/* <TooltipButton
-              tooltipContent="Change image"
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 bg-background/20 hover:bg-background/40"
-              onClick={handleEditClick}
-              disabled={disabled}
-            >
-              <Pencil className="h-4 w-4 text-white" />
-            </TooltipButton> */}
               <TooltipButton
                 tooltipContent="Remove image"
                 variant="ghost"
