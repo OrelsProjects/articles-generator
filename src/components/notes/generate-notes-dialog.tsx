@@ -41,11 +41,20 @@ const ideaLoadingStates = [
   { text: "Finalizing the best notes..." },
 ];
 
-export interface GenerateNotesDialogProps {}
-
 type GenerateSource = "description" | "articles";
 
-export function GenerateNotesDialog() {
+export interface GenerateNotesDialogProps {
+  onOpenChange?: (open: boolean) => void;
+  defaultOpen?: boolean;
+  defaultSource?: GenerateSource;
+}
+
+
+export function GenerateNotesDialog({
+  onOpenChange,
+  defaultOpen,
+  defaultSource,
+}: GenerateNotesDialogProps) {
   const params = useParams();
   const handle = params?.handle as string;
 
@@ -62,7 +71,7 @@ export function GenerateNotesDialog() {
 
   const [selectedModel, setSelectedModel] = useState<FrontendModel>("auto");
   const [selectedSource, setSelectedSource] =
-    useState<GenerateSource>("description");
+    useState<GenerateSource>(defaultSource || "description");
   const [showArticleDialog, setShowArticleDialog] = useState(false);
   const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
   const [hoveredArticle, setHoveredArticle] = useState<Article | null>(null);
@@ -126,7 +135,7 @@ export function GenerateNotesDialog() {
 
   return (
     <>
-      <Dialog>
+      <Dialog open={defaultOpen} onOpenChange={onOpenChange}>
         <DialogTrigger asChild>
           <Button
             variant="neumorphic-primary"

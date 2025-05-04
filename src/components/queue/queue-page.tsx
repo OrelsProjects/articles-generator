@@ -27,8 +27,11 @@ import {
 import { DialogContent } from "@/components/ui/dialog";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
 export function QueuePage() {
+  const searchParams = useSearchParams();
   const [activeTabCache, setActiveTabCache] = useLocalStorage(
     "queue_active_tab",
     "scheduled",
@@ -55,6 +58,12 @@ export function QueuePage() {
 
   const lastNoteRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const router = useCustomRouter();
+  const pathname = usePathname();
+
+  const generateParam = searchParams.get("generate");
+  const articlesParam = searchParams.get("articles");
 
   // Generate an array of dates based on scheduled notes and minimum 28 days
   useEffect(() => {
@@ -194,7 +203,6 @@ export function QueuePage() {
     const grouped: Record<string, UserSchedule[]> = {};
 
     userSchedules.forEach(schedule => {
-      
       // Check each active day and add applicable schedules
       activeDays.forEach(day => {
         const dateKey = format(day, "yyyy-MM-dd");
@@ -229,6 +237,17 @@ export function QueuePage() {
     selectNote(note);
   };
 
+  const handleGenerateNotesOpenChange = (open: boolean) => {
+    if (!open) {
+      const paramsToRemove = [];
+      if (generateParam) paramsToRemove.push("generate");
+      if (articlesParam) paramsToRemove.push("articles");
+      router.push(pathname, {
+        paramsToRemove,
+      });
+    }
+  };
+
   // Get latest note ID for ref
   const latestNote = getLatestNote();
   const latestNoteId = latestNote?.id;
@@ -255,82 +274,13 @@ export function QueuePage() {
             <Pencil size={16} />
             Edit queue
           </Button>
-          <GenerateNotesDialog />
+          <GenerateNotesDialog
+            onOpenChange={handleGenerateNotesOpenChange}
+            defaultOpen={generateParam ? true : false}
+            defaultSource={articlesParam ? "articles" : "description"}
+          />
         </div>
       </div>
-
-      {!didSeeWarning && (
-        <>
-          <div className="bg-blue-50 dark:bg-blue-800/25 border border-blue-200 dark:border-blue-900 p-4 rounded-md mb-6 flex items-center justify-between text-blue-800 dark:text-blue-300">
-            <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-              <span>
-                New scheduling system
-                <Button
-                  variant="link"
-                  onClick={() => setShowWarningDialog(true)}
-                  className="text-blue-800 dark:text-blue-300"
-                >
-                  See more
-                </Button>
-              </span>
-            </div>
-            <Button variant="ghost" onClick={() => setDidSeeWarning(true)}>
-              <X size={16} />
-            </Button>
-          </div>
-
-          <Dialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>New Scheduling System</DialogTitle>
-              </DialogHeader>
-              <DialogDescription className="text-sm">
-                {/* Explain that the system is based on the Chrome extension and requires the user to have either a substack.com/writestack.io tab open to have the notes scheduled. */}
-                <p>
-                  The new scheduling system is based on the Chrome extension and
-                  will require you to have either a substack.com or
-                  writestack.io tab open to have the notes sent on time.
-                </p>
-                <br />
-                <p>
-                  If you have some notes scheduled, you&apos;ll need to quickly
-                  reschedule them by clicking the Schedule button (It will have
-                  the correct date by default):
-                  <Image
-                    src="/add-to-queue.png"
-                    alt="Add to queue"
-                    width={200}
-                    height={200}
-                    className="rounded-md shadow-lg"
-                  />
-                </p>
-
-                <br />
-                <p>
-                  Make sure you have the extension installed and enabled with
-                  version of: <strong>1.2.6+.</strong>
-                </p>
-                <p>
-                  In order to check if you have the correct version, go to
-                  chrome://extensions and find WriteStack.
-                </p>
-                <Button variant="link" className="px-0" asChild>
-                  <Link
-                    href={
-                      "https://chromewebstore.google.com/detail/writeroom/emdlbnkhjpfcooclfbodmhkhkohcjaoa"
-                    }
-                    target="_blank"
-                  >
-                    Download the extension{" "}
-                    <ExternalLinkIcon size={16} className="ml-2" />
-                  </Link>
-                </Button>
-              </DialogDescription>
-            </DialogContent>
-          </Dialog>
-        </>
-      )}
 
       {scheduledNotes.length === 0 && (
         <div className="bg-red-50 dark:bg-red-950/25 border border-red-200 dark:border-red-900 p-4 rounded-md mb-6 flex items-center text-red-800 dark:text-red-400">
