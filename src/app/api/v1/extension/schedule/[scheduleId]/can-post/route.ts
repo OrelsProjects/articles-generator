@@ -41,13 +41,13 @@ export async function POST(
         schedule.noteId,
         "Note schedule was triggered, but more than 10 minutes have passed since the scheduled time",
       );
-      await sendMailSafe({
-        to: user?.email || "orelsmail@gmail.com",
-        from: "noreply",
-        subject: missedEmail.subject,
-        template: missedEmail.body,
-        cc: "orelsmail@gmail.com",
-      });
+      // await sendMailSafe({
+      //   to: user?.email || "orelsmail@gmail.com",
+      //   from: "noreply",
+      //   subject: missedEmail.subject,
+      //   template: missedEmail.body,
+      //   cc: "orelsmail@gmail.com",
+      // });
       return NextResponse.json(
         { canPost: false, error: "Schedule was missed" },
         { status: 200 },
