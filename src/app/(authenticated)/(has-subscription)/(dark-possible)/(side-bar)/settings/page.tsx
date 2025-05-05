@@ -498,12 +498,8 @@ export default function SettingsPage() {
         <Dialog
           open={showDiscountDialog}
           onOpenChange={open => {
-            if (!open && !loadingDiscount) {
+            if (!open) {
               setShowDiscountDialog(false);
-              // If they decline the discount, proceed with cancellation
-              if (!loadingDiscount) {
-                handleCancelSubscription();
-              }
             }
           }}
         >
@@ -520,8 +516,8 @@ export default function SettingsPage() {
                   50% OFF Your Subscription
                 </h3>
                 <p className="text-center">
-                  We&apos;d hate to see you go! Stay with us and get 50% off your
-                  current plan for the next month.
+                  We&apos;d hate to see you go! Stay with us and get 50% off
+                  your current plan for the next month.
                 </p>
               </div>
 
