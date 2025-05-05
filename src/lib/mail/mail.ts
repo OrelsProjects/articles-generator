@@ -20,6 +20,9 @@ export const sendMail = async ({
   template,
   cc = [],
 }: SendEmailOptions) => {
+  loggerServer.info(
+    `Sending mail: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,
+  );
   const response = await client.sendEmail({
     to,
     from,
