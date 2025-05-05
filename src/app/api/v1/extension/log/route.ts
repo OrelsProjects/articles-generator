@@ -35,21 +35,35 @@ export async function POST(request: NextRequest) {
     const logPrefix = `[${timestamp}] [${source}] [${session?.user.name || session?.user.email || "unknown"}]`;
 
     // Log to console based on the message content
+    const dataString = data
+      ? JSON.stringify({
+          message,
+          data,
+          headers,
+        })
+      : "";
     if (level === "error") {
       if (data) {
-        loggerServer.error(`${logPrefix} ERROR:`, {
+        loggerServer.error(`${logPrefix} ERROR: ${dataString}`, {
           message,
           data,
           headers,
         });
       } else {
-        loggerServer.error(`${logPrefix} ERROR:`, { message, headers });
+        loggerServer.error(`${logPrefix} ERROR: ${dataString}`, {
+          message,
+          headers,
+        });
       }
     } else {
       if (data) {
-        loggerServer.info(`${logPrefix}:`, { message, data, headers });
+        loggerServer.info(`${logPrefix}: ${dataString}`, {
+          message,
+          data,
+          headers,
+        });
       } else {
-        loggerServer.info(`${logPrefix}:`, { message, headers });
+        loggerServer.info(`${logPrefix}: ${dataString}`, { message, headers });
       }
     }
 
