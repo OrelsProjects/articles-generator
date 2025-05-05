@@ -26,12 +26,12 @@ export async function POST(
     loggerServer.info("[CAN-POST] schedule: " + JSON.stringify(schedule));
 
     // If the schedule is in the past, more than 10 minutes ago, return false
-    if (schedule.scheduledAt <= new Date(Date.now() - 10 * 60 * 1000)) {
-      return NextResponse.json(
-        { canPost: false, error: "Schedule was missed" },
-        { status: 200 },
-      );
-    }
+    // if (schedule.scheduledAt <= new Date(Date.now() - 10 * 60 * 1000)) {
+    //   return NextResponse.json(
+    //     { canPost: false, error: "Schedule was missed" },
+    //     { status: 200 },
+    //   );
+    // }
 
     return NextResponse.json({ canPost: true }, { status: 200 });
   } catch (error) {
