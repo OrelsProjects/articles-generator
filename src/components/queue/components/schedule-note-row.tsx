@@ -13,6 +13,7 @@ import {
   Pencil,
   AlertTriangle,
   Clock,
+  CircleAlert,
 } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
@@ -24,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 
 interface ScheduleNoteRowProps {
   note: NoteDraft;
@@ -210,6 +212,21 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
                 <TooltipContent>
                   <p>
                     Schedule discrepancy detected. Please reschedule this note.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {isPastScheduled && (
+            <TooltipProvider>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger>
+                  <CircleAlert className="h-4 w-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    This note was scheduled to be posted in the past and was not
+                    sent.
                   </p>
                 </TooltipContent>
               </Tooltip>
