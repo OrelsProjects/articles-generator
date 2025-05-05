@@ -80,7 +80,14 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
               />
             )}
           </div>
-          <span className="text-sm font-medium select-none">
+          <span
+            className={cn(
+              "text-sm text-muted-foreground font-medium select-none",
+              {
+                "text-primary transition-all": isHovering,
+              },
+            )}
+          >
             {streakCount}
             {showText && (
               <span className="text-muted-foreground text-xs ml-1">
