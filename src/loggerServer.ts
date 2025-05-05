@@ -29,9 +29,13 @@ const logger: () => Logger = () => {
     data?: LogItem,
   ) => {
     try {
+      const env = process.env.NODE_ENV;
+      if (env === "development") {
+        return;
+      }
       _logger.log(level, message, {
         data,
-        env: process.env.ENVIRONMENT,
+        env,
       });
     } catch (error: any) {
       console.log("Error logging", error);

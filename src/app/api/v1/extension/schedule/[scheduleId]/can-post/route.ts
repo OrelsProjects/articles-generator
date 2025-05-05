@@ -25,20 +25,28 @@ export async function POST(
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: {
-        id: schedule.userId,
-      },
-    });
-
+    
+    
+    
     loggerServer.info("[CAN-POST] schedule: " + JSON.stringify(schedule));
-
+    
     // If the schedule is in the past, more than 20 minutes ago, return false
     if (schedule.scheduledAt <= new Date(Date.now() - 20 * 60 * 1000)) {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: schedule.userId,
+        },
+      });
+  
+      const note = await prisma.note.findUnique({
+        where: {
+          id: schedule.noteId,
+        },
+      });
       const missedEmail = generateScheduleNoteMissedEmail(
-        schedule.userId,
+        user?.name || "",
         schedule.id,
-        schedule.noteId,
+        note?.body || "",
         "Note schedule was triggered, but more than 10 minutes have passed since the scheduled time",
       );
       // await sendMailSafe({

@@ -41,6 +41,10 @@ const log = (
 ) => {
   printLog(type, message, error, logItem);
   try {
+    const env = process.env.NODE_ENV;
+    if (env === "development") {
+      return;
+    }
     // Build message from message, logItem, and error
     const rawMessage = `${message} ${logItem ? JSON.stringify(logItem) : ""} ${error ? JSON.stringify(error) : ""}`;
     datadogLogs.logger.log(rawMessage, logItem, type, error);

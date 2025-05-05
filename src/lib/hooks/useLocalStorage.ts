@@ -12,7 +12,8 @@ export type LocalStorageKey =
   | "queue_did_see_warning"
   | "queue_did_see_new_system"
   | "did_reset_schedules"
-  | "has_extension";
+  | "has_extension"
+  | "did_show_schedule_instructions";
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue
