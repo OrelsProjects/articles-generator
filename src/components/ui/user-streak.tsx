@@ -13,7 +13,10 @@ interface UserStreakProps {
   className?: string;
 }
 
-const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
+const Lottie = dynamic(() => import("lottie-react"), {
+  ssr: false,
+  loading: () => null, // prevent flicker
+});
 
 export function UserStreak({ className, showText = true }: UserStreakProps) {
   const [isHovering, setIsHovering] = useState(false);
