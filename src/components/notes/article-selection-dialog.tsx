@@ -97,14 +97,11 @@ export function ArticleSelectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-full w-full max-w-4xl max-h-[80%] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="h-full w-full max-w-4xl max-h-[90%] flex flex-col">
+        <DialogHeader className="flex flex-col gap-4">
           <DialogTitle>Select up to {maxSelectedArticles} articles</DialogTitle>
-          <p className="text-sm text-amber-600/80 dark:text-amber-400/80 mt-1">
-            Note: Article reaction counts may be inaccurate.
-          </p>
 
-          <div className="relative mb-4">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search articles..."
@@ -197,20 +194,28 @@ export function ArticleSelectionDialog({
           </ScrollArea>
         )}
 
-        <DialogFooter className="flex justify-between items-center mt-4">
-          <div>
-            {selectedArticles.length} of {maxSelectedArticles} articles selected
+        <DialogFooter className="flex !flex-col gap-4">
+          <div className="w-full">
+            <p className="text-muted-foreground mt-1 text-xs">
+              Article reaction counts may be inaccurate.
+            </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={selectedArticles.length === 0}
-            >
-              Use Selected Articles
-            </Button>
+          <div className="w-full flex flex-row !justify-between items-center mt-4">
+            <div>
+              {selectedArticles.length} of {maxSelectedArticles} articles
+              selected
+            </div>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={selectedArticles.length === 0}
+              >
+                Use Selected Articles
+              </Button>
+            </div>
           </div>
         </DialogFooter>
       </DialogContent>
