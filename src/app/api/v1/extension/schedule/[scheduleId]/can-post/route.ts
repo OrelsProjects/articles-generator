@@ -33,8 +33,8 @@ export async function POST(
 
     loggerServer.info("[CAN-POST] schedule: " + JSON.stringify(schedule));
 
-    // If the schedule is in the past, more than 10 minutes ago, return false
-    if (schedule.scheduledAt <= new Date(Date.now() - 10 * 60 * 1000)) {
+    // If the schedule is in the past, more than 20 minutes ago, return false
+    if (schedule.scheduledAt <= new Date(Date.now() - 20 * 60 * 1000)) {
       const missedEmail = generateScheduleNoteMissedEmail(
         schedule.userId,
         schedule.id,
