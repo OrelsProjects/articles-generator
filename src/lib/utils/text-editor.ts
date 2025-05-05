@@ -150,7 +150,6 @@ turndownService.addRule("images", {
     const alt = node.getAttribute("alt") || "";
     const src = node.getAttribute("src") || "";
     const width = node.getAttribute("width") || "";
-    const height = node.getAttribute("height") || "";
     // Include width and height in the markdown if they exist
     const dimensions = width ? `{width=${width}}` : "";
     return `![${alt}](${src})${dimensions}`;
@@ -449,6 +448,7 @@ export const CustomTextRules = Extension.create({
         }
       },
     });
+    
     return [arrowRule, emDashRule, replaceBrRule];
   },
 });

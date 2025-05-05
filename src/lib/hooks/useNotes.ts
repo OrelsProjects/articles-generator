@@ -73,6 +73,7 @@ export const useNotes = () => {
 
   const { consumeCredits } = useCredits();
   const [loadingEditNote, setLoadingEditNote] = useState(false);
+  const [loadingCreateNote, setLoadingCreateNote] = useState(false);
   // Don't delete, it works for some reason and allows user to save on click. TODO: Check why
   const [, setShouldCancelUpdate] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -84,7 +85,7 @@ export const useNotes = () => {
     loadingScheduleNote,
   } = useNotesSchedule();
 
-  const loadingCreateNote = useRef(false);
+  const loadingCreateNoteRef = useRef(false);
   const loadingNotesRef = useRef(false);
   const cancelRef = useRef<AbortController | null>(null);
   const cancelUpdateBody = useRef<NoteId[]>([]);
@@ -339,7 +340,8 @@ export const useNotes = () => {
       return null;
     }
 
-    const canUpdate = selectedNote?.id === noteId && !loadingCreateNote.current;
+    const canUpdate =
+      selectedNote?.id === noteId && !loadingCreateNoteRef.current;
 
     if (!canUpdate) {
       return null;
@@ -356,7 +358,7 @@ export const useNotes = () => {
     try {
       const isEmpty = isEmptyNote(selectedNote);
       if (isEmpty) {
-        loadingCreateNote.current = true;
+        loadingCreateNoteRef.current = true;
         // It's a note from the inspiration apge, we need to create a user note first.
         try {
           const data = await createNoteDraft(
@@ -382,7 +384,7 @@ export const useNotes = () => {
         } catch (error: any) {
           throw error;
         } finally {
-          loadingCreateNote.current = false;
+          loadingCreateNoteRef.current = false;
         }
       } else {
         if (!noteId) {
@@ -404,8 +406,6 @@ export const useNotes = () => {
       }
     } catch (error: any) {
       if (error instanceof AxiosError && error.code === "ERR_CANCELED") {
-        // throw new CancelError("Cancelled");
-        Logger.error("Error editing note:", error);
         isCanceled = true;
         return null;
       }
@@ -459,7 +459,22 @@ export const useNotes = () => {
 
   const createDraftNote = async (draft?: Partial<NoteDraft>): Promise<void> => {
     EventTracker.track("notes_create_draft_note");
-    selectNote({ ...NOTE_EMPTY, ...draft });
+    if (loadingCreateNoteRef.current) return;
+    try {
+      loadingCreateNoteRef.current = true;
+      setLoadingCreateNote(true);
+      const response = await axios.post<NoteDraft>("/api/note", {
+        ...draft,
+      });
+      dispatch(addNotes({ items: [response.data], nextCursor: null }));
+      selectNote(response.data);
+    } catch (error: any) {
+      Logger.error("Error creating draft note:", error);
+      throw error;
+    } finally {
+      setLoadingCreateNote(false);
+      loadingCreateNoteRef.current = false;
+    }
   };
 
   const improveText = async (
@@ -791,5 +806,6 @@ export const useNotes = () => {
     scheduleNote,
     loadingScheduleNote,
     rescheduleNote,
+    loadingCreateNote,
   };
 };

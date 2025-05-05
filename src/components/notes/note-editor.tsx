@@ -9,10 +9,12 @@ import {
   ListOrdered,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 export interface NoteEditorProps {
   editor: Editor;
   disabled?: boolean;
   className?: string;
+  onSave?: () => Promise<unknown>;
   textEditorClassName?: string;
 }
 
@@ -20,8 +22,13 @@ export default function NoteEditor({
   editor,
   disabled,
   className,
+  onSave,
   textEditorClassName,
 }: NoteEditorProps) {
+  const isMac =
+    typeof navigator !== "undefined" &&
+    /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent);
+
   return (
     <div className={cn(className)}>
       {editor && (
@@ -91,8 +98,16 @@ export default function NoteEditor({
           "min-h-[180px] md:min-h-[200px] max-h-[200px] md:max-h-[300px] px-3 prose prose-sm max-w-none focus:outline-none overflow-auto",
           textEditorClassName,
         )}
+        onKeyDown={e => {
+          if (!editor) return;
+          const mod = isMac ? e.metaKey : e.ctrlKey;
+          if (!mod || e.key.toLowerCase() !== "s") return;
+
+          e.preventDefault();
+          // You can swap this to a separate onSaveAs if you add one
+          onSave?.();
+        }}
       />
     </div>
   );
 }
-    

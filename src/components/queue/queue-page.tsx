@@ -5,7 +5,7 @@ import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { AlertCircle, Pencil, Plus } from "lucide-react";
+import { AlertCircle, Loader, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditScheduleDialog } from "./edit-schedule-dialog";
@@ -20,6 +20,7 @@ import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { CreateNoteButton } from "@/components/notes/create-note-button";
 
 export function QueuePage() {
   const searchParams = useSearchParams();
@@ -35,7 +36,7 @@ export function QueuePage() {
     nextPage,
     resetPage,
   } = useQueue();
-  const { selectNote, createDraftNote } = useNotes();
+  const { selectNote } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [activeDays, setActiveDays] = useState<Date[]>([]);
@@ -242,15 +243,7 @@ export function QueuePage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-foreground">Queue</h1>
         <div className="flex flex-col md:flex-row items-center gap-2">
-          <TooltipButton
-            tooltipContent="Start writing"
-            variant="ghost"
-            onClick={() => createDraftNote()}
-            className="items-center gap-2"
-          >
-            <Plus size={16} />
-            New draft
-          </TooltipButton>
+          <CreateNoteButton />
           <Button
             variant="outline"
             onClick={() => setIsEditDialogOpen(true)}

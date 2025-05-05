@@ -2,8 +2,6 @@ import { NoteDraft, NoteDraftBody, NoteStatus } from "@/types/note";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { z } from "zod";
 import { Logger } from "@/logger";
-import { hasExtension } from "@/lib/utils/extension";
-import { NoExtensionError } from "@/types/errors/NoExtensionError";
 
 export async function createNoteDraft(
   note: {

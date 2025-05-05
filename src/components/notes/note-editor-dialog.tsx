@@ -481,6 +481,7 @@ export function NotesEditorDialog() {
                 {editor && (
                   <NoteEditor
                     editor={editor}
+                    onSave={() => handleSave({ closeOnSave: false })}
                     className="w-full h-full"
                     textEditorClassName="!px-0"
                   />
