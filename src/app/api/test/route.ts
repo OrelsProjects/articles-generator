@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 import { NextResponse } from "next/server";
 import { addTagToEmail, sendMailSafe } from "@/lib/mail/mail";
-import { generatePublicationAnalysisCompleteEmail, generateWelcomeTemplateTrial } from "@/lib/mail/templates";
+import { generatePublicationAnalysisCompleteEmail, generateScheduleNoteMissedEmail, generateWelcomeTemplateTrial } from "@/lib/mail/templates";
 
 // async function processUser(userId: string) {
 //   try {
@@ -51,20 +51,31 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // const email = generateWelcomeTemplateTrial("Orel");
+  // // const email = generateWelcomeTemplateTrial("Orel");
+  // // const result = await sendMailSafe({
+  // //   to: "stefangirard@gmail.com",
+  // //   from: "welcome",
+  // //   subject: email.subject,
+  // //   template: email.body,
+  // // });
+  // // const result1 = await sendMailSafe({
+  // //   to: "sophiafifner@gmail.com",
+  // //   from: "welcome",
+  // //   subject: email.subject,
+  // //   template: email.body,
+  // // });
+  // const email = generateScheduleNoteMissedEmail(
+  //   "Orel",
+  //   "68185c39a3e7733daed4fd0c",
+  //   "This is a test note",
+  //   "This is a test reason",
+  // );
   // const result = await sendMailSafe({
-  //   to: "stefangirard@gmail.com",
-  //   from: "welcome",
+  //   to: "orelsmail@gmail.com",
+  //   from: "noreply",
   //   subject: email.subject,
   //   template: email.body,
   // });
-  // const result1 = await sendMailSafe({
-  //   to: "sophiafifner@gmail.com",
-  //   from: "welcome",
-  //   subject: email.subject,
-  //   template: email.body,
-  // });
-  
   // console.log(result);
 
   // if (!result) {

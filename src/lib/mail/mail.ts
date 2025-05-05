@@ -17,11 +17,14 @@ export const sendMail = async ({
   from,
   subject,
   template,
-  cc = [],
+  cc,
 }: SendEmailOptions) => {
   loggerServer.info(
     `Sending mail: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,
   );
+
+  const ccArray = Array.isArray(cc) ? cc : cc ? [cc] : [];
+
   let fromApp = `WriteStack <${from}@writestack.io>`;
   if (from === "support") {
     fromApp = `WriteStack Support <support@writestack.io>`;
@@ -33,7 +36,7 @@ export const sendMail = async ({
     from: fromApp,
     subject,
     template,
-    cc,
+    cc: ccArray,
   });
   loggerServer.info(`Mail sent successfully: ${subject}, to: ${to}`);
   if (!response) {
@@ -70,14 +73,10 @@ export const sendMailSafe = async ({
   from,
   subject,
   template,
-}: {
-  to: string;
-  from: "support" | "noreply" | "welcome";
-  subject: string;
-  template: string;
-}): Promise<boolean> => {
+  cc,
+}: SendEmailOptions): Promise<boolean> => {
   try {
-    await sendMail({ to, from, subject, template });
+    await sendMail({ to, from, subject, template, cc });
     return true;
   } catch (error) {
     loggerServer.error(`[MAIL-ERROR] Error sending mail: ${error}`);

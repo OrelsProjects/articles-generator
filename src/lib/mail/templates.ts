@@ -466,3 +466,33 @@ export function generatePrivateNewUserSignedUpEmail(
     subject: "New User Signed Up",
   };
 }
+
+export function generateScheduleNoteMissedEmail(
+  userName: string,
+  noteId: string,
+  noteBody: string,
+  reason?: string,
+) {
+  const content = `
+  <h2>Schedule Note Missed</h2>
+  <p>Hi ${userName || "there"},</p>
+  <p>We noticed that your scheduled note (<a href="https://writestack.io/queue?noteId=${noteId}">view here</a>) was missed.</p>
+  ${
+    noteBody
+      ? `<p>Here's the note:</p>
+  <p style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #ff661a; margin: 15px 0;"><strong>${noteBody}</strong></p>`
+      : ""
+  }
+  <p>Reason: ${reason || "Unknown"}</p>
+  <p>No worries! You can either reschedule it or send it now:</p>
+  <div class="center-button-container">
+    <a href="https://writestack.io/queue?noteId=${noteId}" class="button">Reschedule Note</a>
+  </div>
+  <p>Make sure to open this link from your computer to avoid any issues.</p>
+<p>Sorry for the inconvenience!</p>
+  `;
+  return {
+    body: baseEmailTemplate(content),
+    subject: "Schedule Note Missed",
+  };
+}

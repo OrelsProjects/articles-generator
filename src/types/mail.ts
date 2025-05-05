@@ -6,7 +6,7 @@ export interface SendEmailOptions {
   subject: string;
   from: "support" | "noreply" | "welcome";
   template: string;
-  cc?: string[];
+  cc?: string | string[];
 }
 
 export interface AddSubscriberOptions {
