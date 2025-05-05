@@ -126,7 +126,7 @@ export function ArticleSelectionDialog({
           </div>
         ) : (
           <ScrollArea className="flex-grow pr-4 h-full overflow-auto">
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-4 relative">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 relative">
               {filteredArticles.map(article => {
                 const isSelected = isArticleSelected(article);
                 const isMaxReached =
@@ -137,15 +137,17 @@ export function ArticleSelectionDialog({
                     key={article.id}
                     className={cn(
                       "relative transition-opacity duration-200",
-                      isMaxReached && !isSelected
-                        ? "opacity-50"
-                        : "opacity-100",
+                      !isSelected ? "opacity-70" : "opacity-100",
+                      {
+                        "hover:opacity-100": !isSelected && !isMaxReached,
+                      },
+                      isMaxReached && !isSelected && "opacity-50",
                     )}
                   >
                     <ArticleComponent
                       article={article}
                       onClick={() => toggleArticleSelection(article)}
-                      size="small"
+                      size="xs"
                       showShadowHover={false}
                       className={
                         isMaxReached && !isSelected
@@ -155,10 +157,10 @@ export function ArticleSelectionDialog({
                     />
                     <div
                       className={cn(
-                        "absolute top-2 right-2 md:right-6 w-6 h-6 rounded-full flex items-center justify-center transition-all border-2 cursor-pointer",
+                        "absolute top-2 right-2 md:right-2 w-6 h-6 rounded-full flex items-center justify-center transition-all border-2 cursor-pointer",
                         isSelected
                           ? "bg-primary border-primary"
-                          : "bg-background/80 border-border",
+                          : "bg-background/20 border-border/40 border",
                         isMaxReached && !isSelected
                           ? "hover:border-gray-400"
                           : "hover:border-primary",
