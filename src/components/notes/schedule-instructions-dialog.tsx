@@ -57,6 +57,10 @@ export function ScheduleInstructionsDialog() {
           <DialogTitle>Schedule Instructions</DialogTitle>
         </DialogHeader>
         <DialogDescription>
+            (You can skip this if it&apos;s not the first time you schedule a
+            note.)
+          <br />
+          <br />
           After scheduling a note, your note will be scheduled via the Chrome
           extension.
           <br />
@@ -69,8 +73,8 @@ export function ScheduleInstructionsDialog() {
           will not be posted.
           <br />
           <br />
-          You can also see the schedules from anywhere by clicking the extension icon in the
-          top right corner of your browser.
+          You can also see the schedules from anywhere by clicking the extension
+          icon in the top right corner of your browser.
           <motion.div
             whileHover={{ scale: 2, x: 240 }}
             transition={{ duration: 0.3 }}
