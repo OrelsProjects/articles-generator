@@ -1,9 +1,9 @@
+import { TransactionalClient } from "@/lib/mail/transactional-client";
 import loggerServer from "@/loggerServer";
 
 export interface MailClientConfig {
   apiKey: string;
   baseUrl: string;
-  transactionalApiKey: string;
 }
 
 export interface SubscriberName {
@@ -31,6 +31,8 @@ export interface SendEmailParams {
   cc?: string[];
 }
 
+const transactionalClient = new TransactionalClient();
+
 export class MailClient {
   private config: MailClientConfig;
 
@@ -43,16 +45,16 @@ export class MailClient {
       // Here you would implement your provider-specific logic
       // For example with fetch:
       const response = await fetch(`${this.config.baseUrl}/subscribers`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.config.apiKey}`,
         },
         body: JSON.stringify({
           email,
           name,
-          fields
-        })
+          fields,
+        }),
       });
 
       if (!response.ok) {
@@ -72,16 +74,16 @@ export class MailClient {
     try {
       // Provider-specific implementation
       const response = await fetch(`${this.config.baseUrl}/subscribers/tag`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.config.apiKey}`,
         },
         body: JSON.stringify({
           email,
           tag,
-          status: 'active'
-        })
+          status: "active",
+        }),
       });
 
       if (!response.ok) {
@@ -101,15 +103,15 @@ export class MailClient {
     try {
       // Provider-specific implementation
       const response = await fetch(`${this.config.baseUrl}/subscribers/untag`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.config.apiKey}`,
         },
         body: JSON.stringify({
           email,
-          tag
-        })
+          tag,
+        }),
       });
 
       if (!response.ok) {
@@ -125,36 +127,22 @@ export class MailClient {
     }
   }
 
-  async sendEmail({
-    to,
-    from,
-    subject,
-    template,
-    cc = []
-  }: SendEmailParams) {
+  async sendEmail({ to, from, subject, template, cc = [] }: SendEmailParams) {
     try {
       // Using the transactional API key for sending emails
-      const response = await fetch(`${this.config.baseUrl}/email/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.transactionalApiKey}`
-        },
-        body: JSON.stringify({
-          to: Array.isArray(to) ? to : [to],
-          from,
-          subject,
-          html: template,
-          cc
-        })
+      const response = await transactionalClient.sendEmail({
+        to,
+        from,
+        subject,
+        template,
+        cc,
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to send email: ${response.statusText}`);
+      if (response.error) {
+        throw new Error(`Failed to send email: ${response.error.message}`);
       }
 
-      const data = await response.json();
-      return data;
+      return response.data;
     } catch (error: any) {
       loggerServer.error(`Error sending email: ${error.message}`);
       return null;

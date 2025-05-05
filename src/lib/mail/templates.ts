@@ -98,7 +98,7 @@ export function baseEmailTemplate(content: string) {
   `;
 }
 
-export const welcomeTemplateTrial = (name?: string): EmailTemplate => ({
+export const generateWelcomeTemplateTrial = (name?: string): EmailTemplate => ({
   body: baseEmailTemplate(`<!DOCTYPE html>
 <html>
 <head>
@@ -121,8 +121,10 @@ export const welcomeTemplateTrial = (name?: string): EmailTemplate => ({
           <li>Easy notes scheduling</li>
           <li>Access to 5m+ inspiration notes</li>
           <li>Notes AI enhancer</li>
-          <li>Smart text editor with style enhancements</li>
+          <li>Smart Substack-like post editor with style enhancements</li>
         </ul>
+
+        <p>And the best part? Everything is <strong>extremely personalized</strong> to <strong>your</strong> writing.</p>
         
         <p>I'm constantly developing new features based on writers' feedback. Keep an eye on your inbox for updates, tips, and inspiration to maximize your WriteStack experience.</p>
         
@@ -133,7 +135,7 @@ export const welcomeTemplateTrial = (name?: string): EmailTemplate => ({
         <a class="button" href="https://writestack.io/home">Start growing</a>
         </div>
 
-        <p><strong>P.S.</strong> Your feedback shapes WriteStack's future. Have ideas, questions, or just want to chat about writing? Just reply to this email – I read every message personally.</p>
+        <p><strong>P.S.</strong> Your feedback shapes WriteStack's future. Have ideas, questions, or just want to chat about writing? Just reply to this email. I read every message personally.</p>
 
         <div class="divider"></div>
 
@@ -153,7 +155,7 @@ export function generateSubscriptionCanceledEmail(subscriptionId: string) {
   const content = `
     <h2>We'll miss having you in the WriteStack!</h2>
     <p>Your subscription <strong>${subscriptionId}</strong> has been successfully canceled.</p>
-    <p>Everyone's writing journey is different, and we're grateful you gave WriteStack a try. If you have a moment to share what we could have done better, I'd personally love to hear your thoughts – it helps us improve for other writers.</p>
+    <p>Everyone's writing journey is different, and we're grateful you gave WriteStack a try. If you have a moment to share what we could have done better, I'd personally love to hear your thoughts. It helps us improve for other writers.</p>
     <p>Should your writing needs change, your account is still here whenever you're ready to return. We've preserved all your previous work, so you can pick up right where you left off.</p>
     <div class="center-button-container">
       <a href="https://writestack.io/account" class="button">Manage Your Account</a>
@@ -181,8 +183,8 @@ export function generateSubscriptionTrialEndingEmail(
     <h2>Your WriteStack adventure continues soon!</h2>
     <p>Just a friendly heads-up that your trial of the <strong>${planString} Plan</strong> will wrap up on <strong>${formattedDate}</strong>.</p>
     <p>We hope WriteStack has been helping you find your voice and grow your audience!</p> 
-    <p>If you're enjoying the experience, no action is needed – your subscription will continue seamlessly, and you can keep creating amazing content without interruption.</p>
-    <p>Not quite the right fit for your writing process? No problem at all – you can manage or cancel your subscription anytime before your trial ends.</p>
+    <p>If you're enjoying the experience, no action is needed. Your subscription will continue seamlessly, and you can keep creating amazing content without interruption.</p>
+    <p>Not quite the right fit for your writing process? No problem at all. You can manage or cancel your subscription anytime before your trial ends.</p>
     <p>Either way, I'm here to support you in any way. Respond to this email or send me a DM on my <a href="https://substack.com/@orelzilberman?utm_source=user-menu">Substack</a>.</p>
     <div class="center-button-container">
       <a href="https://writestack.io/settings" class="button">Manage My Subscription</a>
@@ -222,7 +224,7 @@ export function generateInvoicePaymentFailedEmail(
   const content = `
     <h2>We noticed an issue with your payment</h2>
     <p>Hi there! We wanted to let you know that the payment for invoice <strong>${invoiceId}</strong> associated with <strong>${email}</strong> wasn't able to go through.</p>
-    <p>This sometimes happens due to temporary card issues or bank security measures. No worries – you can update your payment method or try again through your account dashboard.</p>
+    <p>This sometimes happens due to temporary card issues or bank security measures. No worrie. You can update your payment method or try again through your account dashboard.</p>
     <p>Need any help sorting this out? We're here for you!</p>
     <div class="center-button-container">
       <a href="https://writestack.io/settings" class="button">Update Payment Information</a>
@@ -326,7 +328,7 @@ export function generatePaymentConfirmationEmail(
       <a href="https://writestack.io/settings" class="button">Manage Subscription</a>
     </div>
     
-    <p style="margin-top: 20px;">If you have any questions about your payment or subscription, please don't hesitate to reach out – we're here to help!</p>
+    <p style="margin-top: 20px;">If you have any questions about your payment or subscription, please don't hesitate to reach out. We're here to help!</p>
     
     <p>Happy writing,<br>
     The WriteStack Team</p>
@@ -363,21 +365,9 @@ export function generateFreeTrialEndingEmail(
       <li>Connect you with inspiration from our extensive note library</li>
     </ul>
     
-    <p>Many writers tell us that WriteStack has become an essential part of their creative process. We'd love for you to continue your journey with us!</p>
+    <p>Many writers tell me that WriteStack has become an essential part of their creative process. I'd love for you to continue your journey with me!</p>    
     
-    <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #cc5500;">
-      <h3 style="color: #cc5500; margin-top: 0;">Special Offer: 15% Off Any Plan</h3>
-      <p>To help you continue your writing momentum, we're offering you <strong>15% off any WriteStack plan</strong> if you upgrade before your trial ends.</p>
-      <p>Simply use code: <strong>WRITE15</strong> at checkout.</p>
-    </div>
-    
-    <p>Ready to keep your writing flow going without interruption?</p>
-    
-    <div class="center-button-container">
-      <a href="https://writestack.io/pricing" class="button">Explore Plans & Upgrade</a>
-    </div>
-    
-    <p style="margin-top: 20px;">Have questions about which plan might be right for you? Just reply to this email – I'm happy to help you find the perfect fit for your writing needs.</p>
+    <p style="margin-top: 20px;">Have questions about which plan might be right for you? Just reply to this email. I'm happy to help you find the perfect fit for your writing needs.</p>
     
     <p>Happy writing,<br>
     Orel and the WriteStack Team</p>
@@ -385,13 +375,13 @@ export function generateFreeTrialEndingEmail(
 
   return {
     body: baseEmailTemplate(content),
-    subject: `Your WriteStack free trial ends ${formattedDate} – Special 15% discount inside!`,
+    subject: `Your WriteStack free trial ends ${formattedDate}`,
   };
 }
 
 export function generateFreeSubscriptionEndedEmail(userName?: string) {
   const content = `
-    <h2>Your WriteStack Free Trial Has Ended – Keep the Momentum Going!</h2>
+    <h2>Your WriteStack Free Trial Has Ended. Keep the Momentum Going!</h2>
     <p>Hi ${userName || "there"},</p>
     <p>We hope you enjoyed exploring WriteStack's full potential during your free trial! While your access to premium features has now concluded, your writing journey doesn't have to stop here :)</p>
     
@@ -400,8 +390,8 @@ export function generateFreeSubscriptionEndedEmail(userName?: string) {
       <li>AI-powered notes outline and writer</li>
       <li>Easy notes scheduling</li>
       <li>Access to 5m+ inspiration notes</li>
-      <li>Smart text editor with style enhancements</li>
       <li>Notes AI enhancer</li>
+      <li>Smart Substack-like post editor with style enhancements</li>
     </ul>
     
     <p>Many writers like you find their voice via WriteStack:<br>
@@ -420,13 +410,13 @@ export function generateFreeSubscriptionEndedEmail(userName?: string) {
     Orel and the WriteStack Team</p>
     
     <p style="font-size: 0.9em; color: #666; margin-top: 25px;">
-      P.S. Need help choosing a plan? Reply to this email – I'll personally help you find the perfect fit.
+      P.S. Need help choosing a plan? Reply to this email. I'll personally help you find the perfect fit.
     </p>
   `;
 
   return {
     body: baseEmailTemplate(content),
-    subject: "Your WriteStack Free Trial Has Ended – Keep the Momentum Going!",
+    subject: "Your WriteStack Free Trial Has Ended. Keep the Momentum Going!",
   };
 }
 
@@ -435,7 +425,7 @@ export function generateSubscriptionPausedEmail(
   planName?: string,
 ) {
   const content = `
-    <h2>Your WriteStack Subscription is Paused – Ready to Return Anytime</h2>
+    <h2>Your WriteStack Subscription is Paused. Ready to Return Anytime</h2>
     <p>Hi ${userName || "there"},</p>
     <p>We've successfully paused your <strong>${planName || "subscription"}</strong>. Your writing space remains exactly as you left it, and we'll preserve all your work and preferences until you're ready to resume.</p>
 
@@ -455,7 +445,7 @@ export function generateSubscriptionPausedEmail(
 
   return {
     body: baseEmailTemplate(content),
-    subject: "Your WriteStack Subscription is Paused – Ready to Return Anytime",
+    subject: "Your WriteStack Subscription is Paused. Ready to Return Anytime",
   };
 }
 

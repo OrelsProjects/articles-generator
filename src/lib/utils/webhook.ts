@@ -12,7 +12,7 @@ import {
   generatePaymentConfirmationEmail,
   generateSubscriptionDeletedEmail,
   generateSubscriptionTrialEndingEmail,
-  welcomeTemplateTrial,
+  generateWelcomeTemplateTrial,
 } from "@/lib/mail/templates";
 import { creditsPerPlan } from "@/lib/plans-consts";
 import { getStripeInstance } from "@/lib/stripe";
@@ -221,16 +221,16 @@ export async function handleSubscriptionUpdated(event: any) {
     data: newSubscription,
   });
 
-  if (user.email) {
-    const emailTemplate = welcomeTemplateTrial(user.name || undefined);
-    await sendMail({
-      to: user.email!,
-      from: "support",
-      subject: emailTemplate.subject,
-      template: emailTemplate.body,
-      cc: [],
-    });
-  }
+  // if (user.email) {
+  //   const emailTemplate = generateWelcomeTemplateTrial(user.name || undefined);
+  //   await sendMail({
+  //     to: user.email!,
+  //     from: "support",
+  //     subject: emailTemplate.subject,
+  //     template: emailTemplate.body,
+  //     cc: [],
+  //   });
+  // }
 }
 
 export async function handleSubscriptionPaused(event: Stripe.Event) {

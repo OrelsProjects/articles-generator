@@ -3,7 +3,7 @@ import loggerServer from "@/loggerServer";
 import { getStripeInstance } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { sendMail } from "@/lib/mail/mail";
-import { welcomeTemplateTrial } from "@/lib/mail/templates";
+import { generateWelcomeTemplateTrial } from "@/lib/mail/templates";
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("session_id");
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
     const plan = product.metadata?.plan;
 
     try {
-      const welcomeEmail = welcomeTemplateTrial();
+      const welcomeEmail = generateWelcomeTemplateTrial();
       // send welcome email as well
       await sendMail({
         to: session.customer_email || "",

@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 import { NextResponse } from "next/server";
 import { addTagToEmail, sendMailSafe } from "@/lib/mail/mail";
-import { generatePublicationAnalysisCompleteEmail } from "@/lib/mail/templates";
+import { generatePublicationAnalysisCompleteEmail, generateWelcomeTemplateTrial } from "@/lib/mail/templates";
 
 // async function processUser(userId: string) {
 //   try {
@@ -51,14 +51,25 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const email = generatePublicationAnalysisCompleteEmail();
-  await sendMailSafe({
-    to: "orelsmail@gmail.com",
-    from: "noreply",
-    subject: email.subject,
-    template: email.body,
-  });
+  // const email = generateWelcomeTemplateTrial("Orel");
+  // const result = await sendMailSafe({
+  //   to: "stefangirard@gmail.com",
+  //   from: "welcome",
+  //   subject: email.subject,
+  //   template: email.body,
+  // });
+  // const result1 = await sendMailSafe({
+  //   to: "sophiafifner@gmail.com",
+  //   from: "welcome",
+  //   subject: email.subject,
+  //   template: email.body,
+  // });
+  
+  // console.log(result);
 
+  // if (!result) {
+  //   return NextResponse.json({ error: "Failed to send mail" }, { status: 500 });
+  // }
   // const email = generatePublicationAnalysisCompleteEmail();
 
   // await sendMailSafe({
