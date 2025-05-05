@@ -628,7 +628,6 @@ export const useNotes = () => {
       if (!user) return;
       let sendResponse: any;
       try {
-        debugger;
         await hasExtension({
           throwIfNoExtension: true,
           showDialog: true,
@@ -683,7 +682,7 @@ export const useNotes = () => {
 
       return sendResponse;
     },
-    [user],
+    [user, userNotes, selectedNote, selectNote, updateNoteStatus, dispatch],
   );
 
   const scheduleNote = useCallback(

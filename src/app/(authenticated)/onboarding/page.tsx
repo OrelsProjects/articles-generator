@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import usePayments from "@/lib/hooks/usePayments";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { Logger } from "@/logger";
 
 export default function OnboardingPage() {
   const router = useCustomRouter();
@@ -47,7 +48,7 @@ export default function OnboardingPage() {
       await axios.post("/api/user/publications/validate-analysis");
       handleNavigateNext();
     } catch (error) {
-      console.error(error);
+      Logger.error("Error validating publication analysis", { error });
       toast.error("It seems like you haven't analyzed your publication yet.");
     } finally {
       setLoadingAnalyzed(false);

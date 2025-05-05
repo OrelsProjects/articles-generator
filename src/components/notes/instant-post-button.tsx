@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { setNotePostedData } from "@/lib/features/ui/uiSlice";
+import { Logger } from "@/logger";
 
 interface SubstackPostButtonProps {
   onSave?: () => Promise<string | null> | string | null;
@@ -76,7 +77,7 @@ export function InstantPostButton({
       }
       updateLoading(false);
     } catch (error) {
-      console.error("Error sending post:", error);
+      Logger.error("Error sending post:", { error, sendNoteId, noteId });
       toast.error("Error sending post");
       updateLoading(false);
     }
