@@ -51,13 +51,13 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // const email = generatePublicationAnalysisCompleteEmail();
-  // await sendMailSafe({
-  //   to: "wyndo.mitra@gmail.com",
-  //   from: "noreply",
-  //   subject: email.subject,
-  //   template: email.body,
-  // });\
+  const email = generatePublicationAnalysisCompleteEmail();
+  await sendMailSafe({
+    to: "orelsmail@gmail.com",
+    from: "noreply",
+    subject: email.subject,
+    template: email.body,
+  });
 
   // const email = generatePublicationAnalysisCompleteEmail();
 
