@@ -500,11 +500,6 @@ export function NotesEditorDialog() {
                           allowDelete={attachment.id !== ""}
                         />
                       ))}
-                      {/* There's currently a problem with sending notes with images. I'm looking into it. */}
-                      <div className="text-sm text-destructive">
-                        There&apos;s currently a problem with sending notes with
-                        images. I&apos;m looking into it.
-                      </div>
                     </div>
                   )}
                 {isUploadingFile && (
