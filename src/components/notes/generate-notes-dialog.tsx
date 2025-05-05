@@ -49,7 +49,6 @@ export interface GenerateNotesDialogProps {
   defaultSource?: GenerateSource;
 }
 
-
 export function GenerateNotesDialog({
   onOpenChange,
   defaultOpen,
@@ -59,6 +58,7 @@ export function GenerateNotesDialog({
   const handle = params?.handle as string;
 
   const [topic, setTopic] = useState("");
+  const [open, setOpen] = useState(defaultOpen || false);
   const { generateNewNotes, isLoadingGenerateNotes, errorGenerateNotes } =
     useNotes();
   const {
@@ -70,8 +70,9 @@ export function GenerateNotesDialog({
   } = useWriter(handle || "");
 
   const [selectedModel, setSelectedModel] = useState<FrontendModel>("auto");
-  const [selectedSource, setSelectedSource] =
-    useState<GenerateSource>(defaultSource || "description");
+  const [selectedSource, setSelectedSource] = useState<GenerateSource>(
+    defaultSource || "description",
+  );
   const [showArticleDialog, setShowArticleDialog] = useState(false);
   const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
   const [hoveredArticle, setHoveredArticle] = useState<Article | null>(null);
@@ -135,7 +136,13 @@ export function GenerateNotesDialog({
 
   return (
     <>
-      <Dialog open={defaultOpen} onOpenChange={onOpenChange}>
+      <Dialog
+        open={open}
+        onOpenChange={open => {
+          setOpen(open);
+          onOpenChange?.(open);
+        }}
+      >
         <DialogTrigger asChild>
           <Button
             variant="neumorphic-primary"

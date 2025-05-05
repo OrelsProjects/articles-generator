@@ -1,6 +1,7 @@
 export async function fetchAuthor(options: {
   authorId?: string;
   publicationUrl?: string;
+  publicationId?: string;
 }) {
   const scrapeAllArticlesUrl = process.env.TRIGGER_LAMBDAS_LAMBDA_URL;
   if (scrapeAllArticlesUrl) {
@@ -12,6 +13,7 @@ export async function fetchAuthor(options: {
         body: {
           url: options.publicationUrl,
           authorId: options.authorId,
+          publicationId: options.publicationId,
         },
       }),
     });

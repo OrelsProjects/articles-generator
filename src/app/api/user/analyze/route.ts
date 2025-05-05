@@ -319,6 +319,7 @@ export async function POST(req: NextRequest) {
     await fetchAuthor({
       authorId: byline.authorId.toString(),
       publicationUrl: url,
+      publicationId: publicationFromDb?.id.toString(),
     });
 
     const generatedDescriptionForSearch = await runPrompt(

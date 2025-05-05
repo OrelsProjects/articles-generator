@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       await fetchAuthor({
         authorId: authorId.toString(),
         publicationUrl,
+        publicationId: userMetadata.publication?.idInArticlesDb?.toString(),
       });
 
       await prisma.userMetadata.update({
