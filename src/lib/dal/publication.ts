@@ -1,7 +1,8 @@
-import {prisma, prismaArticles } from "@/app/api/_db/db";
+import { prisma, prismaArticles } from "@/app/api/_db/db";
 import { Publication } from "../../../prisma/generated/articles";
 import { getUrlComponents, stripUrl } from "@/lib/utils/url";
 import { extractContent } from "@/app/api/user/analyze/_utils";
+import { getArticleEndpoint } from "@/lib/utils/publication";
 
 interface BylineResponse {
   publicationUsers: {
@@ -46,9 +47,25 @@ export const getPublicationByUrl = async (
     createIfNotFound: false,
   },
 ): Promise<Publication[]> => {
+  const { validUrl } = getUrlComponents(url, { withoutWWW: true });
+  const endpointToValidate = getArticleEndpoint(validUrl, 0, 1);
+  const response = await fetch(endpointToValidate);
+  if (!response.ok) {
+    throw new Error("URL is not valid");
+  }
+
+  const data = await response.json();
+  const id = data[0].id;
+
   const strippedUrl = stripUrl(url, { removeWww: true, removeDotCom: true });
 
-  let publications = await prismaArticles.publication.findMany({
+  let publicationById = await prismaArticles.publication.findFirst({
+    where: {
+      id: id,
+    },
+  });
+
+  let publicationByUrl = await prismaArticles.publication.findFirst({
     where: {
       OR: [
         {
@@ -64,6 +81,9 @@ export const getPublicationByUrl = async (
       ],
     },
   });
+
+  const publication = publicationById || publicationByUrl;
+  let publications = publication ? [publication] : [];
 
   if (publications.length === 0) {
     const { image, title, description } = await extractContent(url);
@@ -81,6 +101,7 @@ export const getPublicationByUrl = async (
         ],
       },
     });
+
     if (publications.length === 0) {
       if (options.createIfNotFound) {
         const publicationId = await createPublication(url);
@@ -192,7 +213,7 @@ export const getPublicationArticles = async (publicationId: string) => {
 };
 
 export async function createPublication(url: string): Promise<number | null> {
-  const { validUrl } = getUrlComponents(url);
+  const { validUrl } = getUrlComponents(url, { withoutWWW: true });
   const endpoint = `${validUrl}/api/v1/homepage_data`;
   const response = await fetch(endpoint);
   const data = (await response.json()) as PublicationDataResponse;
@@ -265,14 +286,21 @@ export async function createPublication(url: string): Promise<number | null> {
   return Number(userPublication.id);
 }
 
-export async function updatePublication(publicationId: string, data: Partial<Publication>) {
+export async function updatePublication(
+  publicationId: string,
+  data: Partial<Publication>,
+) {
   await prismaArticles.publication.update({
     where: { id: Number(publicationId) },
     data,
   });
 }
 
-export async function updatePublicationCustomDomain(publicationId: string, oldCustomDomain: string, customDomain: string) {
+export async function updatePublicationCustomDomain(
+  publicationId: string,
+  oldCustomDomain: string,
+  customDomain: string,
+) {
   let isOldUrlValid = false;
   let isNewUrlValid = false;
   try {

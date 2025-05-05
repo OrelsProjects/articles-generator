@@ -145,6 +145,7 @@ export function AnalyzePublicationDialog({
 
   const handleSubmit = async (byline: Byline) => {
     if (loading) return;
+    debugger;
     if (!validateUrl(url)) {
       setError(ERRORS.INVALID_URL);
       return;

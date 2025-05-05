@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       throw new Error("URL is required");
     }
 
-    const { validUrl } = getUrlComponents(url);
+    const { validUrl } = getUrlComponents(url, { withoutWWW: true });
 
     const responseBody: {
       valid: boolean;
@@ -34,7 +34,9 @@ export async function GET(request: NextRequest) {
     }
 
     const updatedUrlResponse = await getPublicationUpdatedUrl(validUrl);
-    const publicationInDB = await getPublicationByUrl(validUrl);
+    const publicationInDB = await getPublicationByUrl(validUrl, {
+      createIfNotFound: true,
+    });
 
     responseBody.hasPublication = publicationInDB.length > 0;
     responseBody.valid = true;

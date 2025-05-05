@@ -180,8 +180,10 @@ const removeQueryParams = (url: string) => {
 
 export const getUrlComponents = (
   url: string,
-  options?: {
+  options: {
     withoutWWW?: boolean;
+  } = {
+    withoutWWW: true,
   },
 ): UrlComponents => {
   if (!url) {
