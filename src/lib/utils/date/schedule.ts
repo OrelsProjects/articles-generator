@@ -26,7 +26,7 @@ export const months = [
 ];
 
 // Minimum scheduling time in minutes
-export const MIN_SCHEDULE_MINUTES = 5;
+export const MIN_SCHEDULE_MINUTES = 1;
 
 // Getter functions for schedule values
 export const getMonthValue = (date: Date): string => {
