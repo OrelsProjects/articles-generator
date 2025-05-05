@@ -1,6 +1,7 @@
 import { prisma } from "@/app/api/_db/db";
 import { getNoteByScheduleId, updateNote } from "@/lib/dal/note";
 import { Logger } from "@/logger";
+import loggerServer from "@/loggerServer";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -22,6 +23,7 @@ export async function POST(
   // }
 
   try {
+    loggerServer.info("[TRIGGERED] scheduleId: " + params.scheduleId);
     const { scheduleId } = params;
     const body = await request.json();
     const parsedBody = schema.safeParse(body);
@@ -34,6 +36,8 @@ export async function POST(
         { status: 400 },
       );
     }
+
+    loggerServer.info("[TRIGGERED] parsedBody: " + JSON.stringify(parsedBody.data));
 
     const { ok, error, text, substackNoteId, newStatus } = parsedBody.data;
 
@@ -50,6 +54,7 @@ export async function POST(
       Logger.error(`Note not found for schedule: ${scheduleId}`);
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
+    loggerServer.info("[TRIGGERED] note: " + JSON.stringify(note) + " with newStatus: " + newStatus);
     if (newStatus) {
       await updateNote(note.id, {
         status: newStatus,
