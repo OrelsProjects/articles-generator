@@ -496,3 +496,23 @@ export function generateScheduleNoteMissedEmail(
     subject: "Schedule Note Missed",
   };
 }
+
+export function generateSubscriptionCouponAppliedEmail(
+  userName: string,
+  percentOff: number,
+  discountForMonths: number,
+) {
+  const content = `
+  <h2>Subscription Coupon Applied</h2>
+  <p>Hi ${userName || "there"},</p>
+  <p>We've successfully applied a ${percentOff}% discount to your subscription for the next ${discountForMonths} months.</p>
+  <p>Your subscription is now updated with the new discount.</p>
+  <p>If you have any questions or need assistance, please don't hesitate to reach out. I'm here to help!</p>
+  <p>Warm regards,<br>
+  Orel</p>
+  `;
+  return {
+    body: baseEmailTemplate(content),
+    subject: "Subscription Coupon Applied",
+  };
+}

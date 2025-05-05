@@ -2,6 +2,8 @@
 
 import { authOptions } from "@/auth/authOptions";
 import { getActiveSubscription } from "@/lib/dal/subscription";
+import { sendMailSafe } from "@/lib/mail/mail";
+import { generateSubscriptionCouponAppliedEmail } from "@/lib/mail/templates";
 import {
   getRetentionCoupon,
   getStripeInstance,
@@ -44,6 +46,20 @@ export async function POST(request: NextRequest) {
       coupon: coupon.id,
     });
 
+    if (coupon.percent_off && session.user.email) {
+      const email = generateSubscriptionCouponAppliedEmail(
+        session.user.name || "",
+        coupon.percent_off,
+        coupon.duration_in_months || 1,
+      );
+      await sendMailSafe({
+        to: session.user.email,
+        from: "noreply",
+        subject: email.subject,
+        template: email.body,
+        cc: "orelsmail@gmail.com",
+      });
+    }
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     loggerServer.error("Error applying coupon", { error });
