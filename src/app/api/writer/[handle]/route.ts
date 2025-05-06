@@ -33,18 +33,15 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // const isAllowed = canUseFeature(
-    //   userMetadata,
-    //   FeatureFlag.advancedFiltering,
-    // );
+    const isAllowed = canUseFeature(userMetadata, FeatureFlag.canViewWriters);
 
-    // // if (!isAllowed) {
-    // //   loggerServer.error("User is not allowed to use advanced filtering", {
-    // //     userId: session.user.id,
-    // //     userMetadata,
-    // //   });
-    // //   return NextResponse.json({ error: "Not allowed" }, { status: 403 });
-    // // }
+    if (!isAllowed) {
+      loggerServer.error("User is not allowed to use advanced filtering", {
+        userId: session.user.id,
+        userMetadata,
+      });
+      return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    }
 
     const handle = params.handle;
     const writer = await getWriter(handle, Number(page), 30);

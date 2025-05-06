@@ -70,6 +70,7 @@ enum FeatureFlag {
   collaborativeNotes
   initQueue
   scheduleNotes
+  canViewWriters
 }
 
 enum CookieName {

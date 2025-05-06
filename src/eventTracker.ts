@@ -20,12 +20,7 @@ export const setUserEventTracker = (user?: AppUser | null) => {
     posthog.identify(user?.userId);
     mixpanel.identify(user?.userId);
   } catch (error: any) {
-    Logger.error("Error setting user for event tracker", {
-      data: {
-        user,
-      },
-      error,
-    });
+    // do nothing
   }
 };
 
@@ -46,9 +41,7 @@ export const initEventTracker = () => {
       record_sessions_percent: 100,
     });
   } catch (error: any) {
-    Logger.error("Error initializing event tracker", {
-      error,
-    });
+    // do nothing
   }
 };
 
@@ -81,14 +74,7 @@ export class EventTracker {
       mixpanel.track(eventName, props);
       posthog.capture(eventName, props);
     } catch (error: any) {
-      Logger.error("Error tracking event", {
-        data: {
-          eventName,
-          props,
-          timeout,
-        },
-        error,
-      });
+      // do nothing
     }
   }
 }

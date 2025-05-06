@@ -1,5 +1,3 @@
-import { unified } from "unified";
-import remarkParse from "remark-parse";
 import { MarkdownTransformer } from "@atlaskit/editor-markdown-transformer";
 
 export async function markdownToADF(markdown: string) {

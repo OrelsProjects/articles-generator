@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/api/_db/db";
 import loggerServer from "@/loggerServer";
 import { generateScheduleNoteMissedEmail } from "@/lib/mail/templates";
-import { sendMailSafe } from "@/lib/mail/mail";
 
 export async function POST(
   request: NextRequest,

@@ -27,6 +27,7 @@ export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
     FeatureFlag.instantPost,
     FeatureFlag.advancedGPT,
     FeatureFlag.scheduleNotes,
+    FeatureFlag.canViewWriters,
   ],
   premium: [
     FeatureFlag.articles,
@@ -34,6 +35,7 @@ export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
     FeatureFlag.advancedGPT,
     FeatureFlag.advancedFiltering,
     FeatureFlag.scheduleNotes,
+    FeatureFlag.canViewWriters,
   ],
 };
 
