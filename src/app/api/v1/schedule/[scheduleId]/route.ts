@@ -2,6 +2,7 @@ import { authOptions } from "@/auth/authOptions";
 import { getNoteByScheduleId } from "@/lib/dal/note";
 import { deleteScheduleById } from "@/lib/dal/schedules";
 import { Logger } from "@/logger";
+import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -40,11 +41,13 @@ export async function DELETE(
   }
 
   try {
+    loggerServer.info("[DELETE-SCHEDULE] Deleting schedule: " + params.scheduleId);
     const { scheduleId } = params;
     await deleteScheduleById(scheduleId);
+    loggerServer.info("[DELETE-SCHEDULE] Successfully deleted schedule: " + scheduleId);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: any) {
-    Logger.error(error);
+    Logger.error("[DELETE-SCHEDULE] Error deleting schedule: " + error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

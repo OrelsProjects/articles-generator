@@ -47,7 +47,7 @@ export const HeroSection = () => {
           </div>
 
           {/* Horizontal lines */}
-          <div className="absolute inset-0 flex flex-col justify-end pb-5 gap-20 h-[36rem]">
+          <div className="absolute inset-0 flex flex-col justify-end pb-5 gap-20 h-[37rem]">
             {[...Array(2)].map((_, i) => (
               <div
                 key={`h-line-${i}`}
@@ -67,11 +67,13 @@ export const HeroSection = () => {
                   Turn Your Writing
                   <br />
                   {/* <span className="text-primary bg-primary/20 rounded-md p-1 py-0"> */}
-                  Into Income 5x Faster
+                  Into Income <span className="text-primary">5x Faster</span>
                   {/* </span> */}
+                  <br /> (With 10x more confidence)
                 </h1>
-                <h3 className="text-center text-lg">
-                  (With 10x more confidence)
+                <h3 className="text-center text-lg mt-2">
+                  Stop guessing what will go viral. Start writing, growing, and
+                  earning like a Substack Best Seller.
                 </h3>
               </div>
 
@@ -106,65 +108,7 @@ export const HeroSection = () => {
                     <Link href="/login">Start growing now</Link>
                   </Button>
                 </div>
-                {topFiveImages.length > 0 && (
-                  <div className="flex flex-row gap-4 mt-6">
-                    <div className="flex -space-x-4 overflow-hidden">
-                      {topFiveImages.map((image, index) => (
-                        <div
-                          key={index}
-                          className={cn(
-                            "relative w-10 h-10 sm:w-10 sm:h-10 rounded-full border-2 ",
-                            "transform transition-all duration-300 hover:z-10",
-                            "flex items-center justify-center overflow-hidden",
-                            "bg-white",
-                          )}
-                          style={{ zIndex: topFiveImages.length - index }}
-                        >
-                          <Image
-                            src={image}
-                            alt={`Creator ${index + 1}`}
-                            width={40}
-                            height={40}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex flex-col items-start">
-                      <svg width="0" height="0">
-                        <defs>
-                          <linearGradient
-                            id="star-gradient"
-                            x1="0%"
-                            y1="0%"
-                            x2="100%"
-                            y2="0%"
-                          >
-                            <stop offset="0%" stopColor="#ffcc15" />{" "}
-                            {/* Bright Yellow (#facc15) */}
-                            <stop offset="100%" stopColor="#ffcc15" />{" "}
-                            {/* Orange (#facc15) */}
-                          </linearGradient>
-                        </defs>
-                      </svg>
-                      <div className="flex flex-row items-start justify-start gap-2">
-                        {/* Five stars, gradient like, starting from yellow to yellow-600 */}
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className="h-4 w-4 text-yellow-400"
-                            style={{
-                              fill: `url(#star-gradient)`,
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-sm leading-tight lg:leading-relaxed text-left mb-3">
-                        Loved by <strong>{count}</strong> Substack writers
-                      </span>
-                    </div>
-                  </div>
-                )}
+           
               </div>
               <div className="w-screen h-fit px-4 flex justify-center items-center">
                 <div className="relative w-screen h-[220px] lg:max-w-6xl lg:h-[600px] bg-gradient-to-b from-primary via-primary/80 to-primary/60 rounded-[32px] flex items-center justify-center overflow-clip lg:overflow-visible">

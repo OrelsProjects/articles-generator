@@ -249,13 +249,6 @@ export const useNotesSchedule = () => {
       }
     }, []);
 
-  const clearSchedules = useCallback(async (schedules: Schedule[]) => {
-    for (const schedule of schedules) {
-      await deleteScheduleExtension(schedule.scheduleId);
-      await axios.delete(`/api/v1/schedule/${schedule.scheduleId}`);
-    }
-  }, []);
-
   return {
     notes: userNotes,
     loading: loadingNotes,
@@ -267,6 +260,5 @@ export const useNotesSchedule = () => {
     scheduleNote,
     getSchedulesFromExtension,
     deleteSchedule,
-    clearSchedules,
   };
 };

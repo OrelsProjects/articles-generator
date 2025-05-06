@@ -3,8 +3,8 @@ import { getCronExpressionFromDate } from "@/lib/utils/cron";
 import { ScheduledNote } from "@prisma/client";
 
 export type CreateScheduledNote =
-  | Omit<ScheduledNote, "id" | "createdAt" | "updatedAt">
-  | Omit<ScheduledNote, "id" | "createdAt" | "updatedAt" | "cronExpression">;
+  | Omit<ScheduledNote, "id" | "createdAt" | "updatedAt" | "isDeleted">
+  | Omit<ScheduledNote, "id" | "createdAt" | "updatedAt" | "cronExpression" | "isDeleted">;
 
 export async function createSchedule(
   schedule: CreateScheduledNote,
@@ -59,8 +59,9 @@ export async function deleteLatestScheduleByNoteId(
 }
 
 export async function deleteScheduleById(scheduleId: string): Promise<void> {
-  await prisma.scheduledNote.delete({
+  await prisma.scheduledNote.update({
     where: { id: scheduleId },
+    data: { isDeleted: true },
   });
 }
 
@@ -76,8 +77,9 @@ export async function deleteScheduleByName(
     },
   });
   if (latestSchedule) {
-    await prisma.scheduledNote.delete({
+    await prisma.scheduledNote.update({
       where: { id: latestSchedule?.id },
+      data: { isDeleted: true },
     });
     return latestSchedule.id;
   }

@@ -523,6 +523,8 @@ model ScheduledNote {
   cronExpression String
   scheduleId     String
 
+  isDeleted Boolean? @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

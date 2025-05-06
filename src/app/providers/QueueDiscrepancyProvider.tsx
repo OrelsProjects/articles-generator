@@ -231,6 +231,7 @@ export default function QueueDiscrepancyProvider() {
             if (discrepancy.note && discrepancy.note.scheduledTo) {
               // If there's an existing schedule, delete it first
               if (discrepancy.scheduleId) {
+                Logger.info("[FIX-ALL-DISCREPANCIES] Deleting schedule for note: " + discrepancy.note.id);
                 await deleteSchedule(discrepancy.note.id);
               }
               // Reschedule the note
@@ -244,6 +245,7 @@ export default function QueueDiscrepancyProvider() {
           case "missing_note":
             if (discrepancy.schedule) {
               if (discrepancy.noteId) {
+                Logger.info("[FIX-ALL-DISCREPANCIES] Deleting schedule for note: " + discrepancy.noteId);
                 await deleteSchedule(discrepancy.noteId);
               }
             }

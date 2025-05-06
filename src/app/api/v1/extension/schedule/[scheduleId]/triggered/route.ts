@@ -2,6 +2,7 @@ import { prisma } from "@/app/api/_db/db";
 import { getNoteByScheduleId, updateNote } from "@/lib/dal/note";
 import { Logger } from "@/logger";
 import loggerServer from "@/loggerServer";
+import { User } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -37,13 +38,15 @@ export async function POST(
       );
     }
 
-    loggerServer.info("[TRIGGERED] parsedBody: " + JSON.stringify(parsedBody.data));
+    loggerServer.info(
+      "[TRIGGERED] parsedBody: " + JSON.stringify(parsedBody.data),
+    );
 
     const { ok, error, text, substackNoteId, newStatus } = parsedBody.data;
 
     if (!ok) {
       Logger.error(
-        `Failed to trigger schedule: ${scheduleId}, error: ${error}, with text: ${text}`,
+        `[TRIGGERED] Failed to trigger schedule: ${scheduleId}, error: ${error}, with text: ${text}`,
       );
       return NextResponse.json({}, { status: 200 });
     }
@@ -51,10 +54,28 @@ export async function POST(
     // update schedule status to "published"
     const note = await getNoteByScheduleId(scheduleId);
     if (!note) {
-      Logger.error(`Note not found for schedule: ${scheduleId}`);
+      Logger.error(`[TRIGGERED] Note not found for schedule: ${scheduleId}`);
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
-    loggerServer.info("[TRIGGERED] note: " + JSON.stringify(note) + " with newStatus: " + newStatus);
+    let user: User | null = null;
+    try {
+      user = await prisma.user.findUnique({
+        where: {
+          id: note.userId,
+        },
+      });
+    } catch (error) {
+      Logger.error(`[TRIGGERED] User not found for schedule: ${scheduleId}`);
+    }
+
+    loggerServer.info(
+      "[TRIGGERED] Success! User:" +
+        user?.name +
+        "note: " +
+        JSON.stringify(note) +
+        " with newStatus: " +
+        newStatus,
+    );
     if (newStatus) {
       await updateNote(note.id, {
         status: newStatus,
@@ -77,7 +98,7 @@ export async function POST(
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error: any) {
-    Logger.error(error);
+    Logger.error(`[TRIGGERED] Internal server error: ${JSON.stringify(error)}`);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

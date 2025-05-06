@@ -263,6 +263,7 @@ export const useNotes = () => {
         } = status === "archived" ? { isArchived: true } : { status };
 
         if (previousStatus === "scheduled" && status !== "scheduled") {
+          Logger.info("[UPDATE-NOTE-STATUS] Deleting schedule for note: " + noteId);
           await deleteSchedule(noteId, { throwIfNotFound: false });
         } else {
           // Previous status is not scheduled, so it can be published/draft
