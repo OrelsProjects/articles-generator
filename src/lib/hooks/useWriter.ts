@@ -26,6 +26,7 @@ export const useWriter = (handle: string) => {
   const fetchWriter = async (page: number = 1) => {
     if (!hasMore) return;
     if (loadingRef.current) return;
+    if (!handle) return;
     loadingRef.current = true;
     if (page !== 1) {
       setIsLoadingMore(true);
