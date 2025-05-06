@@ -86,6 +86,19 @@ export async function POST(
       });
     }
 
+    try {
+      await prisma.note.update({
+        where: { id: note.id },
+        data: {
+          sentViaScheduleAt: new Date(),
+        },
+      });
+    } catch (error) {
+      Logger.error(
+        `[TRIGGERED] Failed to update note wasSentViaSchedule: ${note.id}, error: ${error}`,
+      );
+    }
+
     if (substackNoteId) {
       await prisma.substackPublishedNote.create({
         data: {
