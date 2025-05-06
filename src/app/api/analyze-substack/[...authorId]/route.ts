@@ -14,21 +14,19 @@ export async function GET(
     params,
   }: {
     params: {
-      authorId: string;
+      authorId: string[];
     };
   },
 ) {
   const session = await getServerSession(authOptions);
 
   try {
-    const { authorId } = params;
+    const { authorId: authorIds } = params;
+    const authorId = authorIds?.[0];
     let validAuthorIdString = session?.user.meta?.tempAuthorId || authorId;
     let validAuthorId: number | null = parseInt(validAuthorIdString);
-    if (isNaN(validAuthorId)) {
-      return NextResponse.json({ error: "Invalid authorId" }, { status: 400 });
-    }
 
-    if (!validAuthorId) {
+    if (!validAuthorId || isNaN(validAuthorId)) {
       if (session) {
         const userMetadata = await prisma.userMetadata.findUnique({
           where: {

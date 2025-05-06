@@ -124,7 +124,7 @@ export default function AnalyzeSubstack() {
 
       try {
         const streakRes = await axios.get<{ streakData: Streak[] }>(
-          `/api/analyze-substack/${session?.user?.meta?.tempAuthorId || "999999999"}`,
+          `/api/analyze-substack/${session?.user?.meta?.tempAuthorId || "null"}`,
         );
         setStreakData(streakRes.data.streakData);
       } catch (error) {
