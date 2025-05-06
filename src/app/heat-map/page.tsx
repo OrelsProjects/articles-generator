@@ -80,7 +80,7 @@ export default function AnalyzeSubstack() {
   const pathname = usePathname();
   const router = useCustomRouter();
   const searchParams = useSearchParams();
-  console.log("session", session);
+
   const [substackUrl, setSubstackUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasAnalyzed, setHasAnalyzed] = useState<boolean>(false);
@@ -124,7 +124,7 @@ export default function AnalyzeSubstack() {
 
       try {
         const streakRes = await axios.get<{ streakData: Streak[] }>(
-          `/api/analyze-substack/${session?.user?.meta?.tempAuthorId}`,
+          `/api/analyze-substack/${session?.user?.meta?.tempAuthorId || "999999999"}`,
         );
         setStreakData(streakRes.data.streakData);
       } catch (error) {
