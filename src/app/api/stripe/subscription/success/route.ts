@@ -4,8 +4,14 @@ import { getStripeInstance } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { sendMail } from "@/lib/mail/mail";
 import { generateWelcomeTemplateTrial } from "@/lib/mail/templates";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth/authOptions";
 
 export async function GET(req: NextRequest) {
+  const userSession = await getServerSession(authOptions);
+  if (!userSession) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const sessionId = req.nextUrl.searchParams.get("session_id");
   if (!sessionId || typeof sessionId !== "string") {
     return NextResponse.json({ error: "Invalid session_id" }, { status: 400 });
@@ -21,11 +27,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const userId = session.client_reference_id;
     const productId = session.metadata?.productId;
     const priceId = session.metadata?.priceId;
 
-    if (!userId || !productId || !priceId) {
+    if (!productId || !priceId) {
       return NextResponse.json(
         { error: "Invalid session_id" },
         { status: 400 },
@@ -46,7 +51,7 @@ export async function GET(req: NextRequest) {
           amountReceived: (price.unit_amount as number) / 100,
           currency: price.currency as string,
           user: {
-            connect: { id: userId },
+            connect: { id: userSession.user.id },
           },
         },
       });
@@ -54,6 +59,7 @@ export async function GET(req: NextRequest) {
       loggerServer.error(
         "CRITICAL PAYMENT CREATION: Failed to create payment: " + error,
         {
+          userId: userSession.user.id,
           sessionId,
           productId,
           priceId,
@@ -84,7 +90,10 @@ export async function GET(req: NextRequest) {
       req.nextUrl.origin + `/home?success=true&plan=${plan}`,
     );
   } catch (error: any) {
-    loggerServer.error("Failed to complete subscription", error);
+    loggerServer.error("Failed to complete subscription", {
+      error,
+      userId: userSession?.user.id,
+    });
     return NextResponse.redirect(req.nextUrl.origin + "/home?error=true");
   }
 }
