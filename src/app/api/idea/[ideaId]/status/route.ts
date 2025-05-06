@@ -49,7 +49,10 @@ export async function PATCH(
       { status: 200 },
     );
   } catch (error: any) {
-    loggerServer.error("Error updating idea status:", error);
+    loggerServer.error("Error updating idea status:", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

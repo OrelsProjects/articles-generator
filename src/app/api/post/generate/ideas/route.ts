@@ -124,7 +124,10 @@ export async function GET(
       },
     );
 
-    loggerServer.info("Ideas generated:", { ideas });
+    loggerServer.info("Ideas generated:", {
+      ideas,
+      userId: session.user.id,
+    });
 
     const messagesForOutline = generateOutlinePrompt(
       publicationMetadata,
@@ -167,6 +170,9 @@ export async function GET(
         loggerServer.error(
           "Error generating outlines for prompt: " +
             JSON.stringify(messagesForOutline),
+          {
+            userId: session.user.id,
+          },
         );
       },
       {
@@ -230,7 +236,10 @@ export async function GET(
     };
     return NextResponse.json(response);
   } catch (error: any) {
-    loggerServer.error("Error generating ideas:", error);
+    loggerServer.error("Error generating ideas:", {
+      error,
+      userId: session?.user.id,
+    });
     if (didConsumeCredits) {
       await undoUseCredits(session.user.id, "ideaGeneration");
     }

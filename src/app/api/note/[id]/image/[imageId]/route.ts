@@ -40,8 +40,11 @@ export async function GET(
         status: 200,
       },
     );
-  } catch (err: any) {
-    loggerServer.error("Error getting substack image: " + err);
+  } catch (error: any) {
+    loggerServer.error("Error getting substack image", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(JSON.stringify({ error: "Failed to get image" }), {
       status: 500,
     });

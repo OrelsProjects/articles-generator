@@ -62,7 +62,11 @@ export async function POST(
     await createScheduleForNote(session.user.id, noteId, new Date(date));
     return NextResponse.json({ message: "Schedule created" }, { status: 200 });
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error scheduling note", {
+      error,
+      userId: session?.user.id,
+      noteId,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -94,7 +98,11 @@ export async function DELETE(
 
     return NextResponse.json({ id: scheduleId }, { status: 200 });
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error deleting schedule", {
+      error,
+      userId: session?.user.id,
+      noteId,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -110,8 +118,8 @@ export async function GET(
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { noteId } = params;
   try {
-    const { noteId } = params;
     const isOwner = await isOwnerOfNote(noteId, session.user.id);
     if (!isOwner) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -120,7 +128,11 @@ export async function GET(
     const schedule = await getLatestScheduleForNote(noteId);
     return NextResponse.json(schedule, { status: 200 });
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error getting schedule", {
+      error,
+      userId: session?.user.id,
+      noteId,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

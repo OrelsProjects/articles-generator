@@ -19,7 +19,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Error fetching subscription", error);
+    loggerServer.error("Error fetching subscription", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

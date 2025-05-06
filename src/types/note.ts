@@ -67,7 +67,6 @@ export interface NoteDraft {
   id: NoteId;
   thumbnail?: string;
   body: string;
-  jsonBody?: any[];
   createdAt: Date;
   authorId: number | null;
   name?: string;
@@ -92,7 +91,6 @@ export interface Note {
   content: string;
   thumbnail?: string;
   body: string;
-  jsonBody: any[];
   createdAt: Date;
   authorId: number;
   authorName: string;
@@ -214,7 +212,6 @@ export function inspirationNoteToNoteDraft(
     id: "",
     thumbnail: note.thumbnail || "",
     body: note.body,
-    jsonBody: note.jsonBody,
     createdAt: new Date(),
     authorId: null,
     status: "inspiration",
@@ -244,7 +241,6 @@ export const NOTE_EMPTY: NoteDraft = {
   id: NOTE_EMPTY_ID,
   thumbnail: "",
   body: "",
-  jsonBody: [],
   createdAt: new Date(),
   authorId: null,
   status: "draft",

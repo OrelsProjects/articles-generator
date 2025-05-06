@@ -155,7 +155,10 @@ async function searchSimilarArticles({
         await Promise.all(promises);
       }
     } catch (error: any) {
-      loggerServer.error("Error updating db:", error);
+      loggerServer.error("Error updating db:", {
+        error,
+        userId: "milvus",
+      });
     } finally {
       console.timeEnd("updateDb");
     }

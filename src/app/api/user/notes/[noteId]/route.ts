@@ -14,10 +14,9 @@ export async function GET(
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { noteId } = params;
 
   try {
-    const { noteId } = params;
-
     const isOwner = await isOwnerOfNote(noteId, session.user.id);
     if (!isOwner) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -49,7 +48,11 @@ export async function GET(
 
     return NextResponse.json(noteDraft);
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error getting note", {
+      error,
+      userId: session?.user.id,
+      noteId,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

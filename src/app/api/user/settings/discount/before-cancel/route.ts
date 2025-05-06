@@ -19,7 +19,10 @@ export async function GET(req: NextRequest) {
       { status: 200 },
     );
   } catch (error: any) {
-    loggerServer.error("Error getting discount before cancel", { error });
+    loggerServer.error("Error getting discount before cancel", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

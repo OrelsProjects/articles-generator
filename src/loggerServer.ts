@@ -1,6 +1,9 @@
 /* eslint-disable no-unused-vars */
 import { createLogger, format, transports } from "winston";
-import { LogItem } from "./logger";
+
+type LogItem = {
+  userId: string;
+} & Record<string, any>;
 
 interface Logger {
   debug: (message: string, data?: LogItem) => void;

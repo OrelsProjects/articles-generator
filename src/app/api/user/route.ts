@@ -39,7 +39,10 @@ export async function GET(req: NextRequest): Promise<any> {
       { status: 200 },
     );
   } catch (error: any) {
-    loggerServer.error("Error fetching user data", error);
+    loggerServer.error("Error fetching user data", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -57,7 +60,10 @@ export async function POST(req: NextRequest): Promise<any> {
     user.email = sessionUser?.email || user.email;
     user.image = sessionUser?.image || user.image;
   } catch (error: any) {
-    loggerServer.error("Error initializing logger", error);
+    loggerServer.error("Error initializing logger", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -94,7 +100,10 @@ export async function DELETE(req: NextRequest): Promise<any> {
     });
     return NextResponse.json({}, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Error deleting user", error);
+    loggerServer.error("[CRITICAL] Error deleting user", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

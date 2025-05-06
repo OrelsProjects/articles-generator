@@ -13,7 +13,10 @@ export async function POST(request: Request) {
     const userSchedules = await createDefaultUserSchedule(session.user.id);
     return NextResponse.json(userSchedules);
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error initializing user schedule", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Failed to initialize user schedule" },
       { status: 500 },

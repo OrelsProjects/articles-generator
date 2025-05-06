@@ -30,7 +30,10 @@ export async function getPublicationUpdatedUrl(url: string) {
   return url;
 }
 
-export async function getBylines(url: string) {
+export async function getBylines(
+  url: string,
+  options: { createIfNotExists: boolean } = { createIfNotExists: false },
+) {
   const { validUrl } = getUrlComponents(url, { withoutWWW: true });
   if (!validUrl) {
     throw new Error("Invalid URL");
@@ -76,6 +79,24 @@ export async function getBylines(url: string) {
       (byline, index, self) =>
         index === self.findIndex(t => t.authorId === byline.authorId),
     );
+
+    if (options.createIfNotExists) {
+      const bylinesInDB = await prismaArticles.byline.findMany({
+        where: {
+          id: { in: uniqueBylines.map(byline => byline.authorId) },
+        },
+      });
+
+      const bylinesToCreate = uniqueBylines.filter(
+        byline => !bylinesInDB.some(b => b.id === byline.authorId),
+      );
+      await prismaArticles.byline.createMany({
+        data: bylinesToCreate.map(byline => ({
+          ...byline,
+          id: byline.authorId,
+        })),
+      });
+    }
 
     return uniqueBylines;
   } catch (error) {

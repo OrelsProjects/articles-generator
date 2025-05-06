@@ -32,7 +32,6 @@ export const DBNotesToNotes = (
     content: note.body,
     thumbnail: note.photoUrl || undefined,
     body: note.body,
-    jsonBody: Array.isArray(note.bodyJson) ? note.bodyJson : [],
     createdAt: note.date,
     authorId: Number(note.authorId),
     authorName: note.name || "",

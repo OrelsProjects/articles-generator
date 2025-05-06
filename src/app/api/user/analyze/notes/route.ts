@@ -79,7 +79,10 @@ export async function POST(req: NextRequest) {
       descriptionObject: descriptionResponse,
     });
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error analyzing notes", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json({ error: "Invalid request" }, { status: 500 });
   }
 }

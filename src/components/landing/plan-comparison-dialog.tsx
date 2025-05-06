@@ -22,6 +22,7 @@ const featureFlagLabels: Record<FeatureFlag, string> = {
   collaborativeNotes: "Collaborative note editing",
   initQueue: "Note queue initialization",
   scheduleNotes: "Schedule notes",
+  canViewWriters: "Access to Writers",
 };
 
 interface PlanComparisonDialogProps {

@@ -27,8 +27,9 @@ async function getUserBySubscription(subscription: Stripe.Subscription) {
   );
   const email = (customer as Stripe.Customer).email;
   if (!email) {
-    loggerServer.error("No email found for customer", {
+    loggerServer.error("[getUserBySubscription] No email found for customer", {
       subscription: `${JSON.stringify(subscription)}`,
+      userId: "unknown",
     });
     return null;
   }
@@ -65,9 +66,13 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
     subscription.items.data[0].plan.product as string,
   );
   if (!product) {
-    loggerServer.error("No product found for subscription", {
-      subscription: `${JSON.stringify(subscription)}`,
-    });
+    loggerServer.error(
+      "[SUBSCRIPTION-CREATED] No product found for subscription",
+      {
+        subscription: `${JSON.stringify(subscription)}`,
+        userId: "unknown",
+      },
+    );
     throw new Error("No product found for subscription");
   }
   const subscriptionId = subscription.id;
@@ -76,9 +81,13 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
   const isFreeSubscription = subscription.metadata?.isFreeSubscription;
   const plan: Plan = product.metadata?.plan as Plan;
   if (!user) {
-    loggerServer.error("No user found for subscription", {
-      subscription: `${JSON.stringify(subscription)}`,
-    });
+    loggerServer.error(
+      "[SUBSCRIPTION-CREATED] No user found for subscription",
+      {
+        subscription: `${JSON.stringify(subscription)}`,
+        userId: "unknown",
+      },
+    );
     return;
   }
 
@@ -163,16 +172,24 @@ export async function handleSubscriptionUpdated(event: any) {
   const plan = await getPlanBySubscription(subscription);
   const user = await getUserBySubscription(subscription);
   if (!user) {
-    loggerServer.error("No user found for subscription", {
-      subscription: `${JSON.stringify(subscription)}`,
-    });
+    loggerServer.error(
+      "[SUBSCRIPTION-UPDATED] No user found for subscription",
+      {
+        subscription: `${JSON.stringify(subscription)}`,
+        userId: "unknown",
+      },
+    );
     throw new Error("No user found for subscription");
   }
 
   if (!plan) {
-    loggerServer.error("No plan found for subscription", {
-      subscription: `${JSON.stringify(subscription)}`,
-    });
+    loggerServer.error(
+      "[SUBSCRIPTION-UPDATED] No plan found for subscription",
+      {
+        subscription: `${JSON.stringify(subscription)}`,
+        userId: user.id,
+      },
+    );
     throw new Error("No plan found for subscription");
   }
 
@@ -239,8 +256,9 @@ export async function handleSubscriptionPaused(event: Stripe.Event) {
   const user = await getUserBySubscription(subscription);
   const plan = await getPlanBySubscription(subscription);
   if (!user) {
-    loggerServer.error("No user found for subscription", {
+    loggerServer.error("[SUBSCRIPTION-PAUSED] No user found for subscription", {
       subscription: `${JSON.stringify(subscription)}`,
+      userId: "unknown",
     });
     return;
   }
@@ -284,9 +302,13 @@ export async function handleSubscriptionResumed(event: Stripe.Event) {
   const subscriptionId = subscription.id;
   const user = await getUserBySubscription(subscription);
   if (!user) {
-    loggerServer.error("No user found for subscription", {
-      subscription: `${JSON.stringify(subscription)}`,
-    });
+    loggerServer.error(
+      "[SUBSCRIPTION-RESUMED] No user found for subscription",
+      {
+        subscription: `${JSON.stringify(subscription)}`,
+        userId: "unknown",
+      },
+    );
     return;
   }
   await prisma.subscription.update({
@@ -476,7 +498,7 @@ export async function handleInvoicePaymentSucceeded(event: any) {
   const emailTemplate = generatePaymentConfirmationEmail(
     user.name || "",
     subscription.plan,
-    invoice.amount_paid,
+    invoice.amount_paid / 100,
     new Date(),
     currentPeriodEnd,
   );

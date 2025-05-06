@@ -373,24 +373,27 @@ export function useExtension(): UseExtension {
    * @returns {Promise<Schedule>} Promise resolving to the created schedule
    */
   const createSchedule = useCallback(
-    async (
-      scheduleId: string,
-      userId: string,
-      timestamp: number,
-    ): Promise<Schedule | null> => {
+    async (schedule: {
+      scheduleId: string;
+      userId: string;
+      noteId: string;
+      timestamp: number;
+    }): Promise<Schedule | null> => {
       if (!canScheduleNotes) {
         return null;
       }
+      const { scheduleId, userId, noteId, timestamp } = schedule;
       Logger.info("ADDING-SCHEDULE: createSchedule", {
         scheduleId,
         userId,
         timestamp,
+        noteId,
       });
       try {
         const message: ExtensionMessage = {
           type: "API_REQUEST",
           action: "createSchedule",
-          params: [scheduleId, userId, timestamp],
+          params: [scheduleId, userId, timestamp, noteId],
         };
 
         Logger.info(

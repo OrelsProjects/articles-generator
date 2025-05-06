@@ -340,7 +340,6 @@ export async function POST(
     const notesResponse: NoteDraft[] = notesCreated.map((note: Note) => ({
       id: note.id,
       body: note.body,
-      jsonBody: note.bodyJson as any[],
       createdAt: note.createdAt,
       authorId: parseInt(authorId.toString()),
       authorName: note.name || "",
@@ -371,7 +370,10 @@ export async function POST(
         { status: 429 },
       );
     }
-    loggerServer.error("Failed to fetch notes", error);
+    loggerServer.error("Failed to fetch notes", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { success: false, error: "Failed to fetch notes" },
       { status: 500 },

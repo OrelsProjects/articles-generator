@@ -27,13 +27,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsedBody = schema.safeParse(body);
     if (!parsedBody.success) {
-      loggerServer.error("[SCHEDULE-V1] Invalid request body: " + JSON.stringify(body));
+      loggerServer.error(
+        "[SCHEDULE-V1] Invalid request body: " + JSON.stringify(body),
+      );
       return NextResponse.json(
         { error: "Invalid request body" },
         { status: 400 },
       );
     }
-    loggerServer.info("[SCHEDULE-V1] Request body: " + JSON.stringify(parsedBody.data));
+    loggerServer.info(
+      "[SCHEDULE-V1] Request body: " + JSON.stringify(parsedBody.data),
+      {
+        userId: session.user.id,
+      },
+    );
     const { noteId, scheduledTo, deleteIfExists } = parsedBody.data;
     const now = new Date();
     // add MIN_SCHEDULE_MINUTES to now
@@ -41,9 +48,22 @@ export async function POST(request: NextRequest) {
       now.getTime() + MIN_SCHEDULE_MINUTES * 60000,
     );
     const scheduledToDate = new Date(scheduledTo);
-    loggerServer.info("[SCHEDULE-V1] Scheduled to date: " + scheduledToDate + "Now: " + now);
+    loggerServer.info(
+      "[SCHEDULE-V1] Scheduled to date: " + scheduledToDate + "Now: " + now,
+      {
+        userId: session.user.id,
+      },
+    );
     if (isBefore(scheduledToDate, minScheduledTo)) {
-      loggerServer.error("[SCHEDULE-V1] Schedule has to be at least " + MIN_SCHEDULE_MINUTES + " minutes in the future: " + JSON.stringify(parsedBody.data));
+      loggerServer.error(
+        "[SCHEDULE-V1] Schedule has to be at least " +
+          MIN_SCHEDULE_MINUTES +
+          " minutes in the future: " +
+          JSON.stringify(parsedBody.data),
+        {
+          userId: session.user.id,
+        },
+      );
       return NextResponse.json(
         {
           error: `Schedule has to be at least ${MIN_SCHEDULE_MINUTES} minutes in the future`,
@@ -51,7 +71,12 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
-    loggerServer.info("[SCHEDULE-V1] Deleting latest schedule by note id: " + noteId);
+    loggerServer.info(
+      "[SCHEDULE-V1] Deleting latest schedule by note id: " + noteId,
+      {
+        userId: session.user.id,
+      },
+    );
     if (deleteIfExists) {
       await deleteLatestScheduleByNoteId(noteId);
     }
@@ -69,7 +94,10 @@ export async function POST(request: NextRequest) {
       { status: 200 },
     );
   } catch (error: any) {
-    Logger.error(error);
+    Logger.error("Error scheduling note", {
+      userId: session?.user.id,
+      error,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

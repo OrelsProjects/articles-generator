@@ -10,7 +10,6 @@ const appName = process.env.NEXT_PUBLIC_APP_NAME as string;
 
 export async function GET(req: NextRequest) {
   try {
-    const shouldGetLaunch = req.nextUrl.searchParams.get("shouldGetLaunch");
     const stripe = getStripeInstance();
     const { data: stripeProducts } = await stripe.products.list();
 
@@ -104,7 +103,10 @@ export async function GET(req: NextRequest) {
       { status: 200 },
     );
   } catch (error: any) {
-    loggerServer.error("Error getting products", error);
+    loggerServer.error("Error getting products", {
+      error,
+      userId: "none"
+    });
     return NextResponse.json(
       { error: "Error getting products" },
       { status: 500 },

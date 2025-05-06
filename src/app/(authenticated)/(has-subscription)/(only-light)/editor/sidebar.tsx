@@ -5,7 +5,6 @@ import {
   SidebarFooter,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";

@@ -20,7 +20,9 @@ export async function canUseAI(
   const subscription = await getActiveSubscription(userId);
 
   if (!subscription) {
-    loggerServer.error("Failed to check canUseAI due to subscription null");
+    loggerServer.error("Failed to check canUseAI due to subscription null", {
+      userId,
+    });
     return {
       result: false,
       status: ErrorStatus["NO-SUBSCRIPTION"],
@@ -31,6 +33,9 @@ export async function canUseAI(
   if (!cost) {
     loggerServer.error(
       "Failed to check canUseAI due to no cost for: " + usageType,
+      {
+        userId,
+      },
     );
 
     return {
@@ -108,7 +113,10 @@ export async function undoUseCredits(userId: string, usageType: AIUsageType) {
       data: { creditsRemaining: subscription.creditsRemaining + cost },
     });
   } catch (error) {
-    loggerServer.error("Error undoing use credits", { error });
+    loggerServer.error("Error undoing use credits", {
+      error,
+      userId,
+    });
   }
 }
 

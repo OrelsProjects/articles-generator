@@ -55,7 +55,10 @@ export async function GET(request: NextRequest) {
       hasMore,
     });
   } catch (error) {
-    loggerServer.error("Failed to fetch writer posts", { error });
+    loggerServer.error("Failed to fetch writer posts", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Failed to fetch writer posts" },
       { status: 500 },

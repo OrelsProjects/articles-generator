@@ -39,8 +39,23 @@ export default function AuthProvider({
   const { user: currentUser } = useSelector(selectAuth);
   const { data: session, status } = useSession();
 
+  const authorId = searchParams.get("author");
+
   const setUser = async (session?: Session): Promise<boolean> => {
     let hasPublication = false;
+    let tempAuthorId = null;
+    if (authorId) {
+      try {
+        const response = await axios.post(`/api/user/temp-author/${authorId}`);
+        tempAuthorId = response.data;
+        router.push(pathname, {
+          paramsToRemove: ["author"],
+        });
+      } catch (error) {
+        console.error("Error setting temp author id:", error);
+      }
+    }
+
     try {
       const userPlan: Plan | null = session?.user?.meta
         ? session.user.meta.plan
@@ -59,6 +74,7 @@ export default function AuthProvider({
           hadSubscription: session?.user?.meta?.hadSubscription || false,
           interval: session?.user?.meta?.interval || "month",
           isAdmin: session?.user?.meta?.isAdmin || false,
+          tempAuthorId,
         },
       };
       dispatch(setUserAction(appUser));
@@ -95,6 +111,16 @@ export default function AuthProvider({
     }
 
     const shouldOnboard = !hasPublication;
+    const redirect = searchParams.get("redirect");
+    debugger;
+    if (redirect === "heat-map") {
+      const x = pathname;
+      router.push("/heat-map", {
+        preserveQuery: true,
+        paramsToRemove: ["redirect"],
+      });
+      return;
+    }
     if (shouldOnboard) {
       if (!pathname.includes("onboarding")) {
         router.push(`/onboarding`, {
@@ -105,7 +131,6 @@ export default function AuthProvider({
         });
       }
     } else {
-      const redirect = searchParams.get("redirect");
       if (redirect) {
         router.push(redirect, {
           preserveQuery: true,

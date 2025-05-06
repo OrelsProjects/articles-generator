@@ -17,7 +17,9 @@ export async function POST(req: NextRequest) {
   });
 
   if (!userMetadata) {
-    loggerServer.error("User was not initialized");
+    loggerServer.error("User was not initialized", {
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "User was not initialized" },
       { status: 403 },
@@ -47,7 +49,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(idea);
   } catch (error: any) {
-    loggerServer.error("Error creating idea:", error.message);
+    loggerServer.error("Error creating idea:", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json({ error: "Error creating idea" }, { status: 500 });
   }
 }

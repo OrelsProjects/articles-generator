@@ -258,7 +258,6 @@ export async function POST(req: NextRequest) {
       (note, index) => ({
         id: note.commentId,
         content: note.body,
-        jsonBody: note.bodyJson as any[],
         createdAt: note.date,
         authorId: note.authorId,
         authorName: note.name || "",
@@ -279,7 +278,10 @@ export async function POST(req: NextRequest) {
       hasMore,
     });
   } catch (error: any) {
-    loggerServer.error("Failed to fetch notes", error);
+    loggerServer.error("Failed to fetch notes", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { error: "Failed to fetch notes" },
       { status: 500 },

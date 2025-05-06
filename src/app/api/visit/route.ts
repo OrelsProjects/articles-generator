@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error creating visit", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" + error.message },
       { status: 500 },

@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "URL is required" }, { status: 400 });
   }
   try {
-    const bylines = await getBylines(url);
+    const bylines = await getBylines(url, { createIfNotExists: true });
     return NextResponse.json(bylines);
   } catch (error) {
     return NextResponse.json(

@@ -21,13 +21,19 @@ export async function POST(request: NextRequest) {
   try {
     const canApply = await shouldApplyRetentionCoupon(session.user.id);
     if (!canApply) {
-      loggerServer.error("Not eligible", { canApply });
+      loggerServer.error("Not eligible", {
+        userId: session.user.id,
+        canApply,
+      });
       return NextResponse.json({ error: "Not eligible" }, { status: 400 });
     }
 
     const subscription = await getActiveSubscription(session.user.id);
     if (!subscription) {
-      loggerServer.error("Subscription not found", { subscription });
+      loggerServer.error("Subscription not found", {
+        userId: session.user.id,
+        subscription,
+      });
       return NextResponse.json(
         { error: "Subscription not found" },
         { status: 404 },
@@ -38,7 +44,10 @@ export async function POST(request: NextRequest) {
     const coupon = await getRetentionCoupon(stripe);
 
     if (!coupon) {
-      loggerServer.error("Coupon not found", { coupon });
+      loggerServer.error("Coupon not found", {
+        userId: session.user.id,
+        coupon,
+      });
       return NextResponse.json({ error: "Coupon not found" }, { status: 404 });
     }
     // apply the coupon to the subscription
@@ -62,7 +71,10 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    loggerServer.error("Error applying coupon", { error });
+    loggerServer.error("Error applying coupon", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Error applying coupon" },
       { status: 500 },

@@ -38,7 +38,10 @@ export async function POST(request: NextRequest) {
         schedule => schedule.noteId === note.id,
       )?.id;
       if (!scheduledId) {
-        loggerServer.error("Scheduled ID not found", { noteId: note.id });
+        loggerServer.error("Scheduled ID not found", {
+          noteId: note.id,
+          userId: "extension",
+        });
         continue;
       }
       const noteDraft = {
@@ -67,7 +70,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(noteDrafts, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Error fetching schedules", { error: error.message });
+    loggerServer.error("Error fetching schedules", {
+      error: error.message,
+      userId: "extension",
+    });
     return NextResponse.json({ error: error }, { status: 500 });
   }
 }

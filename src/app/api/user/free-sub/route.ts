@@ -49,7 +49,9 @@ export async function POST(request: Request) {
     // Get the premium product ID
     const productId = process.env.STRIPE_PRICING_ID_HOBBYIST;
     if (!productId) {
-      loggerServer.error("Premium product ID not found");
+      loggerServer.error("Premium product ID not found", {
+        userId: session?.user.id,
+      });
       return NextResponse.json({ error: "Product not found" }, { status: 400 });
     }
 
@@ -64,7 +66,11 @@ export async function POST(request: Request) {
     );
 
     if (!price) {
-      loggerServer.error("Price not found", { productId, interval: "month" });
+      loggerServer.error("Price not found", {
+        productId,
+        interval: "month",
+        userId: session?.user.id,
+      });
       return NextResponse.json({ error: "Price not found" }, { status: 400 });
     }
 
@@ -131,7 +137,7 @@ export async function POST(request: Request) {
     await prisma.userMetadata.update({
       where: { userId: session.user.id },
       data: {
-        featureFlags: [FeatureFlag.advancedGPT, FeatureFlag.advancedFiltering]
+        featureFlags: [FeatureFlag.advancedGPT, FeatureFlag.advancedFiltering],
       },
     });
 
@@ -145,7 +151,10 @@ export async function POST(request: Request) {
       { status: 200 },
     );
   } catch (error: any) {
-    loggerServer.error("Error in free-sub route:", error);
+    loggerServer.error("Error in free-sub route:", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

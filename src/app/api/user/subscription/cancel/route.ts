@@ -60,7 +60,10 @@ export async function POST(req: NextRequest) {
       { status: 200 },
     );
   } catch (error: any) {
-    loggerServer.error("Cancel subscription failed", error);
+    loggerServer.error("Cancel subscription failed", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: error.message || "Error" },
       { status: 500 },

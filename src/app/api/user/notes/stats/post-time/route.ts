@@ -21,7 +21,10 @@ export async function GET(request: NextRequest) {
     const postTime = await getBestTimesToPublish(authorId);
     return NextResponse.json(postTime);
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error getting post time", {
+      error,
+      userId,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

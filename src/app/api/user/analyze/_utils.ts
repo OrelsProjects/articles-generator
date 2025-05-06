@@ -23,7 +23,10 @@ export async function extractContent(url: string) {
       description,
     };
   } catch (error: any) {
-    loggerServer.error("Error extracting content:", error);
+    loggerServer.error("Error extracting content:", {
+      error,
+      userId: "none",
+    });
     throw new PublicationNotFoundError(
       "The publication was not found. Please check your URL and try again.",
     );

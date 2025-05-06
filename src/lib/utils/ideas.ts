@@ -134,6 +134,7 @@ export async function generateIdeas(
           "Error generating ideas for prompt: " + JSON.stringify(messages),
           {
             error,
+            userId,
           },
         );
         throw new Error("Error generating ideas");
@@ -240,7 +241,11 @@ export async function handleUsageError(
   message: string;
   status: number;
 }> {
-  loggerServer.error(`Handling usage error`, { error, usageId });
+  loggerServer.error(`Handling usage error`, {
+    error,
+    usageId,
+    userId: "usage",
+  });
 
   if (error instanceof GenerateIdeasNoPlanError) {
     return {
@@ -285,10 +290,16 @@ export async function handleUsageError(
   }
 
   if (!usageId) {
-    loggerServer.error("BAD ERROR: Usage ID is undefined", { error });
+    loggerServer.error("BAD ERROR: Usage ID is undefined", {
+      error,
+      userId: "usage",
+    });
   } else {
     // Remove usage, something went wrong on our side
-    loggerServer.error("Removing usage due to an error", { usageId });
+    loggerServer.error("Removing usage due to an error", {
+      usageId,
+      userId: "usage",
+    });
     await prisma.aiUsage.delete({
       where: {
         id: usageId,

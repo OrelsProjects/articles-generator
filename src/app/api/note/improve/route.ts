@@ -122,7 +122,10 @@ export async function POST(
     if (didConsumeCredits) {
       await undoUseCredits(session.user.id, "textEnhancement");
     }
-    loggerServer.error("Error improving article:", error);
+    loggerServer.error("Error improving article:", {
+      error,
+      userId: session?.user.id,
+    });
 
     const { message, status } = await handleUsageError(error, usageId);
 

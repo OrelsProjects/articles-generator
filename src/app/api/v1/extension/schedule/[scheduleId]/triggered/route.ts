@@ -1,8 +1,10 @@
 import { prisma } from "@/app/api/_db/db";
+import { authOptions } from "@/auth/authOptions";
 import { getNoteByScheduleId, updateNote } from "@/lib/dal/note";
 import { Logger } from "@/logger";
 import loggerServer from "@/loggerServer";
 import { User } from "@prisma/client";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -18,13 +20,15 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { scheduleId: string } },
 ) {
-  // const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
   // if (!session) {
   //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // }
 
   try {
-    loggerServer.info("[TRIGGERED] scheduleId: " + params.scheduleId);
+    loggerServer.info("[TRIGGERED] scheduleId: " + params.scheduleId, {
+      userId: session?.user.id || "extension",
+    });
     const { scheduleId } = params;
     const body = await request.json();
     const parsedBody = schema.safeParse(body);
@@ -40,6 +44,9 @@ export async function POST(
 
     loggerServer.info(
       "[TRIGGERED] parsedBody: " + JSON.stringify(parsedBody.data),
+      {
+        userId: session?.user.id || "extension",
+      },
     );
 
     const { ok, error, text, substackNoteId, newStatus } = parsedBody.data;
@@ -75,6 +82,9 @@ export async function POST(
         JSON.stringify(note) +
         " with newStatus: " +
         newStatus,
+      {
+        userId: session?.user.id || "extension",
+      },
     );
     if (newStatus) {
       await updateNote(note.id, {

@@ -15,7 +15,10 @@ export async function POST(request: NextRequest) {
     const { valid, expiresAt } = await validateCookies(session.user.id);
     return NextResponse.json({ valid, expiresAt });
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error validating cookies", {
+      error,
+      userId: session.user.id,
+    });
     return new NextResponse(
       JSON.stringify({ error: "Internal server error" }),
       {

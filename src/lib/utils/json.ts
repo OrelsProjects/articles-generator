@@ -11,7 +11,10 @@ function fixJsonRepair<T>(json: string): T | null {
     const jsonFixedObject = JSON.parse(jsonFixed) as T;
     return jsonFixedObject;
   } catch (error: any) {
-    loggerServer.warn("Error fixing JSON:", error);
+    loggerServer.warn("Error fixing JSON:", {
+      error,
+      userId: "json",
+    });
     return null;
   }
 }
@@ -28,7 +31,10 @@ function fixJson<T>(json: string): T | null {
   try {
     return JSON.parse(jsonFixed);
   } catch (error: any) {
-    loggerServer.warn("Error fixing JSON:", error);
+    loggerServer.warn("Error fixing JSON:", {
+      error,
+      userId: "json",
+    });
     return null;
   }
 }
@@ -41,14 +47,20 @@ export async function parseJson<T>(
   try {
     parsedJson = JSON.parse(json);
   } catch (error: any) {
-    loggerServer.warn("Error parsing JSON:\n" + json, error);
+    loggerServer.warn("Error parsing JSON:\n" + json, {
+      error,
+      userId: "json",
+    });
     const jsonFixedSync = fixJson<T>(json);
     if (!jsonFixedSync) {
       const jsonFixedString = await runPrompt(fixJsonPrompt(json), model);
       let jsonFixed = jsonFixedString.replace("```json", "").replace("```", "");
       const jsonFixedObject = fixJson<{ json: T }>(jsonFixed);
       if (!jsonFixedObject) {
-        loggerServer.warn("Failed to fix JSON:", { jsonFixed });
+        loggerServer.warn("Failed to fix JSON:", {
+          jsonFixed,
+          userId: "json",
+        });
         throw new Error("Failed to fix JSON");
       }
       const attemptParseJson = jsonFixedObject.json;

@@ -42,7 +42,10 @@ export async function POST(request: NextRequest) {
     console.timeEnd("searchByline");
     return NextResponse.json(response);
   } catch (error: any) {
-    loggerServer.error(error.message);
+    loggerServer.error("Error searching byline", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

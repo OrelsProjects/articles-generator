@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -10,20 +10,39 @@ import {
 } from "@/components/ui/tooltip";
 import { format, subDays, eachDayOfInterval } from "date-fns";
 import { Streak } from "@/types/notes-stats";
+import { Button } from "@/components/ui/button";
+import { Share2 } from "lucide-react";
+import * as htmlToImage from "html-to-image";
+import { toast } from "react-toastify";
+import { Logger } from "@/logger";
+import { getStreakCount } from "@/lib/utils/streak";
 
 interface ActivityHeatmapProps {
   streakData: Streak[];
-  streakCount: number;
   loading?: boolean;
+  showShare?: boolean;
+  onShare?: () => void;
+  shareCaption?: React.ReactNode;
+  shareHeader?: React.ReactNode;
 }
 
 export default function ActivityHeatmap({
   streakData = [],
   loading = false,
-  streakCount = 0,
+  showShare = false,
+  onShare,
+  shareCaption,
+  shareHeader,
 }: ActivityHeatmapProps) {
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const heatmapRef = useRef<HTMLDivElement>(null);
+
   const today = useMemo(() => new Date(), []);
   const startDate = useMemo(() => subDays(today, 240), [today]); // About 8 months back
+
+  const streakCount = useMemo(() => {
+    return getStreakCount(streakData);
+  }, [streakData]);
 
   // Memoize days to prevent recalculation on each render
   const days = useMemo(() => {
@@ -153,10 +172,10 @@ export default function ActivityHeatmap({
           <div className="flex-1 overflow-x-auto">
             <div className="min-w-[800px]">
               {/* Grid skeleton */}
-              <div className="flex flex-col gap-[2px]">
+              <div className="flex flex-col gap-0.5">
                 <div className="grid grid-cols-[repeat(53,_minmax(0,_1fr))] gap-[24px]">
                   {Array.from({ length: 40 }).map((_, weekIndex) => (
-                    <div key={weekIndex} className="flex flex-col gap-[2px]">
+                    <div key={weekIndex} className="flex flex-col gap-0.5">
                       {Array.from({ length: 7 }).map((_, dayIndex) => (
                         <div
                           key={`${weekIndex}-${dayIndex}`}
@@ -193,17 +212,105 @@ export default function ActivityHeatmap({
     return `${weekday}, ${month} ${day}, ${year}`;
   };
 
+  const handleShare = () => {
+    if (!heatmapRef.current) {
+      toast.error("Nothing to share yet");
+      return;
+    }
+
+    if (onShare) {
+      onShare();
+      return;
+    }
+
+    setIsGeneratingImage(true);
+
+    htmlToImage
+      .toPng(heatmapRef.current, { quality: 0.95 })
+      .then(function (dataUrl) {
+        // Create a link element
+        const link = document.createElement("a");
+        link.download = `writestack-heatmap-${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch(function (error) {
+        debugger;
+        Logger.error("Error generating image:", error);
+        toast.error("Failed to generate image");
+      })
+      .finally(() => {
+        setIsGeneratingImage(false);
+      });
+  };
+
   return (
-    <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm w-full">
+    <div
+      ref={heatmapRef}
+      className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm w-full"
+    >
       {loading ? (
         renderLoadingSkeleton()
       ) : (
         <>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-4 w-4 rounded-full bg-orange-500"></div>
-            <h3 className="text-lg font-medium">
-              {streakCount}-day streak, {streakCount === 0 ? "oh c'mon" : "keep it up!"}
-            </h3>
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="flex flex-col items-start gap-6">
+              <div
+                className={cn(
+                  isGeneratingImage ? "visible" : "invisible absolute -z-10",
+                )}
+              >
+                {shareHeader}
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 rounded-full bg-orange-500"></div>
+                <h3 className="text-lg font-medium">
+                  {streakCount}-day streak,{" "}
+                  {streakCount === 0 ? "oh c'mon" : "keep it up!"}
+                </h3>
+              </div>
+            </div>
+
+            {showShare && !isGeneratingImage && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                disabled={isGeneratingImage}
+                className="flex items-center gap-2"
+              >
+                {isGeneratingImage ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </>
+                )}
+              </Button>
+            )}
           </div>
 
           <div className="flex">
@@ -218,14 +325,11 @@ export default function ActivityHeatmap({
             <div className="flex-1 overflow-x-auto">
               <div className="min-w-[800px]">
                 {/* Grid */}
-                <div className="flex flex-col gap-[2px]">
+                <div className="flex flex-col gap-0.5">
                   <div className="grid grid-cols-[repeat(53,_minmax(0,_1fr))] gap-[24px]">
                     <TooltipProvider>
                       {weeks.map((week, weekIndex) => (
-                        <div
-                          key={weekIndex}
-                          className="flex flex-col gap-[2px]"
-                        >
+                        <div key={weekIndex} className="flex flex-col gap-0.5">
                           {Array.from({ length: 7 }).map((_, dayIndex) => {
                             const day = week[dayIndex];
                             if (!day)
@@ -309,20 +413,24 @@ export default function ActivityHeatmap({
             <div className="w-[20px] h-[20px] rounded-sm bg-orange-400 dark:bg-orange-500"></div>
             <span>
               {Math.ceil(maxActivity / 2)}-
-              {Math.ceil((3 * maxActivity) / 4) -1}
+              {Math.ceil((3 * maxActivity) / 4) - 1}
             </span>
             <div className="w-[20px] h-[20px] rounded-sm bg-orange-600"></div>
             <span>
               {Math.ceil((3 * maxActivity) / 4)}-{maxActivity}
             </span>
           </div>
+
+          {isGeneratingImage ? shareCaption : null}
         </>
       )}
 
       {/* Disclaimer - shown always */}
-      <div className="text-xs text-muted-foreground mt-4 italic">
-        The data updates every 24 hours.
-      </div>
+      {!isGeneratingImage && (
+        <div className="text-xs text-muted-foreground mt-4 italic">
+          The data updates every 24 hours.
+        </div>
+      )}
     </div>
   );
 }

@@ -48,11 +48,13 @@ export async function POST(request: NextRequest) {
           message,
           data,
           headers,
+          userId: session?.user.id || "extension",
         });
       } else {
         loggerServer.error(`${logPrefix} ERROR: ${dataString}`, {
           message,
           headers,
+          userId: session?.user.id || "extension",
         });
       }
     } else {
@@ -61,9 +63,14 @@ export async function POST(request: NextRequest) {
           message,
           data,
           headers,
+          userId: session?.user.id || "extension",
         });
       } else {
-        loggerServer.info(`${logPrefix}: ${dataString}`, { message, headers });
+        loggerServer.info(`${logPrefix}: ${dataString}`, {
+          message,
+          headers,
+          userId: session?.user.id || "extension",
+        });
       }
     }
 

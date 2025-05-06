@@ -47,57 +47,6 @@ const DividerPrimary = ({
   </div>
 );
 
-const EnhancmentDemo = () => {
-  const [loadingTone, setLoadingTone] = useState<ImprovementType | null>(null);
-  const [text, setText] = useState(initialTextForEnhancement);
-  const [selectedTone, setSelectedTone] = useState<ImprovementTone | null>(
-    null,
-  );
-  const editor = useEditor(textEditorOptions(undefined, undefined, true));
-
-  useEffect(() => {
-    const formattedBody = formatText(text);
-    editor?.commands.setContent(formattedBody);
-  }, [editor, text]);
-
-  const handleImprovement = async (type: ImprovementTone) => {
-    setLoadingTone(type);
-    setText(textByType[type]);
-    setSelectedTone(type);
-    setLoadingTone(null);
-  };
-
-  return (
-    <div className={cn("flex flex-col gap-4")}>
-      <EditorContent
-        editor={editor}
-        value={text}
-        disabled
-        className={cn("pb-0", {
-          "pb-7": text === initialTextForEnhancement,
-        })}
-      />
-      <div className="flex gap-2 flex-wrap">
-        <div className="flex gap-2 flex-wrap"></div>
-        {["Funny", "Creative", "Engaging", "Sarcastic"].map(tone => (
-          <Button
-            key={tone}
-            variant={selectedTone == tone ? "default" : "outline"}
-            className="hover:bg-primary hover:text-primary-foreground transition-colors"
-            disabled={loadingTone !== null}
-            onClick={() => handleImprovement(tone as ImprovementTone)}
-          >
-            {loadingTone == tone && (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            )}
-            {tone}
-          </Button>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 const faq = [
   {
     question: `Do I need to leave my computer running to schedule notes?`,

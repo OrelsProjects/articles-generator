@@ -98,7 +98,10 @@ export async function GET() {
 
     return NextResponse.json({ publication: response }, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Error in publications route:", error);
+    loggerServer.error("Error in publications route:", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

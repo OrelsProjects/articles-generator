@@ -28,11 +28,6 @@ export const authOptions: AuthOptions = {
             where: {
               userId: token.sub as string,
             },
-            select: {
-              publicationId: true,
-              featureFlags: true,
-              isAdmin: true,
-            },
           }),
           getActiveSubscription(token.sub as string),
         ];
@@ -43,6 +38,7 @@ export const authOptions: AuthOptions = {
             publicationId: string | null;
             featureFlags: FeatureFlag[];
             isAdmin: boolean;
+            tempAuthorId: string | null;
           } | null,
           Subscription | null,
         ];
@@ -58,12 +54,14 @@ export const authOptions: AuthOptions = {
           hadSubscription: activeSubscription !== null,
           interval: activeSubscription?.interval || "month",
           isAdmin: userMetadata?.isAdmin || false,
+          tempAuthorId: userMetadata?.tempAuthorId || null,
         };
         session.user.publicationId = userMetadata?.publicationId || "";
         return session;
       } catch (error) {
         loggerServer.error("Error in session callback", {
           error,
+          userId: token.sub as string,
         });
         throw error;
       }

@@ -3,7 +3,7 @@
 import { getPublicationByUrl } from "@/lib/dal/publication";
 import { getPublicationUpdatedUrl } from "@/lib/publication";
 import { getArticleEndpoint } from "@/lib/utils/publication";
-import { getUrlComponents, toValidUrl } from "@/lib/utils/url";
+import { getUrlComponents } from "@/lib/utils/url";
 import { Logger } from "@/logger";
 import { NextRequest, NextResponse } from "next/server";
 

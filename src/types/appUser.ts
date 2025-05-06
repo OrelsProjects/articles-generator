@@ -9,6 +9,7 @@ export interface AppUserMeta {
   interval: "month" | "year";
   featureFlags: FeatureFlag[];
   isAdmin: boolean;
+  tempAuthorId: string | null;
 }
 
 export default interface AppUser {

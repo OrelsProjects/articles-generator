@@ -52,7 +52,10 @@ export async function POST(req: NextRequest) {
     console.log("productId", productId);
 
     if (!productId) {
-      loggerServer.error("Invalid pricing plan", { plan });
+      loggerServer.error("Invalid pricing plan", {
+        plan,
+        userId: session.user.id,
+      });
       return NextResponse.json(
         { error: "Invalid pricing plan" },
         { status: 400 },
@@ -63,7 +66,10 @@ export async function POST(req: NextRequest) {
 
     const product = await stripe.products.retrieve(productId);
     if (!product) {
-      loggerServer.error("Product not found", { productId });
+      loggerServer.error("Product not found", {
+        productId,
+        userId: session.user.id,
+      });
       return NextResponse.json({ error: "Product not found" }, { status: 400 });
     }
 
@@ -84,7 +90,11 @@ export async function POST(req: NextRequest) {
     console.log("price", price);
 
     if (!price) {
-      loggerServer.error("Price not found", { productId, interval });
+      loggerServer.error("Price not found", {
+        productId,
+        interval,
+        userId: session.user.id,
+      });
       return NextResponse.json({ error: "Price not found" }, { status: 400 });
     }
 
@@ -105,7 +115,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ sessionId }, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Error creating a checkout session", error);
+    loggerServer.error("Error creating a checkout session", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { error: "Error creating a checkout session" },
       { status: 500 },

@@ -44,7 +44,11 @@ export async function PATCH(
 
     return NextResponse.json(updatedSchedule);
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error updating schedule", {
+      error,
+      userId: session.user.id,
+      id: params.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -68,7 +72,11 @@ export async function DELETE(
     });
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error deleting schedule", {
+      error,
+      userId: session.user.id,
+      id: params.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -41,13 +41,19 @@ export async function DELETE(
   }
 
   try {
-    loggerServer.info("[DELETE-SCHEDULE] Deleting schedule: " + params.scheduleId);
+    loggerServer.info("[DELETE-SCHEDULE] Deleting schedule: " + params.scheduleId, {
+      userId: session.user.id,
+    });
     const { scheduleId } = params;
     await deleteScheduleById(scheduleId);
-    loggerServer.info("[DELETE-SCHEDULE] Successfully deleted schedule: " + scheduleId);
+    loggerServer.info("[DELETE-SCHEDULE] Successfully deleted schedule: " + scheduleId, {
+      userId: session.user.id,
+    });
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: any) {
-    Logger.error("[DELETE-SCHEDULE] Error deleting schedule: " + error);
+    Logger.error("[DELETE-SCHEDULE] Error deleting schedule: " + error, {
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -14,7 +14,10 @@ export async function GET(request: NextRequest) {
     const streak = await getStreak(session.user.id);
     return NextResponse.json(streak);
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error getting streak", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

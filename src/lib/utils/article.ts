@@ -53,7 +53,10 @@ export async function getSubstackArticleData(
           console.log(`Fetched article from ${url}`);
           break;
         } catch (error: any) {
-          loggerServer.error(`Failed to fetch article from ${url}:`, error);
+          loggerServer.error(`Failed to fetch article from ${url}:`, {
+            error,
+            userId: "article",
+          });
           retryCount++;
           await new Promise(resolve =>
             setTimeout(resolve, retryDelay * retryCount * retryCount),
@@ -104,7 +107,10 @@ export async function getSubstackArticleData(
               authorUrl = data.author.url || "";
             }
           } catch (error: any) {
-            loggerServer.warn("Failed to parse structured data:", error);
+            loggerServer.warn("Failed to parse structured data:", {
+              error,
+              userId: "article",
+            });
           }
         });
       }
@@ -156,7 +162,10 @@ export async function getSubstackArticleData(
           : null,
       });
     } catch (error: any) {
-      loggerServer.error(`Failed to fetch article from ${url}:`, error);
+      loggerServer.error(`Failed to fetch article from ${url}:`, {
+        error,
+        userId: "article",
+      });
       data.push({
         url,
         content: "",

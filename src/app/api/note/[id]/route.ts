@@ -60,7 +60,10 @@ export async function PATCH(
 
     return NextResponse.json({}, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Error updating note", error);
+    loggerServer.error("Error updating note", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },
@@ -85,7 +88,10 @@ export async function DELETE(
     await archiveNote(id);
     return NextResponse.json({}, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Error deleting note", error);
+    loggerServer.error("Error deleting note", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

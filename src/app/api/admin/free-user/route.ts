@@ -21,7 +21,10 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json(freeUsers);
   } catch (error: any) {
-    loggerServer.error("Error fetching free users:", error);
+    loggerServer.error("Error fetching free users:", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { error: "Failed to fetch free users" },
       { status: 500 },
@@ -53,7 +56,10 @@ export async function POST(req: NextRequest) {
       freeUser,
     });
   } catch (error: any) {
-    loggerServer.error("Error creating free user:", error);
+    loggerServer.error("Error creating free user:", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { error: "Failed to create free user" },
       { status: 500 },
@@ -89,7 +95,7 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json(updatedUser);
   } catch (error: any) {
-    loggerServer.error("Error updating free user:", error);
+    loggerServer.error("Error updating free user:", { error, userId: "admin" });
     return NextResponse.json(
       { error: "Failed to update free user" },
       { status: 500 },

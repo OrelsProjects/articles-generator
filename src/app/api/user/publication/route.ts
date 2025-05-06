@@ -1,0 +1,35 @@
+import { authOptions } from "@/auth/authOptions";
+import loggerServer from "@/loggerServer";
+import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/app/api/_db/db";
+import { getByline } from "@/lib/dal/byline";
+
+export async function GET(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    if (!session.user.meta?.tempAuthorId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const byline = await getByline(parseInt(session.user.meta.tempAuthorId));
+    return NextResponse.json({
+      authorId: byline?.id,
+      name: byline?.name,
+      image: byline?.photoUrl,
+    });
+  } catch (error) {
+    loggerServer.error("Error fetching user metadata", {
+      error,
+      userId: session.user.id,
+    });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
+}

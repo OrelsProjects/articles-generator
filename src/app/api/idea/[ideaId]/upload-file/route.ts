@@ -80,7 +80,10 @@ export async function POST(
 
     return NextResponse.json({ url }, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Error uploading file:", error);
+    loggerServer.error("Error uploading file:", {
+      error,
+      userId: session.user.id,
+    });
     if (imageId) {
       await prisma.image.delete({
         where: { id: imageId },

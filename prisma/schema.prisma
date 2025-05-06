@@ -191,6 +191,8 @@ model UserMetadata {
   userId        String  @unique @db.ObjectId
   publicationId String? @unique @db.ObjectId
 
+  tempAuthorId Int? // For users who sign up without having their publication analyzed
+
   noteWritingStyle String?
   noteTopics       String?
 

@@ -1,6 +1,7 @@
 import { prismaArticles } from "@/app/api/_db/db";
 import { getAuthorId } from "@/lib/dal/publication";
 import { HourlyStats, Streak } from "@/types/notes-stats";
+import { NotesComments } from "../../../prisma/generated/articles";
 
 export interface HourlyStatsDb {
   user_id: number;
@@ -43,6 +44,11 @@ export async function getStreak(userId: string): Promise<Streak[]> {
   });
 
   // Set streak by dates with the new format
+  const streak = calculateStreak(notes);
+  return streak;
+}
+
+export function calculateStreak(notes: NotesComments[]) {
   const streak: Streak[] = notes.reduce((acc: Streak[], note) => {
     const date = new Date(note.date);
     const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month is 0-indexed

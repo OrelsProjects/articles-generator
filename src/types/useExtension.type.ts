@@ -128,9 +128,12 @@ export interface UseExtension {
   ) => Promise<AxiosResponse<R>>;
   sendNote: (params: CreatePostParams) => Promise<CreatePostResponse | null>;
   createSchedule: (
-    scheduleId: string,
-    userId: string,
-    timestamp: number,
+    schedule: {
+      scheduleId: string;
+      userId: string;
+      noteId: string;
+      timestamp: number;
+    }
   ) => Promise<Schedule | null>;
   deleteSchedule: (scheduleId: string) => Promise<boolean>;
   getSchedules: () => Promise<GetSchedulesResponse>;

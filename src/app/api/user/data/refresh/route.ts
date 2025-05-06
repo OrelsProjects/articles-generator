@@ -46,7 +46,10 @@ export async function POST(request: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
-    loggerServer.error("Error refreshing user metadata", { error });
+    loggerServer.error("Error refreshing user metadata", {
+      error,
+      userId: session?.user.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

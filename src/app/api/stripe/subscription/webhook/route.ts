@@ -40,13 +40,19 @@ export async function POST(req: NextRequest) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET || "",
     );
-  } catch (err: any) {
-    loggerServer.error("⚠️ Webhook signature verification failed.", err);
+  } catch (error: any) {
+    loggerServer.error("⚠️ Webhook signature verification failed.", {
+      error,
+      userId: "stripe-webhook",
+    });
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
   console.log("Stripe webhook event:", event);
   if (!relevantEvents.has(event.type)) {
-    loggerServer.info("Ignoring irrelevant event type:", { type: event.type });
+    loggerServer.info("Ignoring irrelevant event type:", {
+      type: event.type,
+      userId: "stripe-webhook",
+    });
     return NextResponse.json({ received: true }, { status: 200 });
   }
 
@@ -84,7 +90,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Webhook processing failed", error);
+    loggerServer.error("Webhook processing failed", {
+      error,
+      userId: "stripe-webhook",
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -15,12 +15,15 @@ const DialogClose = DialogPrimitive.Close;
 
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> & {
+    backgroundBlur?: boolean;
+  }
+>(({ className, backgroundBlur, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      backgroundBlur ? "bg-black/80" : "bg-black/20 backdrop-blur-md",
       className,
     )}
     {...props}
@@ -33,6 +36,7 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     hideCloseButton?: boolean;
     closeOnOutsideClick?: boolean;
+    backgroundBlur?: boolean;
   }
 >(
   (
@@ -41,12 +45,13 @@ const DialogContent = React.forwardRef<
       children,
       hideCloseButton,
       closeOnOutsideClick = true,
+      backgroundBlur = true,
       ...props
     },
     ref,
   ) => (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay backgroundBlur={backgroundBlur} />
       <DialogPrimitive.Content
         onInteractOutside={event =>
           !closeOnOutsideClick ? event.preventDefault() : null

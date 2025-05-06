@@ -21,15 +21,11 @@ export default function StatisticsPage() {
             Failed to load streak data: {error}
           </div>
         ) : (
-          <ActivityHeatmap
-            streakData={streak || []}
-            loading={loading}
-            streakCount={streakCount}
-          />
+          <ActivityHeatmap streakData={streak || []} loading={loading} />
         )}
       </div>
-      
-{/* 
+
+      {/* 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
         <div className="p-6 border rounded-lg bg-card">
           <h2 className="text-xl font-semibold mb-4">Writing Insights</h2>

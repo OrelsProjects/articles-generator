@@ -48,7 +48,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error getting user schedules", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -77,7 +80,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(userSchedule);
   } catch (error: any) {
-    loggerServer.error(error);
+    loggerServer.error("Error creating user schedule", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

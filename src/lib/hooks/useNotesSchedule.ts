@@ -23,7 +23,6 @@ export const useNotesSchedule = () => {
   const dispatch = useAppDispatch();
   const { userNotes, loadingNotes, error } = useAppSelector(selectNotes);
   const {
-    setUserSubstackCookies,
     createSchedule,
     getSchedules,
     deleteSchedule: deleteScheduleExtension,
@@ -189,11 +188,12 @@ export const useNotesSchedule = () => {
           newSchedule,
         });
         // Then update on extension
-        await createSchedule(
-          newSchedule.id,
-          user.userId,
-          note.scheduledTo.getTime(),
-        );
+        await createSchedule({
+          scheduleId: newSchedule.id,
+          userId: user.userId,
+          noteId: note.id,
+          timestamp: note.scheduledTo.getTime(),
+        });
         Logger.info("ADDING-SCHEDULE: scheduleNote: created new schedule", {
           newSchedule,
         });

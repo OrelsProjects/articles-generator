@@ -42,7 +42,10 @@ export async function GET() {
       settings,
     });
   } catch (error: any) {
-    loggerServer.error("Error getting usages", { error });
+    loggerServer.error("Error getting usages", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

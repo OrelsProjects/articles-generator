@@ -71,7 +71,10 @@ export async function POST(
       },
     });
   } catch (error: any) {
-    loggerServer.error("Error improving article:", error);
+    loggerServer.error("Error improving article:", {
+      error,
+      userId: session?.user.id,
+    });
     if (didConsumeCredits) {
       await undoUseCredits(session.user.id, "textEnhancement");
     }

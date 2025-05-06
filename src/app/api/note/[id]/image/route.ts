@@ -66,7 +66,8 @@ export async function POST(
     });
   } catch (error: any) {
     loggerServer.error("Error uploading image: " + JSON.stringify(error), {
-      user: session?.user,
+      userId: session?.user.id,
+      error,
     });
     return NextResponse.json(
       JSON.stringify({ error: "Failed to upload image" }),

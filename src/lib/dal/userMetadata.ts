@@ -15,6 +15,9 @@ export async function setFeatureFlagsByPlan(plan: Plan, userId: string) {
     },
     });
   } catch (error) {
-    loggerServer.error("Error setting feature flags by plan", { error });
+    loggerServer.error("Error setting feature flags by plan", {
+      error,
+      userId,
+    });
   }
 }

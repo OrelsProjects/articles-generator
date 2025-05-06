@@ -70,6 +70,7 @@
     "formidable": "^3.5.2",
     "formik": "^2.4.6",
     "framer-motion": "^11.2.10",
+    "html-to-image": "^1.11.13",
     "https-proxy-agent": "^7.0.6",
     "iconsax-react": "^0.0.8",
     "js-tiktoken": "^1.0.19",

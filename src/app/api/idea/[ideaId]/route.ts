@@ -58,7 +58,10 @@ export async function PATCH(
 
     return NextResponse.json({}, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Error updating idea:", error.message);
+    loggerServer.error("Error updating idea:", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json({ error: "Error updating idea" }, { status: 500 });
   }
 }
@@ -111,7 +114,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(idea);
   } catch (error: any) {
-    loggerServer.error("Error creating idea:", error.message);
+    loggerServer.error("Error creating idea:", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json({ error: "Error creating idea" }, { status: 500 });
   }
 }
