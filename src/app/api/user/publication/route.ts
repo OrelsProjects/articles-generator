@@ -12,11 +12,22 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    if (!session.user.meta?.tempAuthorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    let tempAuthorId = session.user.meta?.tempAuthorId;
+    if (!tempAuthorId) {
+      const userMetadata = await prisma.userMetadata.findUnique({
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          publication: true,
+        },
+      });
+      tempAuthorId = userMetadata?.publication?.authorId?.toString() || null;
+      if (!tempAuthorId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
     }
-
-    const byline = await getByline(parseInt(session.user.meta.tempAuthorId));
+    const byline = await getByline(parseInt(tempAuthorId));
     return NextResponse.json({
       authorId: byline?.id,
       name: byline?.name,
