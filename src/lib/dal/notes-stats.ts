@@ -2,35 +2,103 @@ import { prismaArticles } from "@/app/api/_db/db";
 import { getAuthorId } from "@/lib/dal/publication";
 import { HourlyStats, Streak } from "@/types/notes-stats";
 import { NotesComments } from "../../../prisma/generated/articles";
+import { Prisma } from "@prisma/client";
 
-export interface HourlyStatsDb {
+interface HourlyStatsDb {
   user_id: number;
   hour_of_day: number;
-  weighted_score: number;
+  bayes_weighted_score: number;
 }
-
 export async function getBestTimesToPublish(
   authorId: number,
 ): Promise<HourlyStats[]> {
-  const result = await prismaArticles.$queryRaw<HourlyStatsDb[]>`
-  SELECT
-    user_id,
-    EXTRACT(HOUR FROM "date") AS hour_of_day,
-    COUNT(*) AS note_count,
-    AVG(reaction_count) AS avg_reaction,
-    COUNT(*) * AVG(reaction_count) AS weighted_score
-  FROM notes_comments
-  WHERE user_id = ${authorId}
-  GROUP BY user_id, hour_of_day
-  ORDER BY weighted_score DESC;
-`;
+  // 1) Grab global mean and variance
+  const [global] = await prismaArticles.$queryRaw<
+    { mu: number; variance: number }[]
+  >`
+    SELECT
+      AVG(reaction_count)::float AS mu,
+      VAR_POP(reaction_count)::float AS variance
+    FROM notes_comments
+    WHERE user_id = ${authorId}
+  `;
 
-  return result.map(item => ({
-    userId: item.user_id,
-    hourOfDayUTC: item.hour_of_day.toString(),
-    adjustedAvgReaction: Number(item.weighted_score), // This is now your new "score"
+  // 2) If no variance, run the simple AVG*COUNT algorithm
+  if (!global.variance || global.variance === 0) {
+    const raw = await prismaArticles.$queryRaw<
+      {
+        hour_of_day: number;
+        note_count: number;
+        avg_reaction: string; // comes back as text
+        weighted_score: string; // comes back as text
+      }[]
+    >`
+      SELECT
+        EXTRACT(HOUR FROM "date") AS hour_of_day,
+        COUNT(*)                   AS note_count,
+        AVG(reaction_count)        AS avg_reaction,
+        COUNT(*) * AVG(reaction_count) AS weighted_score
+      FROM notes_comments
+      WHERE user_id = ${authorId}
+      GROUP BY hour_of_day
+      ORDER BY weighted_score DESC
+    `;
+
+    return raw.map(r => ({
+      userId: authorId,
+      hourOfDayUTC: r.hour_of_day.toString(),
+      adjustedAvgReaction: Number(r.weighted_score),
+    }));
+  }
+
+  // 3) Otherwise do the Bayesian smoothing
+  const bayes = await prismaArticles.$queryRaw<
+    {
+      hour_of_day: number;
+      note_count: number;
+      bayes_weighted_score: number;
+    }[]
+  >(Prisma.sql`WITH
+      stats AS (
+        SELECT
+          AVG(reaction_count)::float AS mu,
+          VAR_POP(reaction_count)::float AS var
+        FROM notes_comments
+        WHERE user_id = ${authorId}
+      ),
+      hyper AS (
+        SELECT
+          mu,
+          var,
+          (mu * mu) / (var - mu) AS a,
+          mu / (var - mu)       AS b
+        FROM stats
+      ),
+      hours AS (
+        SELECT
+          EXTRACT(HOUR FROM "date") AS hour_of_day,
+          COUNT(*)                  AS note_count,
+          SUM(reaction_count)       AS s
+        FROM notes_comments
+        WHERE user_id = ${authorId}
+        GROUP BY hour_of_day
+      )
+    SELECT
+      h.hour_of_day,
+      h.note_count,
+      h.note_count * ((hyper.a + h.s) / (hyper.b + h.note_count))
+        AS bayes_weighted_score
+    FROM hours h
+    CROSS JOIN hyper
+    ORDER BY bayes_weighted_score DESC`);
+
+  return bayes.map(b => ({
+    userId: authorId,
+    hourOfDayUTC: b.hour_of_day.toString(),
+    adjustedAvgReaction: b.bayes_weighted_score,
   }));
 }
+
 
 export async function getStreak(userId: string): Promise<Streak[]> {
   const authorId = await getAuthorId(userId);

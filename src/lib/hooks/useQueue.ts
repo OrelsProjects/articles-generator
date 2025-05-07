@@ -292,6 +292,9 @@ export function useQueue() {
     if (loadingBestNotesRef.current) {
       return;
     }
+    if (bestTimeToPublish.length > 0) {
+      return;
+    }
     loadingBestNotesRef.current = true;
     setLoadingBestTimeToPublish(true);
     try {
