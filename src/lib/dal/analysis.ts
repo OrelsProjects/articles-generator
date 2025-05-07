@@ -1,25 +1,32 @@
 import { parseJson } from "@/lib/utils/json";
 
-import {prisma, prismaArticles } from "@/app/api/_db/db";
+import { prisma, prismaArticles } from "@/app/api/_db/db";
 import { generateNotesDescriptionPrompt } from "@/lib/prompts";
 import { runPrompt } from "@/lib/open-router";
 import { getAuthorId } from "@/lib/dal/publication";
 import { UserMetadata } from "@prisma/client";
 
-export async function setUserNotesDescription(userId: string): Promise<
+export async function setUserNotesDescription(
+  userId: string,
+  authorId: number | null,
+): Promise<
   | {
       noteWritingStyle: string;
       noteTopics: string;
     }
   | { status: number; error: string }
 > {
-  const authorId = await getAuthorId(userId);
-  if (!authorId) {
+  let validAuthorId: number | null = authorId;
+  if (!validAuthorId) {
+    validAuthorId = await getAuthorId(userId);
+  }
+  if (!validAuthorId) {
     return { error: "Author ID not found", status: 404 };
   }
+  
   const userNotes = await prismaArticles.notesComments.findMany({
     where: {
-      authorId: authorId,
+      authorId: validAuthorId,
     },
     orderBy: {
       date: "desc",

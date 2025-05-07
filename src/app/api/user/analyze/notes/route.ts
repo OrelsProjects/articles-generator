@@ -7,27 +7,33 @@ import {
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const bodySchema = z.object({
+  authorId: z.string().or(z.number()),
+  userTriggered: z.boolean().optional(),
+});
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  // const userId = "67d015d26230c417488f62ed";
   const userId = session.user.id;
   try {
     const body = await req.json();
-    const { userTriggered } = body;
+    const parsedBody = bodySchema.safeParse(body);
+    if (!parsedBody.success) {
+      loggerServer.error("Invalid request", {
+        error: parsedBody.error,
+        userId: userId,
+      });
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+    const { authorId, userTriggered } = parsedBody.data;
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId: userId,
-      },
-      include: {
-        publication: {
-          select: {
-            authorId: true,
-          },
-        },
       },
     });
 
@@ -65,7 +71,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const descriptionResponse = await setUserNotesDescription(userId);
+    const validAuthorId = isNaN(parseInt(authorId.toString()))
+      ? null
+      : parseInt(authorId.toString());
+
+    const descriptionResponse = await setUserNotesDescription(
+      userId,
+      validAuthorId,
+    );
 
     if ("error" in descriptionResponse) {
       return NextResponse.json(

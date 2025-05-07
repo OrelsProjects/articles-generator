@@ -21,6 +21,7 @@ interface ActivityHeatmapProps {
   streakData: Streak[];
   loading?: boolean;
   showShare?: boolean;
+  shareVariant?: "neumorphic-primary";
   onShare?: () => void;
   shareCaption?: React.ReactNode;
   shareHeader?: React.ReactNode;
@@ -30,6 +31,7 @@ export default function ActivityHeatmap({
   streakData = [],
   loading = false,
   showShare = false,
+  shareVariant = "neumorphic-primary",
   onShare,
   shareCaption,
   shareHeader,
@@ -273,7 +275,7 @@ export default function ActivityHeatmap({
 
             {showShare && !isGeneratingImage && (
               <Button
-                variant="outline"
+                variant={shareVariant || "outline"}
                 size="sm"
                 onClick={handleShare}
                 disabled={isGeneratingImage}

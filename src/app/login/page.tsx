@@ -27,16 +27,16 @@ const Auth = () => {
     }
   }, [code, router]);
 
-  useEffect(() => {
-    const hasPublication = publications.length > 0;
-    if (status === "authenticated") {
-      if (hasPublication) {
-        router.push("/home", { preserveQuery: true });
-      } else {
-        router.push("/onboarding", { preserveQuery: true });
-      }
-    }
-  }, [status, router, publications]);
+  // useEffect(() => {
+  //   const hasPublication = publications.length > 0;
+  //   if (status === "authenticated") {
+  //     if (hasPublication) {
+  //       router.push("/home", { preserveQuery: true });
+  //     } else {
+  //       router.push("/onboarding", { preserveQuery: true });
+  //     }
+  //   }
+  // }, [status, router, publications]);
 
   const handleGoogleSignIn = () => {
     signInWithGoogle();

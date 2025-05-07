@@ -343,7 +343,7 @@ export async function POST(req: NextRequest) {
 
     if (didConsumeCredits) {
       // The user has requested a refresh, update notes as well.
-      await setUserNotesDescription(userId);
+      await setUserNotesDescription(userId, byline.authorId);
     }
 
     if (session.user.email) {

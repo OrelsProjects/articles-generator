@@ -27,6 +27,7 @@ export default function OnboardingPage() {
   const { hasPublication } = useSettings();
   const { goToCheckout } = usePayments();
   const searchParams = useSearchParams();
+
   const plan = searchParams.get("plan");
   const interval = searchParams.get("interval");
 
@@ -49,7 +50,7 @@ export default function OnboardingPage() {
       handleNavigateNext();
     } catch (error) {
       Logger.error("Error validating publication analysis", { error });
-      toast.error("It seems like you haven't analyzed your publication yet.");
+      toast.info("It seems like you haven't analyzed your publication yet.");
     } finally {
       setLoadingAnalyzed(false);
     }

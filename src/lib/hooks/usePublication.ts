@@ -30,15 +30,18 @@ export const usePublication = () => {
     if (loadingAnalyze.current) return;
     try {
       loadingAnalyze.current = true;
-      const res = await axios.post<{ publication: Publication }>(
-        "api/user/analyze",
-        {
+      const [analysisPublication, analysisNotes] = await Promise.all([
+        axios.post<{ publication: Publication }>("api/user/analyze", {
           url,
           byline,
-        },
-      );
-      dispatch(setPublication(res.data.publication));
-      return res.data;
+        }),
+        axios.post("/api/user/analyze/notes", {
+          authorId: byline.authorId,
+          userTriggered: false,
+        }),
+      ]);
+      dispatch(setPublication(analysisPublication.data.publication));
+      return analysisNotes.data;
     } catch (error: any) {
       try {
         // Sometimes there's an error, but the publication analysis is still created

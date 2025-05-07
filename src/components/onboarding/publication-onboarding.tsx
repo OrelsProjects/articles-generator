@@ -12,7 +12,7 @@ import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-pu
 import Logo from "@/components/ui/logo";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, RefreshCcw } from "lucide-react";
+import {  RefreshCcw } from "lucide-react";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
 
