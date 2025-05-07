@@ -474,7 +474,7 @@ export default function AnalyzeSubstack() {
             className="mb-8"
           >
             <div className="flex justify-between items-center mb-4 relative">
-              <h2 className="text-2xl font-bold">Your Activity Heatmap</h2>
+              <h2 className="text-2xl font-bold">Your Notes Activity Heatmap</h2>
             </div>
             <div className="relative">
               {!hasAnalyzed && !session?.user && (
