@@ -26,19 +26,23 @@ export const setUserEventTracker = (user?: AppUser | null) => {
 
 export const initEventTracker = () => {
   try {
-    const env = process.env.NODE_ENV;
+    const env = process.env.NEXT_PUBLIC_ENV;
     const posthogApiKey = process.env.NEXT_PUBLIC_POSTHOG_API_KEY;
     const mixpanelToken = process.env.NEXT_PUBLIC_EVENT_TRACKER_TOKEN;
+    
+    const isProduction = env === "production";
+    const shouldDebug = !isProduction;
+
     posthog.init(posthogApiKey || "", {
-      debug: env !== "production",
+      debug: shouldDebug,
       api_host: "https://app.posthog.com",
-      disable_session_recording: env !== "production",
+      disable_session_recording: !isProduction,
     });
     mixpanel.init(mixpanelToken || "", {
-      debug: env !== "production",
+      debug: shouldDebug,
       track_pageview: true,
       persistence: "localStorage",
-      record_sessions_percent: 100,
+      record_sessions_percent: isProduction ? 100 : 0,
     });
   } catch (error: any) {
     // do nothing

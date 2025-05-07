@@ -49,6 +49,8 @@ export function useCustomRouter() {
 
     let urlString = url.toString();
 
+    console.log("navigating to: ", urlString);
+
     // If the href argument was relative, revert it back to relative for router.push
     if (!href.startsWith("http")) {
       urlString = url.pathname + url.search;

@@ -78,7 +78,7 @@ export default function QueueDiscrepancyProvider() {
 
   useEffect(() => {
     if (scheduledNotes.length === 0) return;
-  
+
     getSchedulesFromExtension()
       .then(schedules => {
         checkForDiscrepancies(schedules);
@@ -231,7 +231,10 @@ export default function QueueDiscrepancyProvider() {
             if (discrepancy.note && discrepancy.note.scheduledTo) {
               // If there's an existing schedule, delete it first
               if (discrepancy.scheduleId) {
-                Logger.info("[FIX-ALL-DISCREPANCIES] Deleting schedule for note: " + discrepancy.note.id);
+                Logger.info(
+                  "[FIX-ALL-DISCREPANCIES] Deleting schedule for note: " +
+                    discrepancy.note.id,
+                );
                 await deleteSchedule(discrepancy.note.id);
               }
               // Reschedule the note
@@ -245,7 +248,10 @@ export default function QueueDiscrepancyProvider() {
           case "missing_note":
             if (discrepancy.schedule) {
               if (discrepancy.noteId) {
-                Logger.info("[FIX-ALL-DISCREPANCIES] Deleting schedule for note: " + discrepancy.noteId);
+                Logger.info(
+                  "[FIX-ALL-DISCREPANCIES] Deleting schedule for note: " +
+                    discrepancy.noteId,
+                );
                 await deleteSchedule(discrepancy.noteId);
               }
             }
@@ -410,76 +416,6 @@ export default function QueueDiscrepancyProvider() {
           </div>
         </div>
       )}
-      <DialogContent closeOnOutsideClick={false}>
-        <DialogHeader>
-          <DialogTitle>New Scheduling System</DialogTitle>
-        </DialogHeader>
-        <DialogDescription className="text-sm">
-          {/* Explain that the system is based on the Chrome extension and requires the user to have either a substack.com/writestack.io tab open to have the notes scheduled. */}
-          <p>
-            The new scheduling system is based on the Chrome extension and will
-            require you to have either a substack.com or writestack.io tab open
-            to have the notes sent on time.
-          </p>
-          <br />
-          <p>
-            <strong>
-              {timesTriedToFix > 0
-                ? "Okay, the fix didn't work. Let's try to reschedule everything."
-                : "You can reschedule your notes by clicking the Reschedule button below"}
-            </strong>{" "}
-            (It will have the correct date by default).
-          </p>
-
-          {schedulesDiscrepancies.length > 0 && (
-            <>
-              <br />
-              <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-                Found {schedulesDiscrepancies.length} scheduling discrepancies
-                that need attention.
-              </p>
-            </>
-          )}
-
-          {user?.displayName?.includes("anton") && (
-            <>
-              <br />
-              <p className="text-base">
-                <strong>Anton, you too.</strong>
-              </p>
-            </>
-          )}
-          <DialogFooter>
-            <div className="w-full flex justify-end mt-4 gap-2">
-              {schedulesDiscrepancies.length > 0 && (
-                <>
-                  {timesTriedToFix > 0 ? (
-                    <Button
-                      disabled={loading || isCheckingDiscrepancies}
-                      onClick={() => {
-                        setShouldReschedule(true);
-                      }}
-                    >
-                      {loading
-                        ? `Rescheduling... ${notesRescheduled}/${scheduledNotes.length}`
-                        : "Reschedule notes"}
-                    </Button>
-                  ) : (
-                    <Button
-                      disabled={loading || isCheckingDiscrepancies}
-                      onClick={fixAllDiscrepancies}
-                    >
-                      {loading
-                        ? `Fixing... ${currentIndexFixing}/${schedulesDiscrepancies.length}`
-                        : "Fix Discrepancies"}
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
-          </DialogFooter>
-        </DialogDescription>
-      </DialogContent>
     </Dialog>
   );
 }
