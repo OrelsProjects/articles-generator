@@ -1,4 +1,4 @@
-import React, { MouseEvent, useState } from "react";
+import React, { useState } from "react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { NoteDraft } from "@/types/note";
@@ -10,7 +10,6 @@ import {
   X,
   CalendarClock,
   Loader2,
-  Pencil,
   AlertTriangle,
   Clock,
   CircleAlert,
@@ -25,7 +24,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 
 interface ScheduleNoteRowProps {
   note: NoteDraft;
@@ -235,14 +233,10 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
           <div
             className={cn(
               "text-primary mr-2 bg-primary/10 rounded-md p-1.5",
-              isPastScheduled && "text-red-500 bg-red-100 dark:bg-red-950/30",
+              isPastScheduled && "text-red-500 bg-red-100 dark:bg-red-950/30 py-0.5",
             )}
           >
-            {isPastScheduled ? (
-              <Clock size={16} />
-            ) : (
-              <CalendarClock size={16} />
-            )}
+            {isPastScheduled ? <p>missed</p> : <CalendarClock size={16} />}
           </div>
         </div>
         <div

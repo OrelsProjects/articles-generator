@@ -2,12 +2,7 @@
 
 import {
   Dialog,
-  DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { DialogTitle } from "@/components/ui/dialog";
-import { DialogHeader } from "@/components/ui/dialog";
-import { DialogContent } from "@/components/ui/dialog";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import useMediaQuery from "@/lib/hooks/useMediaQuery";
 import { useNotes } from "@/lib/hooks/useNotes";
@@ -39,10 +34,7 @@ export default function QueueDiscrepancyProvider() {
   const [loading, setLoading] = useState(false);
   const [notesRescheduled, setNotesRescheduled] = useState(0);
   const [timesTriedToFix, setTimesTriedToFix] = useState(0);
-  // const [schedules, setSchedules] = useState<GetSchedulesResponse>({
-  //   schedules: [],
-  //   alarms: [],
-  // });
+
   const [isCheckingDiscrepancies, setIsCheckingDiscrepancies] = useState(false);
   const [showDiscrepancyBar, setShowDiscrepancyBar] = useState(false);
   const [currentIndexFixing, setCurrentIndexFixing] = useState(0);
