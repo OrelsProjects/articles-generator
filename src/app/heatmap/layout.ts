@@ -5,7 +5,7 @@ const OG_IMAGE =
 
 export const metadata: Metadata = {
   title: {
-    default: "WriteStack | Notes Heatmap",
+    default: "Notes Heatmap",
     template: "%s | Notes Heatmap",
   },
   openGraph: {
