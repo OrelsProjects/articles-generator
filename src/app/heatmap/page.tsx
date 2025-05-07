@@ -560,15 +560,15 @@ export default function AnalyzeSubstack() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="bg-primary/5 rounded-lg p-8 border border-primary/20 text-center"
+            className="bg-primary/5 rounded-lg p-8 border border-primary/40 text-center"
           >
-            <h2 className="text-2xl font-bold mb-4">Want more insights?</h2>
+            <h2 className="text-2xl font-bold mb-4">Want more out of your Substack?</h2>
             <p className="text-lg mb-6">
-              {appName} helps writers grow their audience through consistent
-              posting, AI-generated content ideas, and detailed analytics.
+              {appName} helps you grow your audience through consistent
+              posting, viral content, scheduling and much more.
             </p>
             <Button size="lg" asChild>
-              <Link href="/login">Try {appName} For Free</Link>
+              <Link href="/">Try {appName} For Free</Link>
             </Button>
           </motion.div>
         </main>
