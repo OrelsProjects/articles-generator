@@ -63,15 +63,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                         <User className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
-                    {/* <div className="flex-1">
-                      <p className="truncate font-medium text-sidebar-foreground">
-                        {user?.displayName}
-                      </p>
-                      <p className="truncate text-xs text-sidebar-foreground/70">
-                        {user?.email}
-                      </p>
-                      <p className="truncate text-xs text-primary/80">{plan}</p>
-                    </div> */}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent

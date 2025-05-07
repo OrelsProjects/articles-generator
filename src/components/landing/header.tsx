@@ -68,10 +68,14 @@ export default function Header() {
                     </svg>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent side="bottom" align="start" className="w-72 p-2">
+                <DropdownMenuContent
+                  side="bottom"
+                  align="start"
+                  className="w-72 p-2"
+                >
                   <DropdownMenuItem asChild>
                     <Link
-                      href="/heat-map"
+                      href="/heatmap"
                       className="flex items-start gap-3 p-2 rounded-md hover:bg-accent transition-colors w-full"
                     >
                       <span className="mt-1">

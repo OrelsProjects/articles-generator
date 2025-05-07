@@ -423,7 +423,7 @@ export default function ActivityHeatmap({
             </span>
           </div>
 
-          {isGeneratingImage ? shareCaption : null}
+          {isGeneratingImage ? <div className="pb-4">{shareCaption}</div> : null}
         </>
       )}
 
