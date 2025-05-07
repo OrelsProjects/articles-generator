@@ -8,6 +8,7 @@ export const metadata: Metadata = {
     default: "Notes Heatmap",
     template: "%s | Notes Heatmap",
   },
+  description: "Generate a heatmap of your notes activity - for free.",
   openGraph: {
     images: { url: OG_IMAGE, width: 1200, height: 630 }, // Default Open Graph image with recommended size.
   },
