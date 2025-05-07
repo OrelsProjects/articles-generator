@@ -387,7 +387,7 @@ export default function AnalyzeSubstack() {
                 value={substackUrl}
                 onChange={e => setSubstackUrl(e.target.value)}
                 className="flex-1"
-                // disabled={inputDisabled}
+                disabled={inputDisabled}
                 onKeyDown={e => {
                   if (e.key === "Enter") {
                     e.preventDefault();
