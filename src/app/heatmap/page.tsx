@@ -350,7 +350,8 @@ export default function AnalyzeSubstack() {
                 asChild
               >
                 <Link href="/">
-                  Start growing now{" "}
+                  <span className="hidden md:flex">Start growing now</span>
+                  <span className="flex md:hidden">Start now</span>
                   <ArrowRight className="ml-2" size={16} strokeWidth={1.5} />
                 </Link>
               </Button>
