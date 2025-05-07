@@ -1,4 +1,4 @@
-import {prisma, prismaArticles } from "@/app/api/_db/db";
+import { prisma, prismaArticles } from "@/app/api/_db/db";
 import { Article, ArticleWithBody } from "@/types/article";
 import { Post } from "../../../prisma/generated/articles";
 import { ArticleContent } from "@/lib/dal/milvus";
@@ -28,6 +28,10 @@ export const getUserArticles = async (
       }
     | {
         userId: string;
+      }
+    | {
+        authorId: number;
+        url: string;
       },
   options: GetUserArticlesOptions = {
     limit: 10,
@@ -53,7 +57,31 @@ export const getUserArticles = async (
       : undefined,
   };
 
-  if ("url" in data) {
+  if ("authorId" in data && !isNaN(data.authorId)) {
+    const publication = await prismaArticles.publication.findMany({
+      where: {
+        authorId: data.authorId,
+      },
+    });
+    if (publication.length === 0) {
+      return [];
+    }
+
+    const startsWith = data.url.includes("http")
+      ? data.url
+      : `https://${data.url}`;
+    const validPublication =
+      publication.find(p =>
+        startsWith.includes(p.subdomain || p.customDomain || ""),
+      ) || publication[0];
+
+    posts = await prismaArticles.post.findMany({
+      where: {
+        publicationId: validPublication.id.toString(),
+      },
+      ...queryOptions,
+    });
+  } else if ("url" in data) {
     const startsWith = data.url.includes("http")
       ? data.url
       : `https://${data.url}`;
@@ -122,7 +150,13 @@ export const getUserArticlesWithBody = async (
   const posts = await getUserArticles(data, options);
   const postsWithoutBody = posts.filter(post => !post.bodyText);
   if (postsWithoutBody.length > 0) {
-    const postsWithBody = await getUserArticlesBody(postsWithoutBody);
+    const postsWithBody = await getUserArticlesBody(
+      postsWithoutBody.map(it => ({
+        canonicalUrl: it.canonicalUrl,
+        id: Number(it.id),
+        bodyText: it.bodyText || "", // Add default empty string to fix type error
+      })),
+    );
     return posts.map(post => ({
       ...post,
       bodyText:
@@ -136,18 +170,10 @@ export const getUserArticlesWithBody = async (
   }));
 };
 
-export const getUserArticlesBody = async <T extends { canonicalUrl: string }>(
-  posts: T[],
-): Promise<(T & { bodyText: string })[]> => {
-  const urls = posts.map(post => post.canonicalUrl);
-  const userArticles = await prismaArticles.post.findMany({
-    where: {
-      canonicalUrl: {
-        in: urls,
-      },
-    },
-  });
-  const urlsWithoutBody = userArticles
+export const getUserArticlesBody = async (  
+  posts: { canonicalUrl: string; id: number; bodyText: string }[],
+): Promise<{ canonicalUrl: string; id: number; bodyText: string }[]> => {
+  const urlsWithoutBody = posts
     .filter(article => !article.bodyText)
     .map(article => article.canonicalUrl || "")
     .filter(url => url !== "");

@@ -256,15 +256,18 @@ function extractPublications(posts: SubstackPost[]) {
 export async function populatePublications(
   url: string,
   maxArticlesToGetBody = 60,
+  byline?: number,
 ): Promise<Array<{ url: string; status: string }>> {
   const publicationsStatus: Array<{ url: string; status: string }> = [];
   const allPosts: SubstackPost[] = [];
+  console.time("Getting user posts");
   const currentUserPosts = await getUserPosts(
-    { url },
+    { url, authorId: Number(byline) },
     {
       scrapeIfNotFound: false,
     },
   );
+  console.timeEnd("Getting user posts");
 
   const postsWithBody = currentUserPosts.filter(post => post.bodyText);
   if (postsWithBody.length > currentUserPosts.length * 0.5) {
@@ -297,7 +300,13 @@ export async function populatePublications(
       ...post,
       canonicalUrl: post.canonical_url || "",
     };
-    const body = await getUserArticlesBody([formattedPost]);
+    const body = await getUserArticlesBody([
+      {
+        canonicalUrl: formattedPost.canonical_url || "",
+        id: Number(formattedPost.id),
+        bodyText: formattedPost.body_text || "",
+      },
+    ]);
     const { canonicalUrl, ...restOfPost } = body[0];
     post.body_text = restOfPost.bodyText;
   }
@@ -537,7 +546,8 @@ export async function scrapeLinks(): Promise<void> {
 export async function setPublications(
   url: string,
   maxArticlesToGetBody = 60,
+  byline?: number,
 ): Promise<void> {
   url = toValidUrl(url);
-  await populatePublications(url, maxArticlesToGetBody);
+  await populatePublications(url, maxArticlesToGetBody, byline);
 }

@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
+import { useAppDispatch } from "@/lib/hooks/redux";
 import { setPublication } from "@/lib/features/publications/publicationSlice";
 import axios from "axios";
 import { Publication } from "@/types/publication";
@@ -30,18 +30,17 @@ export const usePublication = () => {
     if (loadingAnalyze.current) return;
     try {
       loadingAnalyze.current = true;
-      const [analysisPublication, analysisNotes] = await Promise.all([
+      const [analysisPublication] = await Promise.all([
         axios.post<{ publication: Publication }>("api/user/analyze", {
           url,
           byline,
         }),
-        axios.post("/api/user/analyze/notes", {
-          authorId: byline.authorId,
-          userTriggered: false,
-        }),
       ]);
       dispatch(setPublication(analysisPublication.data.publication));
-      return analysisNotes.data;
+      axios.post("/api/user/analyze/notes", {
+        authorId: byline.authorId,
+        userTriggered: false,
+      });
     } catch (error: any) {
       try {
         // Sometimes there's an error, but the publication analysis is still created

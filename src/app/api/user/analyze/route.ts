@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
 
     loggerServer.info("Scraping posts", { url, userId });
     console.time("Scraping posts");
-    await scrapePosts(url, MAX_ARTICLES_TO_GET_BODY);
+    await scrapePosts(url, MAX_ARTICLES_TO_GET_BODY, byline.authorId);
     console.timeEnd("Scraping posts");
 
     if (!userPublication) {
@@ -189,7 +189,21 @@ export async function POST(req: NextRequest) {
         0,
         MAX_ARTICLES_TO_GET_BODY,
       );
-      articlesWithBody = await getUserArticlesBody(articlesToGetBody);
+      const articlesBody = await getUserArticlesBody(
+        articlesToGetBody.map(it => ({
+          canonicalUrl: it.canonicalUrl,
+          id: Number(it.id),
+          bodyText: it.bodyText || "",
+        })),
+      );
+
+      articlesWithBody = articlesWithBody.map(article => {
+        const articleBody = articlesBody.find(
+          it => it.canonicalUrl === article.canonicalUrl,
+        );
+        return { ...article, bodyText: articleBody?.bodyText || "" };
+      });
+
       try {
         // Insert one by one, batches of 10
         const batchSize = 10;
