@@ -10,6 +10,8 @@ import {
 import axios from "axios";
 import { z } from "zod";
 import { Post } from "../../prisma/generated/articles";
+import loggerServer from "@/loggerServer";
+import { Byline as BylineDB } from "../../prisma/generated/articles";
 
 export async function getPublicationUpdatedUrl(url: string) {
   const publicationDataResponse = await axios.get(
@@ -90,12 +92,44 @@ export async function getBylines(
       const bylinesToCreate = uniqueBylines.filter(
         byline => !bylinesInDB.some(b => b.id === byline.authorId),
       );
-      await prismaArticles.byline.createMany({
-        data: bylinesToCreate.map(byline => ({
-          ...byline,
-          id: byline.authorId,
-        })),
-      });
+
+      try {
+        for (const byline of bylinesToCreate) {
+          const bylineDBCreate: BylineDB = {
+            id: byline.authorId,
+            name: byline.name,
+            handle: byline.handle,
+            previousName: byline.name,
+            photoUrl: byline.photoUrl,
+            bio: byline.bio,
+            profileSetUpAt: null,
+            twitterScreenName: null,
+            isGuest: false,
+            bestsellerTier: null,
+          };
+
+          const bylineDBUpdate: Partial<BylineDB> = {
+            name: byline.name,
+            handle: byline.handle,
+            previousName: byline.name,
+            photoUrl: byline.photoUrl,
+            bio: byline.bio,
+          };
+
+          //upsert
+          await prismaArticles.byline.upsert({
+            where: { id: byline.authorId },
+            update: bylineDBUpdate,
+            create: bylineDBCreate,
+          });
+        }
+      } catch (error: any) {
+        loggerServer.error("Failed to create byline", {
+          error,
+          bylines: uniqueBylines,
+          userId: "no-user",
+        });
+      }
     }
 
     return uniqueBylines;

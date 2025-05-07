@@ -9,6 +9,7 @@ import { resetNotification } from "@/lib/features/notes/notesSlice";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
 import { Plus } from "lucide-react";
+import { CreateNoteButton } from "@/components/notes/create-note-button";
 
 const TITLE = "Your notes (Kanban)";
 
@@ -51,15 +52,7 @@ export default function StatusBoardPage() {
             <h1 className="text-3xl font-bold">{TITLE}</h1>
           </div>
           <div className="flex flex-col md:flex-row justify-end items-center gap-2">
-            <TooltipButton
-              tooltipContent="Start writing"
-              variant="outline"
-              onClick={handleCreateDraftNote}
-              className="flex items-center gap-2"
-            >
-              <Plus size={16} />
-              New draft
-            </TooltipButton>
+            <CreateNoteButton/>
             <GenerateNotesDialog />
           </div>
         </div>

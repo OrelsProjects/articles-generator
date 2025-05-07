@@ -66,7 +66,7 @@ export function AuthorSelectionDialog({
         ) : (
           <ScrollArea className="max-h-[600px] pr-4">
             <div className="w-full space-y-4">
-              {bylines.map(byline => (
+              {bylines?.map(byline => (
                 <div
                   key={byline.authorId}
                   className="flex items-start space-x-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"

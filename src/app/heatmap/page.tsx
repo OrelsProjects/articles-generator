@@ -123,7 +123,6 @@ export default function AnalyzeSubstack() {
     setIsLoading(true);
 
     try {
-      debugger;
       const publicationRes = await axios.get("/api/user/publication");
 
       setAuthorImage(publicationRes.data.image);
@@ -318,9 +317,7 @@ export default function AnalyzeSubstack() {
     <div className="flex items-center gap-4 justify-center">
       <div className="h-14 w-14 rounded-full overflow-hidden">
         <Avatar className="h-14 w-14 rounded-full">
-          <AvatarImage src={authorImage || ""} alt="User"
-          
-          />
+          <AvatarImage src={authorImage || ""} alt="User" />
           <AvatarFallback>
             <User className="h-4 w-4" />
           </AvatarFallback>
@@ -384,46 +381,42 @@ export default function AnalyzeSubstack() {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="bg-card rounded-lg p-6 shadow-sm border mb-8"
           >
-            {authorName && authorImage ? (
-              <ActivityHeader />
-            ) : (
-              <div className="flex flex-col md:flex-row gap-4">
-                <Input
-                  placeholder="Your Substack URL (e.g., yourname.substack.com)"
-                  value={substackUrl}
-                  onChange={e => setSubstackUrl(e.target.value)}
-                  className="flex-1"
-                  disabled={inputDisabled}
-                  onKeyDown={e => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      if (selectedByline) {
-                        handleBylineSelect(selectedByline);
-                      } else {
-                        getBylines();
-                      }
-                    }
-                  }}
-                />
-                <Button
-                  variant={"outline"}
-                  onClick={() => {
+            <div className="flex flex-col md:flex-row gap-4">
+              <Input
+                placeholder="Your Substack URL (e.g., yourname.substack.com)"
+                value={substackUrl}
+                onChange={e => setSubstackUrl(e.target.value)}
+                className="flex-1"
+                // disabled={inputDisabled}
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
                     if (selectedByline) {
                       handleBylineSelect(selectedByline);
                     } else {
                       getBylines();
                     }
-                  }}
-                  disabled={isLoading || loadingBylines || !substackUrl}
-                >
-                  {loadingBylines
-                    ? "Looking up authors..."
-                    : isLoading
-                      ? "Analyzing..."
-                      : "Analyze Activity"}
-                </Button>
-              </div>
-            )}
+                  }
+                }}
+              />
+              <Button
+                variant={"outline"}
+                onClick={() => {
+                  if (selectedByline) {
+                    handleBylineSelect(selectedByline);
+                  } else {
+                    getBylines();
+                  }
+                }}
+                disabled={isLoading || loadingBylines || !substackUrl}
+              >
+                {loadingBylines
+                  ? "Looking up authors..."
+                  : isLoading
+                    ? "Analyzing..."
+                    : "Analyze Activity"}
+              </Button>
+            </div>
 
             <AnimatePresence mode="popLayout">
               {error?.value && (
@@ -474,7 +467,9 @@ export default function AnalyzeSubstack() {
             className="mb-8"
           >
             <div className="flex justify-between items-center mb-4 relative">
-              <h2 className="text-2xl font-bold">Your Notes Activity Heatmap</h2>
+              <h2 className="text-2xl font-bold">
+                Your Notes Activity Heatmap
+              </h2>
             </div>
             <div className="relative">
               {!hasAnalyzed && !session?.user && (
@@ -562,10 +557,12 @@ export default function AnalyzeSubstack() {
             transition={{ delay: 0.6, duration: 0.5 }}
             className="bg-primary/5 rounded-lg p-8 border border-primary/40 text-center"
           >
-            <h2 className="text-2xl font-bold mb-4">Want more out of your Substack?</h2>
+            <h2 className="text-2xl font-bold mb-4">
+              Want more out of your Substack?
+            </h2>
             <p className="text-lg mb-6">
-              {appName} helps you grow your audience through consistent
-              posting, viral content, scheduling and much more.
+              {appName} helps you grow your audience through consistent posting,
+              viral content, scheduling and much more.
             </p>
             <Button size="lg" asChild>
               <Link href="/">Try {appName} For Free</Link>

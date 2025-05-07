@@ -361,6 +361,7 @@ export function QueuePage() {
         <TabsContent value="scheduled" className="mt-0">
           <ScheduledNotesList
             days={activeDays}
+            onEditQueue={() => setIsEditDialogOpen(true)}
             groupedNotes={groupedScheduledNotes()}
             groupedSchedules={groupedSchedules()}
             onSelectNote={handleSelectNote}

@@ -1,5 +1,6 @@
 import React from "react";
 import { useDroppable } from "@dnd-kit/core";
+import { Loader2 } from "lucide-react";
 
 interface EmptyScheduleSlotProps {
   message?: string;
@@ -7,6 +8,7 @@ interface EmptyScheduleSlotProps {
   date?: Date;
   id: string;
   onClick: (date: Date) => void;
+  loading?: boolean;
 }
 
 export const EmptyScheduleSlot: React.FC<EmptyScheduleSlotProps> = ({
@@ -15,6 +17,7 @@ export const EmptyScheduleSlot: React.FC<EmptyScheduleSlotProps> = ({
   id,
   date,
   onClick,
+  loading
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id,
@@ -52,7 +55,11 @@ export const EmptyScheduleSlot: React.FC<EmptyScheduleSlotProps> = ({
         <div className="text-sm text-muted-foreground min-w-[72px]">{time}</div>
       )}
       <div className="text-sm text-muted-foreground/70 ml-4 flex-grow text-center">
-        {message}
+        {!loading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          message
+        )}
       </div>
     </div>
   );

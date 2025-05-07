@@ -54,7 +54,7 @@ export const DaySchedule = ({
   isPastScheduled,
 }: DayScheduleProps) => {
   const now = new Date();
-  const currentMinutes = startOfDay(now).getHours() * 60
+  const currentMinutes = startOfDay(now).getHours() * 60;
   const isToday = isSameDay(day, startOfToday());
   const isTomorrow = isSameDay(day, addDays(startOfToday(), 1));
   const [dragOrigin, setDragOrigin] = useState<string | null>(null);
@@ -243,19 +243,17 @@ export const DaySchedule = ({
     </h2>
   );
 
-  if (isToday && allScheduledItems.length === 0) {
-    return <div className="mb-6">{dayTitle}</div>;
-  }
-
-  // Skip days with no notes or schedules
-  if (notes.length === 0 && schedules.length === 0) {
-    return null;
+  if (
+    (isToday && allScheduledItems.length === 0) ||
+    (notes.length === 0 && schedules.length === 0)
+  ) {
+    return <div>{dayTitle}</div>;
   }
 
   // Render content with or without DndContext
   const renderScheduleItems = () =>
     allScheduledItems.map(item => (
-      <React.Fragment key={item.id}>
+      <div key={item.id} className="mt-4">
         {item.type === "note" && item.note && (
           <div
             ref={item.note.id === lastNoteId ? lastNoteRef : undefined}
@@ -270,7 +268,9 @@ export const DaySchedule = ({
               note={item.note}
               onSelect={onSelectNote}
               onUnschedule={onUnscheduleNote}
-              isPastScheduled={isPastScheduled ? isPastScheduled(item.note) : false}
+              isPastScheduled={
+                isPastScheduled ? isPastScheduled(item.note) : false
+              }
             />
           </div>
         )}
@@ -290,7 +290,7 @@ export const DaySchedule = ({
             />
           </div>
         )}
-      </React.Fragment>
+      </div>
     ));
 
   return (

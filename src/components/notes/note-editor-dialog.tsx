@@ -23,7 +23,6 @@ import {
   NoteDraftImage,
 } from "@/types/note";
 import { getScheduleTimeText } from "@/lib/utils/date/schedule";
-import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { InstantPostButton } from "@/components/notes/instant-post-button";
 import EmojiPopover from "@/components/notes/emoji-popover";
 import { Skin } from "@emoji-mart/data";
@@ -105,6 +104,27 @@ export function NotesEditorDialog() {
       cancelUpdateNoteBody(selectedNote?.id || "", false);
     }
   };
+  useEffect(() => {
+    const handlePasteImage = async (e: CustomEvent<File>) => {
+      debugger;
+      const file = e.detail;
+      if (file) {
+        await handleImageSelect(file);
+      }
+    };
+
+    window.addEventListener(
+      "editor-image-paste",
+      handlePasteImage as unknown as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "editor-image-paste",
+        handlePasteImage as unknown as EventListener,
+      );
+    };
+  }, [selectedNote]);
 
   useEffect(() => {
     setIsUploadingFile(uploadingFile);
@@ -371,7 +391,7 @@ export function NotesEditorDialog() {
     // Check if there's already an image
     if (selectedNote.attachments && selectedNote.attachments.length > 0) {
       setIsDraggingOver(false);
-      toast.error("Only one image is allowed");
+      toast.info("Only one image is allowed");
       return;
     }
 
@@ -412,7 +432,7 @@ export function NotesEditorDialog() {
 
     // Check if there's already an image
     if (selectedNote.attachments && selectedNote.attachments.length > 0) {
-      toast.error("Only one image is allowed");
+      toast.info("Only one image is allowed");
       return;
     }
 

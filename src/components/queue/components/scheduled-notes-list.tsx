@@ -1,4 +1,4 @@
-import React, { useState, RefObject } from "react";
+import React, { useState, RefObject, useMemo } from "react";
 import { format, isBefore, isToday } from "date-fns";
 import { NoteDraft } from "@/types/note";
 import { UserSchedule } from "@/types/schedule";
@@ -19,12 +19,15 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { CustomDragOverlay } from "./custom-drag-overlay";
 import { useDragOverlay } from "../hooks/useDragOverlay";
 import { Logger } from "@/logger";
+import { Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ScheduledNotesListProps {
   days: Date[];
   groupedNotes: Record<string, NoteDraft[]>;
   groupedSchedules: Record<string, UserSchedule[]>;
   onSelectNote: (note: NoteDraft) => void;
+  onEditQueue: () => void;
   lastNoteRef?: RefObject<HTMLDivElement>;
   lastNoteId?: string;
 }
@@ -36,6 +39,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   onSelectNote,
   lastNoteRef,
   lastNoteId,
+  onEditQueue,
 }) => {
   const { updateNoteStatus, createDraftNote, rescheduleNote } = useNotes();
 
@@ -75,10 +79,10 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   const filteredGroupedSchedules = React.useMemo(() => {
     const now = new Date();
     const filtered = { ...groupedSchedules };
-    
+
     // Get today's date key
     const todayKey = format(now, "yyyy-MM-dd");
-    
+
     if (filtered[todayKey]) {
       // Filter schedules for today
       filtered[todayKey] = filtered[todayKey].filter(schedule => {
@@ -86,24 +90,26 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         let scheduleHour = schedule.hour;
         if (schedule.ampm === "pm" && scheduleHour < 12) scheduleHour += 12;
         if (schedule.ampm === "am" && scheduleHour === 12) scheduleHour = 0;
-        
+
         const scheduleDate = new Date(now);
         scheduleDate.setHours(scheduleHour, schedule.minute, 0, 0);
-        
+
         // Check if this time has a scheduled note
         const notesForToday = groupedNotes[todayKey] || [];
         const hasNoteAtThisTime = notesForToday.some(note => {
           if (!note.scheduledTo) return false;
           const noteDate = new Date(note.scheduledTo);
-          return noteDate.getHours() === scheduleHour && 
-                 noteDate.getMinutes() === schedule.minute;
+          return (
+            noteDate.getHours() === scheduleHour &&
+            noteDate.getMinutes() === schedule.minute
+          );
         });
-        
+
         // Keep the schedule if it's in the future or has a note scheduled
         return !isBefore(scheduleDate, now) || hasNoteAtThisTime;
       });
     }
-    
+
     return filtered;
   }, [groupedSchedules, groupedNotes]);
 
@@ -241,6 +247,30 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     return isBefore(scheduleDate, new Date());
   };
 
+  const hasAnyNotesScheduled = useMemo(() => {
+    return Object.values(groupedNotes).some(notes =>
+      notes.some(note => note.scheduledTo),
+    );
+  }, [groupedNotes]);
+
+  if (!hasAnyNotesScheduled ) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center gap-6">
+        <div className="text-2xl font-semibold text-foreground">
+          No schedule yet
+        </div>
+        <div className="text-muted-foreground max-w-md mx-auto text-base">
+          Set up your posting schedule to start planning your notes. You can
+          always edit it later.
+        </div>
+        <Button variant="neumorphic-primary" onClick={onEditQueue}>
+          <Pencil className="w-4 h-4 mr-2" />
+          Edit queue
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <DndContext
       onDragStart={handleDragStart}
@@ -249,16 +279,11 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       sensors={sensors}
       collisionDetection={closestCenter}
     >
-      <div className="space-y-6">
+      <div className="space-y-8">
         {days.map(day => {
           const dateKey = format(day, "yyyy-MM-dd");
           const notesForDay = groupedNotes[dateKey] || [];
           const schedulesForDay = filteredGroupedSchedules[dateKey] || [];
-          
-          // Skip rendering empty days with no notes and no schedules
-          if (notesForDay.length === 0 && schedulesForDay.length === 0) {
-            return null;
-          }
 
           return (
             <DaySchedule

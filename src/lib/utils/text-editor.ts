@@ -387,36 +387,6 @@ const SkeletonPlugin = Extension.create({
   },
 });
 
-// export const HardBreakButNotInList = HardBreak.extend({
-//   // Let the extension know we want to keep marks on a hard break
-//   addOptions() {
-//     return {
-//       ...this.parent?.(),
-//       keepMarks: true,
-//     };
-//   },
-
-//   addKeyboardShortcuts() {
-//     return {
-//       "Shift-Enter": () => {
-//         // If we're in a bullet list or ordered list, block the break
-//         if (
-//           this.editor.isActive("bulletList") ||
-//           this.editor.isActive("orderedList")
-//         ) {
-//           return true; // "true" = do nothing
-//         }
-//         // Otherwise, call setHardBreak with no arguments
-//         return this.editor.commands.setHardBreak();
-//       },
-//     };
-//   },
-// });
-
-// Allow bold/italic/underline/strikethrough/code/list (numbers/dots)/blockquote
-// <p> has margin top-bottom of 6px.
-// images
-// Nothing else.
 export const CustomTextRules = Extension.create({
   name: "customTextRules",
 
@@ -448,7 +418,7 @@ export const CustomTextRules = Extension.create({
         }
       },
     });
-    
+
     return [arrowRule, emDashRule, replaceBrRule];
   },
 });
@@ -510,6 +480,24 @@ export const notesTextEditorOptions = (
             : "opacity-50 cursor-not-allowed"
           : "",
       ),
+    },
+    handlePaste(view, event) {
+      const items = event.clipboardData?.items;
+      if (!items) return false;
+
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith("image")) {
+          const file = item.getAsFile();
+          if (file) {
+            window.dispatchEvent(
+              new CustomEvent("editor-image-paste", { detail: file }),
+            );
+            return true; // prevent default behavior
+          }
+        }
+      }
+
+      return false;
     },
   },
 });

@@ -1,4 +1,5 @@
 import { getBylines } from "@/lib/publication";
+import loggerServer from "@/loggerServer";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -10,6 +11,7 @@ export async function GET(request: NextRequest) {
     const bylines = await getBylines(url, { createIfNotExists: true });
     return NextResponse.json(bylines);
   } catch (error) {
+    loggerServer.error("Failed to fetch bylines", { error, userId: "no-user" });
     return NextResponse.json(
       { error: "Failed to fetch bylines" },
       { status: 500 },
