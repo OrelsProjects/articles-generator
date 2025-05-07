@@ -253,7 +253,9 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
     );
   }, [groupedNotes]);
 
-  if (!hasAnyNotesScheduled ) {
+  const hasQueue = Object.keys(filteredGroupedSchedules).length > 0;
+
+  if (!hasAnyNotesScheduled && !hasQueue) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center gap-6">
         <div className="text-2xl font-semibold text-foreground">

@@ -18,7 +18,7 @@ export function ImageModal() {
   if (!selectedImage) {
     return null;
   }
-
+  console.log("selectedImage", selectedImage);
   return (
     <Dialog open={!!selectedImage} onOpenChange={handleOpenChange}>
       <DialogContent className="p-0 overflow-hidden bg-transparent border-none">

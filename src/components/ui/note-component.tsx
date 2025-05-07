@@ -473,7 +473,7 @@ export default function NoteComponent({
                   className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200 px-10"
                   onClick={() =>
                     selectImage({
-                      url: attachment,
+                      url: "url" in attachment ? attachment.url : attachment,
                       alt: "Note attachment",
                     })
                   }
@@ -490,7 +490,7 @@ export default function NoteComponent({
                     className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200 px-10"
                     onClick={() =>
                       selectImage({
-                        url: attachment,
+                        url: "url" in attachment ? attachment.url : attachment,
                         alt: "Note attachment",
                       })
                     }

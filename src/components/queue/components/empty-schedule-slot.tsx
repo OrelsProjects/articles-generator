@@ -55,7 +55,7 @@ export const EmptyScheduleSlot: React.FC<EmptyScheduleSlotProps> = ({
         <div className="text-sm text-muted-foreground min-w-[72px]">{time}</div>
       )}
       <div className="text-sm text-muted-foreground/70 ml-4 flex-grow text-center">
-        {!loading ? (
+        {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           message
