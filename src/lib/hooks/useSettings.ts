@@ -35,6 +35,12 @@ export const useSettings = () => {
 
   const init = async () => {
     try {
+      axios
+        .post("/api/user/analyze/notes", { userTriggered: false })
+        .catch(error => {
+          Logger.error(error);
+        });
+
       const response = await axios.get<{
         usages: AllUsages;
         subscriptionInfo: SubscriptionInfo;
