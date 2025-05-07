@@ -287,6 +287,18 @@ const testimonials = [
     title: "Author of Scramble IT",
   },
   {
+    quote: `WriteStack transformed my experience on Notes with its scheduling tools.
+<br/><br/>
+It's easy to use, and Orel is exceptionally fast at responding to issues.
+<br/><br/>
+Since using WriteStack, I've seen consistent growth in engagement, and have actually enjoyed the process of planning my content calendar.
+<br/><br/>
+<strong>Recommended for any serious Notes creator!</strong>`,
+    author: "Rasmus Edwards",
+    image: "/testimonials/rasmus-edwards.webp",
+    title: "Author of the Solo Dev Saturday",
+  },
+  {
     quote: `I love ${appName}.
     <br/><br/>
     I've been using it to get inspiration for my Substack Notes and it saves me so much time coming up with new ideas.
