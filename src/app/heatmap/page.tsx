@@ -352,7 +352,7 @@ export default function AnalyzeSubstack() {
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 asChild
               >
-                <Link href="/login">
+                <Link href="/">
                   Start growing now{" "}
                   <ArrowRight className="ml-2" size={16} strokeWidth={1.5} />
                 </Link>
