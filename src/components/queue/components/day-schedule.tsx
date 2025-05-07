@@ -19,7 +19,7 @@ interface DayScheduleProps {
   notes: NoteDraft[];
   schedules: UserSchedule[];
   onSelectNote: (note: NoteDraft) => void;
-  onEmptySlotClick: (date: Date) => void;
+  onEmptySlotClick: (date: Date) => Promise<unknown>;
   onRescheduleNote?: (noteId: string, newTime: Date) => void;
   onUnscheduleNote?: (note: NoteDraft) => Promise<unknown>;
   lastNoteRef?: RefObject<HTMLDivElement>;
@@ -57,10 +57,17 @@ export const DaySchedule = ({
   const currentMinutes = startOfDay(now).getHours() * 60;
   const isToday = isSameDay(day, startOfToday());
   const isTomorrow = isSameDay(day, addDays(startOfToday(), 1));
+  const [loadingEmptySlot, setLoadingEmptySlot] = useState<string | null>(null);
   const [dragOrigin, setDragOrigin] = useState<string | null>(null);
 
   // Configure sensors with no delay since we're using a drag handle
   const sensors = useSensors(useSensor(PointerSensor));
+
+  const handleOnEmptySlotClick = async (date: Date, id: string) => {
+    setLoadingEmptySlot(id);
+    await onEmptySlotClick(date);
+    setLoadingEmptySlot(null);
+  };
 
   // Function to get a time string from a schedule
   const getScheduleTimeString = (schedule: UserSchedule) => {
@@ -286,7 +293,8 @@ export const DaySchedule = ({
               id={item.id}
               time={item.time}
               date={day}
-              onClick={onEmptySlotClick}
+              onClick={date => handleOnEmptySlotClick(date, item.id)}
+              loading={loadingEmptySlot === item.id}
             />
           </div>
         )}

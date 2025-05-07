@@ -48,15 +48,17 @@ export const EmptyScheduleSlot: React.FC<EmptyScheduleSlotProps> = ({
       ref={setNodeRef}
       className={`flex items-center p-3 mb-2 rounded-md border border-dashed border-border transition-colors cursor-pointer ${
         isOver ? "bg-secondary/40" : "bg-card/40"
-      }`}
-      onClick={handleClick}
+      } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+      onClick={loading ? undefined : handleClick}
     >
       {time && (
         <div className="text-sm text-muted-foreground min-w-[72px]">{time}</div>
       )}
       <div className="text-sm text-muted-foreground/70 ml-4 flex-grow text-center">
         {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <div className="flex items-center justify-center">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
         ) : (
           message
         )}
