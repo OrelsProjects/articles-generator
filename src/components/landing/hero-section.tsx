@@ -69,12 +69,14 @@ export const HeroSection = () => {
                   {/* <span className="text-primary bg-primary/20 rounded-md p-1 py-0"> */}
                   Into Income <span className="text-primary">5x Faster</span>
                   {/* </span> */}
-                  <br /> (With 10x more confidence)
                 </h1>
                 <h3 className="text-center text-lg mt-2">
+                  (With 10x more confidence)
+                </h3>
+                {/* <h3 className="text-center text-lg mt-2">
                   Stop guessing what will go viral. Start writing, growing, and
                   earning like a Substack Best Seller.
-                </h3>
+                </h3> */}
               </div>
 
               {/* Feature list */}
@@ -108,7 +110,6 @@ export const HeroSection = () => {
                     <Link href="/login">Start growing now</Link>
                   </Button>
                 </div>
-           
               </div>
               <div className="w-screen h-fit px-4 flex justify-center items-center">
                 <div className="relative w-screen h-[220px] lg:max-w-6xl lg:h-[600px] bg-gradient-to-b from-primary via-primary/80 to-primary/60 rounded-[32px] flex items-center justify-center overflow-clip lg:overflow-visible">
