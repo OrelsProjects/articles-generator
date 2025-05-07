@@ -168,7 +168,7 @@ export default function AnalyzeSubstack() {
       const res = await axios.get(`/api/user/analyze/validate?q=${url}`);
       return res.data;
     } catch (error) {
-      console.error("Error validating publication:", error);
+      console.error("Error validating publication: " + url, error);
       return { valid: false, hasPublication: false };
     }
   };

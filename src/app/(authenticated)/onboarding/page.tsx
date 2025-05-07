@@ -49,7 +49,7 @@ export default function OnboardingPage() {
       await axios.post("/api/user/publications/validate-analysis");
       handleNavigateNext();
     } catch (error) {
-      Logger.error("Error validating publication analysis", { error });
+      Logger.error("Error validating publication analysis" , { error });
       toast.info("It seems like you haven't analyzed your publication yet.");
     } finally {
       setLoadingAnalyzed(false);

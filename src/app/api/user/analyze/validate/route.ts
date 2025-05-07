@@ -5,11 +5,14 @@ import { getPublicationUpdatedUrl } from "@/lib/publication";
 import { getArticleEndpoint } from "@/lib/utils/publication";
 import { getUrlComponents } from "@/lib/utils/url";
 import { Logger } from "@/logger";
+import loggerServer from "@/loggerServer";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const url = request.nextUrl.searchParams.get("q");
+
+    loggerServer.info("Validating publication: " + url);
 
     if (!url) {
       Logger.error("URL is required");
