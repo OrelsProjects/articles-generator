@@ -43,6 +43,8 @@ import {
 } from "@/components/ui/dialog";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { FcGoogle } from "react-icons/fc";
+import useAuth from "@/lib/hooks/useAuth";
 
 const ERRORS = {
   INVALID_URL: {
@@ -80,6 +82,8 @@ export default function AnalyzeSubstack() {
   const pathname = usePathname();
   const router = useCustomRouter();
   const searchParams = useSearchParams();
+
+  const { signInWithGoogle } = useAuth();
 
   const [substackUrl, setSubstackUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -243,11 +247,11 @@ export default function AnalyzeSubstack() {
     }
   };
 
-  const handleLoginRedirect = () => {
+  const getLoginRedirect = () => {
     if (selectedByline) {
-      window.location.href = `/login?redirect=heat-map&author=${selectedByline.authorId}`;
+      return `/login?redirect=heat-map&author=${selectedByline.authorId}`;
     } else {
-      window.location.href = `/login?redirect=heat-map`;
+      return `/login?redirect=heat-map`;
     }
   };
 
@@ -295,6 +299,10 @@ export default function AnalyzeSubstack() {
       setStreakData([]);
       setHasAnalyzed(false);
     }
+  };
+
+  const handleSignIn = () => {
+    signInWithGoogle(getLoginRedirect());
   };
 
   const ActivityHeader = () => (
@@ -578,44 +586,30 @@ export default function AnalyzeSubstack() {
         onSelect={handleBylineSelect}
       />
 
-      {/* Login Dialog */}
       <Dialog open={showLoginDialog} onOpenChange={handleCloseLoginDialog}>
         <DialogContent className="sm:max-w-md" backgroundBlur={false}>
           <DialogHeader>
             <DialogTitle>Login to see your results</DialogTitle>
             <DialogDescription>
-              To view your complete Substack activity analysis and unlock all
-              features, you need to create an account or login.
+              To avoid abuse of tool and keep it a unique experience, I&apos;ll
+              need you to quickly sign up (Less than 10 seconds).
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center space-x-2 py-4">
+          <div className="flex items-center space-x-2 pb-6">
             <div className="grid flex-1 gap-2">
               <p className="text-sm text-muted-foreground">
-                With a free account, you can:
+                With a free account, you&apos;ll be able to use all current and
+                future free tools.
               </p>
-              <ul className="list-disc pl-5 text-sm">
-                <li>Track your activity over time</li>
-                <li>Get personalized insights</li>
-                <li>Analyze multiple Substack publications</li>
-                <li>Share your activity heatmap</li>
-              </ul>
             </div>
           </div>
           <DialogFooter className="sm:justify-between">
             <Button
-              type="button"
-              variant="ghost"
-              onClick={handleDismissDialog}
-              className="gap-1"
+              variant="outline"
+              onClick={handleSignIn}
+              className="w-full py-6 text-lg font-semibold transition-all hover:bg-primary hover:text-primary-foreground"
             >
-              <X className="h-4 w-4" /> Dismiss
-            </Button>
-            <Button
-              type="button"
-              onClick={handleLoginRedirect}
-              className="gap-1"
-            >
-              Continue to login <ArrowRight className="h-4 w-4" />
+              <FcGoogle className="mr-2 h-6 w-6" /> Sign in with Google
             </Button>
           </DialogFooter>
         </DialogContent>

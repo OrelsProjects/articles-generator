@@ -16,9 +16,12 @@ const useAuth = () => {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = useCallback(async (redirectPath?: string) => {
     try {
-      const redirect = new URL(`${window.location.origin}/onboarding`);
+      const redirectDefault = "/onboarding";
+      let redirect = new URL(
+        `${window.location.origin}${redirectPath || redirectDefault}`,
+      );
 
       // preserve query params
       searchParams.forEach((val, key) => {
