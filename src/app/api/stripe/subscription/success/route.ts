@@ -73,7 +73,9 @@ export async function GET(req: NextRequest) {
     const plan = product.metadata?.plan;
 
     try {
-      const welcomeEmail = generateWelcomeTemplateTrial();
+      const welcomeEmail = generateWelcomeTemplateTrial(
+        userSession.user.name || "",
+      );
       // send welcome email as well
       await sendMail({
         to: session.customer_email || "",

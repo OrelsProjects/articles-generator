@@ -98,7 +98,7 @@ export function baseEmailTemplate(content: string) {
   `;
 }
 
-export const generateWelcomeTemplateTrial = (name?: string): EmailTemplate => ({
+export const generateWelcomeTemplateTrial = (name: string): EmailTemplate => ({
   body: baseEmailTemplate(`<!DOCTYPE html>
 <html>
 <head>
