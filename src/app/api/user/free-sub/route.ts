@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     const stripe = getStripeInstance();
 
     // Get the premium product ID
-    const productId = process.env.STRIPE_PRICING_ID_HOBBYIST;
+    const productId = process.env.STRIPE_PRICING_ID_PREMIUM;
     if (!productId) {
       loggerServer.error("Premium product ID not found", {
         userId: session?.user.id,
