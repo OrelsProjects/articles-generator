@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 
 export const isIdeaBelongToUser = async (data: {
   ideaId: string;

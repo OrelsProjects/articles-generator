@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 
 export async function getUserLatestPayment(userId: string) {
   const payment = await prisma.payment.findFirst({

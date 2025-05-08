@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import cuid from "cuid";
 import loggerServer from "@/loggerServer";
@@ -6,7 +6,7 @@ import { authOptions } from "@/auth/authOptions";
 import { getServerSession } from "next-auth";
 
 const ONE_DAY = 1000 * 60 * 60 * 24; // 1 day
-const EXPIRATION_TIME = ONE_DAY * 5; // 5 days
+const EXPIRATION_TIME = ONE_DAY * 30; // 30 days
 
 const getNewExpiresAt = () => new Date(Date.now() + EXPIRATION_TIME);
 

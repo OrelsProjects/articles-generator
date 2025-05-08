@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import loggerServer from "@/loggerServer";
 import { getStripeInstance } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";

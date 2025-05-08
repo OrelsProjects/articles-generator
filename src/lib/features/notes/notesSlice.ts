@@ -14,6 +14,7 @@ export interface NotesState {
   loadingNotesGenerate: boolean;
   loadingInspiration: boolean;
   loadingFetchingByline: boolean;
+  loadingFetchingSchedules: boolean;
   error: string | null;
   errorGenerateNotes: string | null;
   hasMoreUserNotes: boolean;
@@ -39,6 +40,7 @@ export const initialState: NotesState = {
   loadingNotesGenerate: false,
   loadingInspiration: false,
   loadingFetchingByline: false,
+  loadingFetchingSchedules: false,
   error: null,
   errorGenerateNotes: null,
   hasMoreUserNotes: true,
@@ -269,6 +271,9 @@ const notesSlice = createSlice({
     ) => {
       state.schedulesDiscrepancies = action.payload;
     },
+    setLoadingFetchingSchedules: (state, action: PayloadAction<boolean>) => {
+      state.loadingFetchingSchedules = action.payload;
+    },
   },
 });
 
@@ -300,6 +305,7 @@ export const {
   removeUserSchedule,
   updateUserSchedule,
   setSchedulesDiscrepancies,
+  setLoadingFetchingSchedules,
 } = notesSlice.actions;
 
 export const selectNotes = (state: RootState) => state.notes;

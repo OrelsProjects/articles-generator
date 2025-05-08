@@ -1,6 +1,6 @@
 import { parseJson } from "@/lib/utils/json";
 
-import { prisma, prismaArticles } from "@/app/api/_db/db";
+import { prisma, prismaArticles } from "@/lib/prisma";
 import { generateNotesDescriptionPrompt } from "@/lib/prompts";
 import { runPrompt } from "@/lib/open-router";
 import { getAuthorId } from "@/lib/dal/publication";
@@ -23,7 +23,7 @@ export async function setUserNotesDescription(
   if (!validAuthorId) {
     return { error: "Author ID not found", status: 404 };
   }
-  
+
   const userNotes = await prismaArticles.notesComments.findMany({
     where: {
       authorId: validAuthorId,

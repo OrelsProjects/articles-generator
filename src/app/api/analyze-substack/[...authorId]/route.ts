@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Streak } from "@/types/notes-stats";
 import { fetchAllNoteComments } from "@/app/api/analyze-substack/utils";
 import { calculateStreak } from "@/lib/dal/notes-stats";
-import { prismaArticles, prisma } from "@/app/api/_db/db";
+import { prismaArticles, prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import { getServerSession } from "next-auth";
 

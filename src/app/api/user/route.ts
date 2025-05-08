@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/auth/authOptions";
 import AppUser from "@/types/appUser";
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import loggerServer from "@/loggerServer";
 import { checkAndResetCredits } from "@/lib/services/creditService";
 import { deleteScheduleForNote } from "@/lib/dal/note-schedule";

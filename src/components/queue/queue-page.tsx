@@ -14,7 +14,6 @@ import { NoteDraft } from "@/types/note";
 import { UserSchedule } from "@/types/schedule";
 import NoteComponent from "@/components/ui/note-component";
 import { ScheduledNotesList } from "./components";
-import { TooltipButton } from "@/components/ui/tooltip-button";
 import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
@@ -22,7 +21,11 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { CreateNoteButton } from "@/components/notes/create-note-button";
 
-export function QueuePage() {
+export interface QueuePageProps {
+  onFetchingForUpdate: (isFetching: boolean) => void;
+}
+
+export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
   const searchParams = useSearchParams();
   const [activeTabCache, setActiveTabCache] = useLocalStorage(
     "queue_active_tab",
@@ -35,8 +38,9 @@ export function QueuePage() {
     counters,
     nextPage,
     resetPage,
+    fetchQueue,
   } = useQueue();
-  const { selectNote } = useNotes();
+  const { selectNote, fetchNotes } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [activeDays, setActiveDays] = useState<Date[]>([]);
@@ -50,6 +54,10 @@ export function QueuePage() {
 
   const generateParam = searchParams.get("generate");
   const postsParam = searchParams.get("posts");
+
+  useEffect(() => {
+    fetchQueue();
+  }, []);
 
   // Generate an array of dates based on scheduled notes and minimum 28 days
   useEffect(() => {
@@ -117,6 +125,13 @@ export function QueuePage() {
   }, []);
 
   const handleUpdateActiveTab = (tab: string) => {
+    // if queue, fetch notes
+    if (tab === "scheduled") {
+      onFetchingForUpdate(true);
+      fetchNotes().finally(() => {
+        onFetchingForUpdate(false);
+      });
+    }
     setActiveTab(tab);
     setActiveTabCache(tab);
     resetPage();

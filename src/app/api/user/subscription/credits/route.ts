@@ -2,7 +2,7 @@ import { authOptions } from "@/auth/authOptions";
 import { getServerSession } from "next-auth";
 import { pricePerTokens } from "@/lib/plans-consts";
 import { z } from "zod";
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getStripeInstance } from "@/lib/stripe";
 import { getActiveSubscription } from "@/lib/dal/subscription";

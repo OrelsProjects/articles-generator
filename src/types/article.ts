@@ -19,6 +19,15 @@ export interface Byline {
   bio: string;
 }
 
+export interface BylineWithExtras extends Byline {
+  isFollowing: boolean;
+  isSubscribed: boolean;
+  bestsellerTier: number;
+  subscriberCount: number;
+  subscriberCountString: string;
+  score: number;
+}
+
 export interface DescriptionObject {
   about: string;
   aboutGeneral: string;

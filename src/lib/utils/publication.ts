@@ -1,7 +1,7 @@
 // main.ts
 /* eslint-disable no-console */
 import * as cheerio from "cheerio";
-import { prismaArticles } from "@/app/api/_db/db";
+import { prismaArticles } from "@/lib/prisma";
 import {
   Post,
   Publication,
@@ -14,7 +14,7 @@ import {
   getUserArticlesBody,
 } from "@/lib/dal/articles";
 import { toValidUrl } from "@/lib/utils/url";
-import { getBylines } from "@/lib/publication";
+import { getBylinesByUrl } from "@/lib/publication";
 
 export const getArticleEndpoint = (
   url: string,
@@ -543,7 +543,7 @@ export async function scrapeLinks(): Promise<void> {
  * 2. Otherwise, get up to 500 `publication_links` with null status,
  *    set started_at, call populatePublications for each, then update DB.
  */
-export async function setPublications(
+export async function scrapePosts(
   url: string,
   maxArticlesToGetBody = 60,
   byline?: number,

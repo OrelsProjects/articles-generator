@@ -1,9 +1,18 @@
-import { prisma, prismaArticles } from "@/app/api/_db/db";
+import { prisma, prismaArticles } from "@/lib/prisma";
 import { getUrlComponents } from "@/lib/utils/url";
+import { Byline } from "../../../prisma/generated/articles";
 
 export async function getByline(authorId: number) {
   return await prismaArticles.byline.findUnique({
     where: { id: authorId },
+  });
+}
+
+export async function getBylines (authorIds: number[]) {
+  return await prismaArticles.byline.findMany({
+    where: {
+      id: { in: authorIds },
+    },
   });
 }
 
@@ -43,5 +52,27 @@ export async function searchByline(query: string, page: number, limit: number) {
     // },
     take: limit,
     skip: (page - 1) * limit,
+  });
+}
+
+export async function upsertByline(byline: Byline) {
+  return await prismaArticles.byline.upsert({
+    where: { id: byline.id },
+    update: byline,
+    create: byline,
+  });
+}
+
+export async function getBylineData (authorId: number) {
+  return await prismaArticles.bylineData.findUnique({
+    where: { id: authorId },
+  });
+}
+
+export async function getBylinesData(authorIds: number[]) {
+  return await prismaArticles.bylineData.findMany({
+    where: {
+      id: { in: authorIds },
+    },
   });
 }

@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { differenceInMonths, addMonths } from "date-fns";
 
 /**

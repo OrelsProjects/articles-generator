@@ -1,4 +1,4 @@
-import { prismaArticles } from "@/app/api/_db/db";
+import { prismaArticles } from "@/lib/prisma";
 import { fetchWithHeaders } from "@/lib/utils/requests";
 import { NotesComments } from "../../../../prisma/generated/articles";
 import cuid from "cuid";

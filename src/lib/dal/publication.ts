@@ -1,8 +1,8 @@
-import { prisma, prismaArticles } from "@/app/api/_db/db";
+import { prisma, prismaArticles } from "@/lib/prisma";
 import { Publication } from "../../../prisma/generated/articles";
 import { getUrlComponents, stripUrl } from "@/lib/utils/url";
 import { extractContent } from "@/app/api/user/analyze/_utils";
-import { getArticleEndpoint } from "@/lib/utils/publication";
+import { getArticleEndpoint, scrapePosts } from "@/lib/utils/publication";
 
 interface BylineResponse {
   publicationUsers: {
@@ -329,3 +329,33 @@ export async function getPublicationByIds(publicationIds: string[]) {
   });
   return publications;
 }
+
+export const getPublicationPosts = async (url: string) => {
+  const { validUrl } = getUrlComponents(url, { withoutWWW: true });
+  const endpoint = `${validUrl}/api/v1/homepage_data`;
+  const response = await fetch(endpoint);
+  const data = (await response.json()) as PublicationDataResponse;
+  let publicationId = "";
+  for (const post of data.newPosts) {
+    if (publicationId) {
+      break;
+    }
+    publicationId = post.publication_id.toString();
+  }
+  let posts = await prismaArticles.post.findMany({
+    where: {
+      publicationId,
+    },
+  });
+
+  if (!posts) {
+    await scrapePosts(url, 0);
+    posts = await prismaArticles.post.findMany({
+      where: {
+        publicationId,
+      },
+    });
+  }
+
+  return posts;
+};

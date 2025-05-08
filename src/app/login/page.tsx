@@ -15,8 +15,6 @@ import Link from "next/link";
 
 const Auth = () => {
   const { signInWithGoogle } = useAuth();
-  const { status } = useSession();
-  const { publications } = useAppSelector(selectPublications);
   const router = useCustomRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
@@ -26,17 +24,6 @@ const Auth = () => {
       localStorage.setItem("code", code);
     }
   }, [code, router]);
-
-  // useEffect(() => {
-  //   const hasPublication = publications.length > 0;
-  //   if (status === "authenticated") {
-  //     if (hasPublication) {
-  //       router.push("/home", { preserveQuery: true });
-  //     } else {
-  //       router.push("/onboarding", { preserveQuery: true });
-  //     }
-  //   }
-  // }, [status, router, publications]);
 
   const handleGoogleSignIn = () => {
     signInWithGoogle();

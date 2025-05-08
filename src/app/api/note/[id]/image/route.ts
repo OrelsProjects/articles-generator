@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import { uploadImage } from "@/lib/files-note";
 import { uploadImageSubstack } from "@/lib/substack";

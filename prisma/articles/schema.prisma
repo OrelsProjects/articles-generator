@@ -172,7 +172,6 @@ model NotesComments {
     byline Byline? @relation(fields: [authorId], references: [id])
 
     @@unique([commentId, authorId])
-
     @@map("notes_comments")
 }
 
@@ -207,4 +206,21 @@ model PublicationLink {
     status      String?   @map("status")
 
     @@map("publication_links")
+}
+
+model BylineData {
+    id                         BigInt  @id
+    bestsellerTier             Int?    @map("bestseller_tier")
+    photoUrl                   String? @map("photo_url")
+    profileSetUpAt             String? @map("profile_set_up_at")
+    roughNumFreeSubscribers    Int?    @map("rough_num_free_subscribers")
+    roughNumFreeSubscribersInt Int?    @map("rough_num_free_subscribers_int")
+    slug                       String  @unique
+    subscriberCount            Int?    @map("subscriber_count")
+    subscriberCountNumber      Int?    @map("subscriber_count_number")
+    subscriberCountString      String? @map("subscriber_count_string")
+
+    updatedAt DateTime? @default(now()) @map("updated_at") @updatedAt
+
+    @@map("byline_data")
 }

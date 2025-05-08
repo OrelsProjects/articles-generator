@@ -2,7 +2,7 @@ import { authOptions } from "@/auth/authOptions";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { getByline } from "@/lib/dal/byline";
 
 export async function GET(request: NextRequest) {

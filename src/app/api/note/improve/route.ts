@@ -1,4 +1,4 @@
-import {prisma, prismaArticles } from "@/app/api/_db/db";
+import {prisma, prismaArticles } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import { getUserNotes } from "@/lib/dal/note";
 import { runPrompt } from "@/lib/open-router";

@@ -1,5 +1,5 @@
 import loggerServer from "@/loggerServer";
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { NoteDraft } from "@/types/note";

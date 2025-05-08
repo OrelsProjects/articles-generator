@@ -1,4 +1,4 @@
-import {prisma, prismaArticles } from "@/app/api/_db/db";
+import { prisma, prismaArticles } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
 import { searchInMeili } from "@/lib/dal/meilisearch";
@@ -237,15 +237,37 @@ export async function POST(req: NextRequest) {
     const hasMore = filteredNotes.length > 0;
     const paginatedNotes = filteredNotes.slice(0, limit);
 
+    const pagintedNotesAuthorIds = paginatedNotes.map(note => note.authorId);
+
+    // Make sure those authors are not explicit publications
+    const explicitAuthors = await prismaArticles.publication.findMany({
+      where: {
+        authorId: {
+          in: pagintedNotesAuthorIds,
+        },
+        explicit: true,
+      },
+      select: {
+        authorId: true,
+      },
+    });
+
+    const paginatedNonExplicitNotes = paginatedNotes.filter(
+      note =>
+        !explicitAuthors.some(
+          author => author.authorId === BigInt(note.authorId || 0),
+        ),
+    );
+
     const attachments = await prismaArticles.notesAttachments.findMany({
       where: {
         noteId: {
-          in: paginatedNotes.map(note => parseInt(note.commentId)),
+          in: paginatedNonExplicitNotes.map(note => parseInt(note.commentId)),
         },
       },
     });
 
-    const filteredNotesWithAttachments = paginatedNotes.map(note => {
+    const filteredNotesWithAttachments = paginatedNonExplicitNotes.map(note => {
       const attachment = attachments.find(
         attachment => attachment.noteId === parseInt(note.commentId),
       );

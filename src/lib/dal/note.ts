@@ -1,4 +1,4 @@
-import {prisma, prismaArticles } from "@/app/api/_db/db";
+import {prisma, prismaArticles } from "@/lib/prisma";
 import { NoteDraft } from "@/types/note";
 import { Note, S3Attachment } from "@prisma/client";
 

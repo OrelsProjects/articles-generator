@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { featureFlagsPerPlan } from "@/lib/plans-consts";
 import loggerServer from "@/loggerServer";
 import { Plan } from "@prisma/client";

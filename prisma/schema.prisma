@@ -71,6 +71,7 @@ enum FeatureFlag {
   initQueue
   scheduleNotes
   canViewWriters
+  canUseRadar
 }
 
 enum CookieName {
@@ -325,6 +326,7 @@ model Note {
   generatingModel        String?
 
   sentViaScheduleAt DateTime?
+  substackNoteId    String?
 
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -595,7 +597,7 @@ model UserSchedule {
 }
 
 model SubstackPublishedNote {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
+  id String @id
 
   substackNoteId String @unique
   userId         String @db.ObjectId
@@ -605,4 +607,32 @@ model SubstackPublishedNote {
   updatedAt DateTime @updatedAt
 
   @@map("substackPublishedNotes")
+}
+
+model PublicationPotentialUsers {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  publicationIdInArticlesDb String @db.ObjectId
+
+  bylineIds String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("publicationRadarUsers")
+}
+
+// Readers the user has replaced messages with
+model SubstackReadersContacted {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @db.ObjectId
+  readerId String @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("substackReadersContacted")
 }

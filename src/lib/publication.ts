@@ -1,4 +1,4 @@
-import { prismaArticles, prisma } from "@/app/api/_db/db";
+import { prismaArticles, prisma } from "@/lib/prisma";
 import { PostSchema, PublishedBylineSchema } from "@/lib/schema/posts.schema";
 import { getUrlComponents } from "@/lib/utils/url";
 import { Byline } from "@/types/article";
@@ -32,7 +32,7 @@ export async function getPublicationUpdatedUrl(url: string) {
   return url;
 }
 
-export async function getBylines(
+export async function getBylinesByUrl(
   url: string,
   options: { createIfNotExists: boolean } = { createIfNotExists: false },
 ) {

@@ -6,23 +6,28 @@ import {
   removeUserSchedule,
   updateUserSchedule,
   updateNote,
+  setLoadingFetchingSchedules,
 } from "@/lib/features/notes/notesSlice";
 import { CreateUserSchedule, UserSchedule } from "@/types/schedule";
 import axios from "axios";
 import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
 import { HourlyStats } from "@/types/notes-stats";
-import { setBestTimeToPublish } from "@/lib/features/statistics/statisticsSlice";
-import { isAfter, startOfDay, subDays } from "date-fns";
+import {
+  setBestTimeToPublish,
+  setLoadingFetchBestTimeToPublish,
+} from "@/lib/features/statistics/statisticsSlice";
 import { Logger } from "@/logger";
 import { isValidScheduleTime } from "@/lib/utils/date/schedule";
 
 export function useQueue() {
   const dispatch = useAppDispatch();
-  const { userNotes, userSchedules } = useAppSelector(state => state.notes);
-  const { bestTimeToPublish } = useAppSelector(state => state.statistics);
+  const { userNotes, userSchedules, loadingFetchingSchedules } = useAppSelector(
+    state => state.notes,
+  );
+  const { bestTimeToPublish, loadingFetchBestTimeToPublish } = useAppSelector(
+    state => state.statistics,
+  );
   const [loading, setLoading] = useState(false);
-  const [loadingBestTimeToPublish, setLoadingBestTimeToPublish] =
-    useState(false);
 
   const [page, setPage] = useState(1);
   const [pageSize] = useState(30);
@@ -134,7 +139,10 @@ export function useQueue() {
   };
 
   const fetchSchedules = async () => {
-    setLoading(true);
+    if (loadingFetchingSchedules) {
+      return;
+    }
+    dispatch(setLoadingFetchingSchedules(true));
     try {
       const response = await axios.get<UserSchedule[]>("/api/user/queue");
       dispatch(setUserSchedule(response.data));
@@ -142,7 +150,7 @@ export function useQueue() {
       Logger.error(String(error));
       throw error;
     } finally {
-      setLoading(false);
+      dispatch(setLoadingFetchingSchedules(false));
     }
   };
 
@@ -289,14 +297,15 @@ export function useQueue() {
   };
 
   const fetchBestTimeToPublish = async () => {
-    if (loadingBestNotesRef.current) {
+    if (loadingBestNotesRef.current || loadingFetchBestTimeToPublish) {
       return;
     }
     if (bestTimeToPublish.length > 0) {
       return;
     }
+    debugger;
     loadingBestNotesRef.current = true;
-    setLoadingBestTimeToPublish(true);
+    dispatch(setLoadingFetchBestTimeToPublish(true));
     try {
       const response = await axios.get<HourlyStats[]>(
         "/api/user/notes/stats/post-time",
@@ -306,7 +315,7 @@ export function useQueue() {
       Logger.error(String(error));
       throw error;
     } finally {
-      setLoadingBestTimeToPublish(false);
+      dispatch(setLoadingFetchBestTimeToPublish(false));
       loadingBestNotesRef.current = false;
     }
   };
@@ -326,7 +335,7 @@ export function useQueue() {
     return userSchedules.length > 0;
   }, [userSchedules]);
 
-  useEffect(() => {
+  const fetchQueue = async () => {
     try {
       if (userSchedules.length === 0) {
         fetchSchedules();
@@ -345,9 +354,10 @@ export function useQueue() {
         error: String(error),
       });
     }
-  }, []);
+  };
 
   return {
+    fetchQueue,
     scheduledNotes,
     draftNotes,
     publishedNotes,
@@ -358,7 +368,7 @@ export function useQueue() {
     initQueue,
     loading,
     getNextAvailableSchedule,
-    loadingBestTimeToPublish,
+    loadingBestTimeToPublish: loadingFetchBestTimeToPublish,
     bestTimeToPublish,
     fetchBestTimeToPublish,
     nextPage,

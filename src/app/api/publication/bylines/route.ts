@@ -1,4 +1,4 @@
-import { getBylines } from "@/lib/publication";
+import { getBylinesByUrl } from "@/lib/publication";
 import loggerServer from "@/loggerServer";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "URL is required" }, { status: 400 });
   }
   try {
-    const bylines = await getBylines(url, { createIfNotExists: true });
+    const bylines = await getBylinesByUrl(url, { createIfNotExists: true });
     return NextResponse.json(bylines);
   } catch (error) {
     loggerServer.error("Failed to fetch bylines", { error, userId: "no-user" });

@@ -6,7 +6,7 @@ import { useQueue } from "@/lib/hooks/useQueue";
 import { Loader2 } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useNotes } from "@/lib/hooks/useNotes";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { NoteDraft } from "@/types/note";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
@@ -19,6 +19,7 @@ export default function NotesCalendarPage() {
   const { loading, error } = useNotesSchedule();
   const sendNoteId = searchParams.get("sendNoteId");
   const isSendingNote = useRef(false);
+  const [isFetchingForUpdate, setIsFetchingForUpdate] = useState(false);
 
   useEffect(() => {
     if (sendNoteId && !isSendingNote.current) {
@@ -61,7 +62,7 @@ export default function NotesCalendarPage() {
     }
   }, []);
 
-  if (loading) {
+  if (loading && !isFetchingForUpdate) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="animate-spin text-primary" size={20} />
@@ -79,7 +80,7 @@ export default function NotesCalendarPage() {
 
   return (
     <div className="w-screen md:container mx-auto overflow-clip">
-      <QueuePage />
+      <QueuePage onFetchingForUpdate={setIsFetchingForUpdate} />
     </div>
   );
 }

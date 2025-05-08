@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { generateSessionId } from "@/lib/stripe";
 import { z } from "zod";
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { getLookupKey } from "@/lib/utils/plans";
 
 const checkoutSchema = z.object({

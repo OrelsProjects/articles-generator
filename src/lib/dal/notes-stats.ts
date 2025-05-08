@@ -1,4 +1,4 @@
-import { prismaArticles } from "@/app/api/_db/db";
+import { prismaArticles } from "@/lib/prisma";
 import { getAuthorId } from "@/lib/dal/publication";
 import { HourlyStats, Streak } from "@/types/notes-stats";
 import { NotesComments } from "../../../prisma/generated/articles";

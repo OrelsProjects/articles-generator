@@ -1,4 +1,4 @@
-import { prisma, prismaArticles } from "@/app/api/_db/db";
+import { prisma, prismaArticles } from "@/lib/prisma";
 import { extractContent } from "@/app/api/user/analyze/_utils";
 import { authOptions } from "@/auth/authOptions";
 import {
@@ -20,7 +20,7 @@ import { Article, ArticleWithBody, DescriptionObject } from "@/types/article";
 import loggerServer from "@/loggerServer";
 import { parseJson } from "@/lib/utils/json";
 import { buildSubstackUrl } from "@/lib/utils/url";
-import { setPublications as scrapePosts } from "@/lib/utils/publication";
+import { scrapePosts as scrapePosts } from "@/lib/utils/publication";
 import { z } from "zod";
 import { fetchAuthor } from "@/lib/utils/lambda";
 import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   const userId = session.user.id;
   const text = await req.text();
   const body = JSON.parse(text || "{}");
@@ -61,6 +62,9 @@ export async function POST(req: NextRequest) {
   }
   let { url, byline } = parsed.data;
   let didConsumeCredits = false;
+
+  const now = new Date();
+
   try {
     const canUseAnalyze = await canUseAI(userId, AIUsageType.analyze);
     const userMetadata = await prisma.userMetadata.findUnique({
@@ -370,6 +374,16 @@ export async function POST(req: NextRequest) {
         template: email.body,
       });
     }
+
+    const timeTaken = new Date().getTime() - now.getTime();
+    const timeTakenMinutesFormatted = (timeTaken / 1000 / 60).toFixed(2);
+    loggerServer.info(
+      "Analysis complete in " + timeTakenMinutesFormatted + " minutes",
+      {
+        userId,
+        timeTaken,
+      },
+    );
 
     return NextResponse.json({
       publication,

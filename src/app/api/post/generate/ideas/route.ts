@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import { Model, runPrompt } from "@/lib/open-router";
 import {
@@ -23,9 +23,8 @@ import { AIUsageResponse } from "@/types/aiUsageResponse";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
-const modelUsedForIdeas: Model = "anthropic/claude-3.7-sonnet";
-// const modelUsedForIdeas: Model = "anthropic/claude-3.5-sonnet";
-const modelUsedForOutline: Model = "anthropic/claude-3.7-sonnet";
+const modelUsedForIdeas: Model = "openrouter/auto";
+const modelUsedForOutline: Model = "openrouter/auto";
 
 const MAX_IDEAS_COUNT = 3;
 

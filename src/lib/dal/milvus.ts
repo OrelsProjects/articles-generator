@@ -1,4 +1,4 @@
-import { prismaArticles } from "@/app/api/_db/db";
+import { prismaArticles } from "@/lib/prisma";
 import { getSubstackArticleData } from "@/lib/utils/article";
 import loggerServer from "@/loggerServer";
 import axios from "axios";

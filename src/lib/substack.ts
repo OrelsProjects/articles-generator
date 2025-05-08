@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { downloadImage } from "@/lib/files-note";
 import { UploadImageParams } from "@/types/files-notes.type";
 import { NoteDraftImage, SubstackImageResponse } from "@/types/note";

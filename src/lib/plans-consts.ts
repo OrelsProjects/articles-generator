@@ -42,14 +42,15 @@ export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
 // Cost in credits for each AI operation
 export const creditCosts: CreditsCost = {
   [AIUsageType.ideaGeneration]: 3,
-  [AIUsageType.textEnhancement]: 1,
-  [AIUsageType.titleOrSubtitleRefinement]: 1,
+  [AIUsageType.textEnhancement]: 0,
+  [AIUsageType.titleOrSubtitleRefinement]: 0,
   [AIUsageType.notesGeneration]: 3,
   [AIUsageType.analyze]: 10,
 };
 
+// userMetadata is an object with {isAdmin: boolean, featureFlags: FeatureFlag[]}
 export const canUseFeature = (
-  userMetadata: UserMetadata,
+  userMetadata: { isAdmin?: boolean | null; featureFlags: FeatureFlag[] },
   featureFlag: FeatureFlag,
 ) => {
   return (

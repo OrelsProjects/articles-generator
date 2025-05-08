@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { getCronExpressionFromDate } from "@/lib/utils/cron";
 import { ScheduledNote } from "@prisma/client";
 

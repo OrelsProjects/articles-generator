@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import loggerServer from "@/loggerServer";
 
 export async function POST(

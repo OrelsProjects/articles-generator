@@ -2,7 +2,7 @@ import {
   CookieName as CookieNameDB,
   CookieSameSite as CookieSameSiteDB,
 } from "@prisma/client";
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import {
   SubstackCookie,
   CookieSameSite,

@@ -1,4 +1,4 @@
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import { getNoteByScheduleId, updateNote } from "@/lib/dal/note";
 import { Logger } from "@/logger";

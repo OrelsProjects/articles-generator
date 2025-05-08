@@ -1,5 +1,5 @@
 import { authOptions } from "@/auth/authOptions";
-import { prisma } from "@/app/api/_db/db";
+import { prisma } from "@/lib/prisma";
 import { getActiveSubscription } from "@/lib/dal/subscription";
 import { getPlanPriceId, getStripeInstance } from "@/lib/stripe";
 import { getServerSession } from "next-auth";
