@@ -20,6 +20,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (!userMetadata) {
+      loggerServer.error("User metadata not found", {
+        userId: session.user.id,
+      });
       return NextResponse.json(
         { error: "User metadata not found" },
         { status: 404 },
@@ -29,18 +32,20 @@ export async function POST(request: NextRequest) {
     const { authorId, publicationUrl } = userMetadata.publication || {};
 
     const refreshUserMetadata = shouldRefreshUserMetadata(userMetadata);
+    const publicationId = userMetadata.publication?.idInArticlesDb?.toString();
     loggerServer.info("Refreshing user metadata", {
       userId: session.user.id,
       refreshUserMetadata,
       authorId,
       publicationUrl,
+      publicationId,
     });
 
     if (refreshUserMetadata && authorId && publicationUrl) {
       await fetchAuthor({
         authorId: authorId.toString(),
         publicationUrl,
-        publicationId: userMetadata.publication?.idInArticlesDb?.toString(),
+        publicationId,
       });
 
       await prisma.userMetadata.update({
