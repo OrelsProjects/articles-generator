@@ -597,7 +597,7 @@ model UserSchedule {
 }
 
 model SubstackPublishedNote {
-  id String @id
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
   substackNoteId String @unique
   userId         String @db.ObjectId

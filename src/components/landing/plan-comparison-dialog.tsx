@@ -23,6 +23,7 @@ const featureFlagLabels: Record<FeatureFlag, string> = {
   initQueue: "Note queue initialization",
   scheduleNotes: "Schedule notes",
   canViewWriters: "Access to Writers",
+  canUseRadar: "Access to Radar",
 };
 
 interface PlanComparisonDialogProps {

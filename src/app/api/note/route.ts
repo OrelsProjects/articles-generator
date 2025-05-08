@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       authorId: newNoteDraft?.authorId || authorId || 0,
       scheduledTo: newNoteDraft?.scheduledTo || null,
       sentViaScheduleAt: null,
+      substackNoteId: null,
     };
     const note = await createNote(createNoteBody);
 

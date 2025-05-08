@@ -73,5 +73,6 @@ export const shouldRefreshUserMetadata = (userMetadata: UserMetadata) => {
   }
   const diffTime = Math.abs(now.getTime() - lastUpdatedAt.getTime());
   const diffHours = diffTime / (1000 * 60 * 60);
+  // 24 hours passed?
   return diffHours > 24;
 };

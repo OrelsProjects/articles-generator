@@ -28,7 +28,15 @@ export async function POST(request: NextRequest) {
 
     const { authorId, publicationUrl } = userMetadata.publication || {};
 
-    if (shouldRefreshUserMetadata(userMetadata) && authorId && publicationUrl) {
+    const refreshUserMetadata = shouldRefreshUserMetadata(userMetadata);
+    loggerServer.info("Refreshing user metadata", {
+      userId: session.user.id,
+      refreshUserMetadata,
+      authorId,
+      publicationUrl,
+    });
+
+    if (refreshUserMetadata && authorId && publicationUrl) {
       await fetchAuthor({
         authorId: authorId.toString(),
         publicationUrl,
