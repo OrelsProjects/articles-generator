@@ -98,7 +98,7 @@ const WelcomeDialog = ({
           <span className="text-foreground font-medium">P.S.</span>
           <br />
           Some of the data is not saved in the database, so analyzing can take
-          up to a minute.
+          up to 2 minutes.
           <br />
           <br />
           <span className="text-foreground font-medium">P.S. 2</span>
