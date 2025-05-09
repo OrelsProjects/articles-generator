@@ -26,8 +26,8 @@ const schema = z.object({
   includeSelf: z.boolean().optional(),
 });
 
-const LIMIT_ARTICLES = 10;
-const LIMIT_NOTES = 20;
+const LIMIT_ARTICLES = 15;
+const LIMIT_NOTES = 15;
 const LIMIT_TAKE = 30;
 
 export const maxDuration = 600; // This function can run for a maximum of 10 minutes

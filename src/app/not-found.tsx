@@ -1,11 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
+import { useSession } from "next-auth/react";
+import { Logger } from "@/logger";
 
 const NotFound = () => {
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    Logger.info("User hit 404 - session", { session });
+  }, [session]);
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="text-center space-y-6 flex flex-col items-center">
@@ -14,7 +22,8 @@ const NotFound = () => {
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold">Page Not Found</h2>
           <p className="text-muted-foreground">
-            The page you&apos;re looking for doesn&apos;t exist or has been moved.
+            The page you&apos;re looking for doesn&apos;t exist or has been
+            moved.
           </p>
         </div>
         <Link href="/home">

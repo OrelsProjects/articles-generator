@@ -7,7 +7,7 @@ import { useAppDispatch } from "@/lib/hooks/redux";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "../features/auth/authSlice";
 import { creditCosts } from "@/lib/plans-consts";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import axios from "axios";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
@@ -81,6 +81,12 @@ export const useSettings = () => {
     }
     return credits.remaining >= cost;
   };
+
+  useEffect(() => {
+    if (user?.meta?.plan) {
+      init();
+    }
+  }, [user?.meta?.plan]);
 
   return {
     init,
