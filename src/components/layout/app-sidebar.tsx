@@ -49,18 +49,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const { user } = useAppSelector(selectAuth);
   const { signOut } = useAuth();
 
-  useEffect(() => {
-    // if the pathname is an admin only and the user is not an admin, redirect to the home page
-    if (
-      navItems.some(
-        item =>
-          item.adminOnly && item.href === pathname && !user?.meta?.isAdmin,
-      )
-    ) {
-      router.push("/home");
-    }
-  }, [pathname, user?.meta?.isAdmin]);
-
   const validNavItems = useMemo(() => {
     return navItems.filter(item => {
       if (item.featureFlagsRequired) {
@@ -71,6 +59,21 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
       return true;
     });
   }, [user?.meta?.featureFlags]);
+
+  useEffect(() => {
+    const isPathnameAllowed = validNavItems.some(
+      item => item.href === pathname,
+    );
+
+    const isPathnameAdminOnly = navItems.some(
+      item => item.adminOnly && item.href === pathname,
+    );
+
+    // if the pathname is an admin only and the user is not an admin, redirect to the home page
+    if (!isPathnameAllowed && !isPathnameAdminOnly) {
+      router.push("/home");
+    }
+  }, [pathname, user?.meta?.isAdmin, validNavItems]);
 
   const sidebarCollapsed = useMemo(
     () => sideBarState === "collapsed",
