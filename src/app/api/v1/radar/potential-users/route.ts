@@ -332,27 +332,42 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    if (potentialPublicationUsers.length === 0) {
-      loggerServer.info(
-        "[RADAR-POTENTIAL-USERS] No existing users found, fetching new potential users",
-        {
-          userId: session.user.id,
-          publicationId,
-        },
-      );
-      bylinesClientOrdered = await getPotentialUsersScore({
-        url,
-        publicationId,
-        selfAuthorId,
-        publicationAuthorId,
-        page,
-        includeSelf,
+    let promiseFetchNewPotentialUsers: Promise<BylineWithExtras[]> | null =
+      null;
+
+    loggerServer.info(
+      "[RADAR-POTENTIAL-USERS] No existing users found, fetching new potential users",
+      {
         userId: session.user.id,
-      });
-      loggerServer.info("[RADAR-POTENTIAL-USERS] Fetched new potential users", {
-        userId: session.user.id,
-        count: bylinesClientOrdered.length,
         publicationId,
+      },
+    );
+    promiseFetchNewPotentialUsers = getPotentialUsersScore({
+      url,
+      publicationId,
+      selfAuthorId,
+      publicationAuthorId,
+      page,
+      includeSelf,
+      userId: session.user.id,
+    });
+    loggerServer.info("[RADAR-POTENTIAL-USERS] Fetched new potential users", {
+      userId: session.user.id,
+      count: bylinesClientOrdered.length,
+      publicationId,
+    });
+
+    if (bylinesClientOrdered.length === 0) {
+      bylinesClientOrdered = await promiseFetchNewPotentialUsers;
+    } else if (process.env.NODE_ENV === "production") {
+      promiseFetchNewPotentialUsers.catch(error => {
+        loggerServer.error(
+          "[RADAR-POTENTIAL-USERS] Error fetching new potential users",
+          {
+            userId: session.user.id,
+            error,
+          },
+        );
       });
     }
 
