@@ -36,14 +36,14 @@ export async function GET(request: NextRequest) {
       throw new Error("URL is not valid");
     }
 
-    const updatedUrlResponse = await getPublicationUpdatedUrl(validUrl);
+    // const updatedUrlResponse = await getPublicationUpdatedUrl(validUrl);
     const publicationInDB = await getPublicationByUrl(validUrl, {
       createIfNotFound: true,
     });
 
     responseBody.hasPublication = publicationInDB.length > 0;
     responseBody.valid = true;
-    responseBody.validUrl = updatedUrlResponse;
+    responseBody.validUrl = validUrl;
 
     return NextResponse.json(responseBody);
   } catch (error: any) {
