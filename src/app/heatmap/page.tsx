@@ -201,12 +201,11 @@ export default function AnalyzeSubstack() {
         setSubstackUrl(validUrl);
       }
 
-      const response = await fetch(
+      const response = await axios.get(
         `/api/publication/bylines?url=${validUrl || substackUrl}`,
       );
 
-      const data = await response.json();
-      setBylines(data || []);
+      setBylines(response.data || []);
       setOpenAuthorSelectionDialog(true);
     } catch (error) {
       console.error("Failed to fetch bylines:", error);
