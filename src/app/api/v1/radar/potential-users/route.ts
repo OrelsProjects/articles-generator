@@ -51,6 +51,7 @@ const getPotentialUsersScore = async (options: {
   publicationAuthorId?: number | bigint | null;
   page?: number;
   includeSelf?: boolean;
+  userId: string;
 }) => {
   const {
     url,
@@ -59,7 +60,19 @@ const getPotentialUsersScore = async (options: {
     publicationAuthorId,
     page,
     includeSelf,
+    userId,
   } = options;
+
+  loggerServer.info("[RADAR-POTENTIAL-USERS] Getting potential users score", {
+    url,
+    publicationId,
+    selfAuthorId,
+    publicationAuthorId,
+    page,
+    includeSelf,
+    userId,
+  });
+
   const publicationPosts = await getPublicationPosts({
     url,
     publicationId,
@@ -85,6 +98,11 @@ const getPotentialUsersScore = async (options: {
       includeData: true,
     },
   );
+
+  loggerServer.info("[RADAR-POTENTIAL-USERS] Found potential users", {
+    userId,
+    potentialUsers: potentialUsers.length,
+  });
 
   const response: RadarPotentialUser[] = potentialUsers.map(user =>
     radarPotentialUserResponseToClient(user),
@@ -125,6 +143,12 @@ const getPotentialUsersScore = async (options: {
   }
 
   if (process.env.NODE_ENV === "production") {
+    loggerServer.info("[RADAR-POTENTIAL-USERS] Fetching author", {
+      userId,
+      publicationAuthorId: publicationAuthorId?.toString(),
+      publicationUrl: url,
+      publicationId,
+    });
     await fetchAuthor({
       authorId: publicationAuthorId?.toString(),
       publicationUrl: url,
@@ -180,6 +204,7 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
+    loggerServer.error("[RADAR-POTENTIAL-USERS] Unauthorized access attempt");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
@@ -187,16 +212,26 @@ export async function POST(req: NextRequest) {
     const body = JSON.parse(bodyText);
     const parsedBody = schema.safeParse(body);
     if (!parsedBody.success) {
-      loggerServer.error("Invalid body in radar potential users", {
-        userId: session.user.id,
-        error: parsedBody.error,
-        bodyText,
-        body,
-      });
+      loggerServer.error(
+        "[RADAR-POTENTIAL-USERS] Invalid body in radar potential users",
+        {
+          userId: session.user.id,
+          error: parsedBody.error,
+          bodyText,
+          body,
+        },
+      );
       return NextResponse.json({ error: "Invalid body" }, { status: 400 });
     }
 
     const { url, page, includeSelf, take } = parsedBody.data;
+    loggerServer.info("[RADAR-POTENTIAL-USERS] Processing request", {
+      userId: session.user.id,
+      url,
+      page,
+      includeSelf,
+      take,
+    });
 
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
@@ -213,20 +248,31 @@ export async function POST(req: NextRequest) {
     });
 
     if (!userMetadata) {
+      loggerServer.error("[RADAR-POTENTIAL-USERS] User metadata not found", {
+        userId: session.user.id,
+      });
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const canUseRadar = canUseFeature(userMetadata, FeatureFlag.canUseRadar);
 
     if (!canUseRadar) {
-      loggerServer.error("User does not have permission to use radar", {
-        userId: session.user.id,
-      });
+      loggerServer.error(
+        "[RADAR-POTENTIAL-USERS] User does not have permission to use radar",
+        {
+          userId: session.user.id,
+        },
+      );
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const publication = await getPublicationByUrl(url, {
       createIfNotFound: true,
+    });
+    loggerServer.info("[RADAR-POTENTIAL-USERS] Found publication", {
+      userId: session.user.id,
+      publicationId: publication[0]?.id,
+      url,
     });
 
     const publicationId = publication[0]?.id.toString();
@@ -247,6 +293,15 @@ export async function POST(req: NextRequest) {
         take: validTake,
         skip: validPage * LIMIT,
       });
+
+    loggerServer.info(
+      "[RADAR-POTENTIAL-USERS] Found existing potential users",
+      {
+        userId: session.user.id,
+        count: potentialPublicationUsers.length,
+        publicationId,
+      },
+    );
 
     const bylines = await getBylines(
       potentialPublicationUsers.map(user => user.bylineId),
@@ -272,6 +327,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (potentialPublicationUsers.length === 0) {
+      loggerServer.info(
+        "[RADAR-POTENTIAL-USERS] No existing users found, fetching new potential users",
+        {
+          userId: session.user.id,
+          publicationId,
+        },
+      );
       bylinesClientOrdered = await getPotentialUsersScore({
         url,
         publicationId,
@@ -279,15 +341,24 @@ export async function POST(req: NextRequest) {
         publicationAuthorId,
         page,
         includeSelf,
+        userId: session.user.id,
+      });
+      loggerServer.info("[RADAR-POTENTIAL-USERS] Fetched new potential users", {
+        userId: session.user.id,
+        count: bylinesClientOrdered.length,
+        publicationId,
       });
     }
 
     return NextResponse.json(bylinesClientOrdered, { status: 200 });
   } catch (error) {
-    loggerServer.error("Error fetching potential users", {
-      error: error,
-      userId: session.user.id,
-    });
+    loggerServer.error(
+      "[RADAR-POTENTIAL-USERS] Error fetching potential users",
+      {
+        error: error,
+        userId: session.user.id,
+      },
+    );
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

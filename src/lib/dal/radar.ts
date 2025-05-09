@@ -26,6 +26,11 @@ const potentialUsersSchema = z.array(RadarPotentialUserSchema);
 export const savePotentialUsers = async (
   potentialUsers: RadarPotentialUserResponse[],
 ) => {
+  loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Starting to save potential users", {
+    userId: "system",
+    count: potentialUsers.length,
+  });
+
   const profiles: RadarPublicProfileResponse[] = [];
   const existingBylines = await prismaArticles.bylineData.findMany({
     where: {
@@ -33,6 +38,11 @@ export const savePotentialUsers = async (
         in: potentialUsers.map(user => user.id),
       },
     },
+  });
+
+  loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Found existing bylines", {
+    userId: "system",
+    count: existingBylines.length,
   });
 
   // Only update bylines that haven't been updated in the last 24 hours
@@ -45,6 +55,12 @@ export const savePotentialUsers = async (
 
   const bylinesToCreate = potentialUsers.filter(user => {
     return !existingBylines.find(byline => byline.id === BigInt(user.id));
+  });
+
+  loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Filtered bylines for update and creation", {
+    userId: "system",
+    toUpdate: bylinesToUpdate.length,
+    toCreate: bylinesToCreate.length,
   });
 
   const bylinesToUpsert: { id: bigint; slug: string }[] = [
@@ -64,8 +80,9 @@ export const savePotentialUsers = async (
     );
 
     if (!profileResponse.ok) {
-      loggerServer.error("Error fetching profile", {
+      loggerServer.error("[RADAR-POTENTIAL-USERS-ANALYSIS] Error fetching profile", {
         userId: "system",
+        targetUserId: user.id.toString(),
         error: profileResponse.statusText,
       });
       continue;
@@ -75,8 +92,19 @@ export const savePotentialUsers = async (
     const parsedProfile = RadarPublicProfileSchema.safeParse(profile);
     if (parsedProfile.success) {
       profiles.push(parsedProfile.data);
+    } else {
+      loggerServer.error("[RADAR-POTENTIAL-USERS-ANALYSIS] Error parsing profile", {
+        userId: "system",
+        targetUserId: user.id.toString(),
+        error: parsedProfile.error,
+      });
     }
   }
+
+  loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Successfully fetched profiles", {
+    userId: "system",
+    count: profiles.length,
+  });
 
   const bylinesData: BylineData[] = profiles.map(profile => {
     return {
@@ -109,15 +137,16 @@ export const savePotentialUsers = async (
         create: bylineData,
       });
     } catch (error) {
-      loggerServer.error("Error upserting byline data", {
+      loggerServer.error("[RADAR-POTENTIAL-USERS-ANALYSIS] Error upserting byline data", {
         userId: "system",
+        targetUserId: bylineData.id.toString(),
         error: error,
         bylineData: bylineData,
       });
     }
   }
 
-  loggerServer.info("Saved bylines data", {
+  loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Completed saving bylines data", {
     userId: "system",
     count: bylinesData.length,
   });
@@ -134,6 +163,13 @@ export const getPotentialUsers = async (
     includeData: false,
   },
 ): Promise<RadarPotentialUserResponse[]> => {
+  loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Fetching potential users", {
+    userId: "system",
+    postId,
+    type,
+    options,
+  });
+
   const data = await fetchWithHeaders(
     `https://www.substack.com/api/v1/${type}/${postId}/reactors`,
     3,
@@ -141,19 +177,30 @@ export const getPotentialUsers = async (
   );
   const potentialUsersParsed = potentialUsersSchema.safeParse(data);
   if (!potentialUsersParsed.success) {
-    loggerServer.error("Error parsing potential users", {
+    loggerServer.error("[RADAR-POTENTIAL-USERS-ANALYSIS] Error parsing potential users", {
       userId: "system",
+      postId,
+      type,
       error: potentialUsersParsed.error,
     });
     return [];
   }
 
   const potentialUsers = potentialUsersParsed.data;
+  loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Successfully fetched potential users", {
+    userId: "system",
+    postId,
+    type,
+    count: potentialUsers.length,
+  });
+
   let potentialUsersWithData: RadarPotentialUserResponse[] = [];
   if (options.saveNewBylinesInDB) {
     savePotentialUsers(potentialUsers).catch(error => {
-      loggerServer.error("Error saving potential users", {
+      loggerServer.error("[RADAR-POTENTIAL-USERS-ANALYSIS] Error saving potential users", {
         userId: "system",
+        postId,
+        type,
         error: error,
       });
     });
@@ -166,9 +213,17 @@ export const getPotentialUsers = async (
       bylinesData = await getBylinesData(
         potentialUsersWithData.map(user => user.id),
       );
-    } catch (error) {
-      loggerServer.error("Error getting bylines data", {
+      loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Successfully fetched bylines data", {
         userId: "system",
+        postId,
+        type,
+        count: bylinesData.length,
+      });
+    } catch (error) {
+      loggerServer.error("[RADAR-POTENTIAL-USERS-ANALYSIS] Error getting bylines data", {
+        userId: "system",
+        postId,
+        type,
         error: error,
       });
     }
@@ -197,12 +252,24 @@ export const getManyPotentialUsers = async (
     includeData: false,
   },
 ): Promise<RadarPotentialUserResponse[]> => {
+  loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Starting batch fetch of potential users", {
+    userId: "system",
+    postCount: postIds.length,
+    commentCount: commentsIds.length,
+    options,
+  });
+
   let potentialUsers: RadarPotentialUserResponse[] = [];
   const BATCH_SIZE_COMMENTS = 3;
   const BATCH_SIZE_POSTS = 3;
 
   for (let i = 0; i < postIds.length; i += BATCH_SIZE_POSTS) {
     const batch = postIds.slice(i, i + BATCH_SIZE_POSTS);
+    loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Processing post batch", {
+      userId: "system",
+      batchIndex: i / BATCH_SIZE_POSTS,
+      batchSize: batch.length,
+    });
     const usersInBatch = await Promise.all(
       batch.map(postId =>
         getPotentialUsers(postId, "post", {
@@ -216,6 +283,11 @@ export const getManyPotentialUsers = async (
 
   for (let i = 0; i < commentsIds.length; i += BATCH_SIZE_COMMENTS) {
     const batch = commentsIds.slice(i, i + BATCH_SIZE_COMMENTS);
+    loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Processing comment batch", {
+      userId: "system",
+      batchIndex: i / BATCH_SIZE_COMMENTS,
+      batchSize: batch.length,
+    });
     const usersInBatch = await Promise.all(
       batch.map(commentId =>
         getPotentialUsers(commentId, "comment", {
@@ -227,9 +299,14 @@ export const getManyPotentialUsers = async (
     usersInBatch.forEach(users => potentialUsers.push(...users));
   }
 
+  loggerServer.info("[RADAR-POTENTIAL-USERS-ANALYSIS] Completed batch fetch", {
+    userId: "system",
+    totalUsersFound: potentialUsers.length,
+  });
+
   if (options.saveNewBylinesInDB) {
     savePotentialUsers(potentialUsers).catch(error => {
-      loggerServer.error("Error saving potential users", {
+      loggerServer.error("[RADAR-POTENTIAL-USERS-ANALYSIS] Error saving potential users from batch", {
         userId: "system",
         error: error,
       });
