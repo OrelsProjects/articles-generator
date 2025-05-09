@@ -18,27 +18,41 @@ export const maxNotesShceduledPerPlan = {
   standard: INFINITY,
   premium: INFINITY,
 };
+/**
+ articles: 'articles',
+ instantPost: 'instantPost',
+ scheduleNotes: 'scheduleNotes',
+ initQueue: 'initQueue',
+ *   advancedGPT: 'advancedGPT',
+ canViewWriters: 'canViewWriters',
+  advancedFiltering: 'advancedFiltering',
+  canUseRadar: 'canUseRadar'
+  collaborativeNotes: 'collaborativeNotes',
+ */
+const hobbyistFeatureFlags = [
+  FeatureFlag.articles,
+  FeatureFlag.instantPost,
+  FeatureFlag.scheduleNotes,
+  FeatureFlag.initQueue,
+];
+
+const standardFeatureFlags = [
+  ...hobbyistFeatureFlags,
+  FeatureFlag.advancedGPT,
+  FeatureFlag.canViewWriters,
+  FeatureFlag.advancedFiltering,
+];
+
+const premiumFeatureFlags = [
+  ...standardFeatureFlags,
+  FeatureFlag.canUseRadar,
+  FeatureFlag.collaborativeNotes,
+];
 
 export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
-  hobbyist: [FeatureFlag.instantPost, FeatureFlag.scheduleNotes],
-  standard: [
-    FeatureFlag.instantPost,
-    FeatureFlag.articles,
-    FeatureFlag.instantPost,
-    FeatureFlag.advancedGPT,
-    FeatureFlag.scheduleNotes,
-    FeatureFlag.canViewWriters,
-    FeatureFlag.canUseRadar,
-  ],
-  premium: [
-    FeatureFlag.articles,
-    FeatureFlag.instantPost,
-    FeatureFlag.advancedGPT,
-    FeatureFlag.advancedFiltering,
-    FeatureFlag.scheduleNotes,
-    FeatureFlag.canViewWriters,
-    FeatureFlag.canUseRadar,
-  ],
+  hobbyist: hobbyistFeatureFlags,
+  standard: standardFeatureFlags,
+  premium: premiumFeatureFlags,
 };
 
 // Cost in credits for each AI operation
