@@ -26,7 +26,8 @@ const schema = z.object({
   includeSelf: z.boolean().optional(),
 });
 
-const LIMIT = 5;
+const LIMIT_ARTICLES = 10;
+const LIMIT_NOTES = 20;
 const LIMIT_TAKE = 30;
 
 export const maxDuration = 600; // This function can run for a maximum of 10 minutes
@@ -78,20 +79,25 @@ const getPotentialUsersScore = async (options: {
     publicationId,
   });
 
+  const pageNumber = page || 0;
+
   const publicationNotes = publicationAuthorId
     ? await getAuthorNotes(Number(publicationAuthorId), {
-        take: 10,
+        take: LIMIT_NOTES,
+        skip: pageNumber * LIMIT_NOTES,
         orderBy: "timestamp",
       })
     : [];
-  const pageNumber = page || 0;
 
-  const top5PostsByReactionCount = publicationPosts
+  const topPostsByReactionCount = publicationPosts
     .sort((a, b) => (b.reactionCount || 0) - (a.reactionCount || 0))
-    .slice(pageNumber * LIMIT, pageNumber * LIMIT + LIMIT);
+    .slice(
+      pageNumber * LIMIT_ARTICLES,
+      pageNumber * LIMIT_ARTICLES + LIMIT_ARTICLES,
+    );
 
   const potentialUsers = await getManyPotentialUsers(
-    top5PostsByReactionCount.map(post => post.id),
+    topPostsByReactionCount.map(post => post.id),
     publicationNotes.map(note => note.commentId),
     {
       saveNewBylinesInDB: true,
@@ -291,7 +297,7 @@ export async function POST(req: NextRequest) {
           score: "desc",
         },
         take: validTake,
-        skip: validPage * LIMIT,
+        skip: validPage * LIMIT_ARTICLES,
       });
 
     loggerServer.info(
