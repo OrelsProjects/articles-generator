@@ -171,6 +171,7 @@ export function generateSubscriptionCanceledEmail(subscriptionId: string) {
 export function generateSubscriptionTrialEndingEmail(
   plan: Plan,
   trialEndDate: Date,
+  name: string | null,
 ) {
   const planString = plan.charAt(0).toUpperCase() + plan.slice(1);
   const formattedDate = trialEndDate.toLocaleDateString("en-US", {
@@ -181,6 +182,7 @@ export function generateSubscriptionTrialEndingEmail(
 
   const content = `
     <h2>Your WriteStack adventure continues soon!</h2>
+    <p>Hey ${name || "there"}!</p>
     <p>Just a friendly heads-up that your trial of the <strong>${planString} Plan</strong> will wrap up on <strong>${formattedDate}</strong>.</p>
     <p>We hope WriteStack has been helping you find your voice and grow your audience!</p> 
     <p>If you're enjoying the experience, no action is needed. Your subscription will continue seamlessly, and you can keep creating amazing content without interruption.</p>

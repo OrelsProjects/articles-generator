@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
 
     const { authorId, publicationUrl } = userMetadata.publication || {};
 
-    const refreshUserPublicationData = shouldRefreshUserPublicationData(userMetadata);
+    const refreshUserPublicationData =
+      shouldRefreshUserPublicationData(userMetadata);
     const publicationId = userMetadata.publication?.idInArticlesDb?.toString();
     loggerServer.info("Refreshing user metadata", {
       userId: session.user.id,
@@ -46,11 +47,9 @@ export async function POST(request: NextRequest) {
         authorId: authorId.toString(),
         publicationUrl,
         publicationId,
-      });
-
-      await prisma.userMetadata.update({
-        where: { userId: session.user.id },
-        data: { dataUpdatedAt: new Date() },
+        updateUserInDB: {
+          userId: session.user.id,
+        },
       });
     }
 

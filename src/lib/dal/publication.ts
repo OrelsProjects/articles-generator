@@ -2,42 +2,8 @@ import { prisma, prismaArticles } from "@/lib/prisma";
 import { Publication } from "../../../prisma/generated/articles";
 import { getUrlComponents, stripUrl } from "@/lib/utils/url";
 import { extractContent } from "@/app/api/user/analyze/_utils";
-import { getArticleEndpoint, scrapePosts } from "@/lib/utils/publication";
-
-interface BylineResponse {
-  publicationUsers: {
-    publication: PublicationDB;
-  }[];
-}
-
-interface PublicationDB {
-  id: number;
-  name: string;
-  subdomain: string;
-  custom_domain: string;
-  custom_domain_optional: boolean;
-  hero_text: string;
-  logo_url: string;
-  email_from_name: string | null;
-  copyright: string;
-  author_id: number;
-  created_at: string;
-  language: string;
-  explicit: boolean;
-}
-
-interface PublicationDataResponse {
-  newPosts: {
-    id: number;
-    publication_id: number;
-    title: string;
-    social_title: string;
-    search_engine_title: string;
-    search_engine_description: string;
-    slug: string;
-    publishedBylines: BylineResponse[];
-  }[];
-}
+import { getArticleEndpoint } from "@/lib/utils/publication";
+import { PublicationDataResponse, PublicationDB } from "@/types/publication";
 
 export const getPublicationByUrl = async (
   url: string,
@@ -202,15 +168,6 @@ export const getHandleDetails = async (
   };
 };
 
-export const getPublicationArticles = async (publicationId: string) => {
-  const articles = await prismaArticles.post.findMany({
-    where: {
-      publicationId,
-    },
-  });
-
-  return articles;
-};
 
 export async function createPublication(url: string): Promise<number | null> {
   const { validUrl } = getUrlComponents(url, { withoutWWW: true });
@@ -329,33 +286,3 @@ export async function getPublicationByIds(publicationIds: string[]) {
   });
   return publications;
 }
-
-export const getPublicationPosts = async (url: string) => {
-  const { validUrl } = getUrlComponents(url, { withoutWWW: true });
-  const endpoint = `${validUrl}/api/v1/homepage_data`;
-  const response = await fetch(endpoint);
-  const data = (await response.json()) as PublicationDataResponse;
-  let publicationId = "";
-  for (const post of data.newPosts) {
-    if (publicationId) {
-      break;
-    }
-    publicationId = post.publication_id.toString();
-  }
-  let posts = await prismaArticles.post.findMany({
-    where: {
-      publicationId,
-    },
-  });
-
-  if (!posts) {
-    await scrapePosts(url, 0);
-    posts = await prismaArticles.post.findMany({
-      where: {
-        publicationId,
-      },
-    });
-  }
-
-  return posts;
-};

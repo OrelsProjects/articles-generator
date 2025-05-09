@@ -41,6 +41,7 @@ const CheckFilled = ({ className }: { className?: string }) => {
 type LoadingState = {
   text: string;
   delay?: number;
+  opacityBeforeHit?: number;
 };
 
 const LoaderCore = ({
@@ -54,7 +55,12 @@ const LoaderCore = ({
     <div className="flex flex-col gap-2">
       {loadingStates.map((loadingState, index) => {
         const distance = Math.abs(index - value);
-        const opacity = Math.max(1 - distance * 0.2, 0);
+        const opacityDistance = Math.max(1 - distance * 0.3, 0);
+        const opacity = loadingState.opacityBeforeHit
+          ? index < value
+            ? loadingState.opacityBeforeHit
+            : opacityDistance
+          : opacityDistance;
 
         return (
           <motion.div

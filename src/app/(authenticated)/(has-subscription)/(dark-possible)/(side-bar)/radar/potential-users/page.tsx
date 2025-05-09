@@ -18,6 +18,35 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { transformSubscriberCount } from "@/lib/utils/subscriber-count";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAppSelector } from "@/lib/hooks/redux";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ToastStepper } from "@/components/ui/toast-stepper";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
+
+const loadingStates = [
+  { text: "Grabbing engagement data...", delay: 5000 },
+  { text: "Analyzing publication...", delay: 4000, opacityBeforeHit: 0.1 },
+  { text: "Analyzing audience...", delay: 8000, opacityBeforeHit: 0.1 },
+  {
+    text: "I need to look deeper. Give me a moment.",
+    delay: 20000,
+    opacityBeforeHit: 0.03,
+  },
+  { text: "Almost there...", delay: 1000, opacityBeforeHit: 0.03 },
+];
 
 export type OrderBy =
   | "recommended"
@@ -25,35 +54,109 @@ export type OrderBy =
   | "bestsellerTier"
   | "subscriberCount";
 
+const getUserSubstackUrl = (handle: string) => {
+  return `https://www.substack.com/@${handle}`;
+};
+
+const WelcomeDialog = ({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent closeOnOutsideClick={false}>
+        <DialogHeader>
+          <DialogTitle>Welcome to the Potential Users Radar</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>
+          This is a tool that helps you find potential customers.
+          <br />
+          <br />
+          You can either use it to get potential users based on different
+          publications.
+          <br />
+          <br />
+          <span className="underline">example:</span>
+          <br />I am looking for people who are interested in solopreneurship. I
+          know Orel writes about it, therefore I&apos;ll analyze his
+          publication:
+          <br />
+          <Link
+            href="theindiepreneur.substack.com"
+            className="text-foreground/80"
+            target="_blank"
+          >
+            theindiepreneur.substack.com
+          </Link>
+          <br />
+          (Shameless self-promotion)
+          <br />
+          <br />
+          <span className="text-foreground font-medium">P.S.</span>
+          <br />
+          Some of the data is not saved in the database, so analyzing can take
+          up to a minute.
+          <br />
+          <br />
+          <span className="text-foreground font-medium">P.S. 2</span>
+          <br />
+          Paging coming soon, so you&apos;ll be able to see more potential
+          users.
+        </DialogDescription>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button>Awesome!</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default function PotentialUsersPage() {
+  const [showWelcomeDialog, setShowWelcomeDialog] = useLocalStorage(
+    "show_welcome_users_radar",
+    true,
+  );
   const [potentialUsers, setPotentialUsers] = useState<BylineWithExtras[]>([]);
   const [url, setUrl] = useState<string>("");
   const [inputUrl, setInputUrl] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const loadingRef = useRef<boolean>(false);
   const [orderBy, setOrderBy] = useState<OrderBy>("recommended");
+  const { publications } = useAppSelector(state => state.publications);
+
+  const publication = useMemo(() => {
+    return publications[0];
+  }, [publications]);
 
   const fetchPotentialUsers = async (customUrl?: string) => {
     if (loadingRef.current) return;
     loadingRef.current = true;
     setLoading(true);
-    const response = await fetch("/api/v1/radar/potential-users", {
-      method: "POST",
-      body: JSON.stringify({
-        url: customUrl || url || "https://theindiepreneur.substack.com",
-      }),
-    });
-    const data = await response.json();
-    setPotentialUsers(data);
-    setUrl(customUrl || url || "https://theindiepreneur.substack.com");
-    loadingRef.current = false;
-    setLoading(false);
+    try {
+      const response = await axios.post("/api/v1/radar/potential-users", {
+        url: customUrl || url || publication?.url,
+      });
+      debugger;
+      setPotentialUsers(response.data);
+      setUrl(customUrl || url || publication?.url);
+    } catch (error) {
+      toast.error("Error fetching potential users");
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchPotentialUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (publication) {
+      fetchPotentialUsers();
+    }
+  }, [publication]);
 
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +167,7 @@ export default function PotentialUsersPage() {
 
   // Sort users based on orderBy
   const sortedUsers = useMemo(() => {
+    if (!potentialUsers || potentialUsers.length === 0) return [];
     switch (orderBy) {
       case "recommended":
         return [...potentialUsers].sort((a, b) => b.score - a.score);
@@ -110,6 +214,15 @@ export default function PotentialUsersPage() {
     }
   }, [orderBy]);
 
+  const isLoadingSkeleton = useMemo(
+    () => loading && sortedUsers.length === 0,
+    [loading, sortedUsers],
+  );
+  const isLoadingStates = useMemo(
+    () => loading && sortedUsers.length > 0,
+    [loading, sortedUsers],
+  );
+
   function SkeletonCard() {
     return (
       <div className="flex items-center justify-between bg-card rounded-xl shadow p-4 w-full border border-border">
@@ -128,10 +241,10 @@ export default function PotentialUsersPage() {
   return (
     <div className="w-full max-w-6xl mx-auto py-10 px-4 bg-background text-foreground">
       <h1 className="text-3xl font-bold mb-8">Potential Users</h1>
-      <form onSubmit={handleAnalyze} className="flex gap-2 mb-8">
-        <input
+      <form onSubmit={handleAnalyze} className="flex items-center gap-2 mb-8">
+        <Input
           type="text"
-          className="flex-1 border border-input bg-muted text-foreground rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+          className="py-4"
           placeholder="Enter Substack URL to analyze..."
           value={inputUrl}
           onChange={e => setInputUrl(e.target.value)}
@@ -170,7 +283,7 @@ export default function PotentialUsersPage() {
         </DropdownMenu>
       </div>
       <div className="flex flex-col gap-2 w-full">
-        {loading
+        {isLoadingSkeleton
           ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
           : sortedUsers.map(user => (
               <div
@@ -178,11 +291,19 @@ export default function PotentialUsersPage() {
                 className="flex items-center justify-between bg-muted rounded-xl shadow p-4 w-full hover:shadow-md transition border border-border"
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <img
-                    src={user.photoUrl}
-                    alt={user.name}
-                    className="w-12 h-12 rounded-full object-cover border border-border"
-                  />
+                  <Avatar>
+                    <AvatarImage
+                      src={user.photoUrl}
+                      alt={user.name}
+                      onClick={() => {
+                        window.open(getUserSubstackUrl(user.handle), "_blank");
+                      }}
+                      className="w-12 h-12 rounded-full object-cover border border-border flex-shrink-0 cursor-pointer"
+                    />
+                    <AvatarFallback className="bg-muted text-muted-foreground">
+                      <User className="h-8 w-8" />
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="min-w-0">
                     <div className="font-semibold text-lg truncate flex items-center gap-1.5">
                       <Button
@@ -191,7 +312,7 @@ export default function PotentialUsersPage() {
                         asChild
                       >
                         <Link
-                          href={`https://www.substack.com/@${user.handle}`}
+                          href={getUserSubstackUrl(user.handle)}
                           target="_blank"
                         >
                           {user.name}
@@ -219,12 +340,17 @@ export default function PotentialUsersPage() {
                     </div>
                   </div>
                 </div>
-                <Button variant={user.isFollowing ? "ghost" : "outline"}>
+                {/* <Button variant={user.isFollowing ? "ghost" : "outline"}>
                   {user.isFollowing ? "Following" : "Follow"}
-                </Button>
+                </Button> */}
               </div>
             ))}
       </div>
+      <ToastStepper loadingStates={loadingStates} loading={isLoadingStates} />
+      <WelcomeDialog
+        open={showWelcomeDialog}
+        onOpenChange={setShowWelcomeDialog}
+      />
     </div>
   );
 }

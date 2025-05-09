@@ -24,3 +24,39 @@ export interface PublicationResponse {
   generatedDescription?: string | null;
   generatedTopics?: string | null;
 }
+
+
+export interface BylineResponse {
+  publicationUsers: {
+    publication: PublicationDB;
+  }[];
+}
+
+export interface PublicationDB {
+  id: number;
+  name: string;
+  subdomain: string;
+  custom_domain: string;
+  custom_domain_optional: boolean;
+  hero_text: string;
+  logo_url: string;
+  email_from_name: string | null;
+  copyright: string;
+  author_id: number;
+  created_at: string;
+  language: string;
+  explicit: boolean;
+}
+
+export interface PublicationDataResponse {
+  newPosts: {
+    id: number;
+    publication_id: number;
+    title: string;
+    social_title: string;
+    search_engine_title: string;
+    search_engine_description: string;
+    slug: string;
+    publishedBylines: BylineResponse[];
+  }[];
+}

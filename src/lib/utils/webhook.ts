@@ -410,6 +410,7 @@ export async function handleSubscriptionTrialEnding(event: any) {
     const emailTemplate = generateSubscriptionTrialEndingEmail(
       subscriptionFromDb.plan,
       new Date(subscription.trial_end * 1000),
+      user?.name || null,
     );
     subject = emailTemplate.subject;
     body = emailTemplate.body;

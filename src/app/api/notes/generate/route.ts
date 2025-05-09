@@ -19,7 +19,6 @@ import { getByline } from "@/lib/dal/byline";
 import { noteTemplates } from "@/app/api/notes/generate/_consts";
 import { Model429Error } from "@/types/errors/Model429Error";
 import { z } from "zod";
-import { Article } from "@/types/article";
 import { getPublicationByIds } from "@/lib/dal/publication";
 
 const generateNotesSchema = z.object({

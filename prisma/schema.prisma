@@ -609,17 +609,24 @@ model SubstackPublishedNote {
   @@map("substackPublishedNotes")
 }
 
-model PublicationPotentialUsers {
+model PotentialPublicationUsers {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  publicationIdInArticlesDb String @db.ObjectId
-
-  bylineIds String[] @default([])
+  publicationIdInArticlesDb String
+  bylineId                  Int
+  score                     Int
+  isFollowing               Boolean @default(false)
+  isSubscribed              Boolean @default(false)
+  bestsellerTier            Int     @default(0)
+  subscriberCount           Int     @default(0)
+  subscriberCountString     String  @default("")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("publicationRadarUsers")
+  @@unique([publicationIdInArticlesDb, bylineId])
+
+  @@map("potentialPublicationUsers")
 }
 
 // Readers the user has replaced messages with

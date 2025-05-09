@@ -288,15 +288,25 @@ const testimonials = [
   },
   {
     quote: `WriteStack transformed my experience on Notes with its scheduling tools.
-<br/><br/>
-It's easy to use, and Orel is exceptionally fast at responding to issues.
-<br/><br/>
-Since using WriteStack, I've seen consistent growth in engagement, and have actually enjoyed the process of planning my content calendar.
-<br/><br/>
-<strong>Recommended for any serious Notes creator!</strong>`,
+    <br/><br/>
+    It's easy to use, and Orel is exceptionally fast at responding to issues.
+    <br/><br/>
+    Since using WriteStack, I've seen consistent growth in engagement, and have actually enjoyed the process of planning my content calendar.
+    <br/><br/>
+    <strong>Recommended for any serious Notes creator!</strong>`,
     author: "Rasmus Edwards",
     image: "/testimonials/rasmus-edwards.webp",
-    title: "Author of the Solo Dev Saturday",
+    title: "Author of Solo Dev Saturday",
+  },
+  {
+    quote: `${appName} is incredibly thoughtful.
+    <br/><br/>
+    The notes scheduler keeps me consistent, and the outline generator is pure genius. 
+    <br/><br/>
+    It takes the pressure off starting from scratch and makes publishing feel easy.`,
+    author: "Tam Nguyen",
+    image: "/testimonials/tam-nguyen.jpg",
+    title: "Author of Simply AI",
   },
   {
     quote: `I love ${appName}.

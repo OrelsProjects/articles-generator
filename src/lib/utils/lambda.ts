@@ -1,7 +1,11 @@
+import { prisma } from "../prisma";
 export async function fetchAuthor(options: {
   authorId?: string;
   publicationUrl?: string;
   publicationId?: string;
+  updateUserInDB?: {
+    userId: string;
+  };
 }) {
   const scrapeAllArticlesUrl = process.env.TRIGGER_LAMBDAS_LAMBDA_URL;
   if (scrapeAllArticlesUrl) {
@@ -16,6 +20,13 @@ export async function fetchAuthor(options: {
           publicationId: options.publicationId,
         },
       }),
+    });
+  }
+
+  if (options?.updateUserInDB) {
+    await prisma.userMetadata.update({
+      where: { userId: options.updateUserInDB.userId },
+      data: { dataUpdatedAt: new Date() },
     });
   }
 }

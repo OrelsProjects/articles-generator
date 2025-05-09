@@ -1,3 +1,4 @@
+import { FeatureFlag } from "@prisma/client";
 import {
   FileText,
   KanbanSquare,
@@ -6,6 +7,7 @@ import {
   Lightbulb,
   Calendar,
   BarChart,
+  Radar,
 } from "lucide-react";
 
 export const navItems: {
@@ -15,9 +17,10 @@ export const navItems: {
   newTab?: boolean;
   icon: React.ElementType;
   locationInMobile: "bottom" | "sidebar";
+  featureFlagsRequired?: FeatureFlag[];
   disabled?: boolean;
   adminOnly?: boolean;
- }[] = [
+}[] = [
   {
     name: "Inspiration",
     mobileName: "Inspiration",
@@ -63,6 +66,14 @@ export const navItems: {
     href: "/settings",
     icon: Settings,
     locationInMobile: "sidebar",
+  },
+  {
+    name: "Radar",
+    mobileName: "Radar",
+    href: "/radar/potential-users",
+    icon: Radar,
+    locationInMobile: "sidebar",
+    featureFlagsRequired: ["canUseRadar"],
   },
   // {
   //   name: "Statistics (coming soon)",

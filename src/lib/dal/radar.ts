@@ -125,6 +125,7 @@ export const savePotentialUsers = async (
 
 export const getPotentialUsers = async (
   postId: string | number,
+  type: "post" | "comment",
   options: {
     saveNewBylinesInDB: boolean;
     includeData: boolean;
@@ -134,9 +135,9 @@ export const getPotentialUsers = async (
   },
 ): Promise<RadarPotentialUserResponse[]> => {
   const data = await fetchWithHeaders(
-    `https://www.substack.com/api/v1/post/${postId}/reactors`,
+    `https://www.substack.com/api/v1/${type}/${postId}/reactors`,
     3,
-    100,
+    500,
   );
   const potentialUsersParsed = potentialUsersSchema.safeParse(data);
   if (!potentialUsersParsed.success) {
@@ -187,6 +188,7 @@ export const getPotentialUsers = async (
 
 export const getManyPotentialUsers = async (
   postIds: string[],
+  commentsIds: string[],
   options: {
     saveNewBylinesInDB: boolean;
     includeData: boolean;
@@ -196,13 +198,27 @@ export const getManyPotentialUsers = async (
   },
 ): Promise<RadarPotentialUserResponse[]> => {
   let potentialUsers: RadarPotentialUserResponse[] = [];
-  const BATCH_SIZE = 5;
+  const BATCH_SIZE_COMMENTS = 3;
+  const BATCH_SIZE_POSTS = 3;
 
-  for (let i = 0; i < postIds.length; i += BATCH_SIZE) {
-    const batch = postIds.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < postIds.length; i += BATCH_SIZE_POSTS) {
+    const batch = postIds.slice(i, i + BATCH_SIZE_POSTS);
     const usersInBatch = await Promise.all(
       batch.map(postId =>
-        getPotentialUsers(postId, {
+        getPotentialUsers(postId, "post", {
+          saveNewBylinesInDB: false,
+          includeData: options.includeData,
+        }),
+      ),
+    );
+    usersInBatch.forEach(users => potentialUsers.push(...users));
+  }
+
+  for (let i = 0; i < commentsIds.length; i += BATCH_SIZE_COMMENTS) {
+    const batch = commentsIds.slice(i, i + BATCH_SIZE_COMMENTS);
+    const usersInBatch = await Promise.all(
+      batch.map(commentId =>
+        getPotentialUsers(commentId, "comment", {
           saveNewBylinesInDB: false,
           includeData: options.includeData,
         }),

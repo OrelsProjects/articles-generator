@@ -249,7 +249,8 @@ export default function ActivityHeatmap({
   useEffect(() => {
     // Scroll to the right when component mounts
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+      scrollContainerRef.current.scrollLeft =
+        scrollContainerRef.current.scrollWidth;
     }
   }, []); // Empty dependency array means this runs once on mount
 
@@ -430,7 +431,9 @@ export default function ActivityHeatmap({
             </span>
           </div>
 
-          {isGeneratingImage ? <div className="pb-4">{shareCaption}</div> : null}
+          {isGeneratingImage ? (
+            <div className="pb-4">{shareCaption}</div>
+          ) : null}
         </>
       )}
 

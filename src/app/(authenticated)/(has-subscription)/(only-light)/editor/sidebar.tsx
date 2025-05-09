@@ -18,7 +18,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useMemo } from "react";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
@@ -27,15 +26,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const { signOut } = useAuth();
   const { state } = useAppSelector(selectUi);
   const { user, loading } = useAppSelector(selectAuth);
-  const { publications } = useAppSelector(selectPublications);
 
   const handleLogout = () => {
     signOut();
   };
-
-  const hasPublication = useMemo(() => {
-    return publications.length > 0;
-  }, [publications]);
 
   return (
     <SidebarProvider open={state === "full"}>

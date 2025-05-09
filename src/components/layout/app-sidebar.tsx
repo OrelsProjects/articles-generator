@@ -61,6 +61,17 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, user?.meta?.isAdmin]);
 
+  const validNavItems = useMemo(() => {
+    return navItems.filter(item => {
+      if (item.featureFlagsRequired) {
+        return item.featureFlagsRequired.some(flag =>
+          user?.meta?.featureFlags.includes(flag),
+        );
+      }
+      return true;
+    });
+  }, [user?.meta?.featureFlags]);
+
   const sidebarCollapsed = useMemo(
     () => sideBarState === "collapsed",
     [sideBarState],
@@ -71,10 +82,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   };
 
   // Filter nav items by location
-  const bottomNavItems = navItems.filter(
+  const bottomNavItems = validNavItems.filter(
     item => item.locationInMobile === "bottom",
   );
-  const sidebarNavItems = navItems.filter(
+  const sidebarNavItems = validNavItems.filter(
     item => item.locationInMobile === "sidebar" || !item.locationInMobile,
   );
 
@@ -134,7 +145,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
           <nav className="flex-1 py-4 overflow-y-auto">
             <ul className="space-y-2 px-2">
-              {navItems.map(item =>
+              {validNavItems.map(item =>
                 item.adminOnly && !user?.meta?.isAdmin ? null : (
                   <li key={item.name}>
                     <TooltipProvider delayDuration={0}>

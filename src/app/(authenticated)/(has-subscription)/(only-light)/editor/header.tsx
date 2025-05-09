@@ -20,7 +20,6 @@ export function Header({
 }) {
   const { signOut } = useAuth();
   const { hasPublication } = useSettings();
-  const { user } = useAppSelector(selectAuth);
   const { publications } = useAppSelector(state => state.publications);
 
   const publication = useMemo(() => {

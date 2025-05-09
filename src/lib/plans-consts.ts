@@ -28,6 +28,7 @@ export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
     FeatureFlag.advancedGPT,
     FeatureFlag.scheduleNotes,
     FeatureFlag.canViewWriters,
+    FeatureFlag.canUseRadar,
   ],
   premium: [
     FeatureFlag.articles,
@@ -36,6 +37,7 @@ export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
     FeatureFlag.advancedFiltering,
     FeatureFlag.scheduleNotes,
     FeatureFlag.canViewWriters,
+    FeatureFlag.canUseRadar,
   ],
 };
 
