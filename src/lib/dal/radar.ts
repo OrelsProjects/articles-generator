@@ -75,7 +75,7 @@ export const savePotentialUsers = async (
   ];
 
   for (const user of bylinesToUpsert) {
-    const profileResponse = await fetch(
+    const profileResponse = await fetchWithHeaders(
       `https://substack.com/api/v1/user/${user.id}-${user.slug}/public_profile`,
     );
 

@@ -42,10 +42,10 @@ const loadingStates = [
   { text: "Analyzing audience...", delay: 8000, opacityBeforeHit: 0.1 },
   {
     text: "I need to look deeper. Give me a moment.",
-    delay: 20000,
+    delay: 40000,
     opacityBeforeHit: 0.03,
   },
-  { text: "Almost there...", delay: 1000, opacityBeforeHit: 0.03 },
+  { text: "Almost there...", delay: 99999, opacityBeforeHit: 0.03 },
 ];
 
 export type OrderBy =
