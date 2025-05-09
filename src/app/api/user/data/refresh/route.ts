@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
-import { shouldRefreshUserMetadata } from "@/lib/dal/analysis";
+import { shouldRefreshUserPublicationData } from "@/lib/dal/analysis";
 import { fetchAuthor } from "@/lib/utils/lambda";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
@@ -31,17 +31,17 @@ export async function POST(request: NextRequest) {
 
     const { authorId, publicationUrl } = userMetadata.publication || {};
 
-    const refreshUserMetadata = shouldRefreshUserMetadata(userMetadata);
+    const refreshUserPublicationData = shouldRefreshUserPublicationData(userMetadata);
     const publicationId = userMetadata.publication?.idInArticlesDb?.toString();
     loggerServer.info("Refreshing user metadata", {
       userId: session.user.id,
-      refreshUserMetadata,
+      refreshUserPublicationData,
       authorId,
       publicationUrl,
       publicationId,
     });
 
-    if (refreshUserMetadata && authorId && publicationUrl) {
+    if (refreshUserPublicationData && authorId && publicationUrl) {
       await fetchAuthor({
         authorId: authorId.toString(),
         publicationUrl,

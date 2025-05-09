@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import {
   setUserNotesDescription as setUserNotesDescription,
-  shouldRefreshUserMetadata,
+  shouldRefreshUserPublicationData,
 } from "@/lib/dal/analysis";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (userTriggered) {
-      const shouldRefresh = shouldRefreshUserMetadata(userMetadata);
+      const shouldRefresh = shouldRefreshUserPublicationData(userMetadata);
       if (!shouldRefresh) {
         return NextResponse.json({
           success: true,

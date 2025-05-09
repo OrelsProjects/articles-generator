@@ -38,6 +38,7 @@ export default function ActivityHeatmap({
 }: ActivityHeatmapProps) {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const heatmapRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const today = useMemo(() => new Date(), []);
   const startDate = useMemo(() => subDays(today, 240), [today]); // About 8 months back
@@ -237,7 +238,6 @@ export default function ActivityHeatmap({
         link.click();
       })
       .catch(function (error) {
-        debugger;
         Logger.error("Error generating image:", error);
         toast.error("Failed to generate image");
       })
@@ -245,6 +245,13 @@ export default function ActivityHeatmap({
         setIsGeneratingImage(false);
       });
   };
+
+  useEffect(() => {
+    // Scroll to the right when component mounts
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+    }
+  }, []); // Empty dependency array means this runs once on mount
 
   return (
     <div
@@ -324,7 +331,7 @@ export default function ActivityHeatmap({
               <div>Sat</div>
             </div>
 
-            <div className="flex-1 overflow-x-auto">
+            <div className="flex-1 overflow-x-auto" ref={scrollContainerRef}>
               <div className="min-w-[800px]">
                 {/* Grid */}
                 <div className="flex flex-col gap-0.5">

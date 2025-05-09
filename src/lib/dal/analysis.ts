@@ -5,6 +5,7 @@ import { generateNotesDescriptionPrompt } from "@/lib/prompts";
 import { runPrompt } from "@/lib/open-router";
 import { getAuthorId } from "@/lib/dal/publication";
 import { UserMetadata } from "@prisma/client";
+import loggerServer from "@/loggerServer";
 
 export async function setUserNotesDescription(
   userId: string,
@@ -65,14 +66,19 @@ export async function setUserNotesDescription(
 }
 
 // 24 hours passed?
-export const shouldRefreshUserMetadata = (userMetadata: UserMetadata) => {
+export const shouldRefreshUserPublicationData = (userMetadata: UserMetadata) => {
   const now = new Date();
   const lastUpdatedAt = userMetadata.dataUpdatedAt;
+  loggerServer.info("shouldRefreshUserMetadata", {
+    lastUpdatedAt,
+    now,
+    userId: userMetadata.userId,
+  });
   if (!lastUpdatedAt) {
     return true;
   }
   const diffTime = Math.abs(now.getTime() - lastUpdatedAt.getTime());
   const diffHours = diffTime / (1000 * 60 * 60);
-  // 24 hours passed?
-  return diffHours > 24;
+  // 4 hours passed?
+  return diffHours > 4;
 };
