@@ -11,9 +11,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
+    loggerServer.info("Verifying subscription", {
+      userId: session.user.id,
+    });
     const subscription = await getActiveSubscription(session.user.id);
+    loggerServer.info("Subscription", {
+      subscription,
+      userId: session.user.id,
+    });
 
     if (!subscription) {
+      loggerServer.info("No subscription found", {
+        userId: session.user.id,
+      });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

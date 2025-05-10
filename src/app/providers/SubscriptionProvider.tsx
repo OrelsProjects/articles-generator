@@ -9,15 +9,17 @@ export default function SubscriptionProvider({
   children: React.ReactNode;
 }) {
   const { verifySubscription } = usePayments();
-  const [hasSubscription, setHasSubscription] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState<
+    "pending" | "success" | "error"
+  >("pending");
   const [loading, setLoading] = useState(true);
 
   const handleVerifySubscription = async () => {
     try {
       await verifySubscription();
-      setHasSubscription(true);
+      setHasSubscription("success");
     } catch (error) {
-      // Do nothing
+      setHasSubscription("error");
     } finally {
       setLoading(false);
     }
@@ -35,7 +37,7 @@ export default function SubscriptionProvider({
     );
   }
 
-  if (!hasSubscription) {
+  if (hasSubscription === "error") {
     redirect("/pricing?onboarding=true");
   }
 
