@@ -52,34 +52,34 @@ export const getPublicationByUrl = async (
   let publications = publication ? [publication] : [];
 
   if (publications.length === 0) {
-    const { image, title, description } = await extractContent(url);
-    publications = await prismaArticles.publication.findMany({
-      where: {
-        OR: [
-          {
-            logoUrl: {
-              contains: image,
-            },
-          },
-          {
-            name: title,
-          },
-        ],
-      },
-    });
+    // const { image, title, description } = await extractContent(url);
+    // publications = await prismaArticles.publication.findMany({
+    //   where: {
+    //     OR: [
+    //       {
+    //         logoUrl: {
+    //           contains: image,
+    //         },
+    //       },
+    //       {
+    //         name: title,
+    //       },
+    //     ],
+    //   },
+    // });
 
-    if (publications.length === 0) {
-      if (options.createIfNotFound) {
-        const publicationId = await createPublication(url);
-        if (publicationId) {
-          publications = await prismaArticles.publication.findMany({
-            where: { id: publicationId },
-          });
-        }
-      } else {
-        return [];
+    // if (publications.length === 0) {
+    if (options.createIfNotFound) {
+      const publicationId = await createPublication(url);
+      if (publicationId) {
+        publications = await prismaArticles.publication.findMany({
+          where: { id: publicationId },
+        });
       }
+    } else {
+      return [];
     }
+    // }
   }
 
   return publications as Publication[];
@@ -167,7 +167,6 @@ export const getHandleDetails = async (
     photoUrl: notesFromAuthor.photoUrl || "",
   };
 };
-
 
 export async function createPublication(url: string): Promise<number | null> {
   const { validUrl } = getUrlComponents(url, { withoutWWW: true });

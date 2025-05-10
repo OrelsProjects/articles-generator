@@ -23,9 +23,9 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       try {
         session.user.id = token.sub as string;
-        if (session.user.id === "6817eb234db08da5b12af777") {
-          throw new Error("Not allowed - Old Stefan Girard account");
-        }
+        // if (session.user.id === "6817eb234db08da5b12af777") {
+        //   throw new Error("Not allowed - Old Stefan Girard account");
+        // }
         const promises = [
           prisma.userMetadata.findUnique({
             where: {

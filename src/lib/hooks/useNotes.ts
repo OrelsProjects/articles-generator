@@ -640,7 +640,7 @@ export const useNotes = () => {
         Logger.info("Sending note", note);
         const attachmentUrls: string[] = [];
 
-        debugger;
+        ;
         if (note.attachments?.length) {
           note.attachments.forEach(attachment => {
             attachmentUrls.push(attachment.url);

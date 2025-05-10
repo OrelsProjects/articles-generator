@@ -303,7 +303,7 @@ export function useQueue() {
     if (bestTimeToPublish.length > 0) {
       return;
     }
-    debugger;
+    ;
     loadingBestNotesRef.current = true;
     dispatch(setLoadingFetchBestTimeToPublish(true));
     try {

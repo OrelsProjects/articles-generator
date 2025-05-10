@@ -95,9 +95,34 @@ export async function DELETE(req: NextRequest): Promise<any> {
     if (subscription) {
       await cancelSubscription(subscription.stripeSubId);
     }
+    await prisma.session.deleteMany({
+      where: {
+        userId: session.user?.id,
+      },
+    });
+
+    await prisma.userMetadata.deleteMany({
+      where: {
+        userId: session.user?.id,
+      },
+    });
+
+    await prisma.account.deleteMany({
+      where: {
+        userId: session.user?.id,
+      },
+    });
+
+    await prisma.verificationToken.deleteMany({
+      where: {
+        identifier: session.user?.email || "",
+      },
+    });
+
     await prisma.user.delete({
       where: { id: session.user?.id },
     });
+
     return NextResponse.json({}, { status: 200 });
   } catch (error: any) {
     loggerServer.error("[CRITICAL] Error deleting user", {

@@ -483,7 +483,7 @@ export function useExtension(): UseExtension {
           showDialog: false,
         },
       );
-      debugger;
+      ;
       if (response.success) {
         if (response.result) {
           return response.result;

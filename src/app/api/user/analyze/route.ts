@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const canUseAnalyze = await canUseAI(userId, AIUsageType.analyze);
-    const userMetadata = await prisma.userMetadata.findUnique({
+    let userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId,
       },
@@ -81,6 +81,14 @@ export async function POST(req: NextRequest) {
       await prisma.userMetadata.create({
         data: {
           userId,
+        },
+      });
+      userMetadata = await prisma.userMetadata.findUnique({
+        where: {
+          userId,
+        },
+        include: {
+          publication: true,
         },
       });
     }
