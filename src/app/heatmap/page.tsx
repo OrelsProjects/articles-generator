@@ -81,10 +81,9 @@ interface ErrorState {
 
 export default function AnalyzeSubstack() {
   const { data: session } = useSession();
-  const pathname = usePathname();
   const router = useCustomRouter();
   const searchParams = useSearchParams();
-
+  const pathname = usePathname();
   const { signInWithGoogle } = useAuth();
 
   const [substackUrl, setSubstackUrl] = useState("");
@@ -111,9 +110,7 @@ export default function AnalyzeSubstack() {
 
   useEffect(() => {
     if (authorId) {
-      router.push(pathname, {
-        paramsToRemove: ["author"],
-      });
+      router.removeParams(["author"]);
     }
   }, [authorId]);
 
@@ -257,9 +254,9 @@ export default function AnalyzeSubstack() {
 
   const getLoginRedirect = () => {
     if (selectedByline) {
-      return `/login?redirect=heatmap&author=${selectedByline.authorId}`;
+      return `${pathname}?redirect=heatmap&author=${selectedByline.authorId}`;
     } else {
-      return `/login?redirect=heatmap`;
+      return `${pathname}?redirect=heatmap`;
     }
   };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 export interface CustomRouterOptions {
   preserveQuery?: boolean | null; // Use null for now to not preserve query and not break existing code
@@ -12,6 +12,7 @@ export interface CustomRouterOptions {
 
 export function useCustomRouter() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const push = (
@@ -62,5 +63,11 @@ export function useCustomRouter() {
     }
   };
 
-  return { ...router, push };
+  const removeParams = (params: string[], path?: string) => {
+    push(path || pathname, {
+      paramsToRemove: params,
+    });
+  };
+
+  return { ...router, push, removeParams };
 }

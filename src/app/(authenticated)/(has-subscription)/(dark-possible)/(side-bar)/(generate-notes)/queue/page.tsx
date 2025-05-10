@@ -13,7 +13,6 @@ import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
 export default function NotesCalendarPage() {
   const router = useCustomRouter();
-  const pathname = usePathname();
   const { getNoteByNoteId, selectNote, sendNote } = useNotes();
   const searchParams = useSearchParams();
   const { loading, error } = useNotesSchedule();
@@ -55,9 +54,7 @@ export default function NotesCalendarPage() {
           toast.error("Failed to send note");
         })
         .finally(() => {
-          router.push(pathname, {
-            paramsToRemove: ["sendNoteId"],
-          });
+          router.removeParams(["sendNoteId"]);
         });
     }
   }, []);

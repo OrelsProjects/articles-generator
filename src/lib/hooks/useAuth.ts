@@ -14,26 +14,29 @@ const useAuth = () => {
   const searchParams = useSearchParams();
   const router = useCustomRouter();
   const dispatch = useAppDispatch();
-  const [loading, setLoading] = useState(false);
 
-  const signInWithGoogle = useCallback(async (redirectPath?: string) => {
+  const [loading, setLoading] = useState(false);
+  const redirect = searchParams.get("redirect") || undefined;
+
+  const signInWithGoogle = useCallback(async (redirectTo?: string) => {
     try {
+      debugger;
       const redirectDefault = "/onboarding";
-      let redirect = new URL(
-        `${window.location.origin}${redirectPath || redirectDefault}`,
+      let redirectPath = new URL(
+        `${window.location.origin}${redirectTo || redirect || redirectDefault}`,
       );
 
       // preserve query params
       searchParams.forEach((val, key) => {
-        if (!redirect.searchParams.has(key)) {
-          redirect.searchParams.append(key, val);
+        if (!redirectPath.searchParams.has(key)) {
+          redirectPath.searchParams.append(key, val);
         }
       });
 
       setLoading(true);
       await signIn("google", {
         redirect: true,
-        callbackUrl: redirect.toString(),
+        callbackUrl: redirectPath.toString(),
       });
     } catch (error: any) {
       if (error?.name === "UserAlreadyAuthenticatedException") {

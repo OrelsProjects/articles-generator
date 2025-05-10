@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSession } from "next-auth/react";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,15 +8,15 @@ import { FcGoogle } from "react-icons/fc";
 import { CheckCircle2 } from "lucide-react";
 import useAuth from "@/lib/hooks/useAuth";
 import { useSearchParams } from "next/navigation";
-import { useAppSelector } from "@/lib/hooks/redux";
-import { selectPublications } from "@/lib/features/publications/publicationSlice";
 import Link from "next/link";
 
 const Auth = () => {
   const { signInWithGoogle } = useAuth();
   const router = useCustomRouter();
   const searchParams = useSearchParams();
+
   const code = searchParams.get("code");
+  const redirect = searchParams.get("redirect") || undefined;
 
   useEffect(() => {
     if (code) {
@@ -26,7 +25,7 @@ const Auth = () => {
   }, [code, router]);
 
   const handleGoogleSignIn = () => {
-    signInWithGoogle();
+    signInWithGoogle(redirect);
   };
 
   return (

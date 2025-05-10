@@ -112,14 +112,8 @@ export default function AuthProvider({
 
     const shouldOnboard = !hasPublication;
     const redirect = searchParams.get("redirect");
-    console.log("redirect", redirect);
-    console.log("pathname", pathname);
     if (redirect === "heatmap") {
-      console.log("pushing heatmap");
-      router.push("/heatmap", {
-        preserveQuery: true,
-        paramsToRemove: ["redirect"],
-      });
+      router.push("/heatmap");
       return;
     }
     console.log("Skipped pushing heatmap");
