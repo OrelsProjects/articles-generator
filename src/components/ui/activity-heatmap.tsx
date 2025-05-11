@@ -16,6 +16,7 @@ import * as htmlToImage from "html-to-image";
 import { toast } from "react-toastify";
 import { Logger } from "@/logger";
 import { getStreakCount } from "@/lib/utils/streak";
+import { EventTracker } from "@/eventTracker";
 
 interface ActivityHeatmapProps {
   streakData: Streak[];
@@ -216,6 +217,7 @@ export default function ActivityHeatmap({
   };
 
   const handleShare = () => {
+    EventTracker.track("activity_heatmap_share");
     if (!heatmapRef.current) {
       toast.error("Nothing to share yet");
       return;
