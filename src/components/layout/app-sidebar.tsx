@@ -50,17 +50,37 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const { signOut } = useAuth();
 
   const validNavItems = useMemo(() => {
-    return navItems.filter(item => {
+    const itemsWithoutFeatureFlags = navItems.filter(
+      item => !item.featureFlagsRequired,
+    );
+    const itemsWithFeatureFlags = navItems.filter(
+      item => !itemsWithoutFeatureFlags.includes(item),
+    );
+
+    const allowedItemsWithFeatureFlags = itemsWithFeatureFlags.filter(item => {
       if (item.featureFlagsRequired) {
+        const userFeatureFlags = user?.meta?.featureFlags || [];
         return item.featureFlagsRequired.some(flag =>
-          user?.meta?.featureFlags.includes(flag),
+          userFeatureFlags.includes(flag),
         );
       }
       return true;
     });
+
+    return [...itemsWithoutFeatureFlags, ...allowedItemsWithFeatureFlags];
   }, [user?.meta?.featureFlags]);
 
   useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const isItemInPaths = navItems.some(item => item.href === pathname);
+    if (!isItemInPaths) {
+      // It's a subdomain, so we don't need to check the feature flags
+      return;
+    }
+
     const isPathnameAllowed = validNavItems.some(
       item => item.href === pathname,
     );

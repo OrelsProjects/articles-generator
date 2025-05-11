@@ -1,20 +1,16 @@
-// main.ts
-/* eslint-disable no-console */
 import * as cheerio from "cheerio";
 import { prismaArticles } from "@/lib/prisma";
 import {
   Post,
   Publication,
-  PublicationLink,
 } from "../../../prisma/generated/articles";
-import { delay, fetchWithHeaders } from "./requests";
+import { fetchWithHeaders } from "./requests";
 import loggerServer from "@/loggerServer";
 import {
   getUserArticles as getUserPosts,
   getUserArticlesBody,
 } from "@/lib/dal/articles";
 import { toValidUrl } from "@/lib/utils/url";
-import { getBylinesByUrl } from "@/lib/publication";
 
 export const getArticleEndpoint = (
   url: string,
@@ -257,6 +253,9 @@ export async function populatePublications(
   url: string,
   maxArticlesToGetBody = 60,
   byline?: number,
+  options?: {
+    stopIfNoNewPosts?: boolean;
+  },
 ): Promise<Array<{ url: string; status: string }>> {
   const publicationsStatus: Array<{ url: string; status: string }> = [];
   const allPosts: SubstackPost[] = [];
@@ -287,7 +286,9 @@ export async function populatePublications(
     if (postsNotInCurrentUserPosts.length > 0) {
       allPosts.push(...postsNotInCurrentUserPosts);
     } else {
-      break;
+      if (options?.stopIfNoNewPosts) {
+        break;
+      }
     }
   }
 
@@ -295,6 +296,7 @@ export async function populatePublications(
     .sort((a, b) => (b.reactionCount || 0) - (a.reactionCount || 0))
     .slice(0, maxArticlesToGetBody);
 
+  // Getting body text for posts
   for (const post of postsToGetBody) {
     const formattedPost = {
       ...post,
@@ -547,7 +549,10 @@ export async function scrapePosts(
   url: string,
   maxArticlesToGetBody = 60,
   byline?: number,
+  options?: {
+    stopIfNoNewPosts?: boolean;
+  },
 ): Promise<void> {
   url = toValidUrl(url);
-  await populatePublications(url, maxArticlesToGetBody, byline);
+  await populatePublications(url, maxArticlesToGetBody, byline, options);
 }
