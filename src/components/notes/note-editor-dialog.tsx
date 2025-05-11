@@ -9,6 +9,7 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import {
   formatText,
+  loadContent,
   notesTextEditorOptions,
   unformatText,
 } from "@/lib/utils/text-editor";
@@ -106,7 +107,6 @@ export function NotesEditorDialog() {
   };
   useEffect(() => {
     const handlePasteImage = async (e: CustomEvent<File>) => {
-      ;
       const file = e.detail;
       if (file) {
         await handleImageSelect(file);
@@ -345,7 +345,7 @@ export function NotesEditorDialog() {
 
   const handleImprovement = (improvedText: string) => {
     const formattedText = formatText(improvedText);
-    updateEditorBody(formattedText);
+    loadContent(formattedText, editor);
     editor?.commands.focus();
   };
 
