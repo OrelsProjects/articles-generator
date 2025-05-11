@@ -10,12 +10,14 @@ import { NotesComments } from "../../../../../prisma/generated/articles";
 import loggerServer from "@/loggerServer";
 import { scrapePosts } from "@/lib/utils/publication";
 
-const schema = z.object({
-  includePosts: z.boolean().optional().default(false),
-  // types of string: "streak | engagement"
-  object: z.enum(["streak", "engagement"]).optional(),
-  url: z.string().optional(),
-});
+const schema = z
+  .object({
+    includePosts: z.boolean().optional().default(false),
+    // types of string: "streak | engagement"
+    object: z.enum(["streak", "engagement"]).optional(),
+    url: z.string().optional(),
+  })
+  .optional();
 
 const insertIntoDB = async (notes: NotesComments[], authorId: number) => {
   for (const note of notes) {
@@ -77,15 +79,29 @@ export async function POST(
   },
 ) {
   const session = await getServerSession(authOptions);
-  
+
+  const { authorId: authorIds } = params;
+  const authorId = authorIds?.[0];
+  let validAuthorIdString = session?.user.meta?.tempAuthorId || authorId;
+  let validAuthorId: number | null = parseInt(validAuthorIdString);
+
   try {
     let validObject = "streak";
     let validUrl: string | null = null;
     let includePosts = false;
-    const body = await request.json();
-    const parsedBody = schema.safeParse(body);
+    let parsedBody = null;
+    try {
+      const body = await request.json();
+      parsedBody = schema.safeParse(body);
+    } catch (error) {
+      loggerServer.error("Error in analyze-substack API:", {
+        error,
+        userId: session?.user.id || "system",
+        authorId: params.authorId[0],
+      });
+    }
 
-    if (parsedBody.success) {
+    if (parsedBody?.success && !session && parsedBody.data) {
       const { includePosts: includePostsParam, object, url } = parsedBody.data;
       validObject = object || "streak";
       validUrl = url || null;
@@ -95,11 +111,6 @@ export async function POST(
     if (validObject === "engagement" && !validUrl) {
       return NextResponse.json({ error: "Missing url" }, { status: 400 });
     }
-
-    const { authorId: authorIds } = params;
-    const authorId = authorIds?.[0];
-    let validAuthorIdString = session?.user.meta?.tempAuthorId || authorId;
-    let validAuthorId: number | null = parseInt(validAuthorIdString);
 
     if (!validAuthorId || isNaN(validAuthorId)) {
       if (session) {
