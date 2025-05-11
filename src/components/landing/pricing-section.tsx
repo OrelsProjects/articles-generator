@@ -29,13 +29,13 @@ const basicFeatures = (credits: number, interval: "month" | "year") => [
 
 const hobbyistFeatures = [
   `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time (Requires Chrome Extension)`,
-  `One-click note posting (Requires Chrome Extension)`,
+  `One-click note posting <span class='text-primary'>(Requires Chrome Extension)</span>`,
 ];
 
 const advancedFeatures = [
   "Choose your LLM (Includes GPT-4.5)",
   "Access to The Best Notes Templates",
-  "Notes scheduling, <span class='text-primary'>unlimited</span> (Requires Chrome)",
+  "Notes scheduling, <span class='text-primary'>unlimited (Requires Chrome)</span>  ",
 ];
 
 const premiumFeatures = [

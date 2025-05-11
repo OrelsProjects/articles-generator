@@ -46,10 +46,10 @@ const faq = [
     question: `Do I need to leave my computer running to schedule notes?`,
     answer: `Yes. Just leave the ${appName}'s window in the background and it will automatically publish your notes at anytime you choose!`,
   },
-  {
-    question: `What if I forgot to leave ${appName} running?`,
-    answer: `No problem! You will get an email with a button to one-click publish the missing note.`,
-  },
+  // {
+  //   question: `What if I forgot to leave ${appName} running?`,
+  //   answer: `No problem! You will get an email with a button to one-click publish the missing note.`,
+  // },
   {
     question: `Can I tell WriteStack's AI on which topic I want to generate notes?`,
     answer: `Absolutely! You can tell WriteStack's AI on which topic you want to generate notes and it will generate 3 unique and original notes for you.`,
