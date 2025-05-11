@@ -203,6 +203,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
+    loggerServer.info(
+      "[RADAR-POTENTIAL-USERS] Processing request: " + session.user.id,
+      {
+        userId: session.user.id,
+        session,
+      },
+    );
+
     const bodyText = await req.text();
     const body = JSON.parse(bodyText);
     const parsedBody = schema.safeParse(body);
