@@ -9,7 +9,7 @@ export function ImageModal() {
   const { selectedImage, selectImage } = useNotes();
 
   const handleOpenChange = (open: boolean) => {
-    debugger;
+    ;
     if (!open) {
       selectImage(null);
     }

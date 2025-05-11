@@ -106,7 +106,7 @@ export function NotesEditorDialog() {
   };
   useEffect(() => {
     const handlePasteImage = async (e: CustomEvent<File>) => {
-      debugger;
+      ;
       const file = e.detail;
       if (file) {
         await handleImageSelect(file);

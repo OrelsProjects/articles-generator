@@ -158,6 +158,7 @@ export async function fetchAllNoteComments(
           .includes(comment.comment?.id?.toString()),
     );
 
+    // If we have the rest of the notes in the db, break.
     if (newComments.length === 0) {
       break;
     }
@@ -294,4 +295,12 @@ export async function fetchAllNoteComments(
     allNotes: uniqueAllUserDbNotes,
     newNotes: newDbNotes,
   };
+}
+
+export async function fetchAllPosts(authorId: number) {
+  const maxPosts = 99999;
+  const marginOfSafety = 999;
+  let currentNoNewPostsCount = 0;
+  let previousStreakCount = 0;
+  let didStreakEnd = false; // If the new streak is the same as the previous streak, it means the user has skipped a day
 }

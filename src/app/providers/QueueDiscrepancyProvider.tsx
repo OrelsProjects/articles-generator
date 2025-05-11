@@ -197,7 +197,7 @@ export default function QueueDiscrepancyProvider() {
     setIsCheckingDiscrepancies(false);
 
     // Log the results
-    debugger;
+    ;
     if (newDiscrepancies.length > 0) {
       Logger.info(`Found ${newDiscrepancies.length} schedule discrepancies`, {
         discrepancies: newDiscrepancies,

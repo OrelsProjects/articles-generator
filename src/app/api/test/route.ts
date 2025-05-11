@@ -2,8 +2,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 import { NextResponse } from "next/server";
 import { addTagToEmail, sendMailSafe } from "@/lib/mail/mail";
-import { generatePublicationAnalysisCompleteEmail, generateScheduleNoteMissedEmail, generateWelcomeTemplateTrial } from "@/lib/mail/templates";
-
+import {
+  generatePublicationAnalysisCompleteEmail,
+  generateScheduleNoteMissedEmail,
+  generateWelcomeTemplateTrial,
+} from "@/lib/mail/templates";
+import { prisma } from "@/lib/prisma";
 // async function processUser(userId: string) {
 //   try {
 //     const userMetadata = await prisma.userMetadata.findUnique({
@@ -46,10 +50,32 @@ import { generatePublicationAnalysisCompleteEmail, generateScheduleNoteMissedEma
 // }
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // const session = await getServerSession(authOptions);
+  // if (!session) {
+  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // }
+
+  const session = await prisma.session.findMany({
+    where: {
+      userId: "6817eb234db08da5b12af777",
+    },
+  });
+
+  const account = await prisma.account.findMany({
+    where: {
+      userId: "6817eb234db08da5b12af777",
+    },
+  });
+
+  const verificationToken = await prisma.verificationToken.findMany({
+    where: {
+      identifier: "stefangirard@gmail.com",
+    },
+  });
+
+  console.log(session);
+  console.log(account);
+  console.log(verificationToken);
 
   // // const email = generateWelcomeTemplateTrial("Orel");
   // // const result = await sendMailSafe({

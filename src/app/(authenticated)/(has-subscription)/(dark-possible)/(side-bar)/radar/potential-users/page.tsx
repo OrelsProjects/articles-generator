@@ -35,6 +35,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const loadingStates = [
   { text: "Grabbing engagement data...", delay: 5000 },
@@ -125,24 +126,40 @@ export default function PotentialUsersPage() {
   const [url, setUrl] = useState<string>("");
   const [inputUrl, setInputUrl] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const loadingRef = useRef<boolean>(false);
+  const scrollThrottleRef = useRef<boolean>(false);
   const [orderBy, setOrderBy] = useState<OrderBy>("recommended");
   const { publications } = useAppSelector(state => state.publications);
+
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const publication = useMemo(() => {
     return publications[0];
   }, [publications]);
 
-  const fetchPotentialUsers = async (customUrl?: string) => {
+  const fetchPotentialUsers = async (
+    customUrl?: string,
+    pageNum: number = 0,
+  ) => {
     if (loadingRef.current) return;
     loadingRef.current = true;
     setLoading(true);
     try {
       const response = await axios.post("/api/v1/radar/potential-users", {
         url: customUrl || url || publication?.url,
+        page: pageNum,
+        take: 30,
       });
-      debugger;
-      setPotentialUsers(response.data);
+
+      if (pageNum === 0) {
+        setPotentialUsers(response.data);
+      } else {
+        setPotentialUsers(prev => [...prev, ...response.data]);
+      }
+
+      setHasMore(response.data.length > 0);
       setUrl(customUrl || url || publication?.url);
     } catch (error) {
       toast.error("Error fetching potential users");
@@ -154,16 +171,47 @@ export default function PotentialUsersPage() {
 
   useEffect(() => {
     if (publication) {
-      fetchPotentialUsers();
+      fetchPotentialUsers(undefined, 0);
     }
   }, [publication]);
 
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputUrl.trim()) {
-      fetchPotentialUsers(inputUrl.trim());
+      setPage(0);
+      setHasMore(true);
+      fetchPotentialUsers(inputUrl.trim(), 0);
     }
   };
+
+  // Setup scroll listener for pagination
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onScroll = () => {
+      if (loadingRef.current || !hasMore) return;
+      
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      
+      // when you've scrolled 70% down the container
+      if (scrollTop + clientHeight >= scrollHeight * 0.7) {
+        if (scrollThrottleRef.current) return;
+        scrollThrottleRef.current = true;
+        
+        const nextPage = page + 1;
+        setPage(nextPage);
+        fetchPotentialUsers(url, nextPage);
+        
+        setTimeout(() => {
+          scrollThrottleRef.current = false;
+        }, 1000);
+      }
+    };
+
+    container.addEventListener("scroll", onScroll);
+    return () => container.removeEventListener("scroll", onScroll);
+  }, [hasMore, page, url, containerRef.current]);
 
   // Sort users based on orderBy
   const sortedUsers = useMemo(() => {
@@ -233,124 +281,141 @@ export default function PotentialUsersPage() {
             <Skeleton className="h-3 w-24 rounded" />
           </div>
         </div>
-        <div className="h-8 w-20 rounded" />
+        <Skeleton className="h-8 w-20 rounded" />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-10 px-4 bg-background text-foreground">
-      <h1 className="text-3xl font-bold mb-8">Potential Users</h1>
-      <form onSubmit={handleAnalyze} className="flex items-center gap-2 mb-8">
-        <Input
-          type="text"
-          className="py-4"
-          placeholder="Enter Substack URL to analyze..."
-          value={inputUrl}
-          onChange={e => setInputUrl(e.target.value)}
-        />
-        <Button type="submit" disabled={loading}>
-          {loading ? "Analyzing..." : "Analyze"}
-        </Button>
-      </form>
-      <div className="flex items-center gap-2 mb-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="min-w-[160px] justify-between">
-              Order by: {orderByText}
+    <div className="flex flex-col h-[calc(100vh-4rem)] w-full">
+      <ScrollArea className="flex-1" ref={containerRef}>
+        <div className="w-full max-w-6xl mx-auto py-10 px-4">
+          <h1 className="text-3xl font-bold mb-8">Potential Users</h1>
+          <form onSubmit={handleAnalyze} className="flex items-center gap-2 mb-8">
+            <Input
+              type="text"
+              className="py-4"
+              placeholder="Enter Substack URL to analyze..."
+              value={inputUrl}
+              onChange={e => setInputUrl(e.target.value)}
+            />
+            <Button type="submit" disabled={loading && page === 0}>
+              {loading && page === 0 ? "Analyzing..." : "Analyze"}
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuRadioGroup
-              value={orderBy}
-              onValueChange={v => {
-                console.log(v);
-                setOrderBy(v as OrderBy);
-              }}
-            >
-              <DropdownMenuRadioItem value="recommended">
-                Recommended
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="subscriberCount">
-                Subscriber Count
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="bestsellerTier">
-                Bestseller Tier
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="name">Name</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="flex flex-col gap-2 w-full">
-        {isLoadingSkeleton
-          ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
-          : sortedUsers.map(user => (
-              <div
-                key={user.authorId}
-                className="flex items-center justify-between bg-muted rounded-xl shadow p-4 w-full hover:shadow-md transition border border-border"
-              >
-                <div className="flex items-center gap-4 min-w-0">
-                  <Avatar>
-                    <AvatarImage
-                      src={user.photoUrl}
-                      alt={user.name}
-                      onClick={() => {
-                        window.open(getUserSubstackUrl(user.handle), "_blank");
-                      }}
-                      className="w-12 h-12 rounded-full object-cover border border-border flex-shrink-0 cursor-pointer"
-                    />
-                    <AvatarFallback className="bg-muted text-muted-foreground">
-                      <User className="h-8 w-8" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <div className="font-semibold text-lg truncate flex items-center gap-1.5">
-                      <Button
-                        variant="link"
-                        className="p-0 text-foreground text-lg"
-                        asChild
-                      >
-                        <Link
-                          href={getUserSubstackUrl(user.handle)}
-                          target="_blank"
-                        >
-                          {user.name}
-                        </Link>
-                      </Button>
-                      {user.bestsellerTier >= 10000 ? (
-                        <BestSeller10000 height={16} width={16} />
-                      ) : user.bestsellerTier >= 1000 ? (
-                        <BestSeller1000 height={16} width={16} />
-                      ) : user.bestsellerTier >= 100 ? (
-                        <BestSeller100 height={16} width={16} />
-                      ) : null}
-                    </div>
-                    {shouldShowSubscriberCountString(user) ? (
-                      <div className="text-xs text-muted-foreground">
-                        {user.subscriberCountString}
+          </form>
+          <div className="flex items-center gap-2 mb-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="min-w-[160px] justify-between"
+                >
+                  Order by: {orderByText}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuRadioGroup
+                  value={orderBy}
+                  onValueChange={v => {
+                    console.log(v);
+                    setOrderBy(v as OrderBy);
+                  }}
+                >
+                  <DropdownMenuRadioItem value="recommended">
+                    Recommended
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="subscriberCount">
+                    Subscriber Count
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="bestsellerTier">
+                    Bestseller Tier
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="name">Name</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="flex flex-col gap-2 w-full">
+            {isLoadingSkeleton
+              ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
+              : sortedUsers.map(user => (
+                  <div
+                    key={user.authorId}
+                    className="flex items-center justify-between bg-card rounded-xl shadow p-4 w-full hover:shadow-md transition border border-border"
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <Avatar>
+                        <AvatarImage
+                          src={user.photoUrl}
+                          alt={user.name}
+                          onClick={() => {
+                            window.open(
+                              getUserSubstackUrl(user.handle),
+                              "_blank",
+                            );
+                          }}
+                          className="w-12 h-12 rounded-full object-cover border border-border flex-shrink-0 cursor-pointer"
+                        />
+                        <AvatarFallback className="bg-muted text-muted-foreground">
+                          <User className="h-8 w-8" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-lg truncate flex items-center gap-1.5">
+                          <Button
+                            variant="link"
+                            className="p-0 text-foreground text-lg"
+                            asChild
+                          >
+                            <Link
+                              href={getUserSubstackUrl(user.handle)}
+                              target="_blank"
+                            >
+                              {user.name}
+                            </Link>
+                          </Button>
+                          {user.bestsellerTier >= 10000 ? (
+                            <BestSeller10000 height={16} width={16} />
+                          ) : user.bestsellerTier >= 1000 ? (
+                            <BestSeller1000 height={16} width={16} />
+                          ) : user.bestsellerTier >= 100 ? (
+                            <BestSeller100 height={16} width={16} />
+                          ) : null}
+                        </div>
+                        {shouldShowSubscriberCountString(user) ? (
+                          <div className="text-xs text-muted-foreground">
+                            {user.subscriberCountString}
+                          </div>
+                        ) : shouldShowSubscriberCount(user) ? (
+                          <div className="text-muted-foreground text-xs line-clamp-2">
+                            {user.subscriberCount.toLocaleString()} subscribers
+                          </div>
+                        ) : null}
+                        <div className="text-muted-foreground text-sm line-clamp-2">
+                          {user.bio}
+                        </div>
                       </div>
-                    ) : shouldShowSubscriberCount(user) ? (
-                      <div className="text-muted-foreground text-xs line-clamp-2">
-                        {user.subscriberCount.toLocaleString()} subscribers
-                      </div>
-                    ) : null}
-                    <div className="text-muted-foreground text-sm line-clamp-2">
-                      {user.bio}
                     </div>
+                    {/* <Button variant={user.isFollowing ? "ghost" : "outline"}>
+                      {user.isFollowing ? "Following" : "Follow"}
+                    </Button> */}
                   </div>
-                </div>
-                {/* <Button variant={user.isFollowing ? "ghost" : "outline"}>
-                  {user.isFollowing ? "Following" : "Follow"}
-                </Button> */}
+                ))}
+            {loading && page > 0 && (
+              <div className="flex flex-col gap-2 mt-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonCard key={`loading-${i}`} />
+                ))}
               </div>
-            ))}
-      </div>
-      <ToastStepper loadingStates={loadingStates} loading={isLoadingStates} />
-      <WelcomeDialog
-        open={showWelcomeDialog}
-        onOpenChange={setShowWelcomeDialog}
-      />
+            )}
+          </div>
+          <ToastStepper loadingStates={loadingStates} loading={isLoadingStates} />
+          <WelcomeDialog
+            open={showWelcomeDialog}
+            onOpenChange={setShowWelcomeDialog}
+          />
+        </div>
+      </ScrollArea>
     </div>
   );
 }

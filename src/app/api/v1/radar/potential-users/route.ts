@@ -18,12 +18,14 @@ import { BylineWithExtras } from "@/types/article";
 import { getAuthorNotes } from "@/lib/dal/publication/notes";
 import { getPublicationByUrl } from "@/lib/dal/publication";
 import { fetchAuthor } from "@/lib/utils/lambda";
+import { addScoreToPotentialUsers } from "@/lib/utils/statistics";
 
 const schema = z.object({
   url: z.string(),
   page: z.number().optional(),
   take: z.number().optional(),
   includeSelf: z.boolean().optional(),
+  existingBylineIds: z.array(z.number()).optional(),
 });
 
 const LIMIT_ARTICLES = 15;
@@ -31,19 +33,6 @@ const LIMIT_NOTES = 15;
 const LIMIT_TAKE = 30;
 
 export const maxDuration = 600; // This function can run for a maximum of 10 minutes
-
-const addScoreToPotentialUsers = (users: RadarPotentialUser[]) => {
-  // count the amount of time each user appears in the list and order them by that.
-  // Return list with unique users, mapping their id to the amount of times they appear in the list.
-  const appearanceCount = users.reduce(
-    (acc, user) => {
-      acc[user.id] = (acc[user.id] || 0) + 1;
-      return acc;
-    },
-    {} as Record<number, number>,
-  );
-  return appearanceCount;
-};
 
 const getPotentialUsersScore = async (options: {
   url: string;
@@ -230,7 +219,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid body" }, { status: 400 });
     }
 
-    const { url, page, includeSelf, take } = parsedBody.data;
+    const {
+      url,
+      page = 0,
+      includeSelf,
+      take = LIMIT_TAKE,
+      existingBylineIds = [],
+    } = parsedBody.data;
     loggerServer.info("[RADAR-POTENTIAL-USERS] Processing request", {
       userId: session.user.id,
       url,
@@ -285,8 +280,8 @@ export async function POST(req: NextRequest) {
     const publicationAuthorId = publication[0]?.authorId;
     const selfAuthorId = userMetadata.publication?.authorId;
 
-    const validTake = Math.min(take || LIMIT_TAKE, LIMIT_TAKE);
-    const validPage = Math.max(page || 0, 0);
+    const validTake = Math.min(take, LIMIT_TAKE);
+    const validPage = Math.max(page, 0);
 
     const potentialPublicationUsers =
       await prisma.potentialPublicationUsers.findMany({
@@ -297,7 +292,7 @@ export async function POST(req: NextRequest) {
           score: "desc",
         },
         take: validTake,
-        skip: validPage * LIMIT_ARTICLES,
+        skip: validPage * validTake,
       });
 
     loggerServer.info(
@@ -306,6 +301,8 @@ export async function POST(req: NextRequest) {
         userId: session.user.id,
         count: potentialPublicationUsers.length,
         publicationId,
+        page: validPage,
+        take: validTake,
       },
     );
 
@@ -313,62 +310,66 @@ export async function POST(req: NextRequest) {
       potentialPublicationUsers.map(user => user.bylineId),
     );
 
-    let bylinesClientOrdered: BylineWithExtras[] = bylines.map(byline => {
-      const user = potentialPublicationUsers.find(
-        user => user.bylineId === byline.id,
-      );
-      return {
-        authorId: byline.id,
-        handle: byline.handle || "",
-        name: byline.name || "",
-        photoUrl: byline.photoUrl || "",
-        bio: byline.bio || "",
-        isFollowing: user?.isFollowing || false,
-        isSubscribed: user?.isSubscribed || false,
-        bestsellerTier: user?.bestsellerTier || 0,
-        subscriberCount: user?.subscriberCount || 0,
-        subscriberCountString: user?.subscriberCountString || "",
-        score: user?.score || 0,
-      };
-    });
+    let bylinesClientOrdered: BylineWithExtras[] = bylines
+      .filter(byline => !existingBylineIds.includes(byline.id))
+      .map(byline => {
+        const user = potentialPublicationUsers.find(
+          user => user.bylineId === byline.id,
+        );
+        return {
+          authorId: byline.id,
+          handle: byline.handle || "",
+          name: byline.name || "",
+          photoUrl: byline.photoUrl || "",
+          bio: byline.bio || "",
+          isFollowing: user?.isFollowing || false,
+          isSubscribed: user?.isSubscribed || false,
+          bestsellerTier: user?.bestsellerTier || 0,
+          subscriberCount: user?.subscriberCount || 0,
+          subscriberCountString: user?.subscriberCountString || "",
+          score: user?.score || 0,
+        };
+      });
 
     let promiseFetchNewPotentialUsers: Promise<BylineWithExtras[]> | null =
       null;
 
-    loggerServer.info(
-      "[RADAR-POTENTIAL-USERS] No existing users found, fetching new potential users",
-      {
-        userId: session.user.id,
-        publicationId,
-      },
-    );
-    promiseFetchNewPotentialUsers = getPotentialUsersScore({
-      url,
-      publicationId,
-      selfAuthorId,
-      publicationAuthorId,
-      page,
-      includeSelf,
-      userId: session.user.id,
-    });
-    loggerServer.info("[RADAR-POTENTIAL-USERS] Fetched new potential users", {
-      userId: session.user.id,
-      count: bylinesClientOrdered.length,
-      publicationId,
-    });
-
     if (bylinesClientOrdered.length === 0) {
-      bylinesClientOrdered = await promiseFetchNewPotentialUsers;
-    } else if (process.env.NODE_ENV === "production") {
-      promiseFetchNewPotentialUsers.catch(error => {
-        loggerServer.error(
-          "[RADAR-POTENTIAL-USERS] Error fetching new potential users",
-          {
-            userId: session.user.id,
-            error,
-          },
-        );
+      loggerServer.info(
+        "[RADAR-POTENTIAL-USERS] No existing users found, fetching new potential users",
+        {
+          userId: session.user.id,
+          publicationId,
+          page: validPage,
+        },
+      );
+      promiseFetchNewPotentialUsers = getPotentialUsersScore({
+        url,
+        publicationId,
+        selfAuthorId,
+        publicationAuthorId,
+        page: validPage,
+        includeSelf,
+        userId: session.user.id,
       });
+    } else if (process.env.NODE_ENV === "production") {
+      void (async () => {
+        try {
+          await promiseFetchNewPotentialUsers;
+        } catch (error) {
+          loggerServer.error(
+            "[RADAR-POTENTIAL-USERS] Error fetching new potential users",
+            {
+              userId: session.user.id,
+              error,
+            },
+          );
+        }
+      })();
+    }
+
+    if (bylinesClientOrdered.length === 0 && promiseFetchNewPotentialUsers) {
+      bylinesClientOrdered = await promiseFetchNewPotentialUsers;
     }
 
     return NextResponse.json(bylinesClientOrdered, { status: 200 });

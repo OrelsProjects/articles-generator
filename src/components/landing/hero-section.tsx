@@ -104,7 +104,7 @@ export const HeroSection = () => {
                 <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                   <Button
                     size="lg"
-                    className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground mt-6 px-8 sm:px-16 lg:mt-0 py-6 font-bold rounded-xl w-full sm:w-auto"
+                    className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground mt-[30px] px-8 sm:px-16 lg:mt-0 py-6 font-bold rounded-xl w-full sm:w-auto"
                     asChild
                   >
                     <Link href="/login">Start growing now</Link>

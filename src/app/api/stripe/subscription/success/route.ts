@@ -96,6 +96,6 @@ export async function GET(req: NextRequest) {
       error,
       userId: userSession?.user.id,
     });
-    return NextResponse.redirect(req.nextUrl.origin + "/home?error=true");
+    return NextResponse.redirect(req.nextUrl.origin + "/pricing?error=true");
   }
 }

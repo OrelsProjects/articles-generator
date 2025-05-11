@@ -34,6 +34,7 @@ export async function fetchWithHeaders(
   url: string,
   retries = 3,
   minDelay = 300,
+  extraStatusesToRetry: number[] = [],
 ) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -61,7 +62,10 @@ export async function fetchWithHeaders(
       if (attempt === retries) {
         return null; // Give up after max retries
       }
-      if (error.response?.status === 429) {
+      if (
+        error.response?.status === 429 ||
+        extraStatusesToRetry.includes(error.response?.status)
+      ) {
         // Rate limit (429) - Exponential backoff
         const timeToWait = 5000 * attempt * attempt;
         console.log(
@@ -69,7 +73,7 @@ export async function fetchWithHeaders(
         );
         await delay(timeToWait);
       } else {
-        await delay(2000 * attempt * attempt); // Exponential backoff
+        return null;
       }
     }
   }

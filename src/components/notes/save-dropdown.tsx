@@ -65,7 +65,7 @@ export function SaveDropdown({
       Logger.info("ADDING-SCHEDULE: handleAddToQueue", {
         options,
       });
-      debugger;
+      ;
       const nextAvailableSlot = getNextAvailableSchedule(presetSchedule);
       const nextAvailableSlotNoPreset = getNextAvailableSchedule();
 
