@@ -126,7 +126,7 @@ export default function AnalyzeSubstack() {
       setAuthorName(publicationRes.data.name);
 
       try {
-        const streakRes = await axios.get<{ streakData: Streak[] }>(
+        const streakRes = await axios.post<{ streakData: Streak[] }>(
           `/api/analyze-substack/${session?.user?.meta?.tempAuthorId || "null"}`,
         );
         setStreakData(streakRes.data.streakData);
@@ -145,6 +145,7 @@ export default function AnalyzeSubstack() {
   };
 
   useEffect(() => {
+    debugger;
     if (loadingUserDataRef.current) return;
     if (session?.user && streakData.length === 0) {
       fetchUserData();
@@ -152,13 +153,19 @@ export default function AnalyzeSubstack() {
   }, [session]);
 
   const inputDisabled = useMemo(() => {
-    return (
+    const isDisabled =
       isLoading ||
       loadingBylines ||
       loadingUserData ||
-      (!!session?.user && !!substackUrl && streakData.length > 0)
-    );
+      (!!session?.user && !!substackUrl && streakData.length > 0);
+
+    return isDisabled;
   }, [isLoading, loadingBylines, loadingUserData, session?.user, substackUrl]);
+
+  const showHeader = useMemo(
+    () => !!authorImage && !!authorName,
+    [authorImage, authorName],
+  );
 
   const validatePublication = async (url: string) => {
     try {
@@ -378,43 +385,47 @@ export default function AnalyzeSubstack() {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="bg-card rounded-lg p-6 shadow-sm border mb-8"
           >
-            <div className="flex flex-col md:flex-row gap-4">
-              <Input
-                placeholder="Your Substack URL (e.g., yourname.substack.com)"
-                value={substackUrl}
-                onChange={e => setSubstackUrl(e.target.value)}
-                className="flex-1"
-                disabled={inputDisabled}
-                onKeyDown={e => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
+            {showHeader ? (
+              <ActivityHeader />
+            ) : (
+              <div className="flex flex-col md:flex-row gap-4">
+                <Input
+                  placeholder="Your Substack URL (e.g., yourname.substack.com)"
+                  value={substackUrl}
+                  onChange={e => setSubstackUrl(e.target.value)}
+                  className="flex-1"
+                  disabled={inputDisabled}
+                  onKeyDown={e => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (selectedByline) {
+                        handleBylineSelect(selectedByline);
+                      } else {
+                        getBylines();
+                      }
+                    }
+                  }}
+                />
+
+                <Button
+                  variant={"outline"}
+                  onClick={() => {
                     if (selectedByline) {
                       handleBylineSelect(selectedByline);
                     } else {
                       getBylines();
                     }
-                  }
-                }}
-              />
-              <Button
-                variant={"outline"}
-                onClick={() => {
-                  if (selectedByline) {
-                    handleBylineSelect(selectedByline);
-                  } else {
-                    getBylines();
-                  }
-                }}
-                disabled={isLoading || loadingBylines || !substackUrl}
-              >
-                {loadingBylines
-                  ? "Looking up authors..."
-                  : isLoading
-                    ? "Analyzing..."
-                    : "Analyze Activity"}
-              </Button>
-            </div>
-
+                  }}
+                  disabled={isLoading || loadingBylines || !substackUrl}
+                >
+                  {loadingBylines
+                    ? "Looking up authors..."
+                    : isLoading
+                      ? "Analyzing..."
+                      : "Analyze Activity"}
+                </Button>
+              </div>
+            )}
             <AnimatePresence mode="popLayout">
               {error?.value && (
                 <MotionAlert
@@ -473,11 +484,6 @@ export default function AnalyzeSubstack() {
                 <div className="absolute w-full h-full top-0 right-0 bg-black/40 rounded-lg" />
               )}
               <ActivityHeatmap
-                // shareHeader={
-                //   <div className="w-full flex justify-center">
-                //     <ActivityHeader />
-                //   </div>
-                // }
                 streakData={streakData || []}
                 loading={isLoading}
                 showShare={hasAnalyzed || !!session?.user}
