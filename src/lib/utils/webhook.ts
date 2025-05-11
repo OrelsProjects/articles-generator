@@ -498,16 +498,17 @@ export async function handleInvoicePaymentSucceeded(event: any) {
   });
 
   const currentPeriodEnd = new Date(
-    Number(subscription.currentPeriodEnd) * 1000,
+    Number(subscription.currentPeriodEnd),
   );
 
-  const emailTemplate = generatePaymentConfirmationEmail(
-    user.name || "",
-    subscription.plan,
-    invoice.amount_paid / 100,
-    new Date(),
-    currentPeriodEnd,
-  );
+  const emailTemplate = generatePaymentConfirmationEmail({
+    userName: user.name || "",
+    planName: subscription.plan,
+    amount: invoice.amount_paid / 100,
+    paymentDate: new Date(),
+    nextBillingDate: currentPeriodEnd,
+    invoiceNumber: invoice.number || undefined,
+  });
 
   await sendMail({
     to: userEmail,

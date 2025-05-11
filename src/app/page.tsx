@@ -7,14 +7,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { ImprovementType } from "@/lib/prompts";
-import { formatText, textEditorOptions } from "@/lib/utils/text-editor";
-import { EditorContent, useEditor } from "@tiptap/react";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { initialTextForEnhancement, textByType } from "@/lib/landing-consts";
 import { appName } from "@/lib/consts";
 import { cn } from "@/lib/utils";
 import { HeroSection } from "@/components/landing/hero-section";
@@ -27,8 +22,8 @@ import ProductHighlightSection from "@/components/landing/product-highlight-sect
 import FeaturesSection from "@/components/landing/features-section";
 import WhyNotesSection from "@/components/landing/why-notes-section";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
-
-type ImprovementTone = "Funny" | "Creative" | "Engaging" | "Sarcastic";
+import LocomotiveScroll from "locomotive-scroll";
+import { useEffect } from "react";
 
 const DividerPrimary = ({
   className,
@@ -75,8 +70,35 @@ const faq = [
 ];
 
 function App() {
+  useEffect(() => {
+    const scrollEl = document.querySelector("[data-scroll-container]");
+    if (!scrollEl) return;
+
+    const scroll = new LocomotiveScroll({
+      el: scrollEl,
+      smooth: true,
+      multiplier: 0.75,
+      lerp: 0.05,
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener("click", function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute("href"));
+        if (target) scroll.scrollTo(target);
+      });
+    });
+
+    return () => {
+      if (scroll) scroll.destroy(); // 💥 VERY important to clean up
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen w-screen overflow-x-hidden bg-primary">
+    <div
+      className="w-screen overflow-x-hidden bg-primary"
+      data-scroll-container
+    >
       <ThemeProvider forcedTheme="light">
         <Header />
         <HeroSection />

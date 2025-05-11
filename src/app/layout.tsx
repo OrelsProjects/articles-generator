@@ -103,7 +103,9 @@ export default function RootLayout({
               <TopLoaderProvider />
               <ToastProvider />
               <Analytics />
-              <AnimationProvider>{children}</AnimationProvider>
+              <AnimationProvider className="max-h-screen">
+                {children}
+              </AnimationProvider>
               <ClientTrackersProvider />
             </SessionWrapper>
           </StoreProvider>

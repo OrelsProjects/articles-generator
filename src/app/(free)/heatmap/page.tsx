@@ -322,24 +322,6 @@ export default function AnalyzeSubstack() {
         ) : null}
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-        className="bg-primary/5 rounded-lg p-8 border border-primary/40 text-center"
-      >
-        <h2 className="text-2xl font-bold mb-4">
-          Want more out of your Substack?
-        </h2>
-        <p className="text-lg mb-6">
-          {appName} helps you grow your audience through consistent posting,
-          viral content, scheduling and much more.
-        </p>
-        <Button size="lg" asChild>
-          <Link href="/">Try {appName} For Free</Link>
-        </Button>
-      </motion.div>
-
       <Dialog open={showLoginDialog} onOpenChange={handleCloseLoginDialog}>
         <DialogContent className="sm:max-w-md" backgroundBlur={false}>
           <DialogHeader>

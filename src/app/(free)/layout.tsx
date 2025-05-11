@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
 import { ArrowRight } from "lucide-react";
 import { appName } from "@/lib/consts";
+import { motion } from "framer-motion";
 
 export default function FreeLayout({
   children,
@@ -38,12 +39,25 @@ export default function FreeLayout({
           </div>
         </div>
       </header>
-      
+
       {/* Main content */}
-      <main className="flex-grow">
+      <main className="flex-grow max-w-6xl mx-auto">
         <ThemeProvider>{children}</ThemeProvider>
+
+        <div className="bg-primary/5 rounded-lg p-8 border border-primary/40 text-center">
+          <h2 className="text-2xl font-bold mb-4">
+            Want more out of your Substack?
+          </h2>
+          <p className="text-lg mb-6">
+            {appName} helps you grow your audience through consistent posting,
+            viral content, scheduling and much more.
+          </p>
+          <Button size="lg" asChild>
+            <Link href="/">Try {appName} For Free</Link>
+          </Button>
+        </div>
       </main>
-      
+
       {/* Footer */}
       <footer className="bg-muted py-6 mt-12">
         <div className="container mx-auto px-4 text-center">

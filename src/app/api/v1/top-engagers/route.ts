@@ -8,14 +8,14 @@ import {
   addScoreToEngagers,
   addScoreToPotentialUsers,
 } from "@/lib/utils/statistics";
-import { getBylinesData } from "@/lib/dal/byline";
+import { getBylines, getBylinesData } from "@/lib/dal/byline";
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   const isFree = !session?.user.meta?.plan;
   let authorId = session?.user.meta?.tempAuthorId;
   try {
     const { searchParams } = new URL(request.url);
-    const limit = searchParams.get("limit") || "20";
+    const limit = searchParams.get("limit") || "25";
     const offset = searchParams.get("offset") || "0";
 
     const metadata = await prisma.userMetadata.findUnique({
@@ -81,6 +81,7 @@ export async function GET(request: NextRequest) {
           authorId: user.id.toString(),
           photoUrl: user.photo_url ?? "",
           name: user.name,
+          handle: userData?.slug ?? "",
           subscriberCount: user.subscriberCount ?? 0,
           subscriberCountString: userData?.subscriberCountString ?? "",
         });
@@ -96,6 +97,18 @@ export async function GET(request: NextRequest) {
         (a, b) => b.score - a.score,
       );
 
+      const bylines = await getBylines(
+        sortedEngagers.map(engager => parseInt(engager.authorId)),
+      );
+
+      sortedEngagers.forEach(engager => {
+        const byline = bylines.find(
+          byline => byline.id === parseInt(engager.authorId),
+        );
+        if (byline) {
+          engager.handle = byline.handle || "";
+        }
+      });
       const paginatedEngagers = sortedEngagers.slice(
         0,
         isFree ? 5 : parseInt(limit),
@@ -109,4 +122,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 }
-

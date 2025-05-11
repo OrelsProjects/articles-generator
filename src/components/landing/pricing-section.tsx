@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { cn } from "@/lib/utils";
@@ -20,8 +20,8 @@ import {
 import { Plan } from "@prisma/client";
 import PlanComparisonDialog from "./plan-comparison-dialog";
 
-const basicFeatures = (credits: number) => [
-  `${credits} WriteStack AI Credits/Month`,
+const basicFeatures = (credits: number, interval: "month" | "year") => [
+  `${interval === "month" ? credits : credits * 12} WriteStack AI Credits/${interval}`,
   "Easy one-click posting",
   "Specialized AI-Powered Substack editor",
   "Growing Notes Inspirations (5m+)",
@@ -44,39 +44,6 @@ const premiumFeatures = [
   "<span class='text-primary'>Same price forever</span>",
 ];
 
-const pricingPlans = [
-  {
-    name: "Hobbyist",
-    description:
-      "The essentials to start building your Substack business today.",
-    monthlyPrice: 12.99,
-    yearlyPlanPrice: 9.99,
-    features: [...basicFeatures(50), ...hobbyistFeatures],
-    annualSavings: 35.98,
-    popular: false,
-  },
-  {
-    name: "Standard",
-    description:
-      "Scale your Substack presence and business.<br/>Ideal for accounts looking to grow.",
-    monthlyPrice: 29.99,
-    yearlyPlanPrice: 23.99,
-    features: [...basicFeatures(200), ...advancedFeatures],
-    annualSavings: 71.98,
-    popular: true,
-  },
-  {
-    name: "Premium",
-    description:
-      "Supercharge your Substack activity.<br/>Ideal for large, active accounts.",
-    monthlyPrice: 49.99,
-    yearlyPlanPrice: 39.99,
-    features: [...basicFeatures(350), ...advancedFeatures, ...premiumFeatures],
-    annualSavings: 119.98,
-    popular: false,
-  },
-];
-
 export default function Pricing({
   className,
   onboarding,
@@ -91,6 +58,46 @@ export default function Pricing({
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+
+  const pricingPlans = useMemo(
+    () => [
+      {
+        name: "Hobbyist",
+        description:
+          "The essentials to start building your Substack business today.",
+        monthlyPrice: 12.99,
+        yearlyPlanPrice: 9.99,
+        features: [...basicFeatures(50, billingCycle), ...hobbyistFeatures],
+        annualSavings: 35.98,
+        popular: false,
+      },
+      {
+        name: "Standard",
+        description:
+          "Scale your Substack presence and business.<br/>Ideal for accounts looking to grow.",
+        monthlyPrice: 29.99,
+        yearlyPlanPrice: 23.99,
+        features: [...basicFeatures(200, billingCycle), ...advancedFeatures],
+        annualSavings: 71.98,
+        popular: true,
+      },
+      {
+        name: "Premium",
+        description:
+          "Supercharge your Substack activity.<br/>Ideal for large, active accounts.",
+        monthlyPrice: 49.99,
+        yearlyPlanPrice: 39.99,
+        features: [
+          ...basicFeatures(350, billingCycle),
+          ...advancedFeatures,
+          ...premiumFeatures,
+        ],
+        annualSavings: 119.98,
+        popular: false,
+      },
+    ],
+    [billingCycle],
+  );
 
   const handleGetStarted = async (plan: string) => {
     // If user is not authenticated or onboarding, proceed without showing dialog
@@ -113,7 +120,6 @@ export default function Pricing({
     setLoading(true);
     try {
       if (onboarding) {
-        
         await goToCheckout(billingCycle, plan);
       } else {
         if (!user) {

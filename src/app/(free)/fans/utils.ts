@@ -32,14 +32,17 @@ const names = [
  * Generates a specified number of|d fake engagers
  */
 export const generateFakeEngagers = (count: number): Engager[] => {
-  return Array.from({ length: count }).map((_, index) => ({
+  const fakes =  Array.from({ length: count }).map((_, index) => ({
     authorId: `fake-${index}`,
     name: names[index % names.length],
     photoUrl: placeholderAvatars[index % placeholderAvatars.length],
     subscriberCount: Math.floor(Math.random() * 100),
     subscriberCountString: Math.floor(Math.random() * 100).toString(),
     score: Math.floor(Math.random() * 100),
+    handle: `${names[index % names.length].toLowerCase().replace(" ", "_")}`,
   }));
+  console.log(fakes);
+  return fakes;
 };
 
 /**

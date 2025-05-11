@@ -279,14 +279,15 @@ export function generatePublicationAnalysisCompleteEmail(userName?: string) {
   };
 }
 
-export function generatePaymentConfirmationEmail(
+export function generatePaymentConfirmationEmail(options:   {
   userName?: string,
   planName?: string,
   amount?: string | number,
   paymentDate?: Date,
   nextBillingDate?: Date,
   invoiceNumber?: string,
-) {
+}) {
+  const { userName, planName, amount, paymentDate, nextBillingDate, invoiceNumber } = options;
   const formattedPaymentDate = paymentDate
     ? paymentDate.toLocaleDateString("en-US", {
         year: "numeric",
