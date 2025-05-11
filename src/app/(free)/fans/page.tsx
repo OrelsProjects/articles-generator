@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { Logger } from "@/logger";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import {
   Dialog,
@@ -24,13 +24,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
 import useAuth from "@/lib/hooks/useAuth";
+import useMediaQuery from "@/lib/hooks/useMediaQuery";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 function TopEngagersPage() {
   const { data: session } = useSession();
   const router = useCustomRouter();
   const pathname = usePathname();
-  const { signInWithGoogle, deleteUser } = useAuth();
-
+  const { signInWithGoogle } = useAuth();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [url, setUrl] = useState<string | null>(null);
   const [engagers, setEngagers] = useState<Engager[]>([]);
   const [loading, setLoading] = useState(false);
@@ -39,6 +47,9 @@ function TopEngagersPage() {
   const [authorImage, setAuthorImage] = useState<string | null>(null);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [selectedByline, setSelectedByline] = useState<Byline | null>(null);
+
+  const [selectedEngager, setSelectedEngager] = useState<Engager | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [loadingUserData, setLoadingUserData] = useState(false);
   const loadingUserDataRef = useRef(loadingUserData);
@@ -174,7 +185,7 @@ function TopEngagersPage() {
   };
 
   const getLoginRedirect = () => {
-    debugger;
+    ;
     if (selectedByline) {
       return `${pathname}?redirect=fans&author=${selectedByline.authorId}`;
     } else {
@@ -199,10 +210,26 @@ function TopEngagersPage() {
     signInWithGoogle(getLoginRedirect());
   };
 
-  const handleFanClick = (engager: Engager) => {
-    router.push(`https://substack.com/@${engager.handle}`, {
-      newTab: true,
-    });
+  const handleEngagerClick = (engager: Engager) => {
+    // On desktop, directly navigate
+    if (!isMobile) {
+      router.push(`https://www.substack.com/@${engager.handle}`, {
+        newTab: true,
+      });
+    } else {
+      // On mobile, open the menu
+      setSelectedEngager(engager);
+      setIsMenuOpen(true);
+    }
+  };
+
+  const handleViewProfile = () => {
+    if (selectedEngager) {
+      router.push(`https://www.substack.com/@${selectedEngager.handle}`, {
+        newTab: true,
+      });
+      setIsMenuOpen(false);
+    }
   };
 
   return (
@@ -244,24 +271,16 @@ function TopEngagersPage() {
             <DemoCard title="Your Top Fans">
               <TopEngagers
                 engagers={engagers}
-                title="Your most loyal fans"
                 className="mb-6 cursor-pointer"
                 loading={loading}
-                onClick={handleFanClick}
+                maxDisplayCount={50}
+                onClick={handleEngagerClick}
+                isFree={true}
+                onViewProfile={handleViewProfile}
               />
             </DemoCard>
           </motion.div>
         )}
-
-        {/* <footer className="mt-16 text-center text-sm text-muted-foreground">
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-          >
-            Hover over any avatar to see more information about the engager
-          </motion.p>
-        </footer> */}
       </div>
 
       <Dialog open={showLoginDialog} onOpenChange={handleCloseLoginDialog}>
@@ -292,6 +311,34 @@ function TopEngagersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Mobile Sheet/Dialog */}
+      {/* <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>{selectedEngager?.name}</SheetTitle>
+            <SheetDescription>
+              {selectedEngager?.subscriberCountString
+                ? `Subscribers: ${selectedEngager.subscriberCountString}`
+                : "Fan Profile"}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 flex flex-col gap-4">
+            <div className="flex justify-center">
+              {selectedEngager && (
+                <img
+                  src={selectedEngager.photoUrl}
+                  alt={`${selectedEngager.name}'s avatar`}
+                  className="w-24 h-24 rounded-full object-cover border-2 border-primary"
+                />
+              )}
+            </div>
+            <Button onClick={handleViewProfile} className="mt-4">
+              View Profile
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet> */}
     </div>
   );
 }

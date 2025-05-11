@@ -14,7 +14,7 @@ export default function TempAuthorProvider() {
   const loadingSetTempAuthorId = useRef(false);
 
   const setTempAuthorId = async () => {
-    debugger;
+    ;
     if (authorId && !loadingSetTempAuthorId.current) {
       loadingSetTempAuthorId.current = true;
       try {

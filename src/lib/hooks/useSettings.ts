@@ -36,7 +36,9 @@ export const useSettings = () => {
   const init = async () => {
     try {
       axios
-        .post("/api/user/analyze/notes", { userTriggered: false })
+        .post("/api/user/analyze/notes", {
+          userTriggered: false,
+        })
         .catch(error => {
           Logger.error(error);
         });

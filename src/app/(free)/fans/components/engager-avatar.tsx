@@ -8,12 +8,14 @@ interface EngagerAvatarProps {
   engager: Engager;
   isFake?: boolean;
   onHover?: (isHovering: boolean, engager: Engager) => void;
+  onViewProfile?: (engager: Engager) => void;
 }
 
 const EngagerAvatar: React.FC<EngagerAvatarProps> = ({
   engager,
   isFake = false,
   onHover,
+  onViewProfile,
 }) => {
   const [isHovering, setIsHovering] = useState(false);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -38,20 +40,31 @@ const EngagerAvatar: React.FC<EngagerAvatarProps> = ({
   const HoverContent = () => (
     <>
       {isFake ? (
-        <div className="flex flex-col items-center justify-center h-full gap-2">
-          <p className="text-sm text-muted-foreground">Want more?</p>
-          <Button variant="default" asChild>
-            <Link href="/">Sign up</Link>
+        <div className="flex flex-col items-center justify-center h-full gap-2 p-2">
+          <p className=" text-foreground">Want more?</p>
+          <Button variant="default" size="sm" asChild>
+            <Link href="/">Hell yeah</Link>
           </Button>
         </div>
       ) : (
         <>
           <p className="font-medium text-foreground">{engager.name}</p>
           {engager.subscriberCount !== undefined && (
-            <p className="text-xs text-primary">
+            <p className="text-xs">
               Subscribers: {engager.subscriberCountString}
             </p>
           )}
+          <Button
+            variant="link"
+            size="sm"
+            className="md:hidden"
+            onClick={() => {
+              ;
+              onViewProfile?.(engager);
+            }}
+          >
+            View Profile
+          </Button>
         </>
       )}
       <motion.div

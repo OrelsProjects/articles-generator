@@ -157,7 +157,7 @@ export default function UrlAnalysisInput({
 
   const ActivityHeader = () => (
     <div className="flex items-center gap-4 justify-center">
-      <div className="h-14 w-14 rounded-full overflow-hidden">
+      <div className="h-14 w-14 rounded-full flex-shrink-0">
         <Avatar className="h-14 w-14 rounded-full">
           <AvatarImage src={authorImage || ""} alt="User" />
           <AvatarFallback>

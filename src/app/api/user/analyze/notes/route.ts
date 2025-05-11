@@ -8,9 +8,10 @@ import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { getAuthorId } from "@/lib/dal/publication";
 
 const bodySchema = z.object({
-  authorId: z.string().or(z.number()),
+  authorId: z.string().or(z.number()).optional(),
   userTriggered: z.boolean().optional(),
 });
 
@@ -23,6 +24,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const parsedBody = bodySchema.safeParse(body);
+
     if (!parsedBody.success) {
       loggerServer.error("Invalid request", {
         error: parsedBody.error,
@@ -30,7 +32,7 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
-    const { authorId, userTriggered } = parsedBody.data;
+    let { authorId, userTriggered } = parsedBody.data;
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId: userId,
@@ -71,9 +73,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const validAuthorId = isNaN(parseInt(authorId.toString()))
+    const fetchedAuthorId = await getAuthorId(userId, {
+      updateIfNotFound: true,
+    });
+    authorId = authorId || fetchedAuthorId || undefined;
+
+    const validAuthorId = isNaN(parseInt(authorId?.toString() || ""))
       ? null
-      : parseInt(authorId.toString());
+      : parseInt(authorId?.toString() || "");
 
     const descriptionResponse = await setUserNotesDescription(
       userId,

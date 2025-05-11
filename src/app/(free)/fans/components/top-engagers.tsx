@@ -5,41 +5,43 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { generateFakeEngagers } from "../utils";
 import { motion, AnimatePresence } from "framer-motion";
 
-const ENGAGERS_COUNT_TO_SHOW = 35;
-
 interface TopEngagersProps {
   engagers: Engager[];
   showFakes?: boolean;
   maxDisplayCount?: number;
   title?: string;
+  hideFakes?: boolean;
   className?: string;
   loading?: boolean;
+  isFree?: boolean;
   onClick: (engager: Engager) => void;
+  onViewProfile?: (engager: Engager) => void;
 }
 
 const TopEngagers: React.FC<TopEngagersProps> = ({
   engagers,
-  maxDisplayCount = 25,
-  title = "Top Engagers",
+  maxDisplayCount = 60,
+  title = "",
   className = "",
   loading = false,
+  hideFakes = false,
+  isFree = false,
   onClick,
+  onViewProfile,
 }) => {
   const [hoveredEngager, setHoveredEngager] = useState<Engager | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Generate fake engagers if needed
   const showFakes = useMemo(
-    () => engagers.length < ENGAGERS_COUNT_TO_SHOW,
-    [engagers],
+    () => !hideFakes && engagers.length < maxDisplayCount,
+    [engagers, hideFakes, maxDisplayCount],
   );
   const displayEngagers = useMemo(() => [...engagers], [engagers]);
   const fakesNeeded = useMemo(
     () =>
-      showFakes
-        ? Math.max(0, ENGAGERS_COUNT_TO_SHOW - displayEngagers.length)
-        : 0,
-    [displayEngagers.length, showFakes],
+      showFakes ? Math.max(0, maxDisplayCount - displayEngagers.length) : 0,
+    [displayEngagers.length, showFakes, maxDisplayCount],
   );
 
   // Add fake engagers to reach the maxDisplayCount if showFakes is true
@@ -53,10 +55,14 @@ const TopEngagers: React.FC<TopEngagersProps> = ({
   );
 
   // Limit to maxDisplayCount
-  const visibleEngagers = useMemo(
-    () => allEngagers.slice(0, ENGAGERS_COUNT_TO_SHOW),
-    [allEngagers, ENGAGERS_COUNT_TO_SHOW],
-  );
+  const visibleEngagers = useMemo(() => {
+    const allEngagersCount = allEngagers.length;
+    ;
+    if (allEngagersCount <= maxDisplayCount && isFree) {
+      return [...allEngagers, ...fakeEngagers].slice(0, maxDisplayCount);
+    }
+    return [...allEngagers].slice(0, maxDisplayCount);
+  }, [allEngagers, maxDisplayCount]);
 
   // Handle engager hover
   const handleEngagerHover = (isHovering: boolean, engager: Engager) => {
@@ -65,7 +71,7 @@ const TopEngagers: React.FC<TopEngagersProps> = ({
 
   // Generate skeleton loaders for engagers
   const renderSkeletons = () => {
-    return Array.from({ length: maxDisplayCount }).map((_, index) => (
+    return Array.from({ length: 15 }).map((_, index) => (
       <div key={`skeleton-${index}`} className="flex-none -ml-3 first:ml-0">
         <Skeleton className="w-14 h-14 rounded-full border-2 border-background" />
       </div>
@@ -113,7 +119,7 @@ const TopEngagers: React.FC<TopEngagersProps> = ({
                 return (
                   <motion.div
                     key={engager.authorId}
-                    className={`flex-none -ml-3 first:ml-0 transition-transform hover:scale-110 ${hoveredEngager?.authorId === engager.authorId ? "z-[100]" : ""}`}
+                    className={`flex-none cursor-pointer -ml-3 first:ml-0 transition-transform hover:scale-110 ${hoveredEngager?.authorId === engager.authorId ? "z-[100]" : ""}`}
                     style={{ zIndex: zIndex }}
                     onClick={() => onClick(engager)}
                     custom={index}
@@ -129,6 +135,7 @@ const TopEngagers: React.FC<TopEngagersProps> = ({
                       engager={engager}
                       isFake={isFake}
                       onHover={handleEngagerHover}
+                      onViewProfile={onViewProfile}
                     />
                   </motion.div>
                 );

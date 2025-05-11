@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
       authorId: byline?.id,
       name: byline?.name,
       image: byline?.photoUrl,
+      handle: byline?.handle,
     });
   } catch (error) {
     loggerServer.error("Error fetching user metadata", {
