@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { FlameIcon } from "@/components/ui/flame-icon";
 import { useNotesStats } from "@/lib/hooks/useNotesStats";
 import { RefreshCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface UserStreakProps {
   streak?: number;
@@ -51,53 +53,64 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
   const hasActiveStreak = streakCount > 0;
 
   return (
-    <div
+    <Button
+      variant={"outline"}
       className={cn("flex items-center gap-1", className)}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
+      asChild
     >
-      {loading ? (
-        <RefreshCcw className="animate-spin text-muted-foreground" size={16} />
-      ) : (
-        <>
-          <div className="relative w-5 h-5">
-            {isHovering && animationData && streakCount > 0 ? (
-              <Lottie
-                lottieRef={lottieRef}
-                animationData={animationData}
-                loop={true}
-                autoplay={true}
-                style={{ width: "100%", height: "100%" }}
-              />
-            ) : (
-              <FlameIcon
-                className={cn({
-                  "text-muted-foreground": !hasActiveStreak,
-                  "text-muted-foreground/70": hasActiveStreak && !isHovering,
-                  "text-primary": hasActiveStreak && isHovering,
-                })}
-                size={20}
-              />
-            )}
-          </div>
-          <span
-            className={cn(
-              "text-sm text-muted-foreground font-medium select-none",
-              {
-                "text-primary": isHovering,
-              },
-            )}
-          >
-            {streakCount}
-            {showText && (
-              <span className="text-muted-foreground text-xs ml-1">
-                {" "}
-                notes streak
-              </span>
-            )}
-          </span>
-        </>
-      )}
-    </div>
+      <Link href="/statistics">
+        {loading ? (
+          <RefreshCcw
+            className="animate-spin text-muted-foreground"
+            size={16}
+          />
+        ) : (
+          <>
+            <div className="relative w-5 h-5">
+              {isHovering && animationData && streakCount > 0 ? (
+                <Lottie
+                  lottieRef={lottieRef}
+                  animationData={animationData}
+                  loop={true}
+                  autoplay={true}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              ) : (
+                <FlameIcon
+                  className={cn({
+                    "text-muted-foreground": !hasActiveStreak,
+                    "text-muted-foreground/70": hasActiveStreak && !isHovering,
+                    "text-primary": hasActiveStreak && isHovering,
+                  })}
+                  size={20}
+                />
+              )}
+            </div>
+            <span
+              className={cn(
+                "text-sm text-muted-foreground font-medium select-none",
+                {
+                  "text-primary": isHovering,
+                },
+              )}
+            >
+              {streakCount}
+              {showText && (
+                <span
+                  className={cn("text-muted-foreground text-xs ml-1", {
+                    "text-primary": isHovering,
+                  })}
+                >
+                  {" "}
+                  notes streak
+                </span>
+              )}
+            </span>
+          </>
+        )}
+      </Link>
+    </Button>
   );
 }
