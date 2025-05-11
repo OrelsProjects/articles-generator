@@ -215,7 +215,7 @@ export function generateSubscriptionDeletedEmail(
   `;
   return {
     body: baseEmailTemplate(content),
-    subject: "We're sad to see you go",
+    subject: "I'm sad to see you go",
   };
 }
 

@@ -338,8 +338,13 @@ export async function handleSubscriptionDeleted(event: Stripe.Event) {
     },
   });
 
+  const user = await getUserBySubscription(subscription);
+  const plan = await getPlanBySubscription(subscription);
   const userEmail = (customer as any).email;
-  const emailTemplate = generateSubscriptionDeletedEmail(subscriptionId);
+  const emailTemplate = generateSubscriptionDeletedEmail(
+    user?.name || undefined,
+    plan?.toString(),
+  );
   await sendMail({
     to: userEmail,
     from: "support",
