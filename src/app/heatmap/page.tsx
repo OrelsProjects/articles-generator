@@ -108,6 +108,9 @@ export default function AnalyzeSubstack() {
 
   const authorId = searchParams.get("author");
 
+
+  const isAdmin = useMemo(() => session?.user?.meta?.isAdmin, [session]);
+
   useEffect(() => {
     if (authorId) {
       router.removeParams(["author"]);
@@ -163,8 +166,8 @@ export default function AnalyzeSubstack() {
   }, [isLoading, loadingBylines, loadingUserData, session?.user, substackUrl]);
 
   const showHeader = useMemo(
-    () => !!authorImage && !!authorName,
-    [authorImage, authorName],
+    () => !!authorImage && !!authorName && !isAdmin,
+    [authorImage, authorName, isAdmin],
   );
 
   const validatePublication = async (url: string) => {
@@ -227,7 +230,7 @@ export default function AnalyzeSubstack() {
     setIsLoading(true);
 
     try {
-      const response = await axios.get<{
+      const response = await axios.post<{
         success: boolean;
         streakData: Streak[];
       }>(`/api/analyze-substack/${byline.authorId}`);
@@ -517,7 +520,7 @@ export default function AnalyzeSubstack() {
                     } else if (session?.user?.meta?.tempAuthorId) {
                       setIsLoading(true);
                       axios
-                        .get<{ streakData: Streak[] }>(
+                        .post<{ streakData: Streak[] }>(
                           `/api/analyze-substack/${session.user.meta.tempAuthorId}?refresh=true`,
                         )
                         .then(res => {

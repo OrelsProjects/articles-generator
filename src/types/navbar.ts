@@ -1,6 +1,5 @@
 import { FeatureFlag } from "@prisma/client";
 import {
-  FileText,
   KanbanSquare,
   PenTool,
   Settings,

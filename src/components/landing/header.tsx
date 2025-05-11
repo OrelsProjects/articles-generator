@@ -15,11 +15,32 @@ import {
 import { FlameIcon } from "@/components/ui/flame-icon";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, UsersIcon } from "lucide-react";
+
+const freeTools = [
+  {
+    Icon: () => <FlameIcon size={24} className="text-primary" />,
+    name: "Heatmap",
+    href: "/heatmap",
+    title: "Heatmap",
+    description:
+      "See your notes activity and streaks visualized in a GitHub-style heatmap.",
+  },
+  {
+    Icon: () => <UsersIcon size={24} className="text-primary" />,
+    name: "Lonely Fans",
+    href: "/fans",
+    title: "Lonely Fans",
+    description: "Find out who are your top readers.",
+    adminOnly: true,
+  },
+];
 
 export default function Header() {
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
+
+  const isAdmin = session?.user?.meta?.isAdmin;
 
   return (
     <header className="w-full flex justify-center bg-background backdrop-blur border-b border-border">
@@ -77,25 +98,28 @@ export default function Header() {
                   align="start"
                   className="w-72 p-2"
                 >
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/heatmap"
-                      className="flex items-start gap-3 p-2 rounded-md hover:bg-accent transition-colors w-full"
-                    >
-                      <span className="mt-1">
-                        <FlameIcon size={24} className="text-primary" />
-                      </span>
-                      <span className="flex flex-col text-left">
-                        <span className="font-semibold text-sm text-foreground">
-                          Heatmap
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          See your notes activity and streaks visualized in a
-                          heatmap.
-                        </span>
-                      </span>
-                    </Link>
-                  </DropdownMenuItem>
+                  {freeTools.map(tool =>
+                    tool.adminOnly && !isAdmin ? null : (
+                      <DropdownMenuItem asChild key={tool.href}>
+                        <Link
+                          href={tool.href}
+                          className="flex items-start gap-3 p-2 rounded-md hover:bg-accent transition-colors w-full"
+                        >
+                          <span className="mt-1">
+                            <tool.Icon />
+                          </span>
+                          <span className="flex flex-col text-left">
+                            <span className="font-semibold text-sm text-foreground">
+                              {tool.title}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {tool.description}
+                            </span>
+                          </span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ),
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </li>
@@ -162,29 +186,30 @@ export default function Header() {
                 <li className="pt-2">
                   <div className="font-medium text-foreground">Free Tools</div>
                   <ul className="pl-4 mt-2">
-                    <li>
-                      <Link
-                        href="/heatmap"
-                        className="flex items-start gap-3 p-2 rounded-md hover:bg-accent transition-colors"
-                        onClick={() => setOpen(false)}
-                      >
-                        <span className="mt-1">
-                          <FlameIcon size={20} className="text-primary" />
-                        </span>
-                        <span className="flex flex-col text-left">
-                          <span className="font-semibold text-sm text-foreground">
-                            Heatmap
+                    {freeTools.map(tool => (
+                      <li key={tool.href}>
+                        <Link
+                          href={tool.href}
+                          className="flex items-start gap-3 p-2 rounded-md hover:bg-accent transition-colors"
+                          onClick={() => setOpen(false)}
+                        >
+                          <span className="mt-1">
+                            <tool.Icon />
                           </span>
-                          <span className="text-xs text-muted-foreground">
-                            See your notes activity and streaks visualized in a
-                            heatmap.
+                          <span className="flex flex-col text-left">
+                            <span className="font-semibold text-sm text-foreground">
+                              {tool.title}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {tool.description}
+                            </span>
                           </span>
-                        </span>
-                      </Link>
-                    </li>
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
                 </li>
-                
+
                 {/* Login/Go to app button in mobile sidebar */}
                 <li className="pt-6">
                   <Button
