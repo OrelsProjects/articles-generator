@@ -33,6 +33,16 @@ describe("getUrlComponents", () => {
       mainComponentInUrl: "remoteground",
     });
   });
+
+  test("test copy paste from url", () => {
+    const url = "https://theindiepreneur.substack.com/";
+    const result = getUrlComponents(url);
+    expect(result).toEqual({
+      validUrl: "https://theindiepreneur.substack.com",
+      mainComponentInUrl: "theindiepreneur",
+    });
+  });
+
   test("handles substack custom domains that end with .co no https", () => {
     const url = "remoteground.co/";
     const result = getUrlComponents(url);

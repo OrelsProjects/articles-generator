@@ -5,6 +5,7 @@ import Logo from "@/components/ui/logo";
 import { ArrowRight } from "lucide-react";
 import { appName } from "@/lib/consts";
 import { motion } from "framer-motion";
+import TempAuthorProvider from "@/app/providers/TempAuthorProvider";
 
 export default function FreeLayout({
   children,
@@ -13,6 +14,7 @@ export default function FreeLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      <TempAuthorProvider />
       {/* Header */}
       <header className="w-full flex justify-center bg-background backdrop-blur border-b border-border">
         <div className="container flex items-center justify-between py-4 px-6 md:px-0 md:py-6 xl:px-20 mx-auto">

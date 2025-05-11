@@ -48,17 +48,30 @@ export default function AnalyzeSubstack() {
 
   const [streakData, setStreakData] = useState<Streak[]>([]);
 
-  const authorId = searchParams.get("author");
-
-  const isAdmin = useMemo(() => session?.user?.meta?.isAdmin, [session]);
-
-  useEffect(() => {
-    if (authorId) {
-      router.removeParams(["author"]);
+  const getAuthorId = async () => {
+    try {
+      const response = await axios.get("/api/user/temp-author");
+      return response.data;
+    } catch (error) {
+      Logger.error("Error fetching author ID:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
     }
-  }, [authorId]);
+  };
 
   const fetchUserData = async () => {
+    if (loadingUserDataRef.current) return;
+
+    let authorId = session?.user?.meta?.tempAuthorId;
+
+    if (!authorId) {
+      authorId = await getAuthorId();
+    }
+    if (!authorId) {
+      return;
+    }
+
     loadingUserDataRef.current = true;
     setLoadingUserData(true);
     setIsLoading(true);
@@ -103,11 +116,6 @@ export default function AnalyzeSubstack() {
 
     return isDisabled;
   }, [isLoading, loadingUserData, session?.user, substackUrl]);
-
-  const showHeader = useMemo(
-    () => !!authorImage && !!authorName && !isAdmin,
-    [authorImage, authorName, isAdmin],
-  );
 
   const handleBylineSelect = async (byline: Byline, forceAnalyze = false) => {
     setSelectedByline(byline);
@@ -226,7 +234,7 @@ export default function AnalyzeSubstack() {
         transition={{ delay: 0.2, duration: 0.5 }}
         className="bg-card rounded-lg p-6 shadow-sm border mb-8"
       >
-        <UrlAnalysisInput 
+        <UrlAnalysisInput
           onBylineSelected={handleBylineSelect}
           isLoading={isLoading}
           hasData={hasAnalyzed || streakData.length > 0}
@@ -243,9 +251,7 @@ export default function AnalyzeSubstack() {
         className="mb-8"
       >
         <div className="flex justify-between items-center mb-4 relative">
-          <h2 className="text-2xl font-bold">
-            Your Notes Activity Heatmap
-          </h2>
+          <h2 className="text-2xl font-bold">Your Notes Activity Heatmap</h2>
         </div>
         <div className="relative">
           {!hasAnalyzed && !session?.user && (
@@ -265,9 +271,7 @@ export default function AnalyzeSubstack() {
                 {selectedByline && !authorName && (
                   <span className="ml-1"> for {selectedByline.name}</span>
                 )}
-                {authorName && (
-                  <span className="ml-1"> for {authorName}</span>
-                )}
+                {authorName && <span className="ml-1"> for {authorName}</span>}
               </div>
             }
           />

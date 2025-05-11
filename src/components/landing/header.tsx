@@ -25,14 +25,15 @@ const freeTools = [
     title: "Heatmap",
     description:
       "See your notes activity and streaks visualized in a GitHub-style heatmap.",
+    adminOnly: false,
   },
   {
     Icon: () => <UsersIcon size={24} className="text-primary" />,
-    name: "Lonely Fans",
+    name: "Find your fans",
     href: "/fans",
-    title: "Lonely Fans",
+    title: "Find your fans",
     description: "Find out who are your top readers.",
-    adminOnly: true,
+    adminOnly: false,
   },
 ];
 
@@ -209,7 +210,7 @@ export default function Header() {
                     ))}
                   </ul>
                 </li>
-                
+
                 {/* Login/Go to app button in mobile sidebar */}
                 <li className="pt-6">
                   <Button

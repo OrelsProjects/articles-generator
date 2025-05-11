@@ -75,17 +75,20 @@ function App() {
     if (!scrollEl) return;
 
     const scroll = new LocomotiveScroll({
-      el: scrollEl,
+      el: scrollEl as HTMLElement,
       smooth: true,
       multiplier: 0.75,
       lerp: 0.05,
     });
 
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener("click", function (e) {
+      anchor.addEventListener("click", function(this: HTMLAnchorElement, e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute("href"));
-        if (target) scroll.scrollTo(target);
+        const href = this.getAttribute("href");
+        if (href) {
+          const target = document.querySelector(href);
+          if (target instanceof HTMLElement) scroll.scrollTo(target);
+        }
       });
     });
 
@@ -274,7 +277,7 @@ const testimonials = [
       "Author of Unfiltered by Tim Denning<br/>(<strong>141k+ Subscribers</strong>)",
   },
   {
-    quote: `WriteStack is my go-to tool for figuring out what’s working on Substack—and what isn’t. 
+    quote: `WriteStack is my go-to tool for figuring out what's working on Substack—and what isn't. 
     <br/><br/>
     It saves me hours of research and helps me stay ahead of the curve.
     <br/><br/>

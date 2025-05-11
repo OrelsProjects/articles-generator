@@ -55,27 +55,6 @@ export async function GET() {
   //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // }
 
-  const session = await prisma.session.findMany({
-    where: {
-      userId: "6817eb234db08da5b12af777",
-    },
-  });
-
-  const account = await prisma.account.findMany({
-    where: {
-      userId: "6817eb234db08da5b12af777",
-    },
-  });
-
-  const verificationToken = await prisma.verificationToken.findMany({
-    where: {
-      identifier: "stefangirard@gmail.com",
-    },
-  });
-
-  console.log(session);
-  console.log(account);
-  console.log(verificationToken);
 
   // // const email = generateWelcomeTemplateTrial("Orel");
   // // const result = await sendMailSafe({

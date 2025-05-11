@@ -18,7 +18,16 @@ export const sendMail = async ({
   subject,
   template,
   cc,
+  sendInDevelopment = false,
 }: SendEmailOptions) => {
+  const env = process.env.NODE_ENV;
+  if (env === "production" && !sendInDevelopment) {
+    console.log(
+      `[MAIL] Not sending mail in production: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,
+    );
+    return;
+  }
+
   loggerServer.info(
     `Sending mail: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,
   );

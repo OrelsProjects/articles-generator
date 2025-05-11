@@ -6,7 +6,6 @@ import DemoCard from "./components/demo-card";
 import { Engager } from "@/types/engager";
 import { Byline } from "@/types/article";
 import axios from "axios";
-import { Skeleton } from "@/components/ui/skeleton";
 import UrlAnalysisInput from "@/components/analysis/url-analysis-input";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
@@ -29,10 +28,10 @@ import useAuth from "@/lib/hooks/useAuth";
 function TopEngagersPage() {
   const { data: session } = useSession();
   const router = useCustomRouter();
-  const searchParams = useSearchParams();
   const pathname = usePathname();
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, deleteUser } = useAuth();
 
+  const [url, setUrl] = useState<string | null>(null);
   const [engagers, setEngagers] = useState<Engager[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
@@ -44,18 +43,30 @@ function TopEngagersPage() {
   const [loadingUserData, setLoadingUserData] = useState(false);
   const loadingUserDataRef = useRef(loadingUserData);
 
-  const authorId = searchParams.get("author");
-  const isAdmin = useMemo(() => session?.user?.meta?.isAdmin, [session]);
-
-  // Handle query param author ID
-  useEffect(() => {
-    if (authorId) {
-      router.removeParams(["author"]);
+  const getAuthorId = async () => {
+    try {
+      const response = await axios.get("/api/user/temp-author");
+      return response.data;
+    } catch (error) {
+      Logger.error("Error fetching author ID:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
     }
-  }, [authorId]);
+  };
 
   // Auto-fetch user data if logged in
   const fetchUserData = async () => {
+    if (loadingUserDataRef.current) return;
+
+    let authorId = session?.user?.meta?.tempAuthorId;
+    if (!authorId) {
+      authorId = await getAuthorId();
+    }
+    if (!authorId) {
+      return;
+    }
+
     loadingUserDataRef.current = true;
     setLoadingUserData(true);
     setLoading(true);
@@ -67,12 +78,14 @@ function TopEngagersPage() {
       setAuthorName(publicationRes.data.name);
 
       try {
-        // Get user fans data
-        const fansRes = await axios.get(
-          `/api/v1/top-engagers?authorId=${session?.user?.meta?.tempAuthorId || "null"}`,
-        );
-        setEngagers(fansRes.data);
-        setHasAnalyzed(true);
+        const fansRes = await axios.post(`/api/v1/top-engagers`, {
+          authorId: authorId,
+          url: url,
+        });
+        if (fansRes.data.success && fansRes.data.result?.length > 0) {
+          setEngagers(fansRes.data.result);
+          setHasAnalyzed(true);
+        }
       } catch (error) {
         // Silently handle error, we'll show the input form
         Logger.error("Error fetching fans data:", {
@@ -94,7 +107,7 @@ function TopEngagersPage() {
   // Check for logged-in user on component mount
   useEffect(() => {
     if (loadingUserDataRef.current) return;
-    if (session?.user && engagers.length === 0) {
+    if (engagers.length === 0) {
       fetchUserData();
     }
   }, [session]);
@@ -115,11 +128,12 @@ function TopEngagersPage() {
     setAuthorImage(byline.photoUrl);
 
     try {
-      const response = await axios.get(
-        `/api/v1/top-engagers?authorId=${byline.authorId}`,
-      );
-      if (response.data.length > 0) {
-        setEngagers(response.data);
+      const response = await axios.post(`/api/v1/top-engagers`, {
+        authorId: byline.authorId,
+        url: url,
+      });
+      if (response.data.success && response.data.result?.length > 0) {
+        setEngagers(response.data.result);
         setHasAnalyzed(true);
       } else {
         // Show login dialog for non-logged in users
@@ -136,7 +150,7 @@ function TopEngagersPage() {
       console.error("Error fetching top engagers:", error);
       toast.error("Failed to fetch top engagers. Please try again.");
       // For demonstration, generate some mock data
-      generateMockEngagers();
+      // generateMockEngagers();
     } finally {
       setLoading(false);
     }
@@ -160,6 +174,7 @@ function TopEngagersPage() {
   };
 
   const getLoginRedirect = () => {
+    debugger;
     if (selectedByline) {
       return `${pathname}?redirect=fans&author=${selectedByline.authorId}`;
     } else {
@@ -216,6 +231,7 @@ function TopEngagersPage() {
             authorImage={authorImage}
             isInputDisabled={inputDisabled}
             placeholder="Your Substack URL (e.g., yourname.substack.com)"
+            onUrlChange={setUrl}
           />
         </motion.div>
 

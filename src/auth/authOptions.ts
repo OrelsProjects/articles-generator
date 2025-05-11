@@ -82,16 +82,19 @@ export const authOptions: AuthOptions = {
             userId: message.user.id,
           },
         });
-        const emailTemplate = generatePrivateNewUserSignedUpEmail(
-          message.user.name || undefined,
-          message.user.email || undefined,
-        );
-        await sendMailSafe({
-          to: "orelsmail@gmail.com",
-          from: "support",
-          subject: emailTemplate.subject,
-          template: emailTemplate.body,
-        });
+        const env = process.env.NODE_ENV;
+        if (env === "production") {
+          const emailTemplate = generatePrivateNewUserSignedUpEmail(
+            message.user.name || undefined,
+            message.user.email || undefined,
+          );
+          await sendMailSafe({
+            to: "orelsmail@gmail.com",
+            from: "support",
+            subject: emailTemplate.subject,
+            template: emailTemplate.body,
+          });
+        }
       } catch (error: any) {
         await prisma.user.delete({
           where: {

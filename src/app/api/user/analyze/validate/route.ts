@@ -1,7 +1,6 @@
 // Validate the user's url first, make sure it's not 404.
 
 import { getPublicationByUrl } from "@/lib/dal/publication";
-import { getPublicationUpdatedUrl } from "@/lib/publication";
 import { getArticleEndpoint } from "@/lib/utils/publication";
 import { getUrlComponents } from "@/lib/utils/url";
 import { Logger } from "@/logger";

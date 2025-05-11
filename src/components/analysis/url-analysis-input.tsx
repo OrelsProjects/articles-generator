@@ -10,11 +10,7 @@ import { validateSubstackUrl, validateUrl } from "@/lib/utils/url";
 import { Byline } from "@/types/article";
 import { AuthorSelectionDialog } from "@/components/onboarding/author-selection-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  AlertCircle,
-  AlertTriangle,
-  HelpCircle,
-} from "lucide-react";
+import { AlertCircle, AlertTriangle, HelpCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -64,6 +60,7 @@ interface UrlAnalysisInputProps {
   authorImage?: string | null;
   isInputDisabled?: boolean;
   placeholder?: string;
+  onUrlChange?: (url: string) => void;
 }
 
 export default function UrlAnalysisInput({
@@ -73,13 +70,15 @@ export default function UrlAnalysisInput({
   authorName = null,
   authorImage = null,
   isInputDisabled = false,
-  placeholder = "Your Substack URL (e.g., yourname.substack.com)"
+  onUrlChange,
+  placeholder = "Your Substack URL (e.g., yourname.substack.com)",
 }: UrlAnalysisInputProps) {
   const [substackUrl, setSubstackUrl] = useState("");
   const [loadingBylines, setLoadingBylines] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
   const [bylines, setBylines] = useState<Byline[]>([]);
-  const [openAuthorSelectionDialog, setOpenAuthorSelectionDialog] = useState(false);
+  const [openAuthorSelectionDialog, setOpenAuthorSelectionDialog] =
+    useState(false);
   const [selectedByline, setSelectedByline] = useState<Byline | null>(null);
 
   const showHeader = useMemo(
@@ -88,7 +87,12 @@ export default function UrlAnalysisInput({
   );
 
   const inputDisabled = useMemo(() => {
-    return isLoading || loadingBylines || isInputDisabled || (hasData && !!substackUrl);
+    return (
+      isLoading ||
+      loadingBylines ||
+      isInputDisabled ||
+      (hasData && !!substackUrl)
+    );
   }, [isLoading, loadingBylines, isInputDisabled, hasData, substackUrl]);
 
   const validatePublication = async (url: string) => {
@@ -176,7 +180,10 @@ export default function UrlAnalysisInput({
           <Input
             placeholder={placeholder}
             value={substackUrl}
-            onChange={e => setSubstackUrl(e.target.value)}
+            onChange={e => {
+              setSubstackUrl(e.target.value);
+              onUrlChange?.(e.target.value);
+            }}
             className="flex-1"
             disabled={inputDisabled}
             onKeyDown={e => {
@@ -260,4 +267,4 @@ export default function UrlAnalysisInput({
       />
     </>
   );
-} 
+}

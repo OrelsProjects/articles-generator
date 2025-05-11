@@ -625,7 +625,6 @@ model PotentialPublicationUsers {
   updatedAt DateTime @updatedAt
 
   @@unique([publicationIdInArticlesDb, bylineId])
-
   @@map("potentialPublicationUsers")
 }
 
@@ -640,4 +639,24 @@ model SubstackReadersContacted {
   updatedAt DateTime @updatedAt
 
   @@map("substackReadersContacted")
+}
+
+model FreeUserEngagers {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userAuthorId String
+
+  authorId              String
+  photoUrl              String
+  name                  String
+  handle                String
+  subscriberCount       Int
+  subscriberCountString String
+  score                 Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userAuthorId, authorId])
+  @@map("freeUserEngagers")
 }

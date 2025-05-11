@@ -4,46 +4,114 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma, prismaArticles } from "@/lib/prisma";
 import { getManyPotentialUsers } from "@/lib/dal/radar";
 import { Engager } from "@/types/engager";
-import {
-  addScoreToEngagers,
-  addScoreToPotentialUsers,
-} from "@/lib/utils/statistics";
+import { addScoreToEngagers } from "@/lib/utils/statistics";
 import { getBylines, getBylinesData } from "@/lib/dal/byline";
-export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const isFree = !session?.user.meta?.plan;
-  let authorId = session?.user.meta?.tempAuthorId;
-  try {
-    const { searchParams } = new URL(request.url);
-    const limit = searchParams.get("limit") || "25";
-    const offset = searchParams.get("offset") || "0";
+import loggerServer from "@/loggerServer";
+import { getUrlComponents } from "@/lib/utils/url";
+import { z } from "zod";
+import { FreeUserEngagers } from "@prisma/client";
+import { fetchAllNoteComments } from "@/app/api/analyze-substack/utils";
+import { scrapePosts } from "@/lib/utils/publication";
 
-    const metadata = await prisma.userMetadata.findUnique({
-      where: {
-        userId: session?.user.id,
+const schema = z.object({
+  authorId: z.string().or(z.number()).optional(),
+  url: z.string().optional(),
+});
+
+const getExistingEngagers = async (authorId: string, minEngagers = 20) => {
+  const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+  const existingEngagers = await prisma.freeUserEngagers.findMany({
+    where: {
+      userAuthorId: authorId,
+      updatedAt: {
+        gt: twoDaysAgo,
       },
-      select: {
-        publication: {
-          select: {
-            authorId: true,
-            idInArticlesDb: true,
-          },
-        },
-      },
+    },
+  });
+
+  if (existingEngagers.length > minEngagers) {
+    return existingEngagers;
+  }
+
+  return null;
+};
+
+export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  const searchParams = request.nextUrl.searchParams;
+  const userId = session?.user.id || "unknown";
+  const isFree = !session?.user.meta?.plan;
+  const limit = searchParams.get("limit") || "25";
+  let url, authorId;
+  try {
+    const body = await request.json();
+    const parsedBody = schema.safeParse(body);
+    if (parsedBody.success) {
+      url = parsedBody.data.url;
+      authorId = parsedBody.data.authorId;
+    }
+
+    loggerServer.info("Fetching top engagers for authorId:", {
+      authorId,
+      userId,
     });
 
+    let metadata: {
+      publication: {
+        authorId: number;
+        idInArticlesDb: number | null;
+      } | null;
+    } | null = null;
+
+    if (session) {
+      metadata = await prisma.userMetadata.findUnique({
+        where: {
+          userId: session?.user.id,
+        },
+        select: {
+          publication: {
+            select: {
+              authorId: true,
+              idInArticlesDb: true,
+            },
+          },
+        },
+      });
+    }
     const authorIdFromPublication = metadata?.publication?.authorId;
-    authorId = authorIdFromPublication?.toString() || authorId;
+
+    authorId =
+      authorIdFromPublication?.toString() ||
+      session?.user.meta?.tempAuthorId ||
+      authorId;
+
+    let existingEngagers: FreeUserEngagers[] | null = null;
+    if (authorId) {
+      existingEngagers = await getExistingEngagers(authorId.toString());
+    }
+
+    if (existingEngagers) {
+      return NextResponse.json(
+        { success: true, result: session ? existingEngagers : undefined },
+        { status: 200 },
+      );
+    }
 
     if (!authorId) {
+      loggerServer.error("No authorId found", {
+        userId,
+        authorId,
+        authorIdFromPublication,
+        metadata,
+      });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (authorIdFromPublication && metadata?.publication?.idInArticlesDb) {
+    if (authorId) {
       // Fetch notes and posts from db.
       const notes = await prismaArticles?.notesComments.findMany({
         where: {
-          authorId: authorIdFromPublication,
+          authorId: parseInt(authorId.toString()),
         },
         take: 10,
         orderBy: {
@@ -51,15 +119,44 @@ export async function GET(request: NextRequest) {
         },
       });
 
+      const publication = await prismaArticles?.publication.findMany({
+        where: {
+          authorId: parseInt(authorId.toString()),
+        },
+        select: {
+          id: true,
+          subdomain: true,
+          customDomain: true,
+        },
+      });
+
+      if (!notes || notes.length === 0) {
+        await fetchAllNoteComments(parseInt(authorId.toString()));
+      }
+
+      const { mainComponentInUrl } = getUrlComponents(url || "");
+
+      const publicationId = publication?.find(
+        p =>
+          p.subdomain?.includes(mainComponentInUrl) ||
+          p.customDomain?.includes(mainComponentInUrl),
+      )?.id;
+
       const posts = await prismaArticles?.post.findMany({
         where: {
-          id: metadata.publication.idInArticlesDb.toString(),
+          publicationId: publicationId?.toString(),
         },
         take: 10,
         orderBy: {
           postDate: "desc",
         },
       });
+
+      if ((!posts || posts.length === 0) && url) {
+        await scrapePosts(url, 0, parseInt(authorId.toString()), {
+          stopIfNoNewPosts: true,
+        });
+      }
 
       const potentialUsers = await getManyPotentialUsers(
         posts.map(post => post.id),
@@ -109,16 +206,48 @@ export async function GET(request: NextRequest) {
           engager.handle = byline.handle || "";
         }
       });
+
+      for (const engager of sortedEngagers) {
+        await prisma.freeUserEngagers.upsert({
+          where: {
+            userAuthorId_authorId: {
+              userAuthorId: authorId.toString(),
+              authorId: engager.authorId,
+            },
+          },
+          update: engager,
+          create: {
+            ...engager,
+            userAuthorId: authorId.toString(),
+          },
+        });
+      }
+
       const paginatedEngagers = sortedEngagers.slice(
         0,
-        isFree ? 5 : parseInt(limit),
+        isFree ? parseInt(limit) : parseInt(limit),
       );
 
-      return NextResponse.json(paginatedEngagers, { status: 200 });
+      if (session) {
+        return NextResponse.json(
+          { success: true, result: paginatedEngagers },
+          { status: 200 },
+        );
+      }
+      return NextResponse.json(
+        {
+          success: true,
+        },
+        { status: 200 },
+      );
     }
 
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   } catch (error) {
+    loggerServer.error("Error fetching top engagers:", {
+      error,
+      userId,
+    });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 }

@@ -29,7 +29,10 @@ const TopEngagers: React.FC<TopEngagersProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Generate fake engagers if needed
-  const showFakes = useMemo(() => engagers.length < ENGAGERS_COUNT_TO_SHOW, [engagers]);
+  const showFakes = useMemo(
+    () => engagers.length < ENGAGERS_COUNT_TO_SHOW,
+    [engagers],
+  );
   const displayEngagers = useMemo(() => [...engagers], [engagers]);
   const fakesNeeded = useMemo(
     () =>

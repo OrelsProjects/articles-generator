@@ -39,22 +39,8 @@ export default function AuthProvider({
   const { user: currentUser } = useSelector(selectAuth);
   const { data: session, status } = useSession();
 
-  const authorId = searchParams.get("author");
-
   const setUser = async (session?: Session): Promise<boolean> => {
     let hasPublication = false;
-    let tempAuthorId = null;
-    if (authorId) {
-      try {
-        const response = await axios.post(`/api/user/temp-author/${authorId}`);
-        tempAuthorId = response.data;
-        router.push(pathname, {
-          paramsToRemove: ["author"],
-        });
-      } catch (error) {
-        console.error("Error setting temp author id:", error);
-      }
-    }
 
     try {
       const userPlan: Plan | null = session?.user?.meta
@@ -74,7 +60,7 @@ export default function AuthProvider({
           hadSubscription: session?.user?.meta?.hadSubscription || false,
           interval: session?.user?.meta?.interval || "month",
           isAdmin: session?.user?.meta?.isAdmin || false,
-          tempAuthorId,
+          tempAuthorId: session?.user?.meta?.tempAuthorId || null,
         },
       };
       dispatch(setUserAction(appUser));

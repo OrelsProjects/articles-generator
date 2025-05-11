@@ -296,11 +296,3 @@ export async function fetchAllNoteComments(
     newNotes: newDbNotes,
   };
 }
-
-export async function fetchAllPosts(authorId: number) {
-  const maxPosts = 99999;
-  const marginOfSafety = 999;
-  let currentNoNewPostsCount = 0;
-  let previousStreakCount = 0;
-  let didStreakEnd = false; // If the new streak is the same as the previous streak, it means the user has skipped a day
-}
