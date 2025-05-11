@@ -3,19 +3,13 @@ import { Engager } from "@/types/engager";
 
 interface EngagerAvatarProps {
   engager: Engager;
-  index: number;
   isFake?: boolean;
-  zIndex: number;
-  position: number;
   onHover?: (isHovering: boolean, engager: Engager) => void;
 }
 
 const EngagerAvatar: React.FC<EngagerAvatarProps> = ({
   engager,
-  index,
   isFake = false,
-  zIndex,
-  position,
   onHover,
 }) => {
   const [isHovering, setIsHovering] = useState(false);
@@ -32,18 +26,9 @@ const EngagerAvatar: React.FC<EngagerAvatarProps> = ({
 
   const showHover = isHovering && !isFake;
 
-  // Calculate animation delay for staggered entrance
-  const animationDelay = `${index * 0.05}s`;
-
   return (
     <div
-      className={`absolute transition-all duration-300 ease-in-out animate-fadeIn overflow-visible`}
-      style={{
-        left: `${position}px`,
-        zIndex,
-        animationDelay,
-        transform: showHover ? "scale(1.1)" : "scale(1)",
-      }}
+      className="relative overflow-visible"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       data-testid={`engager-avatar-${engager.authorId}`}

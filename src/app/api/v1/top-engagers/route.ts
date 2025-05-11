@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
 
       const paginatedEngagers = sortedEngagers.slice(
         0,
-        !isFree ? 5 : parseInt(limit),
+        isFree ? 5 : parseInt(limit),
       );
 
       return NextResponse.json(paginatedEngagers, { status: 200 });
@@ -109,3 +109,4 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 }
+

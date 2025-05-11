@@ -5,8 +5,8 @@ const OG_IMAGE =
 
 export const metadata: Metadata = {
   title: {
-    default: "Top Engagers",
-    template: "%s | Top Engagers",
+    default: "Top Fans",
+    template: "%s | Top Fans",
   },
   description: "Find out who are your top readers.",
   openGraph: {

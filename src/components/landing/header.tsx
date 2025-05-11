@@ -209,7 +209,7 @@ export default function Header() {
                     ))}
                   </ul>
                 </li>
-
+                
                 {/* Login/Go to app button in mobile sidebar */}
                 <li className="pt-6">
                   <Button

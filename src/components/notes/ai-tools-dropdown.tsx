@@ -12,8 +12,7 @@ interface AIToolsDropdownProps {
 }
 
 export function AIToolsDropdown({ note, onImprovement }: AIToolsDropdownProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  const { hasAdvancedGPT } = useUi();
+const [isHovered, setIsHovered] = useState(false);
   const [selectedModel, setSelectedModel] = useState<FrontendModel>("auto");
 
   return (

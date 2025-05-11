@@ -70,7 +70,7 @@ export const formatText = (text: string): string => {
     gfm: true,
     breaks: false,
   });
-
+  text = text.replace(/\\n\\n/g, "\n\n");
   // Handle custom image dimensions before passing to marked
   text = text.replace(
     /!\[(.*?)\]\((.*?)\){width=(\d+)}/g,

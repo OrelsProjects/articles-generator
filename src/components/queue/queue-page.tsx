@@ -29,7 +29,7 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
   const searchParams = useSearchParams();
   const [activeTabCache, setActiveTabCache] = useLocalStorage(
     "queue_active_tab",
-    "scheduled",
+    "drafts",
   );
   const {
     scheduledNotes,
