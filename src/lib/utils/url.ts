@@ -178,6 +178,15 @@ const removeQueryParams = (url: string) => {
   return url.split("?")[0];
 };
 
+/**
+ * Get the components of a url. If the url looks like this: open.substack.com/pub/[name-of-the-publication]
+ * The components will be:
+ * - validUrl: https://[name-of-the-publication].substack.com/
+ * - mainComponentInUrl: [name-of-the-publication]
+ * @param url
+ * @param options
+ * @returns
+ */
 export const getUrlComponents = (
   url: string,
   options: {
@@ -189,6 +198,15 @@ export const getUrlComponents = (
   if (!url) {
     return { validUrl: "", mainComponentInUrl: "" };
   }
+
+  if (url.includes("open.substack.com")) {
+    const mainComponentInUrl = url.split("open.substack.com/pub/")[1];
+    return {
+      validUrl: `https://${mainComponentInUrl}.substack.com`,
+      mainComponentInUrl,
+    };
+  }
+
   let validUrl = url;
   let mainComponentInUrl = "";
   validUrl = removeQueryParams(validUrl);

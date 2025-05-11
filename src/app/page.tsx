@@ -22,7 +22,6 @@ import ProductHighlightSection from "@/components/landing/product-highlight-sect
 import FeaturesSection from "@/components/landing/features-section";
 import WhyNotesSection from "@/components/landing/why-notes-section";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
-import LocomotiveScroll from "locomotive-scroll";
 import { useEffect } from "react";
 
 const DividerPrimary = ({
@@ -71,30 +70,34 @@ const faq = [
 
 function App() {
   useEffect(() => {
-    const scrollEl = document.querySelector("[data-scroll-container]");
-    if (!scrollEl) return;
+    if (typeof window === "undefined") return;
 
-    const scroll = new LocomotiveScroll({
-      el: scrollEl as HTMLElement,
-      smooth: true,
-      multiplier: 0.75,
-      lerp: 0.05,
-    });
+    import("locomotive-scroll").then(({ default: LocomotiveScroll }) => {
+      const scrollEl = document.querySelector("[data-scroll-container]");
+      if (!scrollEl) return;
 
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener("click", function(this: HTMLAnchorElement, e) {
-        e.preventDefault();
-        const href = this.getAttribute("href");
-        if (href) {
-          const target = document.querySelector(href);
-          if (target instanceof HTMLElement) scroll.scrollTo(target);
-        }
+      const scroll = new LocomotiveScroll({
+        el: scrollEl as HTMLElement,
+        smooth: true,
+        multiplier: 0.75,
+        lerp: 0.05,
       });
-    });
 
-    return () => {
-      if (scroll) scroll.destroy(); // 💥 VERY important to clean up
-    };
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (this: HTMLAnchorElement, e) {
+          e.preventDefault();
+          const href = this.getAttribute("href");
+          if (href) {
+            const target = document.querySelector(href);
+            if (target instanceof HTMLElement) scroll.scrollTo(target);
+          }
+        });
+      });
+
+      return () => {
+        scroll.destroy();
+      };
+    });
   }, []);
 
   return (

@@ -244,7 +244,7 @@ function TopEngagersPage() {
             <DemoCard title="Your Top Fans">
               <TopEngagers
                 engagers={engagers}
-                title="Top Subscribers By Engagement"
+                title="Your most loyal fans"
                 className="mb-6 cursor-pointer"
                 loading={loading}
                 onClick={handleFanClick}

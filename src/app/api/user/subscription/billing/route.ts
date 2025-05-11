@@ -6,6 +6,8 @@ import { NextResponse } from "next/server";
 import { Stripe } from "stripe";
 import { getActiveSubscription } from "@/lib/dal/subscription";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);

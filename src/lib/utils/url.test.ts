@@ -171,3 +171,14 @@ describe("getUrlComponents", () => {
     });
   });
 });
+
+describe("getUrlComponents with open.substack.com", () => {
+  test("handles open.substack.com correctly", () => {
+    const url = "https://open.substack.com/pub/theindiepreneur";
+    const result = getUrlComponents(url);
+    expect(result).toEqual({
+      validUrl: "https://theindiepreneur.substack.com",
+      mainComponentInUrl: "theindiepreneur",
+    });
+  });
+});

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect   } from "react";
 import { useAppSelector } from "./redux";
 import { selectAuth } from "../features/auth/authSlice";
 import axios from "axios";
@@ -18,10 +18,12 @@ export const useBilling = () => {
   const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const loadingRef = useRef(false);
 
   const fetchBillingInfo = async () => {
     if (!user) return;
-    
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     setError(null);
     
@@ -42,6 +44,7 @@ export const useBilling = () => {
       Logger.error("Error fetching billing information:", { error: String(err) });
       setError("Failed to load billing information");
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   };
@@ -56,6 +59,7 @@ export const useBilling = () => {
     billingInfo,
     loading,
     error,
+    fetchBillingInfo,
     refreshBillingInfo: fetchBillingInfo
   };
 }; 

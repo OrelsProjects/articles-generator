@@ -5,6 +5,8 @@ interface Dict {
   [key: string]: any;
 }
 
+let isLoggerInitialized = false;
+
 export type LogItem = Dict;
 
 export const setUserLogger = (user?: AppUser | null) => {
@@ -16,6 +18,12 @@ export const setUserLogger = (user?: AppUser | null) => {
 };
 
 export const initLogger = () => {
+  if (typeof window !== "undefined") {
+    if ((window as any).__DATADOG_LOGGER_INITIALIZED__) return;
+    (window as any).__DATADOG_LOGGER_INITIALIZED__ = true;
+  } else if (isLoggerInitialized) {
+    return;
+  }
   try {
     const env = process.env.NEXT_PUBLIC_ENV ?? "development";
     datadogLogs.init({
@@ -31,6 +39,7 @@ export const initLogger = () => {
       error,
     });
   }
+  isLoggerInitialized = true;
 };
 
 const log = (
