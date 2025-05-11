@@ -42,9 +42,6 @@ const getExistingEngagers = async (authorId: string, minEngagers = 20) => {
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ success: true, result: [] }, { status: 200 });
-  }
   const searchParams = request.nextUrl.searchParams;
   const userId = session?.user.id || "unknown";
   const isFree = !session?.user.meta?.plan;
