@@ -111,6 +111,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     title={props.title || "Dialog Title"}
+    aria-label={props.title || "Dialog Title"}
     className={cn(
       "text-lg font-semibold leading-none tracking-tight",
       className,
