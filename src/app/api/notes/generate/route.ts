@@ -93,9 +93,9 @@ export async function POST(
         break;
     }
 
-    // if (model !== "openai/gpt-4.5-preview") {
+    if (model !== "openai/gpt-4.5-preview") {
       initialGeneratingModel = model;
-    // }
+    }
   }
 
   const count = Math.min(parseInt(countString || "3"), 3);
