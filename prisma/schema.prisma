@@ -194,6 +194,7 @@ model UserMetadata {
 
   tempAuthorId Int? // For users who sign up without having their publication analyzed
 
+  notesDescription String?
   noteWritingStyle String?
   noteTopics       String?
 
