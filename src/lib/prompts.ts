@@ -121,33 +121,95 @@ export const generateOutlinePrompt = (
 ];
 
 export const generateVectorSearchOptimizedDescriptionPrompt = (
-  publication: PublicationMetadata,
+  userMetadata: {
+    userId: string;
+    notesDescription: string | null;
+  },
 ) => [
   {
     role: "system",
     content: `
-          You are an expert in transforming user descriptions into concise, keyword-laden text suited for vector/semantic search.
+          You are an expert prompt engineer specialized in semantic search optimization. Your goal is to generate a concise, extremely targeted piece of text optimized specifically for vectorization and embedding into a semantic vector database. This text will be used to perform precise and relevant semantic searches, retrieving items (tweets, posts, notes, or articles) that align closely with the described user's specific preferences, interests, style, and content goals.
 
-          **Goals & Requirements**:
-          1. Create a concise, single-paragraph summary of the user’s description, focusing on essential expertise, services, and relevant skills.
-          2. Eliminate or minimize personal anecdotes, private life events, and specific dates (unless they are crucial to the user’s professional identity).
-          3. Remove or generalize any mentions of specific names (authors, products, brands), personal anecdotes, dates, or platform references (including "Substack" or "newsletter").
-          4. **Never** use the word “Substack.” If the raw description includes “Substack,” replace it with “newsletter.”
-          5. Incorporate industry-relevant keywords (e.g., SaaS, marketing, solopreneur, accountability apps, etc.) that the user might want to rank for.
-          6. Favor clarity, brevity, and high-value phrasing over storytelling fluff.
-          7. Maintain a natural, human-like tone—avoid robotic or overly formal language.
-          8. Return exactly **one JSON object** with a single key: "optimizedDescription". The value should be the transformed description string, and **nothing else**.
+          Follow these detailed instructions meticulously:
+
+          Input Understanding:
+
+          Clearly understand the user's description provided, identifying specific keywords, interests, themes, style, and context.
+
+          Pay special attention to the user's explicit preferences, writing style, and the topics that matter most to them.
+
+          Topic Extraction & Talking‑Point Identification:
+
+          Parse the description to surface 3‑6 primary topics (e.g., "audience‑first entrepreneurship", "Substack growth", "radical transparency").
+
+          Detect recurring talking points or thematic clusters (e.g., "turning readers into collaborators", "public failure analysis").
+
+          Rank topics and talking points by relevance, then weave the highest‑value ones into the optimized text.
+
+          Ensure the final text orients around entrepreneurship / creator‑business context, even if the source description is broad.
+
+          Text Optimization:
+
+          Conciseness: Keep the text between 60‑100 words. Every word must directly serve semantic relevance and search efficiency.
+
+          Semantic Density: Include high‑relevance keywords and phrases closely matching the user's description. Avoid generic words.
+
+          Relevance Emphasis: Highlight core themes, key interests, exact topics, specific technologies, methods, and styles explicitly preferred by the user.
+
+          Exclusion Criteria: Explicitly mention topics, styles, or themes to exclude based on the user's description.**:
+
+          Conciseness: Keep the text between 60-100 words. Every word must directly serve semantic relevance and search efficiency.
+
+          Semantic Density: Include high‑relevance keywords and phrases closely matching the user's description. Avoid generic words.
+
+          Bias Minimization: Avoid personal identifiers (e.g., specific names) and exact numeric counts (e.g., "500+", "200+") unless they are contextually essential, to prevent skewing vector relevance.
+
+          Relevance Emphasis: Highlight core themes, key interests, exact topics, specific technologies, methods, and styles explicitly preferred by the user.
+
+          Exclusion Criteria: Explicitly mention topics, styles, or themes to exclude based on the user's description.
+
+          Formatting and Clarity:
+
+          Write clearly, logically, and succinctly.
+
+          Use bullet points if necessary, but keep them minimal.
+
+          Ensure readability and ease of semantic interpretation by embedding algorithms.
+
+          Final Output Structure:
+
+          A single cohesive paragraph optimized for embedding into vector databases.
+
+          Clearly reflect and encapsulate user identity, interests, preferences, and goals.
+
+          Don't include the word Substack in any way in the description.
+
+          Return Format:
+
+          Return type: JSON
+
+          Return exactly one JSON object with a single key: "optimizedDescription".
+
+          The value must be the generated description string.
+
+          Output nothing else—no additional keys, commentary, or formatting outside the JSON object.
+
 
           **Response Format**:
           {
             "optimizedDescription": "<Transformed description text>"
           }
+
+          The value must be the generated description string.
+
+          Output nothing else—no additional keys, commentary, or formatting outside the JSON object.
     `,
   },
   {
     role: "user",
     content: `
-    ${publication.generatedDescription}
+    ${userMetadata.notesDescription}
     `,
   },
 ];
@@ -363,16 +425,18 @@ You must always address the writer directly as "you," never using "they/them."
 **What to Include** (in your JSON response):
 1. **noteWritingStyle**: A thorough breakdown of how you (the writer) typically organize thoughts, the tone of your notes, and any distinct writing habits (e.g., concise bullet points, stream-of-consciousness, reflective questioning).
 2. **noteTopics**: A comma-separated list of the main themes or subjects found across these notes.
+3. **notesDescription**: A description of the notes, including the main themes or subjects found across these notes.
 
 **Response Format**:
 Return exactly one JSON object with the keys:
-\`noteWritingStyle\` and \`noteTopics\`.
+\`noteWritingStyle\`, \`noteTopics\`, and \`notesDescription\`.
 
 For example:
 
 {
   "noteWritingStyle": "<generated noteWritingStyle>",
-  "noteTopics": "<generated noteTopics>"
+  "noteTopics": "<generated noteTopics>",
+  "notesDescription": "<generated notesDescription>"
 }
 
 Ensure the final output is valid JSON, with no extra text outside the JSON object. Always use second-person language, and avoid “they/them.”

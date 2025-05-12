@@ -5,11 +5,68 @@ import { searchInMeili } from "@/lib/dal/meilisearch";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { NotesComments, Prisma } from "@/../prisma/generated/articles";
-import { InspirationNote, Note } from "@/types/note";
+import { NotesComments } from "@/../prisma/generated/articles";
+import { InspirationNote } from "@/types/note";
 import { z } from "zod";
+import { generateVectorSearchOptimizedDescriptionPrompt } from "@/lib/prompts";
+import { runPrompt } from "@/lib/open-router";
+import { parseJson } from "@/lib/utils/json";
+import { setUserNotesDescription } from "@/lib/dal/analysis";
 
-export const maxDuration = 150;
+export const maxDuration = 300;
+
+const getUserNotesDescription = async (
+  userMetadata: {
+    userId: string;
+    notesDescription: string | null;
+  },
+  authorId: number,
+  publicationId: string,
+) => {
+  let validUserMetadata = { ...userMetadata };
+  if (!userMetadata.notesDescription) {
+    await setUserNotesDescription(userMetadata.userId, authorId);
+  }
+  const newUserMetadata = await prisma.userMetadata.findUnique({
+    where: { userId: userMetadata.userId },
+    select: {
+      userId: true,
+      notesDescription: true,
+    },
+  });
+
+  if (!newUserMetadata) {
+    return null;
+  }
+
+  validUserMetadata = {
+    userId: newUserMetadata?.userId,
+    notesDescription: newUserMetadata?.notesDescription,
+  };
+  const prompt =
+    generateVectorSearchOptimizedDescriptionPrompt(validUserMetadata);
+  const [deepseek] = await Promise.all([
+    runPrompt(prompt, "deepseek/deepseek-r1"),
+    // runPrompt(prompt, "openai/gpt-4.1"),
+    // runPrompt(prompt, "openai/gpt-4.5-preview"),
+    // runPrompt(prompt, "x-ai/grok-3-beta"),
+    // runPrompt(prompt, "anthropic/claude-3.7-sonnet"),
+    // runPrompt(prompt, "google/gemini-2.5-pro-preview-03-25"),
+  ]);
+
+  const result = await parseJson<{
+    optimizedDescription: string;
+  }>(deepseek);
+
+  await prisma.publicationMetadata.update({
+    where: { id: publicationId },
+    data: {
+      generatedDescriptionForSearch: result.optimizedDescription,
+    },
+  });
+
+  return result.optimizedDescription;
+};
 
 // zod this. Use InspirationFilters type
 const InspirationFiltersSchema = z.object({
@@ -98,17 +155,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const query =
+    let query =
       filters.keyword?.toLocaleLowerCase() ||
       `
-    ${publication.generatedDescription}
-     `;
+    ${publication.generatedDescriptionForSearch}`;
+
+    if (!userMetadata.notesDescription) {
+      const result = await getUserNotesDescription(
+        {
+          userId: userMetadata.userId,
+          notesDescription: userMetadata.notesDescription,
+        },
+        publication.authorId,
+        publication.id,
+      );
+      query = result || query;
+    }
+
+    // const result = await test(userMetadata);
+    // // const query = publication.generatedDescriptionForSearch || "";
+    // const query = result.deepseek;
+    // const query =
+    //   filters.keyword?.toLocaleLowerCase() ||
+    //   `;
+    // ${publication.generatedDescriptionForSearch}
+    // //  `;
+    // const query = `Find Substack Notes where creators share genuine personal experiences, practical advice, emotional wins or struggles about building newsletters, SaaS products, or indie businesses. Prioritize short-to-medium notes that are human, relatable, and conversation-driven. Strictly exclude reposts of news articles, celebrity drama, screenshots, and promotional-only posts (like “check out my Substack!”). Emphasize informal tone, personal storytelling, and community engagement over announcements.`;
+
+    // const query = `Practical insights, raw personal stories, and brutally honest lessons from solopreneurs building SaaS, newsletters, or indie startups. Direct, no-bullshit advice about validating ideas fast, coding challenges, cold emailing, sales, audience building, and achieving high monthly recurring revenue (100k MRR). Exclude fluffy content, political correctness, and woke topics. Prioritize real-life entrepreneurial experiences, personal productivity hacks, smart coding tips (React, Next.js, TypeScript, Firebase, Prisma), and unfiltered takes on the highs and lows of self-employment.`;
+
+    // const query = `Audience-first entrepreneurship focusing on human connection over technical execution, documenting raw lessons in community building. Core themes: tactical content strategies, converting audiences into collaborators through daily engagement, iterative success via public failure analysis. Radical transparency in sharing metric evolution and entrepreneurial vulnerability. Excludes technical deep dives, coding tutorials, and perfection-driven development. Emphasizes emotional dimensions of creator monetization, psychological hurdles of solopreneurship, and systems for transforming passive readers into co-creators within digital ecosystems`;
 
     const shouldMilvusSearch = filters.type === "relevant-to-user";
 
     const likes = filters.minLikes;
     const minLikes = likes ? likes : 50;
-    const extraMinLikes = likes ? likes : 150;
+    const extraMinLikes = likes ? likes : 0;
     const minRandom = likes ? Math.random() / 2 : Math.random();
     const maxLikes = likes ? likes * 2 : 5000;
     const extraMaxLikes = likes ? likes * 2 : 0;
@@ -199,7 +281,6 @@ export async function POST(req: NextRequest) {
         query,
         limit: 100 + existingNotesIds.length,
         filters: searchFilters,
-        minMatch: 0.2,
       });
     } else {
       const { type, ...filtersNoType } = filters;

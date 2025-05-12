@@ -14,6 +14,7 @@ export async function setUserNotesDescription(
   | {
       noteWritingStyle: string;
       noteTopics: string;
+      notesDescription: string;
     }
   | { status: number; error: string }
 > {
@@ -32,7 +33,7 @@ export async function setUserNotesDescription(
     orderBy: {
       date: "desc",
     },
-    take: 150,
+    take: 300,
   });
 
   if (userNotes.length === 0) {
@@ -49,6 +50,7 @@ export async function setUserNotesDescription(
   const descriptionObject: {
     noteWritingStyle: string;
     noteTopics: string;
+    notesDescription: string;
   } = await parseJson(generatedDescription);
 
   await prisma.userMetadata.update({
@@ -56,12 +58,14 @@ export async function setUserNotesDescription(
     data: {
       noteWritingStyle: descriptionObject.noteWritingStyle,
       noteTopics: descriptionObject.noteTopics,
+      notesDescription: descriptionObject.notesDescription,
     },
   });
 
   return {
     noteWritingStyle: descriptionObject.noteWritingStyle,
     noteTopics: descriptionObject.noteTopics,
+    notesDescription: descriptionObject.notesDescription,
   };
 }
 

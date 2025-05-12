@@ -14,7 +14,7 @@ interface SearchOptions {
   limit?: number;
   includeBody?: boolean;
   filters?: Filter[];
-  minMatch?: number;
+  maxMatch?: number;
 }
 
 export interface ArticleContent {
@@ -39,7 +39,7 @@ async function searchSimilarArticles({
   limit = 20,
   includeBody = false,
   filters = [],
-  minMatch = 0,
+  maxMatch = 0.65,
 }: SearchOptions) {
   const MILVUS_API_KEY = process.env.MILVUS_API_KEY;
   const MILVUS_ENDPOINT = process.env.MILVUS_ENDPOINT;
@@ -77,6 +77,13 @@ async function searchSimilarArticles({
     limit: limit,
     outputFields: ["*"],
     filters: filtersString,
+    searchParams: {
+      anns_field: "vector",
+      topk: limit,
+      metric_type: "COSINE",
+      params: { nprobe: 10 }, // ✅ FIXED ✅
+      score_threshold: 0.3, // ✅ THRESHOLD WORKS NOW ✅
+    },
   };
 
   // Search vectors in Milvus
@@ -98,7 +105,7 @@ async function searchSimilarArticles({
   const data = await response.json();
   const topArticles = data.data
     ? data.data
-        .filter((article: any) => article.distance >= minMatch)
+        .filter((article: any) => article.distance <= maxMatch)
         .slice(0, limit)
     : [];
 
@@ -178,7 +185,7 @@ async function searchSimilarNotes({
   query,
   limit = 100,
   filters = [],
-  minMatch = 0,
+  maxMatch = 0.65,
 }: SearchOptions) {
   const MILVUS_API_KEY = process.env.MILVUS_API_KEY;
   const MILVUS_ENDPOINT = process.env.MILVUS_ENDPOINT;
@@ -214,9 +221,16 @@ async function searchSimilarNotes({
   const searchBody = {
     collectionName: COLLECTION_NAME,
     data: [embedding],
-    limit: limit * 5,
+    // limit: limit,
     outputFields: ["*"],
     filter: filtersString,
+    searchParams: {
+      anns_field: "vector",
+      topk: limit,
+      metric_type: "COSINE",
+      params: { nprobe: 10 }, // ✅ FIXED ✅
+      score_threshold: 0.3, // ✅ THRESHOLD WORKS NOW ✅
+    },
   };
 
   // Search vectors in Milvus
@@ -231,7 +245,11 @@ async function searchSimilarNotes({
   );
   console.timeEnd("Search milvus");
 
-  if (!response.ok) {
+  // Check if content type is application/json
+  if (
+    !response.ok ||
+    response.headers.get("content-type") !== "application/json"
+  ) {
     throw new Error(`Milvus search failed: ${response.statusText}`);
   }
 
@@ -239,22 +257,35 @@ async function searchSimilarNotes({
 
   const topMatchNotes = data.data
     ? data.data.filter((note: any) =>
-        minMatch ? note.distance >= minMatch : true,
+        maxMatch ? note.distance <= maxMatch : true,
       )
     : [];
-  //select random notes from topMatchNotes
+
+  const sortedTopMatchNotes = topMatchNotes.sort(
+    (a: any, b: any) => a.distance - b.distance,
+  );
 
   const notesFromDb = await prismaArticles.notesComments.findMany({
     where: {
       id: {
-        in: topMatchNotes.map((note: any) => note.id),
+        in: sortedTopMatchNotes.map((note: any) => note.id),
       },
     },
   });
 
-  const topNotes = notesFromDb
-    .slice(0, limit * 2)
-    .sort(() => Math.random() - 0.5);
+  // Sort the notes from db by distance. Find their corresponding distance in sortedTopMatchNotes
+  const sortedTopMatchNotesFromDb = notesFromDb.sort((a: any, b: any) => {
+    const distanceA = sortedTopMatchNotes.find(
+      (note: any) => note.id === a.id,
+    )?.distance;
+    const distanceB = sortedTopMatchNotes.find(
+      (note: any) => note.id === b.id,
+    )?.distance;
+    return distanceA - distanceB;
+  });
+
+  const topNotes = sortedTopMatchNotesFromDb.slice(0, limit * 2);
+  // .sort(() => Math.random() - 0.5);
   return topNotes.map(note => ({
     ...note,
     body: note.body,
