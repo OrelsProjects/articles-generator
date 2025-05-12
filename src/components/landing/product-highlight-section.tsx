@@ -24,6 +24,11 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+const itemVariantsSide = {
+  hidden: { opacity: 0, x: 300 },
+  visible: { opacity: 1, x: 0 },
+};
+
 const itemVariantsLongImage = (rotate?: boolean) => ({
   hidden: { opacity: 0, y: 300, x: 300, rotate: rotate ? -12 : 0 },
   visible: { opacity: 1, y: "-33%", x: 0 },
@@ -79,16 +84,6 @@ const ImagesContainer = ({
     return () => clearInterval(interval);
   }, [isGallery, src]);
 
-  const nextImage = () => {
-    if (!isGallery) return;
-    setCurrentIndex(prevIndex => (prevIndex + 1) % src.length);
-  };
-
-  const prevImage = () => {
-    if (!isGallery) return;
-    setCurrentIndex(prevIndex => (prevIndex - 1 + src.length) % src.length);
-  };
-
   // Ensure we have a single ImageSource for the MotionImage component
   const currentSrc: ImageSource = isGallery
     ? (src as ImageSource[])[currentIndex]
@@ -110,22 +105,6 @@ const ImagesContainer = ({
 
       {isGallery && (
         <>
-          {/* <Button
-            variant="outline"
-            size="icon"
-            className="absolute left-2 top-1/2 -translate-y-1/2 opacity-80 hover:opacity-100 bg-background"
-            onClick={prevImage}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute right-2 top-1/2 -translate-y-1/2 opacity-80 hover:opacity-100 bg-background"
-            onClick={nextImage}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button> */}
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 opacity-60">
             {Array.isArray(src) &&
               src.map((_, index) => (
@@ -208,7 +187,7 @@ function FeatureSectionCard({
                   ? itemVariantsLongImage(rotateImage)
                   : itemVariants
             }
-            imageVariants={itemVariants}
+            imageVariants={sideViewImage ? itemVariantsSide : itemVariants}
           />
         </motion.div>
         <motion.div className="block sm:hidden rounded-2xl">

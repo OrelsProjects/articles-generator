@@ -248,13 +248,13 @@ function App() {
                   href="mailto:orelsmail@gmail.com"
                   className="underline text-primary"
                 >
-                  contact me
+                  Contact me
                 </a>
               </p>
             </div>
           </div>
           <span className="w-full h-full flex justify-center items-center text-center text-xs text-muted-foreground z-[50] bg-muted pb-2">
-            This website is not affiliated or partnered with Substack.
+            This website was made by Substack creators for Substack creators, but not YET affiliated with Substack.
           </span>
         </section>
       </ThemeProvider>

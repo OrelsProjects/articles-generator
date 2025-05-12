@@ -67,7 +67,8 @@ export default function FreeLayout({
             © {new Date().getFullYear()} {appName}. All rights reserved.
           </p>
           <p className="text-xs text-muted-foreground mt-2">
-            This website is not affiliated or partnered with Substack.
+            This website was made by Substack creators for Substack creators,
+            but not YET affiliated with Substack.
           </p>
         </div>
       </footer>
