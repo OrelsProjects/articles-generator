@@ -203,6 +203,8 @@ model UserMetadata {
   plan         Plan?
   featureFlags FeatureFlag[] @default([])
 
+  notesGeneratedCount Int @default(3)
+
   dataUpdatedAt DateTime?
 
   isAdmin Boolean @default(false)
