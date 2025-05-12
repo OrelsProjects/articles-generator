@@ -10,6 +10,7 @@ export interface AppUserMeta {
   featureFlags: FeatureFlag[];
   isAdmin: boolean;
   tempAuthorId: string | null;
+  notesToGenerateCount: number;
 }
 
 export default interface AppUser {

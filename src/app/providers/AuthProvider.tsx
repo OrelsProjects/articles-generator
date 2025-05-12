@@ -61,6 +61,7 @@ export default function AuthProvider({
           interval: session?.user?.meta?.interval || "month",
           isAdmin: session?.user?.meta?.isAdmin || false,
           tempAuthorId: session?.user?.meta?.tempAuthorId || null,
+          notesToGenerateCount: session?.user?.meta?.notesToGenerateCount || 3,
         },
       };
       dispatch(setUserAction(appUser));

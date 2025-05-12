@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import {
   selectNotes,
@@ -774,6 +774,10 @@ export const useNotes = () => {
     [scheduleNote, deleteSchedule],
   );
 
+  const notesToGenerate = useMemo(() => {
+    return user?.meta?.notesToGenerateCount || 3;
+  }, [user]);
+
   return {
     userNotes,
     selectedNote,
@@ -807,5 +811,6 @@ export const useNotes = () => {
     loadingScheduleNote,
     rescheduleNote,
     loadingCreateNote,
+    notesToGenerate,
   };
 };

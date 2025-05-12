@@ -16,6 +16,7 @@ const ErrorStatus: Record<AIUsageErrors, number> = {
 export async function canUseAI(
   userId: string,
   usageType: AIUsageType,
+  presetCredits?: number,
 ): Promise<{ result: boolean; status: number; nextRefill?: Date }> {
   const subscription = await getActiveSubscription(userId);
 
@@ -29,7 +30,7 @@ export async function canUseAI(
     };
   }
 
-  const cost = creditCosts[usageType];
+  const cost = presetCredits || creditCosts[usageType];
   if (!cost) {
     loggerServer.error(
       "Failed to check canUseAI due to no cost for: " + usageType,
@@ -64,6 +65,7 @@ export async function canUseAI(
 export async function useCredits(
   userId: string,
   usageType: AIUsageType,
+  presetCredits?: number,
 ): Promise<{ creditsUsed: number; creditsRemaining: number }> {
   const subscription = await getActiveSubscription(userId);
 
@@ -74,7 +76,7 @@ export async function useCredits(
     return { creditsUsed: 0, creditsRemaining: 0 };
   }
 
-  const cost = creditCosts[usageType];
+  const cost = presetCredits || creditCosts[usageType];
 
   if (!cost) {
     loggerServer.error("Cost not found when trying to use credits", {
@@ -95,7 +97,7 @@ export async function useCredits(
   return { creditsUsed, creditsRemaining };
 }
 
-export async function undoUseCredits(userId: string, usageType: AIUsageType) {
+export async function undoUseCredits(userId: string, usageType: AIUsageType, presetCredits?: number) {
   try {
     const subscription = await getActiveSubscription(userId);
 
@@ -106,7 +108,7 @@ export async function undoUseCredits(userId: string, usageType: AIUsageType) {
       return { creditsUsed: 0, creditsRemaining: 0 };
     }
 
-    const cost = creditCosts[usageType];
+    const cost = presetCredits || creditCosts[usageType];
 
     await prisma.subscription.update({
       where: { id: subscription.id },

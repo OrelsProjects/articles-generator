@@ -59,8 +59,12 @@ export function GenerateNotesDialog({
 
   const [topic, setTopic] = useState("");
   const [open, setOpen] = useState(defaultOpen || false);
-  const { generateNewNotes, isLoadingGenerateNotes, errorGenerateNotes } =
-    useNotes();
+  const {
+    generateNewNotes,
+    isLoadingGenerateNotes,
+    errorGenerateNotes,
+    notesToGenerate,
+  } = useNotes();
   const {
     articles,
     isLoadingArticles,
@@ -165,7 +169,7 @@ export function GenerateNotesDialog({
           </TooltipButton>
         </DialogTrigger>
 
-        <DialogContent className="overflow-auto sm:max-w-[625px]">
+        <DialogContent className="overflow-auto sm:max-w-[625px] max-h-[88vh]">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
               <DialogTitle>Generate new notes</DialogTitle>
@@ -225,7 +229,8 @@ export function GenerateNotesDialog({
               ) : (
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="col-span-4">
-                    Selected Articles ({selectedArticles.length}/3)
+                    Selected Articles ({selectedArticles.length}/
+                    {notesToGenerate})
                   </Label>
                   <div className="col-span-4">
                     {selectedArticles.length > 0 ? (
@@ -318,9 +323,9 @@ export function GenerateNotesDialog({
                     ? "Generating..."
                     : selectedSource === "description"
                       ? topic
-                        ? "Generate based on your topic (3)"
-                        : "Generate personalized notes (3)"
-                      : "Generate based on selected articles (3)"}
+                        ? `Generate based on your topic (${notesToGenerate})`
+                        : `Generate personalized notes (${notesToGenerate})`
+                      : `Generate based on selected articles (${notesToGenerate})`}
                 </Button>
               </DialogTrigger>
             </DialogFooter>
@@ -334,6 +339,7 @@ export function GenerateNotesDialog({
         articles={articles}
         onArticlesSelected={handleArticlesSelected}
         loadMoreArticles={fetchNextArticlesPage}
+        maxSelectedArticles={notesToGenerate}
         reloadArticles={() => {
           try {
             fetchPosts(1, true);

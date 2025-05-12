@@ -26,7 +26,7 @@ interface ArticleSelectionDialogProps {
   hasMoreArticles: boolean;
   isLoading: boolean;
   preSelectedArticles?: Article[];
-  maxSelectedArticles?: number;
+  maxSelectedArticles: number;
 }
 
 export function ArticleSelectionDialog({
@@ -39,7 +39,7 @@ export function ArticleSelectionDialog({
   reloadArticles,
   isLoading,
   preSelectedArticles,
-  maxSelectedArticles = 3,
+  maxSelectedArticles,
 }: ArticleSelectionDialogProps) {
   const [selectedArticles, setSelectedArticles] = useState<Article[]>(
     preSelectedArticles || [],
@@ -81,7 +81,7 @@ export function ArticleSelectionDialog({
     if (selectedArticles.find(a => a.id === article.id)) {
       setSelectedArticles(selectedArticles.filter(a => a.id !== article.id));
     } else {
-      if (selectedArticles.length < 3) {
+      if (selectedArticles.length < maxSelectedArticles) {
         setSelectedArticles([...selectedArticles, article]);
       }
     }

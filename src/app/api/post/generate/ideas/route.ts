@@ -26,8 +26,6 @@ export const maxDuration = 300; // This function can run for a maximum of 5 minu
 const modelUsedForIdeas: Model = "openrouter/auto";
 const modelUsedForOutline: Model = "openrouter/auto";
 
-const MAX_IDEAS_COUNT = 3;
-
 export async function GET(
   req: NextRequest,
 ): Promise<NextResponse<AIUsageResponse<IdeaLLM[]>>> {
@@ -42,6 +40,7 @@ export async function GET(
 
   let usageId: string = "";
   let didConsumeCredits = false;
+  let notesToGenerate = 3;
   try {
     console.time("Pre-query");
 
@@ -59,6 +58,7 @@ export async function GET(
       req.nextUrl.searchParams.get("shouldSearch") || "false";
 
     const publicationMetadata = userMetadata?.publication;
+    notesToGenerate = userMetadata?.notesToGenerateCount || 3;
 
     if (
       !publicationMetadata ||
@@ -74,6 +74,7 @@ export async function GET(
     const { result, status } = await canUseAI(
       session.user.id,
       "ideaGeneration",
+      notesToGenerate,
     );
     if (!result) {
       return NextResponse.json(
@@ -114,7 +115,7 @@ export async function GET(
       session.user.id,
       topic,
       publicationMetadata,
-      MAX_IDEAS_COUNT,
+      notesToGenerate,
       shouldSearch,
       cleanedUserArticles,
       {
@@ -240,7 +241,7 @@ export async function GET(
       userId: session?.user.id,
     });
     if (didConsumeCredits) {
-      await undoUseCredits(session.user.id, "ideaGeneration");
+      await undoUseCredits(session.user.id, "ideaGeneration", notesToGenerate);
     }
     const { message, status } = await handleUsageError(error, usageId);
     return NextResponse.json({ success: false, error: message }, { status });

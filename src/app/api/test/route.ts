@@ -50,11 +50,17 @@ import { prisma } from "@/lib/prisma";
 // }
 
 export async function GET() {
-  // const session = await getServerSession(authOptions);
-  // if (!session) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
+  await prisma.userMetadata.update({
+    where: { userId: session.user.id },
+    data: {
+      notesToGenerateCount: 10,
+    },
+  });
 
   // // const email = generateWelcomeTemplateTrial("Orel");
   // // const result = await sendMailSafe({

@@ -42,6 +42,7 @@ export const authOptions: AuthOptions = {
             featureFlags: FeatureFlag[];
             isAdmin: boolean;
             tempAuthorId: string | null;
+            notesToGenerateCount: number;
           } | null,
           Subscription | null,
         ];
@@ -58,6 +59,7 @@ export const authOptions: AuthOptions = {
           interval: activeSubscription?.interval || "month",
           isAdmin: userMetadata?.isAdmin || false,
           tempAuthorId: userMetadata?.tempAuthorId || null,
+          notesToGenerateCount: userMetadata?.notesToGenerateCount || 3,
         };
         session.user.publicationId = userMetadata?.publicationId || "";
         return session;

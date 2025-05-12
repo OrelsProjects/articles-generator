@@ -53,12 +53,31 @@ export async function POST(
     );
   }
 
-  const countString = parsedBody.data.count?.toString() || "3";
+  const userMetadata = await prisma.userMetadata.findUnique({
+    where: {
+      userId: session.user.id,
+    },
+    select: {
+      notesToGenerateCount: true,
+    },
+  });
+
+  if (!userMetadata) {
+    return NextResponse.json(
+      { success: false, error: "User metadata not found" },
+      { status: 404 },
+    );
+  }
+
+  const countString =
+    parsedBody.data.count?.toString() ||
+    userMetadata.notesToGenerateCount.toString();
   const requestedModel = parsedBody.data.model;
   const useTopTypes = !!parsedBody.data.useTopTypes;
   const topic = parsedBody.data.topic;
   const preSelectedPostIds = parsedBody.data.preSelectedPostIds;
   const featureFlags = session.user.meta?.featureFlags || [];
+  const notesToGenerate = userMetadata.notesToGenerateCount || 3;
   let initialGeneratingModel: Model = "openrouter/auto";
   let model: Model = "openrouter/auto";
 
@@ -98,7 +117,7 @@ export async function POST(
     }
   }
 
-  const count = Math.min(parseInt(countString || "3"), 3);
+  const count = Math.max(parseInt(countString || "3"), notesToGenerate);
   let didConsumeCredits = false;
   try {
     const userMetadata = await prisma.userMetadata.findUnique({
@@ -128,7 +147,7 @@ export async function POST(
       "About to generate notes for userMetadata: ",
       JSON.stringify(userMetadata.publication.authorId),
     );
-    const canUseAIResult = await canUseAI(session.user.id, "notesGeneration");
+    const canUseAIResult = await canUseAI(session.user.id, "notesGeneration", notesToGenerate);
 
     if (!canUseAIResult.result) {
       return NextResponse.json(
@@ -140,6 +159,7 @@ export async function POST(
     const { creditsUsed, creditsRemaining } = await useCredits(
       session.user.id,
       "notesGeneration",
+      notesToGenerate,
     );
     didConsumeCredits = true;
 
@@ -360,7 +380,7 @@ export async function POST(
     return NextResponse.json(response);
   } catch (error: any) {
     if (didConsumeCredits) {
-      await undoUseCredits(session.user.id, "notesGeneration");
+      await undoUseCredits(session.user.id, "notesGeneration", notesToGenerate);
     }
     const code = error.code || "unknown";
     if (code === 429 || error instanceof Model429Error) {

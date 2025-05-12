@@ -73,7 +73,7 @@ export const generateOutlinePrompt = (
       You are an expert article writer specializing in creating engaging, well-structured content tailored to specific audiences. Your work is guided by the following publication description:
       "${publicationDescription}"
 
-      The user will provide 5 top-performing articles. Analyze these articles to understand the publication's editorial focus, tone, and style. Ensure the outline aligns with the brand's voice and resonates with the target audience.
+      The user will provide ${topArticles.length} top-performing articles. Analyze these articles to understand the publication's editorial focus, tone, and style. Ensure the outline aligns with the brand's voice and resonates with the target audience.
 
       Here are the article ideas:
       ${ideaDescriptions.map(idea => `- (${idea.id}): ${idea.description}`).join("\n")}

@@ -12,20 +12,20 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { setLoadingNewIdeas } from "@/lib/features/publications/publicationSlice";
-import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { useSettings } from "@/lib/hooks/useSettings";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   selectUi,
   setShowGenerateIdeasDialog,
   setShowIdeasPanel,
 } from "@/lib/features/ui/uiSlice";
 import { toast } from "react-toastify";
-
+import { useNotes } from "@/lib/hooks/useNotes";
 export default function GenerateIdeasDialog() {
   const dispatch = useAppDispatch();
+  const { notesToGenerate } = useNotes();
   const { showGenerateIdeasDialog } = useAppSelector(selectUi);
   const { hasEnoughCredits } = useSettings();
   const { generateIdeas } = useIdea();
@@ -36,7 +36,7 @@ export default function GenerateIdeasDialog() {
     dispatch(setShowGenerateIdeasDialog(false));
     try {
       dispatch(setLoadingNewIdeas(true));
-      await generateIdeas({ topic, shouldSearch });
+      await generateIdeas({ topic, shouldSearch, });
       dispatch(setShowIdeasPanel(true));
       setTopic("");
       setShouldSearch(false);
@@ -116,15 +116,9 @@ export default function GenerateIdeasDialog() {
                 "Generate Ideas based on your topic"
               ) : (
                 "Generate Ideas based on your publication"
-              )}
+              )}{" "}
+              ({notesToGenerate})
             </Button>
-            <p
-              className={cn("text-sm text-muted-foreground", {
-                "text-red-400": didExceedLimit,
-              })}
-            >
-              (3 credits)
-            </p>
           </DialogFooter>
         </DialogContent>
       </form>
