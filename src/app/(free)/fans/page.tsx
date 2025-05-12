@@ -25,13 +25,8 @@ import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
 import useAuth from "@/lib/hooks/useAuth";
 import useMediaQuery from "@/lib/hooks/useMediaQuery";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { ToastStepper } from "@/components/ui/toast-stepper";
+import * as sheet from "@/components/ui/sheet";
 
 function TopEngagersPage() {
   const { data: session } = useSession();
@@ -53,6 +48,15 @@ function TopEngagersPage() {
 
   const [loadingUserData, setLoadingUserData] = useState(false);
   const loadingUserDataRef = useRef(loadingUserData);
+
+  // Loading states for the toast stepper
+  const loadingStates = [
+    { text: "Connecting to Substack...", delay: 6000 },
+    { text: "Fetching publication data...", delay: 30000 },
+    { text: "Analyzing engagement patterns...", delay: 20000 },
+    { text: "Ranking your top fans...", delay: 15000 },
+    { text: "Preparing results...", delay: 100000 },
+  ];
 
   const getAuthorId = async () => {
     try {
@@ -185,7 +189,6 @@ function TopEngagersPage() {
   };
 
   const getLoginRedirect = () => {
-    ;
     if (selectedByline) {
       return `${pathname}?redirect=fans&author=${selectedByline.authorId}`;
     } else {
@@ -282,6 +285,14 @@ function TopEngagersPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Toast Stepper */}
+      <ToastStepper
+        loadingStates={loadingStates}
+        loading={loading}
+        duration={1500}
+        position="bottom-right"
+      />
 
       <Dialog open={showLoginDialog} onOpenChange={handleCloseLoginDialog}>
         <DialogContent className="sm:max-w-md" backgroundBlur={false}>

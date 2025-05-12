@@ -20,6 +20,7 @@ import {
 import { AnimatePresence } from "framer-motion";
 import { MotionAlert } from "@/components/ui/motion-components";
 import { AlertDescription } from "@/components/ui/alert";
+import { useSession } from "next-auth/react";
 
 export const ERRORS = {
   INVALID_URL: {
@@ -73,6 +74,7 @@ export default function UrlAnalysisInput({
   onUrlChange,
   placeholder = "Your Substack URL (e.g., yourname.substack.com)",
 }: UrlAnalysisInputProps) {
+  const { data: session } = useSession();
   const [substackUrl, setSubstackUrl] = useState("");
   const [loadingBylines, setLoadingBylines] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
@@ -86,12 +88,17 @@ export default function UrlAnalysisInput({
     [authorImage, authorName, hasData],
   );
 
+  const isAdmin = useMemo(() => {
+    return session?.user.meta?.isAdmin;
+  }, [session]);
+
   const inputDisabled = useMemo(() => {
     return (
-      isLoading ||
-      loadingBylines ||
-      isInputDisabled ||
-      (hasData && !!substackUrl)
+      !isAdmin &&
+      (isLoading ||
+        loadingBylines ||
+        isInputDisabled ||
+        (hasData && !!substackUrl))
     );
   }, [isLoading, loadingBylines, isInputDisabled, hasData, substackUrl]);
 
@@ -173,7 +180,7 @@ export default function UrlAnalysisInput({
 
   return (
     <>
-      {showHeader ? (
+      {showHeader && !isAdmin ? (
         <ActivityHeader />
       ) : (
         <div className="flex flex-col md:flex-row gap-4">

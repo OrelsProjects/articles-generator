@@ -54,14 +54,16 @@ export async function POST(request: NextRequest) {
   const validPage = isFree ? 1 : parseInt(page);
 
   let url, authorId;
+  let parsedBody: z.infer<typeof schema> | null = null;
   try {
     const textBody = await request.text();
     try {
       const body = JSON.parse(textBody);
-      const parsedBody = schema.safeParse(body);
-      if (parsedBody.success) {
-        url = parsedBody.data.url;
-        authorId = parsedBody.data.authorId;
+      const parsed = schema.safeParse(body);
+      if (parsed.success) {
+        url = parsed.data.url;
+        authorId = parsed.data.authorId;
+        parsedBody = parsed.data;
       }
     } catch (error) {
       loggerServer.warn("Error parsing body in top-engagers  ", {
@@ -104,6 +106,10 @@ export async function POST(request: NextRequest) {
       authorIdFromPublication?.toString() ||
       session?.user.meta?.tempAuthorId ||
       authorId;
+
+    if (session?.user.meta?.isAdmin && parsedBody?.authorId) {
+      authorId = parsedBody.authorId.toString();
+    }
 
     let existingEngagers: FreeUserEngagers[] | null = null;
     if (authorId) {
