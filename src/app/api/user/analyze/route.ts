@@ -345,32 +345,40 @@ export async function POST(req: NextRequest) {
         ) || "",
     };
 
+    const notesDescriptionResult = await setUserNotesDescription(
+      userId,
+      byline.authorId,
+    );
+
+    if ("notesDescription" in notesDescriptionResult) {
+      const generatedDescriptionForSearch = await runPrompt(
+        generateVectorSearchOptimizedDescriptionPrompt({
+          notesDescription: notesDescriptionResult.notesDescription,
+        }),
+      );
+
+      const parsedGeneratedDescriptionForSearch = await parseJson<{
+        optimizedDescription: string;
+      }>(generatedDescriptionForSearch);
+
+      await prisma.publicationMetadata.update({
+        where: { id: publication.id },
+        data: {
+          generatedDescriptionForSearch:
+            parsedGeneratedDescriptionForSearch.optimizedDescription,
+        },
+      });
+    }
+
+    // if (didConsumeCredits) {
+    // The user has requested a refresh, update notes as well.
+    // }
+
     await fetchAuthor({
       authorId: byline.authorId.toString(),
       publicationUrl: url,
       publicationId: publicationFromDb?.id.toString(),
     });
-
-    const generatedDescriptionForSearch = await runPrompt(
-      generateVectorSearchOptimizedDescriptionPrompt(publicationMetadata),
-    );
-
-    const parsedGeneratedDescriptionForSearch = await parseJson<{
-      optimizedDescription: string;
-    }>(generatedDescriptionForSearch);
-
-    await prisma.publicationMetadata.update({
-      where: { id: publication.id },
-      data: {
-        generatedDescriptionForSearch:
-          parsedGeneratedDescriptionForSearch.optimizedDescription,
-      },
-    });
-
-    if (didConsumeCredits) {
-      // The user has requested a refresh, update notes as well.
-      await setUserNotesDescription(userId, byline.authorId);
-    }
 
     if (session.user.email) {
       const email = generatePublicationAnalysisCompleteEmail();

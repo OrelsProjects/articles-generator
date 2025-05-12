@@ -120,12 +120,9 @@ export const generateOutlinePrompt = (
   },
 ];
 
-export const generateVectorSearchOptimizedDescriptionPrompt = (
-  userMetadata: {
-    userId: string;
-    notesDescription: string | null;
-  },
-) => [
+export const generateVectorSearchOptimizedDescriptionPrompt = (userMetadata: {
+  notesDescription: string | null;
+}) => [
   {
     role: "system",
     content: `
