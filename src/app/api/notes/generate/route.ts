@@ -220,7 +220,7 @@ export async function POST(
         query,
         limit: 20,
         filters,
-        minMatch: 0.3,
+        maxMatch: 0.5,
       }),
     ]);
     console.timeEnd("promises");
