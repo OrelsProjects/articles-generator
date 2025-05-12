@@ -191,18 +191,18 @@ export default function PotentialUsersPage() {
 
     const onScroll = () => {
       if (loadingRef.current || !hasMore) return;
-      
+
       const { scrollTop, scrollHeight, clientHeight } = container;
-      
+
       // when you've scrolled 70% down the container
       if (scrollTop + clientHeight >= scrollHeight * 0.7) {
         if (scrollThrottleRef.current) return;
         scrollThrottleRef.current = true;
-        
+
         const nextPage = page + 1;
         setPage(nextPage);
         fetchPotentialUsers(url, nextPage);
-        
+
         setTimeout(() => {
           scrollThrottleRef.current = false;
         }, 1000);
@@ -216,24 +216,35 @@ export default function PotentialUsersPage() {
   // Sort users based on orderBy
   const sortedUsers = useMemo(() => {
     if (!potentialUsers || potentialUsers.length === 0) return [];
+    let sorted = [...potentialUsers];
     switch (orderBy) {
       case "recommended":
-        return [...potentialUsers].sort((a, b) => b.score - a.score);
+        sorted = [...potentialUsers].sort((a, b) => b.score - a.score);
+        break;
       case "name":
-        return [...potentialUsers].sort((a, b) => a.name.localeCompare(b.name));
+        sorted = [...potentialUsers].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+        break;
       case "bestsellerTier":
-        return [...potentialUsers].sort(
+        sorted = [...potentialUsers].sort(
           (a, b) => b.bestsellerTier - a.bestsellerTier,
         );
+        break;
       case "subscriberCount":
-        const sorted = [...potentialUsers].sort(
+        sorted = [...potentialUsers].sort(
           (a, b) =>
             transformSubscriberCount(b.subscriberCountString) -
             transformSubscriberCount(a.subscriberCountString),
         );
         console.log(sorted);
-        return sorted;
     }
+    const uniqueSorted = sorted.filter(
+      (user, index, self) =>
+        index === self.findIndex(t => t.authorId === user.authorId),
+    );
+    console.log(uniqueSorted);
+    return uniqueSorted;
   }, [potentialUsers, orderBy]);
 
   // if string contains a number, return true
@@ -291,7 +302,10 @@ export default function PotentialUsersPage() {
       <ScrollArea className="flex-1" ref={containerRef}>
         <div className="w-full max-w-6xl mx-auto py-10 px-4">
           <h1 className="text-3xl font-bold mb-8">Potential Users</h1>
-          <form onSubmit={handleAnalyze} className="flex items-center gap-2 mb-8">
+          <form
+            onSubmit={handleAnalyze}
+            className="flex items-center gap-2 mb-8"
+          >
             <Input
               type="text"
               className="py-4"
@@ -330,17 +344,21 @@ export default function PotentialUsersPage() {
                   <DropdownMenuRadioItem value="bestsellerTier">
                     Bestseller Tier
                   </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="name">Name</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="name">
+                    Name
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
           <div className="flex flex-col gap-2 w-full">
             {isLoadingSkeleton
-              ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
-              : sortedUsers.map(user => (
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))
+              : sortedUsers.map((user, index) => (
                   <div
-                    key={user.authorId}
+                    key={`${user.authorId}-${index}`}
                     className="flex items-center justify-between bg-card rounded-xl shadow p-4 w-full hover:shadow-md transition border border-border"
                   >
                     <div className="flex items-center gap-4 min-w-0">
@@ -409,7 +427,10 @@ export default function PotentialUsersPage() {
               </div>
             )}
           </div>
-          <ToastStepper loadingStates={loadingStates} loading={isLoadingStates} />
+          <ToastStepper
+            loadingStates={loadingStates}
+            loading={isLoadingStates}
+          />
           <WelcomeDialog
             open={showWelcomeDialog}
             onOpenChange={setShowWelcomeDialog}
