@@ -228,8 +228,8 @@ async function searchSimilarNotes({
       anns_field: "vector",
       topk: limit,
       metric_type: "COSINE",
-      params: { nprobe: 10 }, // ✅ FIXED ✅
-      score_threshold: 0.3, // ✅ THRESHOLD WORKS NOW ✅
+      params: { nprobe: 50 }, // ✅ FIXED ✅
+      score_threshold: 0.1,
     },
   };
 
@@ -255,13 +255,7 @@ async function searchSimilarNotes({
 
   const data = await response.json();
 
-  const topMatchNotes = data.data
-    ? data.data.filter((note: any) =>
-        maxMatch ? note.distance <= maxMatch : true,
-      )
-    : [];
-
-  const sortedTopMatchNotes = topMatchNotes.sort(
+  const sortedTopMatchNotes = data.data.sort(
     (a: any, b: any) => a.distance - b.distance,
   );
 
