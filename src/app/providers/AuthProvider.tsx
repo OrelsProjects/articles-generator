@@ -103,7 +103,7 @@ export default function AuthProvider({
       router.push("/heatmap");
       return;
     }
-    console.log("Skipped pushing heatmap");
+
     if (shouldOnboard) {
       if (!pathname.includes("onboarding")) {
         router.push(`/onboarding`, {

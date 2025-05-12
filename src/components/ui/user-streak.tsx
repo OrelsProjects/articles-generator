@@ -23,8 +23,6 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
   const { streakCount, loading } = useNotesStats();
   const lottieRef = useRef<any>(null);
 
-  console.log("streak loading", loading);
-
   // Load animation data on component mount
   useEffect(() => {
     const loadAnimationData = async () => {
