@@ -309,7 +309,7 @@ export default function PotentialUsersPage() {
             <Input
               type="text"
               className="py-4"
-              placeholder="Enter Substack URL to analyze..."
+              placeholder="Enter Substack URL to analyze ([substack-name].substack.com)"
               value={inputUrl}
               onChange={e => setInputUrl(e.target.value)}
             />

@@ -46,6 +46,10 @@ const faq = [
     question: `Do I need to leave my computer running to schedule notes?`,
     answer: `Yes. Just leave the ${appName}'s window in the background and it will automatically publish your notes at anytime you choose!`,
   },
+  {
+    question: `Do you use my draft notes?`,
+    answer: `No. We never use your draft notes. We respect what you create and your drafts are private.`,
+  },
   // {
   //   question: `What if I forgot to leave ${appName} running?`,
   //   answer: `No problem! You will get an email with a button to one-click publish the missing note.`,
