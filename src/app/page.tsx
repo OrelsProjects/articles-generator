@@ -176,8 +176,10 @@ function App() {
                         className="w-10 h-10 rounded-full"
                       />
                       <div>
-                        <div className="font-semibold">
-                          {testimonial.author}
+                        <div className="font-semibold hover:underline hover:cursor-pointer">
+                          <Link href={testimonial.url} target="_blank">
+                            {testimonial.author}
+                          </Link>
                         </div>
                         <div
                           className="text-sm text-muted-foreground"
@@ -258,7 +260,8 @@ function App() {
             </div>
           </div>
           <span className="w-full h-full flex justify-center items-center text-center text-xs text-muted-foreground z-[50] bg-muted pb-2">
-            This website was made by Substack creators for Substack creators, but not YET affiliated with Substack.
+            This website was made by Substack creators for Substack creators,
+            but not YET affiliated with Substack.
           </span>
         </section>
       </ThemeProvider>
@@ -282,6 +285,7 @@ const testimonials = [
     image: "/tim-denning.jpg",
     title:
       "Author of Unfiltered by Tim Denning<br/>(<strong>141k+ Subscribers</strong>)",
+    url: "https://substack.com/@timdenning",
   },
   {
     quote: `WriteStack is my go-to tool for figuring out what's working on Substack—and what isn't. 
@@ -295,6 +299,7 @@ const testimonials = [
       "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdc125fa8-cfe4-438f-9b30-375d783f944b_865x865.jpeg",
     title:
       "Author of Write Build Scale<br/>(<strong>10k+ Subscribers</strong>)",
+    url: "https://substack.com/@philiphofmacher",
   },
   {
     quote: `${appName} is an amazing tool for any Substack writers who want to take some of the pain out of growing on the platform.
@@ -308,6 +313,7 @@ const testimonials = [
     image: "/testimonials/david-mcilroy.jpg",
     title:
       "Writer of How to Write for a Living<br/>(<strong>22k+ subscribers</strong>)",
+    url: "https://substack.com/@thedavidmcilroy",
   },
 
   {
@@ -317,6 +323,7 @@ const testimonials = [
     author: "Kacper Wojaczek",
     image: "/testimonials/kacper-wojaczek.png",
     title: "Author of Scramble IT",
+    url: "https://substack.com/@kacperwojaczek",
   },
   {
     quote: `WriteStack transformed my experience on Notes with its scheduling tools.
@@ -329,6 +336,7 @@ const testimonials = [
     author: "Rasmus Edwards",
     image: "/testimonials/rasmus-edwards.webp",
     title: "Author of Solo Dev Saturday",
+    url: "https://substack.com/@rasmusedwards",
   },
   {
     quote: `${appName} is incredibly thoughtful.
@@ -339,6 +347,7 @@ const testimonials = [
     author: "Tam Nguyen",
     image: "/testimonials/tam-nguyen.jpg",
     title: "Author of Simply AI",
+    url: "https://substack.com/@techwithtam",
   },
   {
     quote: `I love ${appName}.
@@ -349,6 +358,7 @@ const testimonials = [
     author: "Mark Willis",
     image: "/testimonials/mark-willis.png",
     title: "Author of Creator's Playbook",
+    url: "https://substack.com/@markwils",
   },
   {
     quote: `Writing a newsletter outline used to take me hours. Now I do it in minutes.
@@ -361,6 +371,7 @@ And what I like about it is just how easy it is to copy and paste the results in
     author: "MacDaniel Chimedza",
     image: "/testimonials/macdaniel-chimedza.png",
     title: "Author of The Weekly Mindset",
+    url: "https://substack.com/@macdanielchimedza",
   },
 ];
 
