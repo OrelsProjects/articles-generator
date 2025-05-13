@@ -4,7 +4,7 @@ import {
   getActiveSubscriptionByStripeSubId,
 } from "@/lib/dal/subscription";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
-import { sendMail } from "@/lib/mail/mail";
+import { addTagToEmail, removeTagFromEmail, sendMail } from "@/lib/mail/mail";
 import {
   generateFreeSubscriptionEndedEmail,
   generateFreeTrialEndingEmail,
@@ -108,6 +108,15 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
       ? creditsPerPlan[plan]
       : 0;
 
+  const interval = (price.recurring?.interval || "month") as Interval;
+  let creditsPerPeriod = creditsPerPlan[plan];
+  let creditsRemaining = newCredits + priorCredits;
+
+  if (interval === "year") {
+    creditsPerPeriod = creditsPerPeriod * 12;
+    creditsRemaining = newCredits * 12 + priorCredits;
+  }
+
   const subscriptionData = {
     status: "active",
     userId: user?.id,
@@ -120,8 +129,8 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
     trialEnd: isTrialing ? new Date(subscription.trial_end! * 1000) : null,
 
     // Credits information
-    creditsPerPeriod: creditsPerPlan[plan],
-    creditsRemaining: newCredits + priorCredits,
+    creditsPerPeriod: creditsPerPeriod,
+    creditsRemaining: creditsRemaining,
     lastCreditReset: new Date(),
 
     currentPeriodStart: new Date(subscription.current_period_start * 1000),
@@ -142,20 +151,9 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
 
   await setFeatureFlagsByPlan(plan, user.id);
 
-  // if (user.email && user.name) {
-  //   try {
-  //     await addUserToList({
-  //       email: user.email!,
-  //       fullName: user.name!,
-  //     });
-  //   } catch (error) {
-  //     loggerServer.error("Error adding user to list", { error });
-  //   }
-  // } else {
-  //   loggerServer.error("No email or name found for user" + user.id, {
-  //     userId: user.id,
-  //   });
-  // }
+  if (user.email) {
+    await addTagToEmail(user.email, "writestack-new-subscriber");
+  }
 }
 
 // Cases when Update is called:
@@ -238,16 +236,18 @@ export async function handleSubscriptionUpdated(event: any) {
     data: newSubscription,
   });
 
-  // if (user.email) {
-  //   const emailTemplate = generateWelcomeTemplateTrial(user.name || undefined);
-  //   await sendMail({
-  //     to: user.email!,
-  //     from: "support",
-  //     subject: emailTemplate.subject,
-  //     template: emailTemplate.body,
-  //     cc: [],
-  //   });
-  // }
+  // if subscription paused/canceled/delete, remove tag. Otherwise, add
+  if (user.email) {
+    if (
+      subscription.status === "paused" ||
+      subscription.status === "canceled" ||
+      subscription.status === "incomplete_expired"
+    ) {
+      await removeTagFromEmail(user.email, "writestack-new-subscriber");
+    } else if (subscription.status === "active") {
+      await addTagToEmail(user.email, "writestack-new-subscriber");
+    }
+  }
 }
 
 export async function handleSubscriptionPaused(event: Stripe.Event) {
@@ -497,9 +497,7 @@ export async function handleInvoicePaymentSucceeded(event: any) {
     },
   });
 
-  const currentPeriodEnd = new Date(
-    Number(subscription.currentPeriodEnd),
-  );
+  const currentPeriodEnd = new Date(Number(subscription.currentPeriodEnd));
 
   const emailTemplate = generatePaymentConfirmationEmail({
     userName: user.name || "",

@@ -58,6 +58,10 @@ export const addTagToEmail = async (email: string, tag: Tag) => {
   return client.addTagToEmail({ email, tag });
 };
 
+export const addTagToManyEmails = async (emails: string[], tag: Tag) => {
+  return client.addTagToManyEmails({ emails, tag });
+};
+
 export const removeTagFromEmail = async (email: string, tag: Tag) => {
   return client.removeTagFromEmail({ email, tag });
 };
@@ -72,9 +76,27 @@ export const addSubscriber = async (
     | {
         fullName: string;
       },
-  fields: Record<string, string>,
+  fields?: Record<string, string>,
 ) => {
-  return client.addSubscriber({ email, name, fields });
+  let subscriberFields = { ...fields };
+  let firstName = "";
+  let lastName = "";
+  let fullName = "";
+  if ("firstName" in name) {
+    firstName = name.firstName;
+    lastName = name.lastName;
+    fullName = `${firstName} ${lastName}`;
+  } else {
+    fullName = name.fullName;
+    const nameParts = fullName.split(" ");
+    firstName = nameParts[0];
+    lastName = nameParts[nameParts.length - 1];
+  }
+  return client.addSubscriber({
+    email,
+    name: { firstName, lastName, fullName },
+    fields: subscriberFields,
+  });
 };
 
 export const sendMailSafe = async ({

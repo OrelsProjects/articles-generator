@@ -6,7 +6,7 @@ import { FeatureFlag, Plan, PrismaClient, Subscription } from "@prisma/client";
 import { getActiveSubscription } from "@/lib/dal/subscription";
 import loggerServer from "@/loggerServer";
 import { generatePrivateNewUserSignedUpEmail } from "@/lib/mail/templates";
-import { sendMailSafe } from "@/lib/mail/mail";
+import { addSubscriber, addTagToEmail, sendMailSafe } from "@/lib/mail/mail";
 
 const prisma = new PrismaClient();
 
@@ -96,6 +96,12 @@ export const authOptions: AuthOptions = {
             subject: emailTemplate.subject,
             template: emailTemplate.body,
           });
+          if (message.user.email) {
+            await addSubscriber(message.user.email, {
+              fullName: message.user.name || "",
+            });
+            await addTagToEmail(message.user.email, "writestack");
+          }
         }
       } catch (error: any) {
         await prisma.user.delete({

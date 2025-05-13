@@ -1,7 +1,12 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 import { NextResponse } from "next/server";
-import { addTagToEmail, sendMailSafe } from "@/lib/mail/mail";
+import {
+  addSubscriber,
+  addTagToEmail,
+  addTagToManyEmails,
+  sendMailSafe,
+} from "@/lib/mail/mail";
 import {
   generatePublicationAnalysisCompleteEmail,
   generateScheduleNoteMissedEmail,
@@ -43,7 +48,7 @@ import { prisma } from "@/lib/prisma";
 //   } catch (error) {
 //     console.error(`Error processing user ${userId}:`, error);
 //   }
-// }
+// }\
 
 // async function processBatch(userIds: string[]) {
 //   return Promise.all(userIds.map(userId => processUser(userId)));
@@ -54,13 +59,89 @@ export async function GET() {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  // await prisma.userMetadata.update({
+  //   where: { userId: session.user.id },
+  //   data: {
+  //     notesToGenerateCount: 10,
+  //   },
+  // });
 
-  await prisma.userMetadata.update({
-    where: { userId: session.user.id },
-    data: {
-      notesToGenerateCount: 10,
-    },
-  });
+  // const allUsers = await prisma.user.findMany({
+  //   select: {
+  //     subscription: {
+  //       select: {
+  //         status: true,
+  //         stripeSubId: true,
+  //       },
+  //     },
+  //     name: true,
+  //     email: true,
+  //   },
+  // });
+
+  // const allUsersWithSubscription = allUsers
+  //   .filter(user => user.subscription.length > 0)
+  //   .filter(user =>
+  //     user.subscription.some(
+  //       sub => sub.status === "active" || sub.status === "trialing",
+  //     ),
+  //   );
+
+  // console.log(allUsersWithSubscription.length);
+
+  // // 7 march 2025
+  // const date = new Date("2025-05-13T07:50:47.764+00:00");
+  // const allUsersCreatedAfter = await prisma.user.findMany({
+  //   where: {
+  //     createdAt: {
+  //       gte: date,
+  //     },
+  //   },
+  // });
+
+  // let i = 0;
+
+  // const headers = {
+  //   Accept: "application/json",
+  //   "X-Kit-Api-Key": process.env.KIT_API_KEY,
+  // };
+
+  // const allEmailSubscribersResponse = await fetch(
+  //   "https://api.kit.com/v4/subscribers",
+  //   {
+  //     method: "GET",
+  //     headers: headers as any,
+  //   },
+  // );
+
+  // const allEmailSubscribersJson = await allEmailSubscribersResponse.json();
+
+  // const allEmailSubscribers = allEmailSubscribersJson.subscribers as {
+  //   email_address: string;
+  // }[];
+
+  // // await addTagToManyEmails(
+  // //   allEmailSubscribers.map(subscriber => subscriber.email),
+  // //   "writestack",
+  // // );
+  // let i = 0;
+  // for (const subscriber of allEmailSubscribers) {
+  //   i++;
+  //    console.log(`Adding tag to email ${i} of ${allEmailSubscribers.length}`);
+  //   await addTagToEmail(subscriber.email_address, "writestack");
+  // }
+
+  // for (const user of allUsersCreatedAfter) {
+  //   if (user.email && user.name) {
+  //     if (user.name.toLowerCase().includes("orel")) {
+  //       continue;
+  //     }
+  //     await addSubscriber(user.email, {
+  //       fullName: user.name,
+  //     });
+  //     console.log(`Added user ${i} of ${allUsersCreatedAfter.length}`);
+  //   }
+  // }
 
   // // const email = generateWelcomeTemplateTrial("Orel");
   // // const result = await sendMailSafe({

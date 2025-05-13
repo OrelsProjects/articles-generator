@@ -1,6 +1,14 @@
 import { TransactionalClient } from "@/lib/mail/transactional-client";
 import loggerServer from "@/loggerServer";
 
+type Tag = "writestack" | "writestack-new-subscriber" | "writestack-subscriber";
+
+const tagIds = {
+  writestack: 7711550,
+  "writestack-new-subscriber": 7713183,
+  "writestack-subscriber": 7711556,
+};
+
 export interface MailClientConfig {
   apiKey: string;
   baseUrl: string;
@@ -20,7 +28,12 @@ export interface AddSubscriberParams {
 
 export interface AddTagParams {
   email: string;
-  tag: string;
+  tag: Tag;
+}
+
+export interface AddTagToManyEmailsParams {
+  emails: string[];
+  tag: Tag;
 }
 
 export interface SendEmailParams {
@@ -32,6 +45,12 @@ export interface SendEmailParams {
 }
 
 const transactionalClient = new TransactionalClient();
+
+const headers = {
+  "Content-Type": "application/json",
+  Accept: "application/json",
+  "X-Kit-Api-Key": process.env.KIT_API_KEY as string,
+} as const;
 
 export class MailClient {
   private config: MailClientConfig;
@@ -46,19 +65,24 @@ export class MailClient {
       // For example with fetch:
       const response = await fetch(`${this.config.baseUrl}/subscribers`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.config.apiKey}`,
-        },
+        headers,
         body: JSON.stringify({
-          email,
-          name,
-          fields,
+          email_address: email,
+          first_name: name.firstName,
+          state: "active",
+          fields: {
+            last_name: name.lastName,
+            full_name: name.fullName,
+            ...fields,
+          },
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to add subscriber: ${response.statusText}`);
+        const responseText = await response.text();
+        throw new Error(
+          `Failed to add subscriber: ${response.statusText}, ${response.status}, ${responseText}`,
+        );
       }
 
       const data = await response.json();
@@ -72,22 +96,29 @@ export class MailClient {
 
   async addTagToEmail({ email, tag }: AddTagParams) {
     try {
+      const tagId = tagIds[tag];
+      if (!tagId) {
+        throw new Error(`Tag not found: ${tag}`);
+      }
+      const inputBody = {
+        email_address: email,
+      };
+
       // Provider-specific implementation
-      const response = await fetch(`${this.config.baseUrl}/subscribers/tag`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.config.apiKey}`,
+      const response = await fetch(
+        `${this.config.baseUrl}/tags/${tagId}/subscribers`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify(inputBody),
         },
-        body: JSON.stringify({
-          email,
-          tag,
-          status: "active",
-        }),
-      });
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to add tag: ${response.statusText}`);
+        const responseText = await response.text();
+        throw new Error(
+          `Failed to add tag: ${response.statusText}, ${responseText}`,
+        );
       }
 
       const data = await response.json();
@@ -98,24 +129,29 @@ export class MailClient {
       return null;
     }
   }
-
+  // exactly the same as addTagToEmail, but DELETE
   async removeTagFromEmail({ email, tag }: AddTagParams) {
     try {
-      // Provider-specific implementation
-      const response = await fetch(`${this.config.baseUrl}/subscribers/untag`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.config.apiKey}`,
+      const tagId = tagIds[tag];
+      if (!tagId) {
+        throw new Error(`Tag not found: ${tag}`);
+      }
+      const response = await fetch(
+        `${this.config.baseUrl}/tags/${tagId}/subscribers`,
+        {
+          method: "DELETE",
+          headers: {
+            ...headers,
+            Accept: "",
+          },
         },
-        body: JSON.stringify({
-          email,
-          tag,
-        }),
-      });
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to remove tag: ${response.statusText}`);
+        const responseText = await response.text();
+        throw new Error(
+          `Failed to remove tag: ${response.statusText}, ${responseText}`,
+        );
       }
 
       const data = await response.json();
@@ -123,6 +159,45 @@ export class MailClient {
       return data;
     } catch (error: any) {
       loggerServer.error(`Error removing tag from email: ${error.message}`);
+      return null;
+    }
+  }
+  async addTagToManyEmails({ emails, tag }: AddTagToManyEmailsParams) {
+    try {
+      // Provider-specific implementation
+      const tagId = tagIds[tag];
+      if (!tagId) {
+        throw new Error(`Tag not found: ${tag}`);
+      }
+
+      const bodyInput = {
+        taggings: emails.map(email => ({
+          email_address: email,
+          tag_id: tagId,
+        })),
+      };
+
+      const response = await fetch(
+        `${this.config.baseUrl}/bulk/tags/subscribers`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify(bodyInput),
+        },
+      );
+
+      if (!response.ok) {
+        const responseText = await response.text();
+        throw new Error(
+          `Failed to add tag to emails: ${response.statusText}, ${responseText}`,
+        );
+      }
+
+      const data = await response.json();
+      loggerServer.info(`Tag added to emails: ${emails}, tag: ${tag}`);
+      return data;
+    } catch (error: any) {
+      loggerServer.error(`Error adding tag to emails: ${error.message}`);
       return null;
     }
   }
