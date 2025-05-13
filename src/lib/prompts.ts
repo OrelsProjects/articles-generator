@@ -138,9 +138,9 @@ export const generateVectorSearchOptimizedDescriptionPrompt = (userMetadata: {
 
           Topic Extraction & Talking‑Point Identification:
 
-          Parse the description to surface 3‑6 primary topics (e.g., "audience‑first entrepreneurship", "Substack growth", "radical transparency").
+          Parse the description to surface 3‑6 primary topics
 
-          Detect recurring talking points or thematic clusters (e.g., "turning readers into collaborators", "public failure analysis").
+          Detect recurring talking points or thematic clusters
 
           Rank topics and talking points by relevance, then weave the highest‑value ones into the optimized text.
 
@@ -180,7 +180,7 @@ export const generateVectorSearchOptimizedDescriptionPrompt = (userMetadata: {
 
           Clearly reflect and encapsulate user identity, interests, preferences, and goals.
 
-          Don't include the word Substack in any way in the description.
+          *Don't include the words Substack, notes, note in any way in the description.*
 
           Return Format:
 
