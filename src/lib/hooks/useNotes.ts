@@ -263,7 +263,9 @@ export const useNotes = () => {
         } = status === "archived" ? { isArchived: true } : { status };
 
         if (previousStatus === "scheduled" && status !== "scheduled") {
-          Logger.info("[UPDATE-NOTE-STATUS] Deleting schedule for note: " + noteId);
+          Logger.info(
+            "[UPDATE-NOTE-STATUS] Deleting schedule for note: " + noteId,
+          );
           await deleteSchedule(noteId, { throwIfNotFound: false });
         } else {
           // Previous status is not scheduled, so it can be published/draft
@@ -640,7 +642,6 @@ export const useNotes = () => {
         Logger.info("Sending note", note);
         const attachmentUrls: string[] = [];
 
-        ;
         if (note.attachments?.length) {
           note.attachments.forEach(attachment => {
             attachmentUrls.push(attachment.url);
@@ -662,6 +663,18 @@ export const useNotes = () => {
               },
             };
         Logger.info("Body", body);
+
+        try {
+          const response = await axios.post("/api/user/notes/send", {
+            userId: user.userId,
+            noteId,
+          });
+          sendResponse = response.data;
+        } catch (error: any) {
+          Logger.error("Error sending note:", error);
+          throw error;
+        }
+
         const response = await sendNoteExtension(body);
         sendResponse = response;
       } catch (error: any) {
