@@ -171,21 +171,6 @@ export async function POST(req: NextRequest) {
       );
       query = result || query;
     }
-
-    // const result = await test(userMetadata);
-    // // const query = publication.generatedDescriptionForSearch || "";
-    // const query = result.deepseek;
-    // const query =
-    //   filters.keyword?.toLocaleLowerCase() ||
-    //   `;
-    // ${publication.generatedDescriptionForSearch}
-    // //  `;
-    // const query = `Find Substack Notes where creators share genuine personal experiences, practical advice, emotional wins or struggles about building newsletters, SaaS products, or indie businesses. Prioritize short-to-medium notes that are human, relatable, and conversation-driven. Strictly exclude reposts of news articles, celebrity drama, screenshots, and promotional-only posts (like “check out my Substack!”). Emphasize informal tone, personal storytelling, and community engagement over announcements.`;
-
-    // const query = `Practical insights, raw personal stories, and brutally honest lessons from solopreneurs building SaaS, newsletters, or indie startups. Direct, no-bullshit advice about validating ideas fast, coding challenges, cold emailing, sales, audience building, and achieving high monthly recurring revenue (100k MRR). Exclude fluffy content, political correctness, and woke topics. Prioritize real-life entrepreneurial experiences, personal productivity hacks, smart coding tips (React, Next.js, TypeScript, Firebase, Prisma), and unfiltered takes on the highs and lows of self-employment.`;
-
-    // const query = `Audience-first entrepreneurship focusing on human connection over technical execution, documenting raw lessons in community building. Core themes: tactical content strategies, converting audiences into collaborators through daily engagement, iterative success via public failure analysis. Radical transparency in sharing metric evolution and entrepreneurial vulnerability. Excludes technical deep dives, coding tutorials, and perfection-driven development. Emphasizes emotional dimensions of creator monetization, psychological hurdles of solopreneurship, and systems for transforming passive readers into co-creators within digital ecosystems`;
-
     const shouldMilvusSearch = filters.type === "relevant-to-user";
 
     const likes = filters.minLikes;

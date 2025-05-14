@@ -185,7 +185,6 @@ export const useNotes = () => {
         const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
           "/api/notes/generate",
           {
-            existingNotesIds: userNotes.map(note => note.id),
             ...validOptions,
           },
         );
@@ -663,17 +662,6 @@ export const useNotes = () => {
               },
             };
         Logger.info("Body", body);
-
-        try {
-          const response = await axios.post("/api/user/notes/send", {
-            userId: user.userId,
-            noteId,
-          });
-          sendResponse = response.data;
-        } catch (error: any) {
-          Logger.error("Error sending note:", error);
-          throw error;
-        }
 
         const response = await sendNoteExtension(body);
         sendResponse = response;

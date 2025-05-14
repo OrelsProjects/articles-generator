@@ -81,8 +81,8 @@ async function searchSimilarArticles({
       anns_field: "vector",
       topk: limit,
       metric_type: "COSINE",
-      params: { nprobe: 10 }, // ✅ FIXED ✅
-      score_threshold: 0.3, // ✅ THRESHOLD WORKS NOW ✅
+      params: { nprobe: 50 },
+      // score_threshold: optionalMaxMatchIfYouWant
     },
   };
 

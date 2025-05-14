@@ -169,7 +169,7 @@ export async function POST(
 
     const query = `${userMetadata.publication.preferredTopics || ""}, ${userMetadata.noteTopics}.`;
 
-    const randomMinReaction = Math.floor(Math.random() * 300);
+    const randomMinReaction = Math.floor(Math.random() * 400);
     const randomMaxReaction =
       randomMinReaction + Math.floor(Math.random() * 60000);
     const randomMaxComment = Math.floor(Math.random() * 30);

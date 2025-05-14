@@ -77,6 +77,7 @@ export const authOptions: AuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   events: {
+    
     createUser: async message => {
       try {
         await prisma.userMetadata.create({

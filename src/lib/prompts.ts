@@ -915,7 +915,7 @@ export const generateNotesPrompt = (
       content: `
           ${
             !shouldUseTopic
-              ? `I want you to write notes that are revolving around these articles.:
+              ? `I want you to write notes that are revolving around these articles, and ONLY these articles. Do not write about other topics.:
             ${options.preSelectedArticles?.map(article => `(${article.bodyText}`).join("\\n")}
             ${topic ? `Here's extra details for the notes: ${topic}` : ""}
             `
