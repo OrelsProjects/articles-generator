@@ -102,7 +102,8 @@ export async function POST(
         model = "x-ai/grok-3-beta";
         break;
       case "auto":
-        model = "openrouter/auto";
+        // model = "openrouter/auto";
+        model = "anthropic/claude-3.7-sonnet";
         break;
       case "gpt-4.1":
         model = "openai/gpt-4.1";
@@ -147,7 +148,11 @@ export async function POST(
       "About to generate notes for userMetadata: ",
       JSON.stringify(userMetadata.publication.authorId),
     );
-    const canUseAIResult = await canUseAI(session.user.id, "notesGeneration", notesToGenerate);
+    const canUseAIResult = await canUseAI(
+      session.user.id,
+      "notesGeneration",
+      notesToGenerate,
+    );
 
     if (!canUseAIResult.result) {
       return NextResponse.json(
