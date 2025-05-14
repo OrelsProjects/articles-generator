@@ -226,8 +226,8 @@ export async function POST(request: NextRequest) {
       },
     );
 
-    console.log("statusCode", statusCode);
-    console.log("body", body);
+    loggerServer.info("statusCode", { statusCode, userId });
+    loggerServer.info("body", { body, userId });
 
     //     let config = {
     //       method: "post",
