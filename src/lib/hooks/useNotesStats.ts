@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import {
   setStreak,
   selectStatistics,
@@ -28,7 +28,7 @@ export function useNotesStats() {
       console.log("fetching streak data");
       // Only fetch if we don't already have data
       loadingRef.current = true;
-      const response = await axios.get<Streak[]>(
+      const response = await axiosInstance.get<Streak[]>(
         "/api/user/notes/stats/streak",
       );
       dispatch(setStreak(response.data));
@@ -50,7 +50,7 @@ export function useNotesStats() {
     }
     try {
       loadingTopEngagersRef.current = true;
-      const response = await axios.post<{ result: Engager[] }>(
+      const response = await axiosInstance.post<{ result: Engager[] }>(
         "/api/v1/top-engagers?limit=60&page=1",
       );
       dispatch(setTopEngagers(response.data.result));

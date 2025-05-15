@@ -9,7 +9,7 @@ import {
   setLoadingFetchingSchedules,
 } from "@/lib/features/notes/notesSlice";
 import { CreateUserSchedule, UserSchedule } from "@/types/schedule";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
 import { HourlyStats } from "@/types/notes-stats";
 import {
@@ -71,7 +71,7 @@ export function useQueue() {
 
   const initQueue = async () => {
     try {
-      const response = await axios.post<UserSchedule[]>("/api/user/queue/init");
+      const response = await axiosInstance.post<UserSchedule[]>("/api/user/queue/init");
       dispatch(setUserSchedule(response.data));
     } catch (error) {
       Logger.error(String(error));
@@ -92,7 +92,7 @@ export function useQueue() {
     }
     setLoading(true);
     try {
-      const response = await axios.post("/api/user/queue", schedule);
+      const response = await axiosInstance.post("/api/user/queue", schedule);
       dispatch(addUserSchedule(response.data));
     } catch (error) {
       Logger.error(String(error));
@@ -109,7 +109,7 @@ export function useQueue() {
     }
     dispatch(removeUserSchedule(id));
     try {
-      await axios.delete(`/api/user/queue/${id}`);
+      await axiosInstance.delete(`/api/user/queue/${id}`);
     } catch (error) {
       dispatch(updateUserSchedule(previousSchedule));
       Logger.error(String(error));
@@ -127,7 +127,7 @@ export function useQueue() {
     dispatch(updateUserSchedule({ ...previousSchedule, ...schedule }));
 
     try {
-      await axios.patch(`/api/user/queue/${schedule.id}`, schedule);
+      await axiosInstance.patch(`/api/user/queue/${schedule.id}`, schedule);
     } catch (error) {
       // revert optimistic update
       dispatch(updateUserSchedule(previousSchedule));
@@ -144,7 +144,7 @@ export function useQueue() {
     }
     dispatch(setLoadingFetchingSchedules(true));
     try {
-      const response = await axios.get<UserSchedule[]>("/api/user/queue");
+      const response = await axiosInstance.get<UserSchedule[]>("/api/user/queue");
       dispatch(setUserSchedule(response.data));
     } catch (error) {
       Logger.error(String(error));
@@ -175,7 +175,7 @@ export function useQueue() {
 
     try {
       // Update the note on the server
-      await axios.patch(`/api/user/notes/${noteId}`, {
+      await axiosInstance.patch(`/api/user/notes/${noteId}`, {
         scheduledTo: newTime.toISOString(),
       });
     } catch (error) {
@@ -307,7 +307,7 @@ export function useQueue() {
     loadingBestNotesRef.current = true;
     dispatch(setLoadingFetchBestTimeToPublish(true));
     try {
-      const response = await axios.get<HourlyStats[]>(
+      const response = await axiosInstance.get<HourlyStats[]>(
         "/api/user/notes/stats/post-time",
       );
       dispatch(setBestTimeToPublish(response.data));

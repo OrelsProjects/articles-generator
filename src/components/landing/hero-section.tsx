@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Check, Star } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 
 export const HeroSection = () => {
   const [count, setCount] = useState("");
@@ -13,7 +13,7 @@ export const HeroSection = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("/api/landing/users");
+      const response = await axiosInstance.get("/api/landing/users");
       setCount(response.data.count);
       setTopFiveImages(response.data.topFiveImages);
     } catch (error) {}

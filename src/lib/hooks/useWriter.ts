@@ -1,6 +1,6 @@
 import { WriterWithData } from "@/types/writer";
 import { useCallback, useEffect, useRef } from "react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { useState } from "react";
 import { Article } from "@/types/article";
 import { Logger } from "@/logger";
@@ -32,7 +32,7 @@ export const useWriter = (handle: string) => {
       setIsLoadingMore(true);
     }
     try {
-      const response = await axios.get<{
+      const response = await axiosInstance.get<{
         writer: WriterWithData;
         hasMore: boolean;
       }>(`/api/writer/${handle}?page=${page}`);
@@ -90,7 +90,7 @@ export const useWriter = (handle: string) => {
       if (articles.length === 0) {
         newPage = 1;
       }
-      const response = await axios.get<{
+      const response = await axiosInstance.get<{
         articles: Article[];
         hasMore: boolean;
       }>(`/api/user/posts?page=${newPage}`);
@@ -135,7 +135,7 @@ export const useWriter = (handle: string) => {
 
   const fetchAuthorNotes = useCallback(
     async (options: { authorId: string }) => {
-      await axios.post("/api/admin/fetch-writer", options);
+      await axiosInstance.post("/api/admin/fetch-writer", options);
     },
     [],
   );

@@ -11,7 +11,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const streak = await getStreak(session.user.id);
+    const timezone = request.headers.get("X-Timezone");
+    //TEST: Australia/Sydney
+    // const timezone = "Australia/Sydney";
+
+    const streak = await getStreak(session.user.id, timezone || "UTC");
     return NextResponse.json(streak);
   } catch (error: any) {
     loggerServer.error("Error getting streak", {

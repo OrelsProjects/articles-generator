@@ -12,11 +12,11 @@ import {
   Schedule,
   GetSchedulesResponse,
 } from "@/types/useExtension.type";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 import { CreatePostResponse } from "@/types/createPostResponse";
 import { Logger } from "@/logger";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
-import { FeatureFlag, Note } from "@prisma/client";
+import { FeatureFlag } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
 import {
   extensionApiRequest,
@@ -32,7 +32,7 @@ import {
 import { NoCookiesError } from "@/types/errors/NoCookiesError";
 import { useUi } from "@/lib/hooks/useUi";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
-import { toast } from "react-toastify";
+import axiosInstance from "@/lib/axios-instance";
 
 /**
  * Detects the current browser type
@@ -192,7 +192,7 @@ export function useExtension(): UseExtension {
       },
     );
     try {
-      await axios.post("/api/user/cookies", response.result);
+      await axiosInstance.post("/api/user/cookies", response.result);
     } catch (error) {
       Logger.error(
         "Error setting user substack cookies: " + JSON.stringify(error),
@@ -305,7 +305,7 @@ export function useExtension(): UseExtension {
           throw new Error(SubstackError.INVALID_PARAMETERS);
         }
 
-        const adf = await axios.post("/api/markdown-to-adf", {
+        const adf = await axiosInstance.post("/api/markdown-to-adf", {
           markdown: params.message,
         });
         Logger.info("adf", {

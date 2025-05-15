@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { SubstackPostNoteResponse } from "@/types/note";
 import { HttpsProxyAgent } from "https-proxy-agent";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import https from "https";
 
 import { request as undiciRequest } from "undici";
@@ -157,32 +157,6 @@ export async function POST(request: NextRequest) {
       maxVersion: "TLSv1.3",
     });
 
-    // while (retries > 0 && !didSucceed) {
-    //   console.log("About to make fetch");
-    //   try {
-    // const proxy =
-    //   "http://orelz7_jgRif:8evBfV+LF_x4u=pa@unblock.oxylabs.io:60000";
-
-    // Create the agent
-    // const agent = new HttpsProxyAgent(proxy);
-
-    // const response = await axios.post(
-    //   "https://substack.com/api/v1/comment/feed",
-    //   messageData,
-    //   {
-    //     headers: {
-    //       "content-type": "application/json",
-    //       "sec-ch-ua":
-    //         '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
-    //       "sec-ch-ua-mobile": "?0",
-    //       "sec-ch-ua-platform": '"macOS"',
-    //       Referer: "https://substack.com/home",
-    //       "Referrer-Policy": "strict-origin-when-cross-origin",
-    //       Cookie: `substack.sid=${cookie.value}`,
-    //     },
-    //     httpsAgent: agent, // <-- this is your magic bullet
-    //   },
-    // );
 
     let data = JSON.stringify({
       bodyJson: {
@@ -244,7 +218,6 @@ export async function POST(request: NextRequest) {
     //       data: data,
     //     };
 
-    //     const x = await axios.request(config);
 
     //     const response = await fetch(
     //       "https://substack.com/api/v1/comment/feed",
@@ -273,7 +246,6 @@ export async function POST(request: NextRequest) {
     //       },
     //     );
 
-    //     console.log("Ran axios to send note: " + retries + " retries left");
     //     didSucceed = response.status >= 200 && response.status < 300;
     //   } catch (error) {
     //     console.log("Error sending note:", error);
@@ -320,7 +292,7 @@ export async function POST(request: NextRequest) {
     //       "http://user-orelz7_r5sBA-country-US:8evBfV+LF_x4u=pa@dc.oxylabs.io:8000";
     //     const agent = new HttpsProxyAgent(proxy);
 
-    //     const response = await axios.patch(
+    //     const response = await .patch(
     //       `https://substack.com/api/v1/feed/comment/${data.id}`,
     //       messageData,
     //       {

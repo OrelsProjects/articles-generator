@@ -1,6 +1,6 @@
 import loggerServer from "@/loggerServer";
 import { Model429Error } from "@/types/errors/Model429Error";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { Tiktoken } from "js-tiktoken/lite";
 import o200k_base from "js-tiktoken/ranks/o200k_base";
 import { createParser, EventSourceMessage } from "eventsource-parser";
@@ -79,7 +79,7 @@ export async function runPrompt(
     `$${priceInput.toFixed(5)}`,
   );
   console.time("runPrompt");
-  let response = await axios.post(
+  let response = await axiosInstance.post(
     "https://openrouter.ai/api/v1/chat/completions",
     {
       model,
@@ -104,7 +104,7 @@ export async function runPrompt(
     // try with another. If it was openai, try claude
     if (model.includes("openai")) {
       model = "anthropic/claude-3.5-sonnet";
-      response = await axios.post(
+      response = await axiosInstance.post(
         "https://openrouter.ai/api/v1/chat/completions",
         {
           model: model,
@@ -164,7 +164,7 @@ export async function* runPromptStream(
   console.time("runPromptStream");
 
   // 2) Fire off a streaming POST
-  const response = await axios.post(
+  const response = await axiosInstance.post(
     "https://openrouter.ai/api/v1/chat/completions",
     {
       model,

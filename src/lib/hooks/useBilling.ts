@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect   } from "react";
 import { useAppSelector } from "./redux";
 import { selectAuth } from "../features/auth/authSlice";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { Coupon } from "@/types/payment";
 import { Plan } from "@prisma/client";
 import { Logger } from "@/logger";
@@ -28,7 +28,7 @@ export const useBilling = () => {
     setError(null);
     
     try {
-      const response = await axios.get<BillingInfo>("/api/user/subscription/billing");
+      const response = await axiosInstance.get<BillingInfo>("/api/user/subscription/billing");
       
       // Convert string date to Date object if it exists
       let data = response.data;

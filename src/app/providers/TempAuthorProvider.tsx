@@ -1,6 +1,6 @@
 "use client";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -18,7 +18,7 @@ export default function TempAuthorProvider() {
     if (authorId && !loadingSetTempAuthorId.current) {
       loadingSetTempAuthorId.current = true;
       try {
-        await axios.post(`/api/user/temp-author/${authorId}`);
+        await axiosInstance.post(`/api/user/temp-author/${authorId}`);
 
         router.push(pathname, {
           paramsToRemove: ["author"],

@@ -1,11 +1,11 @@
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 
 export async function urlToFile(
   url: string,
   options?: { filename?: string; mimeType?: string },
 ): Promise<File> {
   try {
-    const response = await axios.post(
+    const response = await axiosInstance.post(
       "/api/file-to-url",
       { url },
       {

@@ -20,7 +20,6 @@ import { transformSubscriberCount } from "@/lib/utils/subscriber-count";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -36,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import axiosInstance from "@/lib/axios-instance";
 
 const loadingStates = [
   { text: "Grabbing engagement data...", delay: 5000 },
@@ -147,11 +147,14 @@ export default function PotentialUsersPage() {
     loadingRef.current = true;
     setLoading(true);
     try {
-      const response = await axios.post("/api/v1/radar/potential-users", {
-        url: customUrl || url || publication?.url,
-        page: pageNum,
-        take: 30,
-      });
+      const response = await axiosInstance.post(
+        "/api/v1/radar/potential-users",
+        {
+          url: customUrl || url || publication?.url,
+          page: pageNum,
+          take: 30,
+        },
+      );
 
       if (pageNum === 0) {
         setPotentialUsers(response.data);

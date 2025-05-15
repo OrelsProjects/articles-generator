@@ -2,13 +2,10 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import ActivityHeatmap from "@/components/ui/activity-heatmap";
 import { Streak } from "@/types/notes-stats";
-import { appName } from "@/lib/consts";
-import axios from "axios";
 import { Byline } from "@/types/article";
 import { useSession } from "next-auth/react";
 import { Logger } from "@/logger";
@@ -20,16 +17,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { usePathname } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import useAuth from "@/lib/hooks/useAuth";
 import UrlAnalysisInput from "@/components/analysis/url-analysis-input";
+import axiosInstance from "@/lib/axios-instance";
 
 export default function AnalyzeSubstack() {
   const { data: session } = useSession();
-  const router = useCustomRouter();
-  const searchParams = useSearchParams();
   const pathname = usePathname();
   const { signInWithGoogle } = useAuth();
 
@@ -50,7 +45,7 @@ export default function AnalyzeSubstack() {
 
   const getAuthorId = async () => {
     try {
-      const response = await axios.get("/api/user/temp-author");
+      const response = await axiosInstance.get("/api/user/temp-author");
       return response.data;
     } catch (error) {
       Logger.error("Error fetching author ID:", {
@@ -77,13 +72,13 @@ export default function AnalyzeSubstack() {
     setIsLoading(true);
 
     try {
-      const publicationRes = await axios.get("/api/user/publication");
+      const publicationRes = await axiosInstance.get("/api/user/publication");
 
       setAuthorImage(publicationRes.data.image);
       setAuthorName(publicationRes.data.name);
 
       try {
-        const streakRes = await axios.post<{ streakData: Streak[] }>(
+        const streakRes = await axiosInstance.post<{ streakData: Streak[] }>(
           `/api/analyze-substack/${session?.user?.meta?.tempAuthorId || "null"}`,
         );
         setStreakData(streakRes.data.streakData);
@@ -122,7 +117,7 @@ export default function AnalyzeSubstack() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post<{
+      const response = await axiosInstance.post<{
         success: boolean;
         streakData: Streak[];
       }>(`/api/analyze-substack/${byline.authorId}`);
@@ -288,7 +283,7 @@ export default function AnalyzeSubstack() {
                   handleBylineSelect(selectedByline, true);
                 } else if (session?.user?.meta?.tempAuthorId) {
                   setIsLoading(true);
-                  axios
+                  axiosInstance
                     .post<{ streakData: Streak[] }>(
                       `/api/analyze-substack/${session.user.meta.tempAuthorId}?refresh=true`,
                     )

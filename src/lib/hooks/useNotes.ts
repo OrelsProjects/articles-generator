@@ -33,7 +33,7 @@ import {
   NoteDraftBody,
   NoteId,
 } from "@/types/note";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { Logger } from "@/logger";
 import { useUi } from "@/lib/hooks/useUi";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
@@ -51,6 +51,7 @@ import { toast } from "react-toastify";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { setNotePostedData } from "@/lib/features/ui/uiSlice";
 import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
+import axiosInstance from "@/lib/axios-instance";
 
 export const useNotes = () => {
   const { user } = useAppSelector(selectAuth);
@@ -103,7 +104,7 @@ export const useNotes = () => {
       if (loadMore && userNotesCursor)
         queryParams.set("cursor", userNotesCursor);
 
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `/api/user/notes?${queryParams.toString()}`,
       );
       dispatch(setError(null));
@@ -182,7 +183,7 @@ export const useNotes = () => {
         };
 
         EventTracker.track("notes_generate_new_notes", { model });
-        const response = await axios.post<AIUsageResponse<NoteDraft[]>>(
+        const response = await axiosInstance.post<AIUsageResponse<NoteDraft[]>>(
           "/api/notes/generate",
           {
             ...validOptions,
@@ -272,7 +273,7 @@ export const useNotes = () => {
             body.scheduledTo = scheduledTo;
           }
         }
-        await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
+        await axiosInstance.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
         if (status === "archived") {
           dispatch(removeNote(noteId));
           if (selectedNote?.id === noteId) {
@@ -314,7 +315,7 @@ export const useNotes = () => {
       dispatch(updateNote({ id: noteId, note: { feedback: newFeedback } }));
 
       try {
-        await axios.patch<NoteDraft[]>(`/api/note/${noteId}`, {
+        await axiosInstance.patch<NoteDraft[]>(`/api/note/${noteId}`, {
           ...note,
           feedback: newFeedback || null,
           feedbackComment: feedbackReason || null,
@@ -465,7 +466,7 @@ export const useNotes = () => {
     try {
       loadingCreateNoteRef.current = true;
       setLoadingCreateNote(true);
-      const response = await axios.post<NoteDraft>("/api/note", {
+      const response = await axiosInstance.post<NoteDraft>("/api/note", {
         ...draft,
       });
       dispatch(addNotes({ items: [response.data], nextCursor: null }));
@@ -489,12 +490,15 @@ export const useNotes = () => {
       length: text.length,
       model,
     });
-    const res = await axios.post<AIUsageResponse<string>>("/api/note/improve", {
-      text,
-      type,
-      noteId,
-      model,
-    });
+    const res = await axiosInstance.post<AIUsageResponse<string>>(
+      "/api/note/improve",
+      {
+        text,
+        type,
+        noteId,
+        model,
+      },
+    );
     const { responseBody } = res.data;
     if (!responseBody) {
       throw new Error("No text improved");
@@ -522,7 +526,9 @@ export const useNotes = () => {
 
   const getNoteByNoteId = useCallback(async (noteId: string) => {
     try {
-      const response = await axios.get<NoteDraft>(`/api/user/notes/${noteId}`);
+      const response = await axiosInstance.get<NoteDraft>(
+        `/api/user/notes/${noteId}`,
+      );
       return response.data;
     } catch (error: any) {
       return null;
@@ -535,7 +541,7 @@ export const useNotes = () => {
     if (!handle && !thumbnail) {
       dispatch(setLoadingFetchingByline(true));
       try {
-        const response = await axios.get<Byline>("/api/user/byline");
+        const response = await axiosInstance.get<Byline>("/api/user/byline");
         dispatch(setHandle(response.data.handle));
         dispatch(setThumbnail(response.data.photoUrl));
         dispatch(setName(response.data.name));
@@ -556,7 +562,9 @@ export const useNotes = () => {
             attachmentId: attachment.id,
           }),
         );
-        await axios.delete(`/api/note/${noteId}/image/${attachment.id}`);
+        await axiosInstance.delete(
+          `/api/note/${noteId}/image/${attachment.id}`,
+        );
       } catch (error) {
         dispatch(addAttachmentToNote({ noteId, attachment }));
         Logger.error("Error deleting image:", { error: String(error) });
@@ -598,7 +606,7 @@ export const useNotes = () => {
 
       setUploadingFile(true);
 
-      const response = await axios.post<NoteDraftImage>(
+      const response = await axiosInstance.post<NoteDraftImage>(
         `/api/note/${noteId}/image`,
         formData,
         {
@@ -637,7 +645,7 @@ export const useNotes = () => {
         setLoadingSendNote(true);
         const note = userNotes.find(note => note.id === noteId);
         if (!note) return;
-        // await axios.get(`/api/user/notes/${noteId}/should-send`);
+        // await axiosInstance.get(`/api/user/notes/${noteId}/should-send`);
         Logger.info("Sending note", note);
         const attachmentUrls: string[] = [];
 

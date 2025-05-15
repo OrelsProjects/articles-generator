@@ -82,6 +82,7 @@ export async function POST(
 
   const { authorId: authorIds } = params;
   const authorId = authorIds?.[0];
+  const timezone = request.headers.get("X-Timezone");
   let validAuthorIdString = session?.user.meta?.tempAuthorId || authorId;
   let validAuthorId: number | null = parseInt(validAuthorIdString);
 
@@ -164,7 +165,7 @@ export async function POST(
 
     if (session) {
       if (validObject === "streak") {
-        const streakData: Streak[] = calculateStreak(allNotes);
+        const streakData: Streak[] = calculateStreak(allNotes, timezone || "UTC");
         return NextResponse.json({ success: true, streakData });
       }
       if (validObject === "engagement") {

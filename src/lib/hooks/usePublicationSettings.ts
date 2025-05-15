@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { useSettings } from "./useSettings";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import {
@@ -32,7 +32,7 @@ export const usePublicationSettings = () => {
     setError(null);
 
     try {
-      const response = await axios.get("/api/user/publication-settings");
+      const response = await axiosInstance.get("/api/user/publication-settings");
       setPublicationSettings(response.data.settings);
     } catch (err: any) {
       setError(
@@ -53,7 +53,7 @@ export const usePublicationSettings = () => {
     setError(null);
 
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         "/api/user/publication-settings",
         updatedSettings,
       );
@@ -77,7 +77,7 @@ export const usePublicationSettings = () => {
     if (settings.generatingDescription) return;
     dispatch(setGeneratingDescription(true));
     try {
-      await axios.post("/api/user/analyze");
+      await axiosInstance.post("/api/user/analyze");
     } catch (err: any) {
       setError(
         err.response?.data?.error || "Failed to refresh publication data",

@@ -1,4 +1,5 @@
-import axios, { AxiosResponse } from "axios";
+import axiosInstance from "@/lib/axios-instance";
+import { AxiosResponse } from "axios";
 
 /**
  * List of rotating User-Agents for scraping
@@ -43,7 +44,7 @@ export async function fetchWithHeaders(
       // Ensure URL has a protocol
       const validUrl = url.startsWith("http") ? url : `https://${url}`;
 
-      const response: AxiosResponse = await axios.get(validUrl, {
+      const response: AxiosResponse = await axiosInstance.get(validUrl, {
         headers: {
           "User-Agent": getRandomUserAgent(),
           "Accept-Language": "en-US,en;q=0.9",

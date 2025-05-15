@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { toast } from "react-toastify";
 import { validateSubstackUrl, validateUrl } from "@/lib/utils/url";
 import { Byline } from "@/types/article";
@@ -104,7 +104,7 @@ export default function UrlAnalysisInput({
 
   const validatePublication = async (url: string) => {
     try {
-      const res = await axios.get(`/api/user/analyze/validate?q=${url}`);
+      const res = await axiosInstance.get(`/api/user/analyze/validate?q=${url}`);
       return res.data;
     } catch (error) {
       console.error("Error validating publication: " + url, error);
@@ -140,7 +140,7 @@ export default function UrlAnalysisInput({
         setSubstackUrl(validUrl);
       }
 
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `/api/publication/bylines?url=${validUrl || substackUrl}`,
       );
 

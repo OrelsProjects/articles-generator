@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { Logger } from "@/logger";
 import { Product } from "@/types/payment";
 import { loadStripe } from "@stripe/stripe-js";
@@ -26,7 +26,7 @@ export default function usePayments() {
         return;
       }
       loadingProducts.current = true;
-      const response = await axios.get<Product[]>("/api/stripe/products");
+      const response = await axiosInstance.get<Product[]>("/api/stripe/products");
       dispatch(setProducts(response.data));
       return response.data;
     } catch (error: any) {
@@ -47,7 +47,7 @@ export default function usePayments() {
       } catch (error) {
         Logger.error("Error getting affiliate", { error });
       }
-      const response = await axios.post<{ sessionId: string }>(
+      const response = await axiosInstance.post<{ sessionId: string }>(
         "/api/stripe/checkout",
         { interval, plan, localReferral: referral, referralId: affiliate?.id },
       );
@@ -76,7 +76,7 @@ export default function usePayments() {
       return;
     }
     try {
-      await axios.post("/api/user/subscription/cancel");
+      await axiosInstance.post("/api/user/subscription/cancel");
       Logger.info("Subscription canceled successfully");
       window.location.reload();
     } catch (error: any) {
@@ -90,7 +90,7 @@ export default function usePayments() {
     interval: "month" | "year",
   ) => {
     try {
-      const response = await axios.post<{
+      const response = await axiosInstance.post<{
         success: boolean;
         data: {
           plan: Plan;
@@ -116,7 +116,7 @@ export default function usePayments() {
     }
     setLoadingCredits(true);
     try {
-      const response = await axios.post("/api/user/subscription/credits", {
+      const response = await axiosInstance.post("/api/user/subscription/credits", {
         credits,
       });
       Logger.info("Credits purchased successfully", { response });
@@ -138,7 +138,7 @@ export default function usePayments() {
 
   const verifySubscription = async () => {
     try {
-      await axios.get("/api/user/subscription/verify");
+      await axiosInstance.get("/api/user/subscription/verify");
     } catch (error) {
       console.error(error);
       throw error;
@@ -147,7 +147,7 @@ export default function usePayments() {
 
   const applyRetentionDiscount = async () => {
     try {
-      await axios.post("/api/user/subscription/coupon/apply/retention");
+      await axiosInstance.post("/api/user/subscription/coupon/apply/retention");
       // This would normally implement the discount application logic
       Logger.info("Applying retention discount");
       return true;

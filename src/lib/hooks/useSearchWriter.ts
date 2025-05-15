@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { WriterSearchResult } from "@/types/writer";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { Logger } from "@/logger";
+import axiosInstance from "@/lib/axios-instance";
 
 const LIMIT = 20;
 
@@ -34,7 +35,7 @@ export function useSearchWriter() {
     }
     try {
       setLoading(true);
-      const response = await axios.post<WriterSearchResult[]>(
+      const response = await axiosInstance.post<WriterSearchResult[]>(
         `/api/writer/search`,
         { query, page, limit },
         { signal: cancelRef.current.signal },

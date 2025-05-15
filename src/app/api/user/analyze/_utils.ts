@@ -1,13 +1,13 @@
 import { toValidUrl } from "@/lib/utils/url";
 import loggerServer from "@/loggerServer";
 import { PublicationNotFoundError } from "@/types/errors/PublicationNotFoundError";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import * as cheerio from "cheerio";
 
 export async function extractContent(url: string) {
   try {
     const validUrl = toValidUrl(url);
-    const html = await axios.get(validUrl);
+    const html = await axiosInstance.get(validUrl);
     const $ = cheerio.load(html.data);
     // Extract the first image URL from the <img> tag inside the <picture> element
     const imageUrl = $("picture img").first().attr("src") || "";

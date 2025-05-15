@@ -5,7 +5,6 @@ import TopEngagers from "./components/top-engagers";
 import DemoCard from "./components/demo-card";
 import { Engager } from "@/types/engager";
 import { Byline } from "@/types/article";
-import axios from "axios";
 import UrlAnalysisInput from "@/components/analysis/url-analysis-input";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
@@ -26,7 +25,7 @@ import { FcGoogle } from "react-icons/fc";
 import useAuth from "@/lib/hooks/useAuth";
 import useMediaQuery from "@/lib/hooks/useMediaQuery";
 import { ToastStepper } from "@/components/ui/toast-stepper";
-import * as sheet from "@/components/ui/sheet";
+import axiosInstance from "@/lib/axios-instance";
 
 function TopEngagersPage() {
   const { data: session } = useSession();
@@ -60,7 +59,7 @@ function TopEngagersPage() {
 
   const getAuthorId = async () => {
     try {
-      const response = await axios.get("/api/user/temp-author");
+      const response = await axiosInstance.get("/api/user/temp-author");
       return response.data;
     } catch (error) {
       Logger.error("Error fetching author ID:", {
@@ -88,12 +87,12 @@ function TopEngagersPage() {
 
     try {
       // Get user publication data
-      const publicationRes = await axios.get("/api/user/publication");
+      const publicationRes = await axiosInstance.get("/api/user/publication");
       setAuthorImage(publicationRes.data.image);
       setAuthorName(publicationRes.data.name);
 
       try {
-        const fansRes = await axios.post(`/api/v1/top-engagers`, {
+        const fansRes = await axiosInstance.post(`/api/v1/top-engagers`, {
           authorId: authorId,
           url: url,
         });
@@ -143,7 +142,7 @@ function TopEngagersPage() {
     setAuthorImage(byline.photoUrl);
 
     try {
-      const response = await axios.post(`/api/v1/top-engagers`, {
+      const response = await axiosInstance.post(`/api/v1/top-engagers`, {
         authorId: byline.authorId,
         url: url,
       });

@@ -1,7 +1,7 @@
 import { ArticleContent } from "@/lib/dal/milvus";
 import { validateUrl, toValidUrl } from "@/lib/utils/url";
 import loggerServer from "@/loggerServer";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import * as cheerio from "cheerio";
 import TurndownService from "turndown";
 
@@ -49,7 +49,7 @@ export async function getSubstackArticleData(
       let retryCount = 0;
       while (retryCount < maxRetries) {
         try {
-          response = await axios.get(validUrl);
+          response = await axiosInstance.get(validUrl);
           console.log(`Fetched article from ${url}`);
           break;
         } catch (error: any) {

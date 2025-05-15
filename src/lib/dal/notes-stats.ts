@@ -3,12 +3,8 @@ import { getAuthorId } from "@/lib/dal/publication";
 import { HourlyStats, Streak } from "@/types/notes-stats";
 import { NotesComments } from "../../../prisma/generated/articles";
 import { Prisma } from "@prisma/client";
+import moment from "moment-timezone";
 
-interface HourlyStatsDb {
-  user_id: number;
-  hour_of_day: number;
-  bayes_weighted_score: number;
-}
 export async function getBestTimesToPublish(
   authorId: number,
 ): Promise<HourlyStats[]> {
@@ -99,8 +95,10 @@ export async function getBestTimesToPublish(
   }));
 }
 
-
-export async function getStreak(userId: string): Promise<Streak[]> {
+export async function getStreak(
+  userId: string,
+  timezone: string,
+): Promise<Streak[]> {
   const authorId = await getAuthorId(userId);
   if (!authorId) {
     throw new Error("Author not found");
@@ -112,16 +110,16 @@ export async function getStreak(userId: string): Promise<Streak[]> {
   });
 
   // Set streak by dates with the new format
-  const streak = calculateStreak(notes);
+  const streak = calculateStreak(notes, timezone);
   return streak;
 }
 
-export function calculateStreak(notes: NotesComments[]) {
+export function calculateStreak(notes: NotesComments[], timezone?: string) {
   const streak: Streak[] = notes.reduce((acc: Streak[], note) => {
-    const date = new Date(note.date);
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month is 0-indexed
-    const day = date.getDate().toString().padStart(2, "0");
-    const year = date.getFullYear().toString();
+    const date = moment(note.date).tz(timezone || "UTC");
+    const month = (date.get("month") + 1).toString().padStart(2, "0"); // Month is 0-indexed
+    const day = date.get("date").toString().padStart(2, "0");
+    const year = date.get("year").toString();
 
     const existingDateIndex = acc.findIndex(
       item => item.year === year && item.month === month && item.day === day,

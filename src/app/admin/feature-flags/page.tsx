@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -29,6 +28,7 @@ import {
 import { useSession } from "next-auth/react";
 import moment from "moment-timezone";
 import { cn } from "@/lib/utils";
+import axiosInstance from "@/lib/axios-instance";
 
 interface UserMetadata {
   id: string;
@@ -87,7 +87,7 @@ export default function FeatureFlagsPage() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("/api/admin/feature-flags");
+        const response = await axiosInstance.get("/api/admin/feature-flags");
         setUsers(response.data);
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -179,7 +179,7 @@ export default function FeatureFlagsPage() {
     try {
       setUpdating(prev => ({ ...prev, [updateKey]: true }));
 
-      await axios.patch("/api/admin/feature-flags", {
+      await axiosInstance.patch("/api/admin/feature-flags", {
         userId,
         featureFlag,
         enabled,
@@ -246,7 +246,7 @@ export default function FeatureFlagsPage() {
     try {
       setUpdating(prev => ({ ...prev, [updateKey]: true }));
 
-      await axios.patch("/api/admin/feature-flags", {
+      await axiosInstance.patch("/api/admin/feature-flags", {
         userId,
         adminData,
       });

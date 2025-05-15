@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { format } from "date-fns";
 
 interface Visit {
@@ -21,7 +21,7 @@ export default function AdminVisitsPage() {
   useEffect(() => {
     const fetchVisits = async () => {
       try {
-        const response = await axios.get("/api/admin/visits");
+        const response = await axiosInstance.get("/api/admin/visits");
         setVisits(response.data);
       } catch (err) {
         setError("Failed to fetch visits");

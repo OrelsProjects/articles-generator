@@ -1,8 +1,8 @@
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { useEffect } from "react";
 
 const fetcher = (url: string) =>
-  axios
+  axiosInstance
     .post(url)
     .then(res => res.data)
     .catch(() => {});

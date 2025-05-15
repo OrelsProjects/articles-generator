@@ -1,6 +1,6 @@
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { setPublication } from "@/lib/features/publications/publicationSlice";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { Publication } from "@/types/publication";
 import { Logger } from "@/logger";
 import { Byline } from "@/types/article";
@@ -18,7 +18,7 @@ export const usePublication = () => {
     hasPublication: boolean;
   }> => {
     try {
-      const res = await axios.get(`/api/user/analyze/validate?q=${url}`);
+      const res = await axiosInstance.get(`/api/user/analyze/validate?q=${url}`);
       return res.data;
     } catch (error: any) {
       Logger.error(error);
@@ -31,20 +31,20 @@ export const usePublication = () => {
     try {
       loadingAnalyze.current = true;
       const [analysisPublication] = await Promise.all([
-        axios.post<{ publication: Publication }>("api/user/analyze", {
+        axiosInstance.post<{ publication: Publication }>("api/user/analyze", {
           url,
           byline,
         }),
       ]);
       dispatch(setPublication(analysisPublication.data.publication));
-      axios.post("/api/user/analyze/notes", {
+      axiosInstance.post("/api/user/analyze/notes", {
         authorId: byline.authorId,
         userTriggered: false,
       });
     } catch (error: any) {
       try {
         // Sometimes there's an error, but the publication analysis is still created
-        await axios.post("/api/user/publications/validate-analysis");
+        await axiosInstance.post("/api/user/publications/validate-analysis");
       } catch (error: any) {
         Logger.error(error);
         throw error;

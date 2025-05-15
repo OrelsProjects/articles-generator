@@ -1,8 +1,8 @@
 import { NoteDraft, NoteDraftBody, NoteStatus } from "@/types/note";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 import { z } from "zod";
 import { Logger } from "@/logger";
-
+import axiosInstance from "@/lib/axios-instance";
 export async function createNoteDraft(
   note: {
     body: string;
@@ -10,7 +10,7 @@ export async function createNoteDraft(
   },
   config: AxiosRequestConfig,
 ) {
-  const response = await axios.post<NoteDraft>("/api/note", note, {
+  const response = await axiosInstance.post<NoteDraft>("/api/note", note, {
     ...config,
   });
   return response.data;
@@ -21,7 +21,7 @@ export async function updateNoteDraft(
   partialNote: Partial<NoteDraftBody>,
   config: AxiosRequestConfig,
 ) {
-  await axios.patch<NoteDraft[]>(`/api/note/${id}`, partialNote, {
+  await axiosInstance.patch<NoteDraft[]>(`/api/note/${id}`, partialNote, {
     ...config,
   });
 }
@@ -30,11 +30,10 @@ export async function getSubstackCookiesExpiration(
   config?: AxiosRequestConfig,
 ): Promise<{ valid: boolean; expiresAt: Date }> {
   try {
-    const response = await axios.post<{ valid: boolean; expiresAt: Date }>(
-      "/api/user/cookies/is-valid",
-      {},
-      { ...(config || {}) },
-    );
+    const response = await axiosInstance.post<{
+      valid: boolean;
+      expiresAt: Date;
+    }>("/api/user/cookies/is-valid", {}, { ...(config || {}) });
     return response.data;
   } catch (error) {
     throw new Error("Failed to get substack cookies expiration");
@@ -92,7 +91,6 @@ export async function extensionApiRequest<T extends ApiRoute, R = any>(
   config?: AxiosRequestConfig,
 ): Promise<AxiosResponse<R>> {
   try {
-
     // 2. Validate request body against schema
     if (route in routeSchemas) {
       const schema = routeSchemas[route as keyof typeof routeSchemas];
@@ -137,7 +135,7 @@ export async function extensionApiRequest<T extends ApiRoute, R = any>(
       data = body;
     }
 
-    return await axios({
+    return await axiosInstance({
       url: endpoint,
       method,
       data,

@@ -7,14 +7,14 @@ import {
   DBNotesToNotes,
   WriterWithData,
 } from "@/types/writer";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { z } from "zod";
 import { Post } from "../../prisma/generated/articles";
 import loggerServer from "@/loggerServer";
 import { Byline as BylineDB } from "../../prisma/generated/articles";
 
 export async function getPublicationUpdatedUrl(url: string) {
-  const publicationDataResponse = await axios.get(
+  const publicationDataResponse = await axiosInstance.get(
     `${url}/api/v1/homepage_data`,
   );
   const posts = publicationDataResponse.data.newPosts;
@@ -42,7 +42,7 @@ export async function getBylinesByUrl(
   }
 
   try {
-    const publicationData = await axios.get(`${validUrl}/api/v1/homepage_data`);
+    const publicationData = await axiosInstance.get(`${validUrl}/api/v1/homepage_data`);
 
     const posts = publicationData.data.newPosts;
     const validatedPosts = z.array(PostSchema).parse(posts);

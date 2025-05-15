@@ -9,7 +9,7 @@ import {
   setInspirationSort,
   setCurrentPage,
 } from "@/lib/features/inspiration/inspirationSlice";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { EventTracker } from "@/eventTracker";
 import {
   InspirationFilters,
@@ -20,6 +20,7 @@ import {
 } from "@/types/note";
 import { NotesComments } from "../../../prisma/generated/articles";
 import { Logger } from "@/logger";
+import axiosInstance from "@/lib/axios-instance";
 
 export function useInspiration() {
   const dispatch = useAppDispatch();
@@ -60,7 +61,7 @@ export function useInspiration() {
       loadingInspirationRef.current = true;
       dispatch(setLoadingInspiration(true));
 
-      const response = await axios.post<{
+      const response = await axiosInstance.post<{
         items: InspirationNote[];
         hasMore: boolean;
       }>(

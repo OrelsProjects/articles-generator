@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import usePayments from "@/lib/hooks/usePayments";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { toast } from "react-toastify";
 import { Logger } from "@/logger";
 
@@ -46,7 +46,7 @@ export default function OnboardingPage() {
   const handleAlreadyAnalyzed = async () => {
     try {
       setLoadingAnalyzed(true);
-      await axios.post("/api/user/publications/validate-analysis");
+      await axiosInstance.post("/api/user/publications/validate-analysis");
       handleNavigateNext();
     } catch (error) {
       Logger.error("Error validating publication analysis", { error });

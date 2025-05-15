@@ -3,7 +3,7 @@
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { Logger } from "@/logger";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
@@ -28,7 +28,7 @@ export default function FreeSubscriptionProvider({
       try {
         loadingRef.current = true;
         setLoading(true);
-        const response = await axios.post<{
+        const response = await axiosInstance.post<{
           success: boolean;
           sessionId: string;
           url: string;

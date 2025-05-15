@@ -1,7 +1,7 @@
 import { prismaArticles } from "@/lib/prisma";
 import { getSubstackArticleData } from "@/lib/utils/article";
 import loggerServer from "@/loggerServer";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 
 export type Filter = {
   leftSideValue: string;
@@ -51,7 +51,7 @@ async function searchSimilarArticles({
   const embedEndpoint = process.env.EMBED_LAMBDA_URL as string;
 
   // Generate embedding for the search query
-  const embeddingResponse = await axios.post(embedEndpoint, {
+  const embeddingResponse = await axiosInstance.post(embedEndpoint, {
     text: query,
   });
 
@@ -197,7 +197,7 @@ async function searchSimilarNotes({
   const embedEndpoint = process.env.EMBED_LAMBDA_URL as string;
 
   // Generate embedding for the search query
-  const embeddingResponse = await axios.post(embedEndpoint, {
+  const embeddingResponse = await axiosInstance.post(embedEndpoint, {
     text: query,
   });
 

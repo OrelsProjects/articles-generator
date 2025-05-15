@@ -9,7 +9,7 @@ import { selectAuth } from "../features/auth/authSlice";
 import { creditCosts } from "@/lib/plans-consts";
 import { useCallback, useEffect, useMemo } from "react";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
 import { AIUsageType } from "@prisma/client";
 import { AllUsages, Settings } from "@/types/settings";
@@ -35,7 +35,7 @@ export const useSettings = () => {
 
   const init = async () => {
     try {
-      axios
+      axiosInstance
         .post("/api/user/analyze/notes", {
           userTriggered: false,
         })
@@ -43,7 +43,7 @@ export const useSettings = () => {
           Logger.error(error);
         });
 
-      const response = await axios.get<{
+      const response = await axiosInstance.get<{
         usages: AllUsages;
         subscriptionInfo: SubscriptionInfo;
         settings: Settings;
@@ -60,7 +60,7 @@ export const useSettings = () => {
 
   const shouldShow50PercentOffOnCancel = useCallback(async () => {
     try {
-      const response = await axios.get<{
+      const response = await axiosInstance.get<{
         isDiscountAvailable: boolean;
       }>("/api/user/settings/discount/before-cancel");
       return response.data.isDiscountAvailable;

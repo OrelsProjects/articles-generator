@@ -16,7 +16,7 @@ import { Plan } from "@prisma/client";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { addPublication } from "@/lib/features/publications/publicationSlice";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { Session } from "next-auth";
 import { useIdea } from "@/lib/hooks/useIdea";
 import { useSettings } from "@/lib/hooks/useSettings";
@@ -67,7 +67,7 @@ export default function AuthProvider({
       dispatch(setUserAction(appUser));
 
       try {
-        const publicationIdResponse = await axios.get("/api/user/publications");
+        const publicationIdResponse = await axiosInstance.get("/api/user/publications");
         const { publication } = publicationIdResponse.data;
         if (publication) {
           hasPublication = true;

@@ -6,7 +6,7 @@ import { clearUser, setError } from "@/lib/features/auth/authSlice";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { EventTracker } from "@/eventTracker";
 import { Logger } from "@/logger";
-import axios from "axios";
+import axiosInstance from "@/lib/axios-instance";
 import { useSearchParams } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
@@ -68,7 +68,7 @@ const useAuth = () => {
   const deleteUser = useCallback(async () => {
     try {
       EventTracker.track("User deleted");
-      await axios.delete("/api/user");
+      await axiosInstance.delete("/api/user");
       await signOutAuth();
       dispatch(clearUser());
       localStorage.clear();
@@ -82,7 +82,7 @@ const useAuth = () => {
 
   const refreshUserMetadata = useCallback(async () => {
     try {
-      await axios.post("/api/user/data/refresh");
+      await axiosInstance.post("/api/user/data/refresh");
     } catch (error: any) {
       Logger.error("Error refreshing user metadata", { error });
     }
