@@ -234,7 +234,7 @@ async function searchSimilarNotes({
   };
 
   // Search vectors in Milvus
-  console.time("Search milvus");
+loggerServer.time("Search milvus");
   const response = await fetch(
     `${MILVUS_ENDPOINT}/v2/vectordb/entities/search`,
     {
@@ -243,7 +243,7 @@ async function searchSimilarNotes({
       body: JSON.stringify(searchBody),
     },
   );
-  console.timeEnd("Search milvus");
+  loggerServer.timeEnd("Search milvus");
 
   // Check if content type is application/json
   if (
@@ -259,6 +259,7 @@ async function searchSimilarNotes({
     (a: any, b: any) => a.distance - b.distance,
   );
 
+  loggerServer.time("Search notes in articles db");
   const notesFromDb = await prismaArticles.notesComments.findMany({
     where: {
       id: {
@@ -266,7 +267,7 @@ async function searchSimilarNotes({
       },
     },
   });
-
+  loggerServer.timeEnd("Search notes in articles db");
   // Sort the notes from db by distance. Find their corresponding distance in sortedTopMatchNotes
   const sortedTopMatchNotesFromDb = notesFromDb.sort((a: any, b: any) => {
     const distanceA = sortedTopMatchNotes.find(

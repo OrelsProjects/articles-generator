@@ -10,6 +10,8 @@ interface Logger {
   info: (message: string, data?: LogItem) => void;
   error: (message: string, data?: LogItem) => void;
   warn: (message: string, data?: LogItem) => void;
+  time: (label: string) => void;
+  timeEnd: (label: string) => void;
 }
 
 const httpTransportOptions = {
@@ -24,6 +26,9 @@ const _logger = createLogger({
   format: format.json(),
   transports: [new transports.Http(httpTransportOptions)],
 });
+
+// Store timers
+const timers: Record<string, number> = {};
 
 const logger: () => Logger = () => {
   const log = (
@@ -68,6 +73,22 @@ const logger: () => Logger = () => {
     info: (message: string, data?: LogItem) => log("info", message, data),
     error: (message: string, data?: LogItem) => log("error", message, data),
     warn: (message: string, data?: LogItem) => log("warn", message, data),
+    time: (label: string) => {
+      timers[label] = performance.now();
+      console.time(label);
+    },
+    timeEnd: (label: string) => {
+      const start = timers[label];
+      if (start) {
+        const duration = performance.now() - start;
+        const durationInSeconds = duration / 1000;
+        log("info", `Timer '${label}': ${durationInSeconds.toFixed(2)}s`);
+        delete timers[label];
+      } else {
+        log("warn", `Timer '${label}' does not exist`);
+      }
+      console.timeEnd(label);
+    },
   };
 };
 
