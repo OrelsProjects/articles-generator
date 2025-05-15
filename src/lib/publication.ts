@@ -156,6 +156,7 @@ export async function getWriter(
     throw new Error("Byline not found");
   }
 
+  loggerServer.time("Fetching notes from byline");
   const [notesFromByline, postBylines] = await Promise.all([
     prismaArticles.notesComments.findMany({
       where: {
@@ -174,7 +175,9 @@ export async function getWriter(
       },
     }),
   ]);
+  loggerServer.timeEnd("Fetching notes from byline");
 
+  loggerServer.time("Fetching attachments and posts");
   const [attachments, posts] = await Promise.all([
     prismaArticles.notesAttachments.findMany({
       where: {
@@ -194,7 +197,7 @@ export async function getWriter(
       },
     }),
   ]);
-
+  loggerServer.timeEnd("Fetching attachments and posts");
   const notesWithAttachments = notesFromByline.map(note => ({
     ...note,
     attachments: attachments.filter(
