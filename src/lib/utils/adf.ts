@@ -1,8 +1,12 @@
 import { MarkdownTransformer } from "@atlaskit/editor-markdown-transformer";
 
 export async function markdownToADF(markdown: string) {
+  const formattedMarkdown = markdown.replace(
+    /^:::blockquote([\s\S]*?):::/g,
+    "> $1",
+  );
   const transformer = new MarkdownTransformer();
-  const rawADF = transformer.parse(markdown);
+  const rawADF = transformer.parse(formattedMarkdown);
 
   // This part is key — ProseMirror might return Fragment-like structures
   const contentArray = Array.isArray(rawADF.content)
@@ -98,6 +102,12 @@ export function transformNode(
     case "paragraph":
       return {
         type: "paragraph",
+        content: transformChildren(node.children, parentMarks),
+      };
+
+    case "blockquote":
+      return {
+        type: "blockquote",
         content: transformChildren(node.children, parentMarks),
       };
 

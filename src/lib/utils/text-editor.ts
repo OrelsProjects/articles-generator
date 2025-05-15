@@ -453,6 +453,7 @@ export const notesTextEditorOptions = (
     BulletList,
     ListItem,
     Document,
+    CustomBlockquote,
     CodeBlock,
     CustomTextRules,
     Paragraph.configure({
