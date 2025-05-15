@@ -46,7 +46,11 @@ const getUserNotesDescription = async (
   const prompt =
     generateVectorSearchOptimizedDescriptionPrompt(validUserMetadata);
   const [deepseek] = await Promise.all([
-    runPrompt(prompt, "deepseek/deepseek-r1", "G-N-DESC-" + userMetadata.userId),
+    runPrompt(
+      prompt,
+      "deepseek/deepseek-r1",
+      "G-N-DESC-" + userMetadata.userId,
+    ),
     // runPrompt(prompt, "openai/gpt-4.1"),
     // runPrompt(prompt, "openai/gpt-4.5-preview"),
     // runPrompt(prompt, "x-ai/grok-3-beta"),
@@ -134,7 +138,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { existingNotesIds, page = 1, filters } = bodySchema.parse(body);
-    console.log("Page", page);
     const limit = 20; // Number of items per page
 
     const userMetadata = await prisma.userMetadata.findUnique({
@@ -160,7 +163,17 @@ export async function POST(req: NextRequest) {
       `
     ${publication.generatedDescriptionForSearch}`;
 
-    if (!userMetadata.notesDescription) {
+    loggerServer.info("[INSPIRATIONS] Query", {
+      query,
+      userId: session.user.id,
+    });
+
+    const shouldGenerateSearchQuery = !userMetadata.notesDescription;
+    loggerServer.info("[INSPIRATIONS] Should generate search query", {
+      shouldGenerateSearchQuery,
+      userId: session.user.id,
+    });
+    if (shouldGenerateSearchQuery) {
       const result = await getUserNotesDescription(
         {
           userId: userMetadata.userId,
@@ -256,9 +269,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    console.log("searchFilters", searchFilters);
-    console.log("Query", query);
-
+    const now = new Date();
+    loggerServer.info(
+      "[INSPIRATIONS] Searching for inspirations in: " +
+        (shouldMilvusSearch ? "milvus" : "meili"),
+      {
+        userId: session.user.id,
+        query,
+        searchFilters,
+      },
+    );
     // If it's relevant to user, we search through milvus. otherwise, we search through the database
     let inspirationNotes: NotesComments[] = [];
     if (shouldMilvusSearch) {
@@ -281,6 +301,21 @@ export async function POST(req: NextRequest) {
         .sort(() => Math.random() - 0.5)
         .slice(0, limit);
     }
+    const end = new Date();
+    const timeToSearchSeconds = (end.getTime() - now.getTime()) / 1000;
+
+    loggerServer.info(
+      "[INSPIRATIONS] Found inspirations in" +
+        timeToSearchSeconds +
+        "seconds",
+      {
+        userId: session.user.id,
+        query,
+        searchFilters,
+        timeToSearchSeconds,
+      },
+    );
+
     let existingNotes: NotesComments[] = [];
     if (existingNotesIds.length > 0) {
       existingNotes = await prismaArticles.notesComments.findMany({
@@ -366,7 +401,7 @@ export async function POST(req: NextRequest) {
       hasMore,
     });
   } catch (error: any) {
-    loggerServer.error("Failed to fetch notes", {
+    loggerServer.error("[INSPIRATIONS] Failed to fetch notes", {
       error,
       userId: session?.user.id,
     });
