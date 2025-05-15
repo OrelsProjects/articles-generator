@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
           priceId,
           productName: product.name,
           status: session.payment_status,
-          amountReceived: (price.unit_amount as number) / 100,
+          amountReceived: price.unit_amount as number,
           currency: price.currency as string,
           user: {
             connect: { id: userSession.user.id },
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
           priceId,
           productName: product.name,
           status: session.payment_status,
-          amountReceived: (price.unit_amount as number) / 100,
+          amountReceived: price.unit_amount as number,
         },
       );
     }
