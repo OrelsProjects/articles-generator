@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Check, Star } from "lucide-react";
+import { Check, Sparkles, Star } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import axiosInstance from "@/lib/axios-instance";
@@ -62,17 +62,26 @@ export const HeroSection = () => {
         <div className="w-screen container flex items-center justify-center relative z-10">
           <div className="flex-1 space-y-8 w-full">
             <div className="flex flex-col gap-16 items-center text-center lg:text-left">
-              <div className="flex flex-col gap-4">
-                <h1 className="text-center font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2] lg:-mb-4">
+              <div className="flex flex-col gap-3">
+                <h3>
+                  A simple to use, AI-powered writing assistant for Substack
+                  creators
+                </h3>
+                <h1 className="text-center font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2]">
                   Turn Your Writing
                   <br />
                   {/* <span className="text-primary bg-primary/20 rounded-md p-1 py-0"> */}
                   Into Income <span className="text-primary">5x Faster</span>
                   {/* </span> */}
                 </h1>
-                <h3 className="text-center text-lg mt-2">
-                  (With 10x more confidence)
+                <h3 className="text-center text-lg mt-3">
+                  Stop guessing what will go viral.
+                  <br /> Start writing, growing, and earning like a Substack
+                  Best Seller.
                 </h3>
+                {/* <h3 className="text-center text-lg mt-2">
+                  (With 10x more confidence)
+                </h3> */}
                 {/* <h3 className="text-center text-lg mt-2">
                   Stop guessing what will go viral. Start writing, growing, and
                   earning like a Substack Best Seller.
@@ -104,10 +113,21 @@ export const HeroSection = () => {
                 <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                   <Button
                     size="lg"
-                    className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground mt-[30px] px-8 sm:px-16 lg:mt-0 py-6 font-bold rounded-xl w-full sm:w-auto"
+                    className="bg-primary text-lg hover:bg-primary/90 text-primary-foreground mt-[30px] px-8 sm:px-12 lg:mt-0 py-6 font-bold rounded-xl w-full sm:w-auto"
                     asChild
                   >
-                    <Link href="/login">Start growing now</Link>
+                    <Link href="/login">
+                      <Sparkles className="mr-2" />
+                      Start growing now
+                    </Link>
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant={"outline"}
+                    className="text-lg mt-[30px] px-8 sm:px-12 lg:mt-0 py-6 font-bold rounded-xl w-full sm:w-auto"
+                    asChild
+                  >
+                    <Link href="/login">Explore features</Link>
                   </Button>
                 </div>
               </div>
