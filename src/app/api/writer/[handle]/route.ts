@@ -44,7 +44,7 @@ export async function GET(
     }
 
     const handle = params.handle;
-    
+
     loggerServer.info("[WRITER] Fetching writer", {
       handle,
       page,
@@ -59,7 +59,12 @@ export async function GET(
       writer,
       hasMore,
     });
+
   } catch (error) {
+    loggerServer.error("Failed to fetch writer", {
+      error,
+      userId: session.user.id,
+    });
     return NextResponse.json(
       { error: "Failed to fetch writer" },
       { status: 500 },

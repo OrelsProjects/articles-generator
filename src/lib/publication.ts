@@ -42,7 +42,9 @@ export async function getBylinesByUrl(
   }
 
   try {
-    const publicationData = await axiosInstance.get(`${validUrl}/api/v1/homepage_data`);
+    const publicationData = await axiosInstance.get(
+      `${validUrl}/api/v1/homepage_data`,
+    );
 
     const posts = publicationData.data.newPosts;
     const validatedPosts = z.array(PostSchema).parse(posts);
@@ -157,28 +159,30 @@ export async function getWriter(
   }
 
   loggerServer.time("Fetching notes from byline");
-  const [notesFromByline, postBylines] = await Promise.all([
-    prismaArticles.notesComments.findMany({
-      where: {
-        authorId: Number(byline.id),
-        noteIsRestacked: false,
+  const notesFromByline = await prismaArticles.notesComments.findMany({
+    where: {
+      authorId: Number(byline.id),
+      noteIsRestacked: false,
+    },
+    take,
+    skip: (page - 1) * take,
+    orderBy: {
+      reactionCount: "desc",
+    },
+  });
+
+  const postBylines = await prismaArticles.postByline.findMany({
+    where: {
+      bylineId: byline.id,
       },
-      take,
-      skip: (page - 1) * take,
-      orderBy: {
-        reactionCount: "desc",
+      include: {
+        post: true,
       },
-    }),
-    prismaArticles.postByline.findMany({
-      where: {
-        bylineId: byline.id,
-      },
-    }),
-  ]);
+  });
   loggerServer.timeEnd("Fetching notes from byline");
 
   loggerServer.time("Fetching attachments and posts");
-  const [attachments, posts] = await Promise.all([
+  const [attachments] = await Promise.all([
     prismaArticles.notesAttachments.findMany({
       where: {
         noteId: {
@@ -186,18 +190,11 @@ export async function getWriter(
         },
       },
     }),
-    prismaArticles.post.findMany({
-      where: {
-        id: { in: postBylines.map(byline => byline.postId.toString()) },
-      },
-      take,
-      skip: (page - 1) * take,
-      orderBy: {
-        reactionCount: "desc",
-      },
-    }),
   ]);
+
   loggerServer.timeEnd("Fetching attachments and posts");
+
+  const posts = postBylines.map(postByline => postByline.post);
   const notesWithAttachments = notesFromByline.map(note => ({
     ...note,
     attachments: attachments.filter(
