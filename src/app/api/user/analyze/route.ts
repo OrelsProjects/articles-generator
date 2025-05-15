@@ -278,6 +278,7 @@ export async function POST(req: NextRequest) {
     const generatedDescription = await runPrompt(
       messages,
       "deepseek/deepseek-r1",
+      "G-DESC-" + session.user.name,
     );
 
     const descriptionObject: DescriptionObject =
@@ -355,6 +356,8 @@ export async function POST(req: NextRequest) {
         generateVectorSearchOptimizedDescriptionPrompt({
           notesDescription: notesDescriptionResult.notesDescription,
         }),
+        "deepseek/deepseek-r1",
+        "G-N-DESC-" + userId,
       );
 
       const parsedGeneratedDescriptionForSearch = await parseJson<{

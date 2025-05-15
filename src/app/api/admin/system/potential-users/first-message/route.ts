@@ -41,7 +41,11 @@ export async function GET(req: Request) {
 
   const prompt = generateFirstMessagePrompt(content, authorName);
 
-  const response = await runPrompt(prompt, "anthropic/claude-3.5-sonnet");
+  const response = await runPrompt(
+    prompt,
+    "anthropic/claude-3.5-sonnet",
+    "PU-" + session.user.name,
+  );
 
   const { message } = await parseJson<{ message: string }>(response);
   if (canonicalUrl) {

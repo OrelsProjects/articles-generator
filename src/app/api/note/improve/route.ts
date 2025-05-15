@@ -108,7 +108,11 @@ export async function POST(
       }
     }
 
-    const response = await runPrompt(messages, model);
+    const response = await runPrompt(
+      messages,
+      model,
+      "N-IMP-" + session.user.name,
+    );
 
     return NextResponse.json({
       responseBody: {

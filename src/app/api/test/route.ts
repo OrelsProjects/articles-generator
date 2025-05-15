@@ -13,6 +13,7 @@ import {
   generateWelcomeTemplateTrial,
 } from "@/lib/mail/templates";
 import { prisma } from "@/lib/prisma";
+import { searchSimilarArticles } from "@/lib/dal/milvus";
 // async function processUser(userId: string) {
 //   try {
 //     const userMetadata = await prisma.userMetadata.findUnique({
@@ -59,6 +60,7 @@ export async function GET() {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   // await prisma.userMetadata.update({
   //   where: { userId: session.user.id },
   //   data: {

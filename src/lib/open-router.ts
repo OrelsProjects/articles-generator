@@ -65,6 +65,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
 export async function runPrompt(
   messages: { role: string; content: string }[],
   model: Model = "openrouter/auto",
+  sourceName: string,
 ): Promise<string> {
   let tokenCount = 0;
   tokenCount = getTokenCount(messages.map(m => m.content).join("\n"));
@@ -89,7 +90,7 @@ export async function runPrompt(
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
         "HTTP-Referer": "https://www.writestack.io",
-        "X-Title": "WriteStack",
+        "X-Title": `WriteStack-${sourceName}`,
       },
     },
   );

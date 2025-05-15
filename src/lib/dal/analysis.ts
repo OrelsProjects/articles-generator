@@ -45,6 +45,7 @@ export async function setUserNotesDescription(
   const generatedDescription = await runPrompt(
     messages,
     "deepseek/deepseek-r1",
+    "G-N-DESC-F" + userId,
   );
 
   const descriptionObject: {

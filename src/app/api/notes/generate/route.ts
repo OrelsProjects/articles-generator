@@ -296,6 +296,7 @@ export async function POST(
     const promptResponse = await runPrompt(
       generateNotesMessages,
       initialGeneratingModel,
+      "N-GEN-" + session.user.name,
     );
     let newNotes: {
       body: string;
@@ -320,6 +321,7 @@ export async function POST(
       const improvedNotesResponse = await runPrompt(
         improveNotesMessages,
         model,
+        "N-GEN-" + session.user.name,
       );
       improvedNotes = await parseJson(improvedNotesResponse);
     }

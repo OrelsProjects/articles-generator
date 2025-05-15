@@ -53,7 +53,11 @@ export async function parseJson<T>(
     });
     const jsonFixedSync = fixJson<T>(json);
     if (!jsonFixedSync) {
-      const jsonFixedString = await runPrompt(fixJsonPrompt(json), model);
+      const jsonFixedString = await runPrompt(
+        fixJsonPrompt(json),
+        model,
+        "JSON-FIX-" + "system",
+      );
       let jsonFixed = jsonFixedString.replace("```json", "").replace("```", "");
       const jsonFixedObject = fixJson<{ json: T }>(jsonFixed);
       if (!jsonFixedObject) {

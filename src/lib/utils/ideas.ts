@@ -125,7 +125,11 @@ export async function generateIdeas(
 
     await runWithRetry(
       async () => {
-        const ideasString = await runPrompt(messages, modelUsedForIdeas);
+        const ideasString = await runPrompt(
+          messages,
+          modelUsedForIdeas,
+          "G-IDEAS-" + userId,
+        );
         const ideasResponse = await parseJson<IdeasLLMResponse>(ideasString);
         ideas = ideasResponse.ideas;
       },

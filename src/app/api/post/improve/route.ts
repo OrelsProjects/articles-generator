@@ -60,7 +60,11 @@ export async function POST(
         customText: customText,
       },
     );
-    const response = await runPrompt(messages, model);
+    const response = await runPrompt(
+      messages,
+      model,
+      "P-IMP-" + session.user.name,
+    );
 
     return NextResponse.json({
       responseBody: {

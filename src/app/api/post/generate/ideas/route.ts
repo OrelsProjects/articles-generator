@@ -149,6 +149,7 @@ export async function GET(
     const outlinesString = await runPrompt(
       messagesForOutline,
       modelUsedForOutline,
+      "G-OUT-" + session.user.name,
     );
 
     await runWithRetry(

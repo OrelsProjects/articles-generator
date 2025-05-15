@@ -112,7 +112,11 @@ export async function POST(
       })),
     );
 
-    const promptResponse = await runPrompt(messages, model);
+    const promptResponse = await runPrompt(
+      messages,
+      model,
+      "P-IMP-TITLE-" + session.user.name,
+    );
     const { title, subtitle } = await parseJson<{
       title: string;
       subtitle: string;

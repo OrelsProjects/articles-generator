@@ -46,7 +46,7 @@ const getUserNotesDescription = async (
   const prompt =
     generateVectorSearchOptimizedDescriptionPrompt(validUserMetadata);
   const [deepseek] = await Promise.all([
-    runPrompt(prompt, "deepseek/deepseek-r1"),
+    runPrompt(prompt, "deepseek/deepseek-r1", "G-N-DESC-" + userMetadata.userId),
     // runPrompt(prompt, "openai/gpt-4.1"),
     // runPrompt(prompt, "openai/gpt-4.5-preview"),
     // runPrompt(prompt, "x-ai/grok-3-beta"),
