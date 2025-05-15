@@ -44,8 +44,20 @@ export async function GET(
     }
 
     const handle = params.handle;
+    const now = new Date();
+    loggerServer.info("[WRITER] Fetching writer", {
+      handle,
+      page,
+      userId: session.user.id,
+    });
     const writer = await getWriter(handle, Number(page), 30);
-
+    const end = new Date();
+    const timeToFetchSeconds = (end.getTime() - now.getTime()) / 1000;
+    loggerServer.info("[WRITER] Fetched writer in" + timeToFetchSeconds + "seconds", {
+      handle,
+      page,
+      userId: session.user.id,
+    });
     const hasMore = writer.topArticles.length >= 30;
 
     return NextResponse.json({
