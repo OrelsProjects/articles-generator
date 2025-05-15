@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
       },
     );
+    return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
     loggerServer.error("[WRITER SEARCH] Error searching byline", {
       error,
