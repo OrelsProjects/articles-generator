@@ -439,7 +439,7 @@ export default function NoteComponent({
                   className="absolute inset-0 z-20 cursor-pointer"
                   onClick={handleSelectNote}
                   aria-hidden="true"
-                ></div>
+                />
 
                 <div
                   className="prose prose-sm max-w-none note-component-content relative z-10"

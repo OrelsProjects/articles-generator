@@ -20,6 +20,7 @@ import { noteTemplates } from "@/app/api/notes/generate/_consts";
 import { Model429Error } from "@/types/errors/Model429Error";
 import { z } from "zod";
 import { getPublicationByIds } from "@/lib/dal/publication";
+import {  formatNote } from "@/lib/utils/notes";
 
 const generateNotesSchema = z.object({
   count: z.number().or(z.string()).optional(),
@@ -325,21 +326,18 @@ export async function POST(
       );
       improvedNotes = await parseJson(improvedNotesResponse);
     }
-    newNotes = newNotes.map((note, index) => {
-      const improvedNote = improvedNotes.find(n => n.id === index);
-      return improvedNote ? { ...note, body: improvedNote.body } : note;
-    });
-    // const newNotes3: any[] = await parseJson(promptResponse3);
-    // newNotes = [...newNotes, ...newNotes2, ...newNotes3];
+    newNotes = newNotes
+      .map((note, index) => {
+        const improvedNote = improvedNotes.find(n => n.id === index);
+        return improvedNote ? { ...note, body: improvedNote.body } : note;
+      })
+      .map(formatNote);
+
 
     const handle = byline?.handle || notesFromAuthor[0]?.handle;
     const name = byline?.name || notesFromAuthor[0]?.name;
     const thumbnail =
       byline?.photoUrl || notesFromAuthor[0]?.photoUrl || session.user.image;
-
-    console.log("Handle: ", handle);
-    console.log("Name: ", name);
-    console.log("Thumbnail: ", thumbnail);
 
     const notesCreated: Note[] = [];
     for (const note of newNotes) {
