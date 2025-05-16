@@ -1,47 +1,36 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { toast } from "react-toastify";
-import ActivityHeatmap from "@/components/ui/activity-heatmap";
-import { Streak } from "@/types/notes-stats";
 import { Byline } from "@/types/article";
 import { useSession } from "next-auth/react";
-import { Logger } from "@/logger";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { usePathname } from "next/navigation";
-import { FcGoogle } from "react-icons/fc";
-import useAuth from "@/lib/hooks/useAuth";
+import { toast } from "react-toastify";
 import UrlAnalysisInput from "@/components/analysis/url-analysis-input";
 import axiosInstance from "@/lib/axios-instance";
+import { usePathname } from "next/navigation";
+import useAuth from "@/lib/hooks/useAuth";
+import ActivityHeatmap from "@/components/ui/activity-heatmap";
+import { Logger } from "@/logger";
+import { Streak } from "@/types/notes-stats";
+import { Button } from "@/components/ui/button";
+import { EventTracker } from "@/eventTracker";
+import { LoginDialog } from "@/components/auth/login-dialog";
 
 export default function AnalyzeSubstack() {
   const { data: session } = useSession();
-  const pathname = usePathname();
+  const [authorName, setAuthorName] = useState<string | null>(null);
+  const [authorImage, setAuthorImage] = useState<string | null>(null);
   const { signInWithGoogle } = useAuth();
-
-  const [substackUrl, setSubstackUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasAnalyzed, setHasAnalyzed] = useState<boolean>(false);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
-
+  const pathname = usePathname();
   const [selectedByline, setSelectedByline] = useState<Byline | null>(null);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
+  const [streakData, setStreakData] = useState<Streak[]>([]);
   const [loadingUserData, setLoadingUserData] = useState(false);
   const loadingUserDataRef = useRef(loadingUserData);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
-  const [authorImage, setAuthorImage] = useState<string | null>(null);
-  const [authorName, setAuthorName] = useState<string | null>(null);
-
-  const [streakData, setStreakData] = useState<Streak[]>([]);
+  const [substackUrl, setSubstackUrl] = useState("");
 
   const getAuthorId = async () => {
     try {
@@ -151,9 +140,9 @@ export default function AnalyzeSubstack() {
 
   const getLoginRedirect = () => {
     if (selectedByline) {
-      return `${pathname}?redirect=heatmap&author=${selectedByline.authorId}`;
+      return `heatmap&author=${selectedByline.authorId}`;
     } else {
-      return `${pathname}?redirect=heatmap`;
+      return "heatmap";
     }
   };
 
@@ -321,34 +310,13 @@ export default function AnalyzeSubstack() {
         ) : null}
       </motion.div>
 
-      <Dialog open={showLoginDialog} onOpenChange={handleCloseLoginDialog}>
-        <DialogContent className="sm:max-w-md" backgroundBlur={false}>
-          <DialogHeader>
-            <DialogTitle>Login to see your results</DialogTitle>
-            <DialogDescription>
-              To avoid abuse and keep this tool a unique experience, I&apos;ll
-              need you to quickly sign up (Less than 10 seconds).
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex items-center space-x-2 pb-6">
-            <div className="grid flex-1 gap-2">
-              <p className="text-sm text-muted-foreground">
-                With a free account, you&apos;ll be able to use all current and
-                future free tools.
-              </p>
-            </div>
-          </div>
-          <DialogFooter className="sm:justify-between">
-            <Button
-              variant="outline"
-              onClick={handleSignIn}
-              className="w-full py-6 text-lg font-semibold transition-all hover:bg-primary hover:text-primary-foreground"
-            >
-              <FcGoogle className="mr-2 h-6 w-6" /> Continue with Google
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <LoginDialog
+        isOpen={showLoginDialog}
+        onOpenChange={handleCloseLoginDialog}
+        title="Login to see your results"
+        description="To avoid abuse and keep this tool a unique experience, I'll need you to quickly sign up (Less than 10 seconds)."
+        redirectPath={getLoginRedirect()}
+      />
     </div>
   );
 }

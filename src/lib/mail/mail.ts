@@ -19,9 +19,10 @@ export const sendMail = async ({
   template,
   cc,
   sendInDevelopment = false,
+  isMagicLink = false,
 }: SendEmailOptions) => {
   const env = process.env.NODE_ENV;
-  if (env !== "production" && !sendInDevelopment) {
+  if (!isMagicLink && env !== "production" && !sendInDevelopment) {
     console.log(
       `[MAIL] Not sending mail in development: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,
     );
@@ -105,9 +106,10 @@ export const sendMailSafe = async ({
   subject,
   template,
   cc,
+  isMagicLink = false,
 }: SendEmailOptions): Promise<boolean> => {
   try {
-    await sendMail({ to, from, subject, template, cc });
+    await sendMail({ to, from, subject, template, cc, isMagicLink });
     return true;
   } catch (error) {
     loggerServer.error(`[MAIL-ERROR] Error sending mail: ${error}`);

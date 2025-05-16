@@ -1,11 +1,15 @@
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import EmailProvider from "next-auth/providers/email";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { FeatureFlag, Plan, PrismaClient, Subscription } from "@prisma/client";
 
 import { getActiveSubscription } from "@/lib/dal/subscription";
 import loggerServer from "@/loggerServer";
-import { generatePrivateNewUserSignedUpEmail } from "@/lib/mail/templates";
+import {
+  generateMagicLinkEmail,
+  generatePrivateNewUserSignedUpEmail,
+} from "@/lib/mail/templates";
 import { addSubscriber, addTagToEmail, sendMailSafe } from "@/lib/mail/mail";
 
 const prisma = new PrismaClient();
@@ -17,6 +21,28 @@ export const authOptions: AuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_AUTH_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET as string,
+    }),
+    EmailProvider({
+      from: "noreply@writestack.io",
+      sendVerificationRequest: async ({ identifier, url, provider }) => {
+        const magicLinkMail = generateMagicLinkEmail(identifier, url);
+        const didSend = await sendMailSafe({
+          to: identifier,
+          from: "noreply",
+          subject: magicLinkMail.subject,
+          template: magicLinkMail.body,
+          isMagicLink: true,
+        });
+        if (!didSend) {
+          loggerServer.error("Failed to send magic link email", {
+            identifier,
+            url,
+            provider,
+            userId: "unknown",
+          });
+          throw new Error("Failed to send magic link email");
+        }
+      },
     }),
   ],
   callbacks: {
@@ -72,12 +98,16 @@ export const authOptions: AuthOptions = {
       }
     },
   },
+  pages: {
+    signIn: "/login",
+    verifyRequest: "/verify-request",
+    error: "/auth/error",
+  },
   session: {
     strategy: "jwt", // This is the default value
   },
   secret: process.env.NEXTAUTH_SECRET,
   events: {
-    
     createUser: async message => {
       try {
         await prisma.userMetadata.create({

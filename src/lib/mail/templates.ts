@@ -519,3 +519,38 @@ export function generateSubscriptionCouponAppliedEmail(
     subject: "Subscription Coupon Applied",
   };
 }
+
+export function generateMagicLinkEmail(
+  email: string,
+  url: string
+): { subject: string; body: string } {
+  return {
+    subject: "Your Magic Link to Sign In to WriteStack",
+    body: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Sign In to WriteStack</h2>
+        <p>Hey there!</p>
+        <p>You requested a magic link to sign in to WriteStack. Click the button below to sign in:</p>
+        <div style="margin: 20px 0;">
+          <a href="${url}" 
+             style="display: inline-block; 
+                    background-color: #0070f3; 
+                    color: white; 
+                    padding: 12px 20px; 
+                    text-decoration: none; 
+                    border-radius: 5px; 
+                    font-weight: bold;">
+            Sign In to WriteStack
+          </a>
+        </div>
+        <p>Or copy and paste this URL into your browser:</p>
+        <p style="word-break: break-all; color: #666;">${url}</p>
+        <p>This link will expire in 10 minutes.</p>
+        <p>If you didn't request this link, you can safely ignore this email.</p>
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
+          <p>© WriteStack</p>
+        </div>
+      </div>
+    `,
+  };
+}

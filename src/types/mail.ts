@@ -8,6 +8,7 @@ export interface SendEmailOptions {
   template: string;
   cc?: string | string[];
   sendInDevelopment?: boolean;
+  isMagicLink?: boolean;
 }
 
 export interface AddSubscriberOptions {

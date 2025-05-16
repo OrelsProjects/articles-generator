@@ -9,6 +9,8 @@ import { CheckCircle2 } from "lucide-react";
 import useAuth from "@/lib/hooks/useAuth";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { EmailSignIn } from "@/components/auth/email-sign-in";
+import { EventTracker } from "@/eventTracker";
 
 const Auth = () => {
   const { signInWithGoogle } = useAuth();
@@ -23,6 +25,10 @@ const Auth = () => {
       localStorage.setItem("code", code);
     }
   }, [code, router]);
+
+  useEffect(() => {
+    EventTracker.track("login_page_view");
+  }, []);
 
   const handleGoogleSignIn = () => {
     signInWithGoogle(redirect);
@@ -44,6 +50,14 @@ const Auth = () => {
           >
             <FcGoogle className="mr-2 h-6 w-6" /> Continue with Google
           </Button>
+          
+          <div className="relative flex items-center justify-center">
+            <div className="border-t border-border w-full"></div>
+            <span className="bg-background text-muted-foreground px-3 text-sm absolute mb-0.5">or</span>
+          </div>
+
+          <EmailSignIn />
+
           <div className="grid gap-4 mt-4">
             {[
               "Use WriteStack's AI to outline your notes (with your voice)",

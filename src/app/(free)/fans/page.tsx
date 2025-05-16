@@ -12,20 +12,11 @@ import { useSession } from "next-auth/react";
 import { Logger } from "@/logger";
 import { usePathname } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { FcGoogle } from "react-icons/fc";
 import useAuth from "@/lib/hooks/useAuth";
 import useMediaQuery from "@/lib/hooks/useMediaQuery";
 import { ToastStepper } from "@/components/ui/toast-stepper";
 import axiosInstance from "@/lib/axios-instance";
+import { LoginDialog } from "@/components/auth/login-dialog";
 
 function TopEngagersPage() {
   const { data: session } = useSession();
@@ -43,7 +34,7 @@ function TopEngagersPage() {
   const [selectedByline, setSelectedByline] = useState<Byline | null>(null);
 
   const [selectedEngager, setSelectedEngager] = useState<Engager | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [, setIsMenuOpen] = useState(false);
 
   const [loadingUserData, setLoadingUserData] = useState(false);
   const loadingUserDataRef = useRef(loadingUserData);
@@ -189,9 +180,9 @@ function TopEngagersPage() {
 
   const getLoginRedirect = () => {
     if (selectedByline) {
-      return `${pathname}?redirect=fans&author=${selectedByline.authorId}`;
+      return `fans&author=${selectedByline.authorId}`;
     } else {
-      return `${pathname}?redirect=fans`;
+      return "fans";
     }
   };
 
@@ -293,34 +284,13 @@ function TopEngagersPage() {
         position="bottom-right"
       />
 
-      <Dialog open={showLoginDialog} onOpenChange={handleCloseLoginDialog}>
-        <DialogContent className="sm:max-w-md" backgroundBlur={false}>
-          <DialogHeader>
-            <DialogTitle>Login to see your results</DialogTitle>
-            <DialogDescription>
-              To avoid abuse and keep this tool a unique experience, I&apos;ll
-              need you to quickly sign up (Less than 10 seconds).
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex items-center space-x-2 pb-6">
-            <div className="grid flex-1 gap-2">
-              <p className="text-sm text-muted-foreground">
-                With a free account, you&apos;ll be able to use all current and
-                future free tools.
-              </p>
-            </div>
-          </div>
-          <DialogFooter className="sm:justify-between">
-            <Button
-              variant="outline"
-              onClick={handleSignIn}
-              className="w-full py-6 text-lg font-semibold transition-all hover:bg-primary hover:text-primary-foreground"
-            >
-              <FcGoogle className="mr-2 h-6 w-6" /> Continue with Google
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <LoginDialog
+        isOpen={showLoginDialog}
+        onOpenChange={handleCloseLoginDialog}
+        title="Login to see your results"
+        description="To avoid abuse and keep this tool a unique experience, I'll need you to quickly sign up (Less than 10 seconds)."
+        redirectPath={getLoginRedirect()}
+      />
 
       {/* Mobile Sheet/Dialog */}
       {/* <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
