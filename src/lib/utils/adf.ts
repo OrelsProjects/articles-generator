@@ -63,6 +63,7 @@ function transformContent(content: any[]): any[] {
   });
 }
 
+
 export interface ADFNode {
   type: string;
   attrs?: Record<string, any>;
@@ -198,6 +199,15 @@ export function transformNode(
       };
     }
 
+    case "heading": {
+      // unified/remark uses `.depth`; Atlassian uses attrs.level – cover both
+      const level = node.depth ?? node.attrs?.level ?? 1;
+      return {
+        type: "heading",
+        attrs: { level },
+        content: transformChildren(node.children, parentMarks),
+      };
+    }
     // ─────────────────────────────────────────────────────────────────────
     // CODE BLOCK => multi-line code fences
     // We'll produce a "codeBlock" node. If you prefer a "paragraph" node

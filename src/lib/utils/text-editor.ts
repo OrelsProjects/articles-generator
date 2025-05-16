@@ -444,6 +444,7 @@ export const notesTextEditorOptions = (
   extensions: [
     StarterKit.configure({
       // hardBreak: false,
+      heading: false,
       paragraph: {
         HTMLAttributes: { class: cn("mb-5 leading-8", Lora.className) },
       },
