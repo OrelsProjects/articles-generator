@@ -20,7 +20,7 @@ import { noteTemplates } from "@/app/api/notes/generate/_consts";
 import { Model429Error } from "@/types/errors/Model429Error";
 import { z } from "zod";
 import { getPublicationByIds } from "@/lib/dal/publication";
-import {  formatNote } from "@/lib/utils/notes";
+import { formatNote } from "@/lib/utils/notes";
 
 const generateNotesSchema = z.object({
   count: z.number().or(z.string()).optional(),
@@ -216,7 +216,14 @@ export async function POST(
         orderBy: { updatedAt: "desc" },
       }),
       prisma.note.findMany({
-        where: { userId: session.user.id, feedback: "dislike" },
+        where: {
+          AND: [
+            { userId: session.user.id },
+            {
+              OR: [{ feedback: "dislike" }, { isArchived: true }],
+            },
+          ],
+        },
         take: 10,
         orderBy: { updatedAt: "desc" },
       }),
@@ -332,7 +339,6 @@ export async function POST(
         return improvedNote ? { ...note, body: improvedNote.body } : note;
       })
       .map(formatNote);
-
 
     const handle = byline?.handle || notesFromAuthor[0]?.handle;
     const name = byline?.name || notesFromAuthor[0]?.name;
