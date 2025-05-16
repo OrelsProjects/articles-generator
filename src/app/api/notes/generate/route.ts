@@ -224,12 +224,12 @@ export async function POST(
             },
           ],
         },
-        take: 10,
+        take: 15,
         orderBy: { updatedAt: "desc" },
       }),
       prisma.note.findMany({
         where: { userId: session.user.id, feedback: "like" },
-        take: 10,
+        take: 15,
         orderBy: { updatedAt: "desc" },
       }),
       prismaArticles.notesComments.findMany({
