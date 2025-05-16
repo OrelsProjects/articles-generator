@@ -127,7 +127,7 @@ export default function SettingsPage() {
   };
 
   const creditPercentage = Math.min(
-    Math.round((credits.used / Math.max(credits.total, 1)) * 100),
+    100 - Math.round((credits.used / Math.max(credits.total, 1)) * 100),
     100,
   );
 
@@ -153,7 +153,7 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle>Your Credits</CardTitle>
                 <CardDescription>
-                  Credits are used for AI-powered features like idea generation
+                  Credits are used for AI-powered features like notes generation
                   and content enhancement.
                 </CardDescription>
               </CardHeader>
@@ -169,7 +169,9 @@ export default function SettingsPage() {
                   </div>
                   <Progress value={100 - creditPercentage} className="h-2" />
                   <p className="text-sm text-muted-foreground">
-                    Credits reset every month ({credits.total})
+                    Credits reset every{" "}
+                    {billingInfo?.interval === "month" ? "month" : "year"} (
+                    {credits.total})
                   </p>
                 </div>
 
