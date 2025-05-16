@@ -70,13 +70,14 @@ export async function runPrompt(
   let tokenCount = 0;
   tokenCount = getTokenCount(messages.map(m => m.content).join("\n"));
   const priceInput = getPrice(model, tokenCount);
-  console.log(
-    "About to run prompt on model",
-    model,
-    "Estimated token count:",
-    tokenCount,
-    "Estimated price:",
-    `$${priceInput.toFixed(5)}`,
+  loggerServer.info(
+    `About to run prompt on model ${model} with ${tokenCount} tokens. Estimated price: $${priceInput.toFixed(5)}`,
+    {
+      model,
+      tokenCount,
+      priceInput,
+      userId: sourceName,
+    },
   );
   console.time("runPrompt");
   let response = await axiosInstance.post(
@@ -124,7 +125,13 @@ export async function runPrompt(
 
   let llmResponse = response.data.choices[0].message.content;
 
-  console.log("Prompt output token count:", getTokenCount(llmResponse));
+  loggerServer.info(
+    `Prompt output token count: ${getTokenCount(llmResponse)}`,
+    {
+      llmResponse,
+      userId: sourceName,
+    },
+  );
 
   if (!model.includes("anthropic")) {
     llmResponse = llmResponse.replace(/```json|```/g, "").trim();

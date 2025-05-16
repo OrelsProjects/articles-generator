@@ -32,7 +32,9 @@ export const usePublicationSettings = () => {
     setError(null);
 
     try {
-      const response = await axiosInstance.get("/api/user/publication-settings");
+      const response = await axiosInstance.get(
+        "/api/user/publication-settings",
+      );
       setPublicationSettings(response.data.settings);
     } catch (err: any) {
       setError(
@@ -77,7 +79,9 @@ export const usePublicationSettings = () => {
     if (settings.generatingDescription) return;
     dispatch(setGeneratingDescription(true));
     try {
-      await axiosInstance.post("/api/user/analyze");
+      await axiosInstance.post("/api/user/analyze", {
+        isRequested: true,
+      });
     } catch (err: any) {
       setError(
         err.response?.data?.error || "Failed to refresh publication data",

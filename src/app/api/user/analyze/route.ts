@@ -32,6 +32,7 @@ import { setUserNotesDescription } from "@/lib/dal/analysis";
 
 const schema = z.object({
   url: z.string().optional(),
+  isRequested: z.boolean().optional(),
   byline: z
     .object({
       authorId: z.number(),
@@ -60,13 +61,13 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   }
-  let { url, byline } = parsed.data;
+  let { url, byline, isRequested } = parsed.data;
   let didConsumeCredits = false;
 
   const now = new Date();
 
   try {
-    const canUseAnalyze = await canUseAI(userId, AIUsageType.analyze);
+    let canUseAnalyze = await canUseAI(userId, AIUsageType.analyze);
     let userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId,
@@ -118,19 +119,29 @@ export async function POST(req: NextRequest) {
     }
 
     // TODO: FIX IT. It sends 403 to some people
-    if (userMetadata?.publication?.generatedDescription) {
+    if (isRequested) {
       // It's not the first time we're running this.
-      // if (!canUseAnalyze.result) {
-      //   return NextResponse.json(
-      //     {
-      //       error: "Not enough credits",
-      //       nextRefill: canUseAnalyze.nextRefill,
-      //     },
-      //     { status: canUseAnalyze.status },
-      //   );
-      // }
-      // await useCredits(session.user.id, "analyze");
-      // didConsumeCredits = true;
+      if (!canUseAnalyze.result) {
+        return NextResponse.json(
+          {
+            error: "Not enough credits",
+            nextRefill: canUseAnalyze.nextRefill,
+          },
+          { status: canUseAnalyze.status },
+        );
+      }
+      await useCredits(session.user.id, "analyze");
+      didConsumeCredits = true;
+    } else {
+      if (userMetadata?.publication?.generatedDescription) {
+        loggerServer.warn(
+          "[CRITICAL] - User has already generated a description, but is requesting a free analysis",
+          {
+            userId,
+            url,
+          },
+        );
+      }
     }
 
     let publicationMetadata = userMetadata?.publication;
