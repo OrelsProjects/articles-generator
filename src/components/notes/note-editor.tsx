@@ -7,6 +7,7 @@ import {
   Code,
   List,
   ListOrdered,
+  Quote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +36,7 @@ export default function NoteEditor({
         <BubbleMenu
           editor={editor}
           tippyOptions={{ duration: 100 }}
-          className="flex items-center bg-background border border-border rounded-md shadow-md overflow-hidden"
+          className="flex items-center bg-background/80 backdrop-blur-sm border border-border rounded-md shadow-md overflow-hidden"
         >
           <Toggle
             size="sm"
@@ -69,6 +70,7 @@ export default function NoteEditor({
           >
             <Code className="h-4 w-4" />
           </Toggle>
+          <div className="h-4 mx-0.5 w-px bg-border"></div>
           <Toggle
             size="sm"
             pressed={editor.isActive("bulletList")}
@@ -88,6 +90,15 @@ export default function NoteEditor({
             className="data-[state=on]:bg-muted"
           >
             <ListOrdered className="h-4 w-4" />
+          </Toggle>
+          <div className="h-4 mx-0.5 w-px bg-border"></div>
+          <Toggle
+            size="sm"
+            pressed={editor.isActive("blockquote")}
+            onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
+            className="data-[state=on]:bg-muted"
+          >
+            <Quote className="h-3 w-3" />
           </Toggle>
         </BubbleMenu>
       )}

@@ -42,13 +42,13 @@ const Auth = () => {
             onClick={handleGoogleSignIn}
             className="w-full py-6 text-lg font-semibold transition-all hover:bg-primary hover:text-primary-foreground"
           >
-            <FcGoogle className="mr-2 h-6 w-6" /> Sign in with Google
+            <FcGoogle className="mr-2 h-6 w-6" /> Continue with Google
           </Button>
           <div className="grid gap-4 mt-4">
             {[
               "Use WriteStack's AI to outline your notes (with your voice)",
               "Break through writer's block",
-            "Grow 5x faster",
+              "Grow 5x faster",
             ].map((perk, index) => (
               <div key={index} className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />

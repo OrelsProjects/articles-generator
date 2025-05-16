@@ -344,7 +344,7 @@ export default function AnalyzeSubstack() {
               onClick={handleSignIn}
               className="w-full py-6 text-lg font-semibold transition-all hover:bg-primary hover:text-primary-foreground"
             >
-              <FcGoogle className="mr-2 h-6 w-6" /> Sign in with Google
+              <FcGoogle className="mr-2 h-6 w-6" /> Continue with Google
             </Button>
           </DialogFooter>
         </DialogContent>
