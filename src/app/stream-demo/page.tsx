@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 export default function StreamDemo() {
-  const [response, setResponse] = useState('');
+  const [response, setResponse] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    setResponse('');
+    setResponse("");
 
     const formData = new FormData(e.currentTarget);
-    const prompt = formData.get('prompt') as string;
+    const prompt = formData.get("prompt") as string;
 
     try {
-      const res = await fetch('/api/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
 
       if (!res.body) {
-        throw new Error('No response body');
+        throw new Error("No response body");
       }
 
       const reader = res.body.getReader();
@@ -31,13 +31,13 @@ export default function StreamDemo() {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         const chunkText = decoder.decode(value);
         setResponse(prev => prev + chunkText);
       }
     } catch (error) {
-      console.error('Error:', error);
-      setResponse('Error occurred while streaming response');
+      console.error("Error:", error);
+      setResponse("Error occurred while streaming response");
     } finally {
       setIsLoading(false);
     }
@@ -46,7 +46,7 @@ export default function StreamDemo() {
   return (
     <div className="container mx-auto p-4 max-w-2xl">
       <h1 className="text-2xl font-bold mb-4">Streaming Demo</h1>
-      
+
       <form onSubmit={handleSubmit} className="mb-4">
         <div className="flex gap-2">
           <input
@@ -61,7 +61,7 @@ export default function StreamDemo() {
             disabled={isLoading}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
           >
-            {isLoading ? 'Streaming...' : 'Send'}
+            {isLoading ? "Streaming..." : "Send"}
           </button>
         </div>
       </form>
@@ -74,4 +74,4 @@ export default function StreamDemo() {
       )}
     </div>
   );
-} 
+}

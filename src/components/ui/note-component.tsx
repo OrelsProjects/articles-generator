@@ -370,7 +370,9 @@ export default function NoteComponent({
   useEffect(() => {
     if (contentRef.current) {
       requestAnimationFrame(() => {
-        setShowExpandButton((contentRef.current?.scrollHeight || 999) > 160);
+        const height = contentRef.current?.scrollHeight || 999;
+        debugger;
+        setShowExpandButton(height > 260);
       });
     }
   }, [htmlContent]);
@@ -454,7 +456,7 @@ export default function NoteComponent({
                   <Button
                     variant="link"
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="absolute bottom-0 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto"
+                    className="absolute -bottom-4 right-4 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto"
                   >
                     {isExpanded ? "less" : "more"}
                   </Button>
