@@ -12,6 +12,7 @@ import {
   FileText,
   User,
   AudioLines,
+  Anchor,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Note, NoteDraft } from "@/types/note";
@@ -29,6 +30,7 @@ const formatOptions: {
   subLabel?: string;
   tooltip?: string;
   type: ImprovementType;
+  newUntil?: Date;
 }[] = [
   {
     type: "new-version",
@@ -37,6 +39,14 @@ const formatOptions: {
     tooltip: "Keep the same topic, but change the note",
     icon: AudioLines,
     divider: false,
+  },
+  {
+    type: "better-hook",
+    label: "Better hook",
+    tooltip: "Make it more engaging",
+    icon: Anchor,
+    divider: false,
+    newUntil: new Date("2025-06-01"),
   },
   {
     type: "fit-user-style",

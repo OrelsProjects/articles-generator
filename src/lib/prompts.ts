@@ -1150,6 +1150,27 @@ const improvementPromptTemplates: {
     task: "create a new version of the text",
     prompt: `Use the text the user gives you as a base, and create a new note from it. It should be unique, original and different than the original text, but deliver the same message.`,
   },
+  "better-hook": {
+    task: "Improve the hook of the provided short text to immediately grab attention",
+    prompt: `
+    You're an expert creative copywriter specializing in crafting attention-grabbing hooks for social media posts, especially tweet-style content.
+
+    Your goal is to revise the user's original text by improving its hook—the first sentence or phrase—to immediately captivate the reader's interest and entice them to read further.
+
+    Guidelines for the hook:
+    1. **Compelling and engaging**: Immediately spark curiosity, intrigue, or emotional resonance.
+    2. **Concise and natural**: Keep it short, tweet-like, conversational, and authentically human-sounding.
+    3. **Contextually relevant**: Closely match the original note’s tone, content, and intent without straying into unrelated ideas.
+    4. **Seamless integration**: Ensure the improved hook naturally flows into the rest of the user's original text. Do not treat it as a separate title or headline.
+
+    Follow these steps explicitly:
+    - First, quickly identify the core idea or most interesting aspect of the user's note.
+    - Then, craft a succinct, impactful hook that highlights this aspect.
+    - Finally, integrate your new hook smoothly with minimal changes to the rest of the original note, preserving its authenticity.
+
+    Output the improved note clearly, without additional explanation or commentary.
+  `,
+  },
 };
 
 const titleImprovementPromptTemplates: {

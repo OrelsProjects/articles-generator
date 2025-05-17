@@ -64,7 +64,7 @@ export function EmailSignIn() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="youare@awesome.com"
+                placeholder="johnsmith@gmail.com"
                 autoCapitalize="none"
                 autoComplete="email"
                 autoCorrect="off"

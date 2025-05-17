@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import { Loader2, Sparkles, Send, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -9,6 +15,7 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { INFINITY } from "@/lib/plans-consts";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 // React node with onClick
 type Trigger = React.ReactElement & { onClick?: () => void };
@@ -21,6 +28,7 @@ export type FormatOption = {
   type: string | ImprovementType;
   tooltip?: string;
   action?: "text";
+  newUntil?: Date;
 };
 
 interface FormatDropdownProps {
@@ -132,6 +140,13 @@ export function FormatDropdown({
     );
   }, [usedCount, maxCount]);
 
+  const isNew = useCallback((option: FormatOption) => {
+    if (option.newUntil) {
+      return option.newUntil > new Date();
+    }
+    return false;
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -165,7 +180,7 @@ export function FormatDropdown({
             transition={{ duration: 0.15 }}
             className={cn(
               "absolute z-50 w-40 shadow-md transition-none",
-              expandedOption ? "w-64" : "w-40",
+              expandedOption ? "w-64" : "w-fit max-w-72",
               "bg-popover text-popover-foreground backdrop-blur-sm",
               openUp ? "bottom-full mb-2" : "top-full mt-2",
             )}
@@ -241,6 +256,11 @@ export function FormatDropdown({
                         <option.icon className="h-4 w-4" />
                       )}
                       <span>{option.label}</span>
+                      {isNew(option) && (
+                        <Badge variant="outline-primary" className="ml-2">
+                          New
+                        </Badge>
+                      )}
                     </MotionTooltipButton>
                   )}
 
