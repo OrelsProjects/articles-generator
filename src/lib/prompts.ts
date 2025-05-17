@@ -1136,19 +1136,54 @@ const improvementPromptTemplates: {
     prompt: `Check the user's text for spelling and grammar errors. If you find any errors, correct them. If you don't find any errors, fix the errors in the text.`,
   },
   "fit-user-style": {
-    task: "fit the your style of writing and description",
-    prompt: `Fit the user's the text to your style of writing and description. If the user provides examples, use them to fit the style as well.
-    The new text should be unique, original and different than the original text, but deliver the same message.
+    task: "Adapt the provided text to match the user's writing style precisely.",
+    prompt: `
+      You are an expert stylistic editor skilled at accurately identifying and mimicking specific writing styles and tones.
+
+      Your goal is to rewrite the user's provided text to perfectly match their unique writing style, tone, and descriptive preferences.
+
+      Instructions:
+      1. Carefully analyze the user's examples or previous writings (if provided) to fully grasp their voice, tone, and style nuances.
+      2. Rewrite the text to align closely with the user's authentic style, incorporating their common vocabulary, sentence structure, emotional tone, and descriptive approach.
+      3. Ensure the rewritten text is completely original and unique while maintaining the exact meaning and intent of the original text.
+      4. Avoid any generic, overly formal, or unnatural phrasing that does not reflect the user's typical expression.
+
+      Clearly output the rewritten text, ensuring it reads naturally, authentically, and seamlessly matches the user's established style.
     `,
   },
+
   "human-like": {
-    task: "make it human-like",
-    prompt: `Act as if you were a human and not a machine, and write the text in a way that is natural and human-like, without any hint or sign of AI involvement.
+    task: "Rewrite the text to sound completely natural and human-like.",
+    prompt: `
+      You're a skilled human copywriter with a conversational, relatable, and authentic writing voice.
+
+      Rewrite the user's provided text to ensure it sounds completely natural and genuinely human-written, removing any trace of AI-generated phrasing.
+
+      Guidelines:
+      1. Use everyday conversational language and relatable expressions appropriate to the intended context.
+      2. Add natural variations, minor imperfections, and casual nuances common in human writing.
+      3. Ensure the text flows smoothly, is engaging, and avoids any overly formal, robotic, or unnatural expressions.
+      4. Preserve the original meaning and intention without adding new information or ideas.
+
+      Output only the revised, human-like text clearly and naturally, without commentary.
     `,
   },
+
   "new-version": {
-    task: "create a new version of the text",
-    prompt: `Use the text the user gives you as a base, and create a new note from it. It should be unique, original and different than the original text, but deliver the same message.`,
+    task: "Create an entirely new and unique version of the provided text.",
+    prompt: `
+      You're an expert creative writer capable of effectively rephrasing content into completely original and unique new versions.
+
+      Based on the user's original text, craft a distinct, fresh version that delivers the exact same core message but differs significantly in wording, structure, and style.
+
+      Requirements:
+      1. Maintain the original text's core meaning and intended message.
+      2. Completely rephrase sentences and rearrange structures to create originality while preserving readability and clarity.
+      3. Use different vocabulary, metaphors, or phrasing to ensure the new text feels fresh, distinct, and authentic.
+      4. Ensure the rewritten version does not closely resemble the original phrasing or sentence structure.
+
+      Output only the new, fully rewritten text version clearly, without any additional explanations or commentary.
+    `,
   },
   "better-hook": {
     task: "Improve the hook of the provided short text to immediately grab attention",
