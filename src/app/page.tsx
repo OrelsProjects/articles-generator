@@ -50,6 +50,10 @@ const faq = [
     question: `Do you use my draft notes?`,
     answer: `No. We never use your draft notes. We respect what you create and your drafts are private.`,
   },
+  {
+    question: "Do you use my paid articles?",
+    answer: `No. We do not show, use or give access to your paid articles to anyone but you.`,
+  },
   // {
   //   question: `What if I forgot to leave ${appName} running?`,
   //   answer: `No problem! You will get an email with a button to one-click publish the missing note.`,
@@ -69,6 +73,10 @@ const faq = [
   {
     question: `Can I cancel anytime?`,
     answer: `Yes. No contracts, no tricks.`,
+  },
+  {
+    question: "I have a question. What do I do?",
+    answer: `Oh, I love questions. Hit me up on <a href="https://substack.com/@orelzilberman" target="_blank" class="underline text-primary">Substack</a>`,
   },
 ];
 
@@ -223,7 +231,13 @@ function App() {
                 {faq.map((item, index) => (
                   <AccordionItem key={index} value={`item-${index}`}>
                     <AccordionTrigger>{item.question}</AccordionTrigger>
-                    <AccordionContent>{item.answer}</AccordionContent>
+                    <AccordionContent>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: item.answer,
+                        }}
+                      />
+                    </AccordionContent>
                   </AccordionItem>
                 ))}
               </Accordion>
