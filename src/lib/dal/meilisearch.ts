@@ -83,7 +83,7 @@ export async function searchInMeili({
       commentId: hit.comment_id,
       authorId: hit.user_id,
       reactionCount: hit.reaction_count,
-      reactions: hit.reaction_count,
+      reactions: hit.reaction_count ? JSON.stringify(hit.reaction_count) : null,
       commentsCount: hit.children_count,
       restacks: hit.restacks,
       restacked: hit.restacked,

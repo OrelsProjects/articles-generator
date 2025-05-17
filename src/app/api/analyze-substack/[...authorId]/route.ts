@@ -61,6 +61,7 @@ const insertIntoDB = async (notes: NotesComments[], authorId: number) => {
       },
       create: {
         ...noteDB,
+        reactions: noteDB.reactions ? JSON.stringify(noteDB.reactions) : null,
       },
     });
   }
@@ -165,7 +166,10 @@ export async function POST(
 
     if (session) {
       if (validObject === "streak") {
-        const streakData: Streak[] = calculateStreak(allNotes, timezone || "UTC");
+        const streakData: Streak[] = calculateStreak(
+          allNotes,
+          timezone || "UTC",
+        );
         return NextResponse.json({ success: true, streakData });
       }
       if (validObject === "engagement") {
