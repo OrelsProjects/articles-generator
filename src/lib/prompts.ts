@@ -1181,7 +1181,7 @@ const improvementPromptTemplates: {
       2. Completely rephrase sentences and rearrange structures to create originality while preserving readability and clarity.
       3. Use different vocabulary, metaphors, or phrasing to ensure the new text feels fresh, distinct, and authentic.
       4. Ensure the rewritten version does not closely resemble the original phrasing or sentence structure.
-
+      5. It should be plagiarism free. Change examples, use different words, but keep the same meaning.
       Output only the new, fully rewritten text version clearly, without any additional explanations or commentary.
     `,
   },
