@@ -148,6 +148,8 @@ export async function POST(
     console.log(
       "About to generate notes for userMetadata: ",
       JSON.stringify(userMetadata.publication.authorId),
+      "For topic: ",
+      topic,
     );
     const canUseAIResult = await canUseAI(
       session.user.id,
