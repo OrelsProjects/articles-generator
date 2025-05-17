@@ -55,7 +55,7 @@ const useAuth = () => {
       EventTracker.track("User signed out");
       await signOutAuth({ callbackUrl: "/" });
       dispatch(clearUser());
-      localStorage.clear();
+      // localStorage.clear();
     } catch (error: any) {
       Logger.error("Error signing out", { error });
       dispatch(setError("Failed to sign out"));
@@ -69,7 +69,7 @@ const useAuth = () => {
     try {
       EventTracker.track("User deleted");
       await axiosInstance.delete("/api/user");
-      await signOutAuth();
+      await signOutAuth({ callbackUrl: "/" });
       dispatch(clearUser());
       localStorage.clear();
       router.push("/");

@@ -97,7 +97,11 @@ export async function useCredits(
   return { creditsUsed, creditsRemaining };
 }
 
-export async function undoUseCredits(userId: string, usageType: AIUsageType, presetCredits?: number) {
+export async function undoUseCredits(
+  userId: string,
+  usageType: AIUsageType,
+  presetCredits?: number,
+) {
   try {
     const subscription = await getActiveSubscription(userId);
 
@@ -133,7 +137,8 @@ export async function calculateNewPlanCreditsLeft(
   if (!userSubscription) {
     throw new Error("Subscription not found in calculateNewPlanCreditsLeft");
   }
-  const oldCreditsPerPeriod = userSubscription.creditsPerPeriod;
+
+  let oldCreditsPerPeriod = userSubscription.creditsPerPeriod;
   const creditsLeft = userSubscription.creditsRemaining;
 
   let creditsUsed = Math.max(oldCreditsPerPeriod - creditsLeft, 0);

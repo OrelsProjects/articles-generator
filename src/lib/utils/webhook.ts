@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import {
   getActiveSubscription,
-  getActiveSubscriptionByStripeSubId,
 } from "@/lib/dal/subscription";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addTagToEmail, removeTagFromEmail, sendMail } from "@/lib/mail/mail";
@@ -12,7 +11,6 @@ import {
   generatePaymentConfirmationEmail,
   generateSubscriptionDeletedEmail,
   generateSubscriptionTrialEndingEmail,
-  generateWelcomeTemplateTrial,
 } from "@/lib/mail/templates";
 import { creditsPerPlan } from "@/lib/plans-consts";
 import { getStripeInstance } from "@/lib/stripe";
@@ -200,41 +198,51 @@ export async function handleSubscriptionUpdated(event: any) {
     throw new Error("No subscription found for user");
   }
 
-  const { creditsLeft, creditsForPlan } = await calculateNewPlanCreditsLeft(
-    user.id,
-    plan,
-    currentSubscription,
-  );
-  const { id, ...currentSubscriptionNoId } = currentSubscription;
+  // If new month, we need to add new credits
+  const isRenewal =
+    currentSubscription.currentPeriodStart &&
+    subscription.current_period_start !==
+      (new Date(currentSubscription.currentPeriodStart).getTime() / 1000) &&
+    subscription.status === "active";
 
-  const newSubscription: Omit<Subscription, "id"> = {
-    ...currentSubscriptionNoId,
-    plan: plan || currentSubscription.plan,
-    status: subscription.status,
-    cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-    currentPeriodStart: new Date(subscription.current_period_start * 1000),
-    creditsPerPeriod: creditsForPlan,
-    creditsRemaining: creditsLeft,
-    startDate: currentSubscription.startDate,
-    endDate: currentSubscription.endDate,
-    isTrialing: subscription.status === "trialing",
-    trialStart: subscription.trial_start
-      ? new Date(subscription.trial_start * 1000)
-      : currentSubscription.trialStart,
-    trialEnd: subscription.trial_end
-      ? new Date(subscription.trial_end * 1000)
-      : currentSubscription.trialEnd,
-    interval: (price.recurring?.interval || "month") as Interval,
-    couponIdApplied: subscription.discount?.coupon?.id || null,
-  };
+  if (isRenewal) {
 
-  await prisma.subscription.update({
-    where: {
-      stripeSubId: subscriptionId,
-    },
-    data: newSubscription,
-  });
+      const { creditsLeft, creditsForPlan } = await calculateNewPlanCreditsLeft(
+        user.id,
+        plan,
+        currentSubscription,
+      );
+    const { id, ...currentSubscriptionNoId } = currentSubscription;
+
+    const newSubscription: Omit<Subscription, "id"> = {
+      ...currentSubscriptionNoId,
+      plan: plan || currentSubscription.plan,
+      status: subscription.status,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodStart: new Date(subscription.current_period_start * 1000),
+      creditsPerPeriod: creditsForPlan,
+      creditsRemaining: creditsLeft,
+      startDate: currentSubscription.startDate,
+      endDate: currentSubscription.endDate,
+      isTrialing: subscription.status === "trialing",
+      trialStart: subscription.trial_start
+        ? new Date(subscription.trial_start * 1000)
+        : currentSubscription.trialStart,
+      trialEnd: subscription.trial_end
+        ? new Date(subscription.trial_end * 1000)
+        : currentSubscription.trialEnd,
+      interval: (price.recurring?.interval || "month") as Interval,
+      couponIdApplied: subscription.discount?.coupon?.id || null,
+    };
+
+    await prisma.subscription.update({
+      where: {
+        stripeSubId: subscriptionId,
+      },
+      data: newSubscription,
+    });
+  }
 
   // if subscription paused/canceled/delete, remove tag. Otherwise, add
   if (user.email) {

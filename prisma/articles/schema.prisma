@@ -164,7 +164,7 @@ model NotesComments {
   name            String?  @map("name")
   photoUrl        String?  @map("photo_url")
   reactionCount   Int      @map("reaction_count")
-  reactions       Json?    @map("reactions")
+  reactions       String?    @map("reactions")
   commentsCount   Int?     @map("children_count")
   restacks        Int      @map("restacks")
   restacked       Boolean  @map("restacked")

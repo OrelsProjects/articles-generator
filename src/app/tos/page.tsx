@@ -176,7 +176,26 @@ const PrivacyPolicy: React.FC = () => {
           control, and we assume no responsibility for such interruptions.
         </p>
       </section>
-
+      <section className="mb-6">
+        <h2 className="text-xl font-semibold mb-2">Chrome Extension Access</h2>
+        <p className="text-gray-700">
+          By choosing to install and use our Chrome extension, you explicitly
+          grant
+          {` ${COMPANY_NAME} `} permission to access and store your content,
+          including your Substack notes, posts and cookies, for the purpose of
+          helping you manage, schedule, and interact with your content more
+          effectively.
+        </p>
+        <p className="text-gray-700 mt-2">
+          We only access the data required to perform the functions you enable,
+          and all data transmission is handled securely. You can revoke this
+          access at any time by uninstalling the extension or deleting your
+          account.
+        </p>
+        <p className="text-gray-700 mt-2">
+          <strong>Paid content:</strong> While we may store paid or subscriber-only content you have on Substack to provide you with features like scheduling or content management, this content is <u>never</u> used, displayed, or shared with anyone except you. It remains strictly private and accessible only to your account. We make no claim to this content and do not expose it to other users under any circumstance.
+        </p>
+      </section>
       <section className="mb-6">
         <h2 className="text-xl font-semibold mb-2">
           Authorized Actions on Your Behalf
