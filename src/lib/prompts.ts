@@ -823,8 +823,8 @@ export const generateNotesPrompt = (
     return acc;
   }, {});
 
-  const shouldUseTopic =
-    (options.preSelectedArticles?.length || 0) === 0 ? true : false;
+  const hasPreselectedArticles = options.preSelectedArticles?.length || 0 > 0;
+  const shouldUseTopic = hasPreselectedArticles ? false : true;
 
   const likedTopicsCount = notesUserLiked
     .map(note => note.topics)
@@ -922,7 +922,7 @@ export const generateNotesPrompt = (
               : ""
           }
           ${shouldUseTopic ? `Here are topics I write about and I want you to write about them: ${userMetadata.noteTopics}` : ""}
-          ${publication.personalDescription ? `Here's a description of me (Very important): ${publication.personalDescription}` : ""}
+          ${publication.personalDescription ? `Here's a description of my writing style. I want you to use it and give it priority when you write notes: ${publication.personalDescription}` : ""}
           ${publication.preferredTopics.length > 0 ? `Here are my preferred topics. Use them to generate notes about me: ${publication.preferredTopics.join(", ")}` : ""}
 
           ${userNotes.length > 0 ? `Here are my previously written notes:` : ""}
