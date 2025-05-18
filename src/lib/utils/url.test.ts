@@ -182,3 +182,14 @@ describe("getUrlComponents with open.substack.com", () => {
     });
   });
 });
+
+describe("getUrlComponents with http://", () => {
+  test("handles http:// correctly", () => {
+    const url = "http://theindiepreneur.substack.com";
+    const result = getUrlComponents(url);
+    expect(result).toEqual({
+      validUrl: "https://theindiepreneur.substack.com",
+      mainComponentInUrl: "theindiepreneur",
+    });
+  });
+});

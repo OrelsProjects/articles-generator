@@ -15,7 +15,7 @@ import {
 } from "@/lib/utils/text-editor";
 import { useEditor } from "@tiptap/react";
 import NoteEditor from "@/components/notes/note-editor";
-import { useNotes } from "@/lib/hooks/useNotes";
+import { MAX_ATTACHMENTS, useNotes } from "@/lib/hooks/useNotes";
 import { toast } from "react-toastify";
 import {
   convertMDToHtml,
@@ -38,10 +38,8 @@ import { urlToFile } from "@/lib/utils/file";
 import { SaveDropdown } from "@/components/notes/save-dropdown";
 import { AvoidPlagiarismDialog } from "@/components/notes/avoid-plagiarism-dialog";
 import slugify from "slugify";
-import { ScheduleFailedEmptyNoteBodyError } from "@/types/errors/ScheduleFailedEmptyNoteBodyError";
 import { cn } from "@/lib/utils";
 import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
-import { ScheduleLimitExceededError } from "@/types/errors/ScheduleLimitExceededError";
 import { Logger } from "@/logger";
 
 export function NotesEditorDialog() {
@@ -54,7 +52,7 @@ export function NotesEditorDialog() {
     selectNote,
     loadingEditNote,
     updateNoteStatus,
-    uploadingFile,
+    uploadingFilesCount: hookUploadingFilesCount,
     uploadFile,
     deleteImage,
     scheduleNote,
@@ -79,7 +77,7 @@ export function NotesEditorDialog() {
     undefined,
   );
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
-  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [uploadingFilesCount, setUploadingFilesCount] = useState(0);
   const [isSendingNote, setIsSendingNote] = useState(false);
 
   // State for drag and drop
@@ -94,6 +92,13 @@ export function NotesEditorDialog() {
     });
   };
 
+  const canUploadImages = useMemo(() => {
+    return (
+      (selectedNote?.attachments?.length || 0) < MAX_ATTACHMENTS &&
+      uploadingFilesCount === 0
+    );
+  }, [selectedNote?.attachments?.length]);
+
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
     if (!open) {
@@ -105,11 +110,13 @@ export function NotesEditorDialog() {
       cancelUpdateNoteBody(selectedNote?.id || "", false);
     }
   };
+
   useEffect(() => {
     const handlePasteImage = async (e: CustomEvent<File>) => {
+      if (!canUploadImages) return;
       const file = e.detail;
       if (file) {
-        await handleImageSelect(file);
+        await handleImageSelect([file]);
       }
     };
 
@@ -124,11 +131,11 @@ export function NotesEditorDialog() {
         handlePasteImage as unknown as EventListener,
       );
     };
-  }, [selectedNote]);
+  }, [selectedNote, canUploadImages]);
 
   useEffect(() => {
-    setIsUploadingFile(uploadingFile);
-  }, [uploadingFile]);
+    setUploadingFilesCount(hookUploadingFilesCount);
+  }, [hookUploadingFilesCount]);
 
   useEffect(() => {
     if (!editor) return;
@@ -269,16 +276,18 @@ export function NotesEditorDialog() {
         if (note) {
           if (currentNote.status === "inspiration") {
             if (currentNote.attachments && currentNote.attachments.length > 0) {
-              const url = currentNote.attachments?.[0].url;
-              if (url) {
-                toast.update(toastId, {
-                  render: "Uploading image...",
-                  isLoading: true,
-                });
-                setIsUploadingFile(true);
-                const file = await urlToFile(url);
-                await uploadFile(file, note.id);
-              }
+              toast.update(toastId, {
+                render: "Uploading image...",
+                isLoading: true,
+              });
+              const attachments = currentNote.attachments?.filter(
+                attachment => !!attachment.url,
+              );
+              const files = await Promise.all(
+                attachments.map(attachment => urlToFile(attachment.url)),
+              );
+              await uploadFile(files, note.id);
+              toast.dismiss(toastId);
             }
           }
           newNote = {
@@ -363,7 +372,7 @@ export function NotesEditorDialog() {
     toast.success("Copied to clipboard");
   };
 
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = async (files: File[]) => {
     if (!selectedNote) return;
     try {
       let noteId = selectedNote.id;
@@ -374,7 +383,7 @@ export function NotesEditorDialog() {
         }
       }
       if (noteId) {
-        await uploadFile(file, noteId);
+        await uploadFile(files, noteId);
       } else {
         toast.error("Failed to upload image");
       }
@@ -385,19 +394,22 @@ export function NotesEditorDialog() {
   };
 
   // Handle file upload when an image is dropped
-  const handleFileDrop = async (file: File) => {
+  const handleFileDrop = async (files: File[]) => {
     if (!selectedNote) return;
 
     // Check if there's already an image
-    if (selectedNote.attachments && selectedNote.attachments.length > 0) {
+    if (
+      selectedNote.attachments &&
+      selectedNote.attachments.length >= MAX_ATTACHMENTS
+    ) {
       setIsDraggingOver(false);
-      toast.info("Only one image is allowed");
+      toast.info(`Only ${MAX_ATTACHMENTS} images allowed`);
       return;
     }
 
+    setIsDraggingOver(false);
     try {
-      setIsDraggingOver(false);
-      await handleFileUpload(file);
+      await handleFileUpload(files);
     } catch (error) {
       toast.error("Failed to upload image");
       console.error(error);
@@ -427,17 +439,17 @@ export function NotesEditorDialog() {
     setIsDraggingOver(false);
   }, []);
 
-  const handleImageSelect = async (file: File) => {
+  const handleImageSelect = async (files: File[]) => {
     if (!selectedNote) return;
 
     // Check if there's already an image
     if (selectedNote.attachments && selectedNote.attachments.length > 0) {
-      toast.info("Only one image is allowed");
+      toast.info(`Only ${MAX_ATTACHMENTS} images allowed`);
       return;
     }
 
     try {
-      await handleFileUpload(file);
+      await handleFileUpload(files);
     } catch (error) {
       toast.error("Failed to upload image");
       console.error(error);
@@ -472,7 +484,7 @@ export function NotesEditorDialog() {
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           hideCloseButton
-          className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl"
+          className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl max-md:max-w-screen"
         >
           <div
             className="flex flex-col w-full relative"
@@ -482,8 +494,9 @@ export function NotesEditorDialog() {
             <ImageDropOverlay
               isVisible={isDraggingOver}
               onFileDrop={handleFileDrop}
-              disabled={(selectedNote?.attachments?.length || 0) > 0}
+              disabled={!canUploadImages}
               onHide={() => setIsDraggingOver(false)}
+              maxAttachments={MAX_ATTACHMENTS}
             />
 
             <div className="flex items-start p-4 gap-3">
@@ -494,7 +507,7 @@ export function NotesEditorDialog() {
                 />
                 <AvatarFallback>{userInitials}</AvatarFallback>
               </Avatar>
-              <div className="flex-1">
+              <div className="flex-1 flex flex-col">
                 <h3 className="font-medium text-foreground">
                   {noteAuthorName || userName}
                 </h3>
@@ -507,9 +520,8 @@ export function NotesEditorDialog() {
                   />
                 )}
                 {selectedNote?.attachments &&
-                  selectedNote.attachments.length > 0 &&
-                  !isUploadingFile && (
-                    <div className="mt-4 mb-4 flex flex-wrap gap-2">
+                  selectedNote.attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
                       {selectedNote.attachments.map(attachment => (
                         <NoteImageContainer
                           key={attachment.id || attachment.url}
@@ -522,8 +534,17 @@ export function NotesEditorDialog() {
                       ))}
                     </div>
                   )}
-                {isUploadingFile && (
-                  <Skeleton className="mt-4 mb-4 w-[180px] h-[96px] rounded-md" />
+                {uploadingFilesCount > 0 && (
+                  <div className="max-md:max-h-[96px] max-md:overflow-x-auto max-md:max-w-[260px]">
+                    <div className="flex flex-row md:flex-wrap gap-2">
+                      {Array.from({ length: uploadingFilesCount }).map((_, index) => (
+                        <Skeleton
+                          key={index}
+                          className="md:w-[180px] md:h-[96px] w-[108px] h-[60px] rounded-md flex-shrink-0"
+                        />
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -545,7 +566,7 @@ export function NotesEditorDialog() {
                   tooltipContent="Undo"
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 lg:hidden"
+                  className="h-8 w-8 p-0 md:hidden"
                   onClick={() => editor?.chain().focus().undo().run()}
                   disabled={!editor?.can().undo()}
                 >
@@ -555,7 +576,7 @@ export function NotesEditorDialog() {
                   tooltipContent="Redo"
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 lg:hidden"
+                  className="h-8 w-8 p-0 md:hidden"
                   onClick={() => editor?.chain().focus().redo().run()}
                   disabled={!editor?.can().redo()}
                 >
@@ -569,13 +590,13 @@ export function NotesEditorDialog() {
                 <TooltipButton
                   tooltipContent={
                     selectedNote?.attachments?.length
-                      ? "Only one image allowed"
+                      ? `Only ${MAX_ATTACHMENTS} images allowed`
                       : "Add image"
                   }
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0"
-                  disabled={uploadingFile}
+                  disabled={!canUploadImages}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <ImageIcon className="h-5 w-5 text-muted-foreground" />
@@ -586,16 +607,13 @@ export function NotesEditorDialog() {
                   accept="image/*"
                   className="hidden"
                   onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      handleImageSelect(file);
+                    const files = Array.from(e.target.files || []);
+                    if (files.length > 0) {
+                      handleImageSelect(files);
                     }
                     e.target.value = "";
                   }}
-                  disabled={
-                    uploadingFile ||
-                    (selectedNote?.attachments?.length ?? 0) > 0
-                  }
+                  disabled={!canUploadImages}
                 />
                 <TooltipButton
                   tooltipContent="Copy"

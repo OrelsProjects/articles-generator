@@ -53,6 +53,8 @@ import { setNotePostedData } from "@/lib/features/ui/uiSlice";
 import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
 import axiosInstance from "@/lib/axios-instance";
 
+export const MAX_ATTACHMENTS = 4;
+
 export const useNotes = () => {
   const { user } = useAppSelector(selectAuth);
   const { updateShowScheduleModal, hasAdvancedGPT } = useUi();
@@ -77,7 +79,7 @@ export const useNotes = () => {
   const [loadingCreateNote, setLoadingCreateNote] = useState(false);
   // Don't delete, it works for some reason and allows user to save on click. TODO: Check why
   const [, setShouldCancelUpdate] = useState(false);
-  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadingFilesCount, setUploadingFilesCount] = useState(0);
   const [loadingSendNote, setLoadingSendNote] = useState(false);
   const { sendNote: sendNoteExtension, hasExtension } = useExtension();
   const {
@@ -90,6 +92,7 @@ export const useNotes = () => {
   const loadingNotesRef = useRef(false);
   const cancelRef = useRef<AbortController | null>(null);
   const cancelUpdateBody = useRef<NoteId[]>([]);
+
 
   const fetchNotes = async (limit?: number, loadMore = false) => {
     if (loadingNotesRef.current) return;
@@ -574,62 +577,65 @@ export const useNotes = () => {
     [dispatch],
   );
 
-  const uploadFile = async (file: File, noteId: string) => {
-    if (uploadingFile) return;
+  const uploadFile = async (
+    files: File[],
+    noteId: string,
+  ): Promise<NoteDraftImage[]> => {
+    if (uploadingFilesCount >= MAX_ATTACHMENTS) {
+      throw new Error(`Only ${MAX_ATTACHMENTS} images allowed`);
+    }
+    let filesUploading = 0;
     try {
       const existingNote = userNotes.find(note => note.id === noteId);
+      const currentAttachments = existingNote?.attachments || [];
 
       if (
-        existingNote?.attachments?.length &&
-        existingNote.attachments.length >= 1
+        currentAttachments.length &&
+        currentAttachments.length >= MAX_ATTACHMENTS
       ) {
-        const shouldDelete = window.confirm(
-          "Are you sure you want to replace the existing image?",
-        );
-        if (shouldDelete) {
-          const existingNote = userNotes.find(note => note.id === noteId);
-          if (
-            existingNote?.attachments?.length &&
-            existingNote.attachments.length >= 1
-          ) {
-            await deleteImage(noteId, existingNote.attachments[0]);
+        throw new Error(`Only ${MAX_ATTACHMENTS} images allowed`);
+      }
+      const maxAllowedAttachments = MAX_ATTACHMENTS - currentAttachments.length;
+      const attachmentsToUpload = files.slice(0, maxAllowedAttachments);
+      filesUploading = attachmentsToUpload.length;
+      setUploadingFilesCount(filesUploading);
+      const uploadedFiles: NoteDraftImage[] = [];
+      for (const file of attachmentsToUpload) {
+        try {
+          // make data to send to the server
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("fileName", file.name);
+
+          const response = await axiosInstance.post<NoteDraftImage>(
+            `/api/note/${noteId}/image`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            },
+          );
+          if (noteId) {
+            // Update the note with the image URL from the response
+            dispatch(
+              addAttachmentToNote({
+                noteId,
+                attachment: response.data,
+              }),
+            );
+            uploadedFiles.push(response.data);
           }
-        } else {
-          return;
+        } catch (error: any) {
+          Logger.error("Error uploading file:", error);
+        } finally {
+          setUploadingFilesCount(prev => prev - 1);
         }
       }
-
-      // make data to send to the server
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("fileName", file.name);
-
-      setUploadingFile(true);
-
-      const response = await axiosInstance.post<NoteDraftImage>(
-        `/api/note/${noteId}/image`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-      if (noteId) {
-        // Update the note with the image URL from the response
-        dispatch(
-          addAttachmentToNote({
-            noteId,
-            attachment: response.data,
-          }),
-        );
-      }
-      return response.data;
+      return uploadedFiles;
     } catch (error: any) {
-      Logger.error("Error uploading file:", error);
+      Logger.error("Error uploading all files:", error);
       throw error;
-    } finally {
-      setUploadingFile(false);
     }
   };
 
@@ -811,7 +817,7 @@ export const useNotes = () => {
     updateByline,
     editNoteBody,
     uploadFile,
-    uploadingFile,
+    uploadingFilesCount,
     cancelUpdateNoteBody,
     deleteImage,
     sendNote,

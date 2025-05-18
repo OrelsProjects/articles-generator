@@ -8,7 +8,7 @@ import { NoteDraftImage } from "@/types/note";
 
 interface NoteImageContainerProps {
   imageUrl?: string | null;
-  onImageSelect?: (file: File) => void;
+  onImageSelect?: (files: File[]) => void;
   onImageDelete?: (attachment: NoteDraftImage) => void;
   attachment?: NoteDraftImage;
   disabled?: boolean;
@@ -31,9 +31,9 @@ export function NoteImageContainer({
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        onImageSelect?.(file);
+      const files = Array.from(e.target.files || []);
+      if (files) {
+        onImageSelect?.(files);
       }
       // Reset input value to allow selecting the same file again
       e.target.value = "";

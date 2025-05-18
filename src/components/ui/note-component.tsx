@@ -158,17 +158,11 @@ export default function NoteComponent({
     return null;
   }, [note]);
 
-  const attachment = useMemo(() => {
-    if ("attachment" in note) {
-      // if attachment is an array, return the first one
-      if (Array.isArray(note.attachment)) {
-        return note.attachment?.[0];
-      }
-      return note.attachment as string;
-    } else if ("attachments" in note) {
-      return note.attachments?.[0] as string;
+  const attachments = useMemo(() => {
+    if ("attachments" in note) {
+      return note.attachments;
     }
-    return null;
+    return [];
   }, [note]);
 
   const entityKey = useMemo(() => {
@@ -371,7 +365,7 @@ export default function NoteComponent({
     if (contentRef.current) {
       requestAnimationFrame(() => {
         const height = contentRef.current?.scrollHeight || 999;
-        
+
         setShowExpandButton(height > 260);
       });
     }
@@ -469,44 +463,65 @@ export default function NoteComponent({
                 </div>
               )}
             </div>
-            {attachment &&
-              (isUserNote ? (
-                <div
-                  className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200 px-10"
-                  onClick={() =>
-                    selectImage({
-                      url: "url" in attachment ? attachment.url : attachment,
-                      alt: "Note attachment",
-                    })
-                  }
-                >
-                  <NoteImageContainer
-                    key={attachment.id}
-                    imageUrl={attachment.url}
-                    attachment={attachment}
-                  />
-                </div>
-              ) : (
-                !attachment.includes("heic") && (
-                  <div
-                    className="mt-2 cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200 px-10"
-                    onClick={() =>
-                      selectImage({
-                        url: "url" in attachment ? attachment.url : attachment,
-                        alt: "Note attachment",
-                      })
-                    }
-                  >
-                    <Image
-                      src={attachment}
-                      alt="Attachment"
-                      width={300}
-                      height={200}
-                      className=" rounded-lg hover:opacity-90 transition-opacity"
-                    />
-                  </div>
-                )
-              ))}
+            {attachments && attachments.length > 0 && (
+              <div className="mt-2 px-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+                {attachments.map((attachment, index) =>
+                  isUserNote ? (
+                    <div
+                      key={index}
+                      className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
+                      onClick={() =>
+                        selectImage({
+                          url:
+                            typeof attachment === "string"
+                              ? attachment
+                              : attachment.url,
+                          alt: "Note attachment",
+                        })
+                      }
+                    >
+                      <NoteImageContainer
+                        key={
+                          typeof attachment === "object" ? attachment.id : index
+                        }
+                        imageUrl={
+                          typeof attachment === "string"
+                            ? attachment
+                            : attachment.url
+                        }
+                        attachment={
+                          typeof attachment === "string"
+                            ? { id: `attachment-${index}`, url: attachment }
+                            : attachment
+                        }
+                      />
+                    </div>
+                  ) : (
+                    typeof attachment === "string" &&
+                    !attachment.includes("heic") && (
+                      <div
+                        key={index}
+                        className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
+                        onClick={() =>
+                          selectImage({
+                            url: attachment,
+                            alt: "Note attachment",
+                          })
+                        }
+                      >
+                        <Image
+                          src={attachment}
+                          alt="Attachment"
+                          width={200}
+                          height={150}
+                          className="rounded-lg hover:opacity-90 transition-opacity"
+                        />
+                      </div>
+                    )
+                  ),
+                )}
+              </div>
+            )}
           </div>
         </div>
         <div className="w-full flex items-center justify-between border-t border-border/60 py-2">

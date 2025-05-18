@@ -5,9 +5,10 @@ import { useCallback } from "react";
 
 interface ImageDropOverlayProps {
   isVisible: boolean;
-  onFileDrop: (file: File) => void;
+  onFileDrop: (files: File[]) => void;
   onHide: () => void;
   disabled?: boolean;
+  maxAttachments: number;
 }
 
 export function ImageDropOverlay({
@@ -15,6 +16,7 @@ export function ImageDropOverlay({
   onFileDrop,
   disabled = false,
   onHide,
+  maxAttachments,
 }: ImageDropOverlayProps) {
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -30,7 +32,7 @@ export function ImageDropOverlay({
       const imageFiles = files.filter(file => file.type.startsWith("image/"));
 
       if (imageFiles.length > 0) {
-        onFileDrop(imageFiles[0]);
+        onFileDrop(imageFiles);
       } else {
         onHide();
       }
@@ -57,7 +59,7 @@ export function ImageDropOverlay({
             <TriangleAlert className="h-10 w-10 text-primary/80" />
           </div>
           <p className="text-lg font-medium text-foreground">
-            Only one image is allowed
+            Only {maxAttachments} images are allowed
           </p>
         </>
       ) : (

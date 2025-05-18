@@ -298,6 +298,7 @@ export function useExtension(): UseExtension {
       setIsLoading(true);
       setError(null);
 
+      debugger;
       try {
         Logger.info("Sending note from useExtension", params);
         // Validate parameters
@@ -325,6 +326,7 @@ export function useExtension(): UseExtension {
 
         // Send message to extension
         Logger.info("Sending message to extension", message);
+
         const sendMessageResponse =
           await sendExtensionMessage<CreatePostResponse>(message, {
             showDialog: true,
@@ -483,7 +485,6 @@ export function useExtension(): UseExtension {
           showDialog: false,
         },
       );
-      ;
       if (response.success) {
         if (response.result) {
           return response.result;

@@ -207,7 +207,7 @@ export const getUrlComponents = (
     };
   }
 
-  let validUrl = url;
+  let validUrl = url.replace("http://", "https://");
   let mainComponentInUrl = "";
   validUrl = removeQueryParams(validUrl);
   console.log("validUrl", validUrl);
