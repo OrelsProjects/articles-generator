@@ -79,7 +79,7 @@ export async function POST(
   const preSelectedPostIds = parsedBody.data.preSelectedPostIds;
   const featureFlags = session.user.meta?.featureFlags || [];
   const notesToGenerate = userMetadata.notesToGenerateCount || 3;
-  let initialGeneratingModel: Model = "openrouter/auto";
+  let initialGeneratingModel: Model = "anthropic/claude-3.7-sonnet";
   let model: Model = "openrouter/auto";
 
   if (requestedModel && featureFlags.includes(FeatureFlag.advancedGPT)) {
