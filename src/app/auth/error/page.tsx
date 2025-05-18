@@ -1,14 +1,23 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { XCircle, ArrowLeft } from "lucide-react";
 import { EventTracker } from "@/eventTracker";
+import { useSession } from "next-auth/react";
+import { rootPath } from "@/types/navbar";
 
 export default function AuthErrorPage() {
+  const { data: session } = useSession();
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
@@ -33,6 +42,10 @@ export default function AuthErrorPage() {
     }
   };
 
+  if (session) {
+    redirect(rootPath);
+  }
+
   return (
     <div className="flex min-h-screen flex-col justify-center py-12 sm:px-6 lg:px-8 bg-background">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -54,16 +67,14 @@ export default function AuthErrorPage() {
             <p className="font-medium text-destructive mb-4">
               {error ? `Error: ${error}` : "Authentication Error"}
             </p>
-            <p className="text-foreground">
-              {getErrorMessage()}
-            </p>
+            <p className="text-foreground">{getErrorMessage()}</p>
           </CardContent>
           <CardFooter>
-            <Button
-              className="w-full"
-              asChild
-            >
-              <Link href="/login" className="flex items-center justify-center gap-2">
+            <Button className="w-full" asChild>
+              <Link
+                href="/login"
+                className="flex items-center justify-center gap-2"
+              >
                 <ArrowLeft className="h-4 w-4" />
                 Return to Sign In
               </Link>
@@ -73,4 +84,4 @@ export default function AuthErrorPage() {
       </div>
     </div>
   );
-} 
+}
