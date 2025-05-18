@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { NoteDraft } from "@/types/note";
 import { cn } from "@/lib/utils";
 import { Logger } from "@/logger";
+import useMediaQuery from "@/lib/hooks/useMediaQuery";
 
 interface SaveDropdownProps {
   selectedNote?: NoteDraft | null;
@@ -37,6 +38,7 @@ export function SaveDropdown({
   isInspiration = false,
 }: SaveDropdownProps) {
   const { getNextAvailableSchedule, loading: queueLoading } = useQueue();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [loading, setLoading] = useState(false);
 
   const nextAvailableSlotText = () => {
@@ -65,7 +67,6 @@ export function SaveDropdown({
       Logger.info("ADDING-SCHEDULE: handleAddToQueue", {
         options,
       });
-      ;
       const nextAvailableSlot = getNextAvailableSchedule(presetSchedule);
       const nextAvailableSlotNoPreset = getNextAvailableSchedule();
 
@@ -104,20 +105,20 @@ export function SaveDropdown({
     <div className="h-full flex">
       <Button
         variant="default"
-        className="px-3 !py-2 flex items-center gap-1 rounded-r-none"
+        className="px-3 !py-2 flex items-center gap-1  rounded-r-md md:rounded-r-none"
         disabled={disabled || loading || queueLoading}
         onClick={() => {
           handleAddToQueue();
         }}
       >
-        {nextAvailableSlotText()}
+        {isMobile ? "Save" : nextAvailableSlotText()}
       </Button>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="default"
-            className="px-3 border-l rounded-l-none text-foreground"
+            className="px-3 border-l rounded-l-none text-foreground hidden lg:flex"
             disabled={disabled || loading || queueLoading}
           >
             <ChevronDown className="h-4 w-4" />

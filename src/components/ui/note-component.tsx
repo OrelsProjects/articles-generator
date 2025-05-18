@@ -371,7 +371,7 @@ export default function NoteComponent({
     if (contentRef.current) {
       requestAnimationFrame(() => {
         const height = contentRef.current?.scrollHeight || 999;
-        debugger;
+        
         setShowExpandButton(height > 260);
       });
     }

@@ -148,7 +148,7 @@ export function GenerateNotesDialog({
         }}
       >
         <DialogTrigger asChild>
-          <Button
+          {/* <Button
             variant="neumorphic-primary"
             size="icon"
             className={cn(
@@ -156,7 +156,7 @@ export function GenerateNotesDialog({
             )}
           >
             <Pencil className="h-6 w-6" />
-          </Button>
+          </Button> */}
         </DialogTrigger>
         <DialogTrigger asChild>
           <TooltipButton

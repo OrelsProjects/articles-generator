@@ -409,7 +409,7 @@ export default function SettingsPage() {
 
         {/* Cancel Subscription Confirmation Dialog */}
         <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">
                 Cancel subscription

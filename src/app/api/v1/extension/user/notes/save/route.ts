@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
           create: item.note,
         });
       } catch (error: any) {
-        debugger;
+        
       }
 
       for (const attachment of item.attachments) {

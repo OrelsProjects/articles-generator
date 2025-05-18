@@ -334,7 +334,7 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
         onValueChange={handleUpdateActiveTab}
         className="w-full"
       >
-        <TabsList className="mb-4 border-b w-full rounded-none bg-transparent p-0 justify-start">
+        <TabsList className="mb-4 border-b w-full rounded-none bg-transparent p-0 justify-start overflow-x-auto overflow-y-hidden">
           <TabsTrigger
             value="scheduled"
             className={cn(
