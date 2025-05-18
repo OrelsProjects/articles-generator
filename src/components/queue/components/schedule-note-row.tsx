@@ -39,11 +39,6 @@ const hasImage = (note: NoteDraft) => {
   return note.attachments && note.attachments.length > 0;
 };
 
-const getImageUrl = (note: NoteDraft) => {
-  if (!hasImage(note)) return "";
-  return note.attachments![0].url;
-};
-
 export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
   note,
   onSelect,
@@ -98,15 +93,19 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
             {note.body || ""}
           </div>
         </div>
-        {hasImage(note) && (
-          <div className="h-10 w-10 rounded-md bg-secondary/40 ml-4 overflow-hidden flex-shrink-0">
-            <Image
-              src={getImageUrl(note)}
-              alt="Attachment"
-              width={40}
-              height={40}
-              className="object-cover w-full h-full"
-            />
+        {hasImage(note) && note.attachments && (
+          <div className="flex flex-row gap-2">
+            {note.attachments.map(attachment => (
+              <div className="h-10 w-10 rounded-md bg-secondary/40 ml-4 overflow-hidden flex-shrink-0">
+                <Image
+                  src={attachment.url}
+                  alt="Attachment"
+                  width={40}
+                  height={40}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            ))}
           </div>
         )}
         <div className="ml-2 text-muted-foreground">
@@ -233,7 +232,8 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
           <div
             className={cn(
               "text-primary mr-2 bg-primary/10 rounded-md p-1.5",
-              isPastScheduled && "text-red-500 bg-red-100 dark:bg-red-950/30 py-0.5",
+              isPastScheduled &&
+                "text-red-500 bg-red-100 dark:bg-red-950/30 py-0.5",
             )}
           >
             {isPastScheduled ? <p>missed</p> : <CalendarClock size={16} />}
@@ -251,15 +251,19 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
           {note.body || ""}
         </div>
 
-        {hasImage(note) && (
-          <div className="h-10 w-10 rounded-md bg-secondary/40 ml-4 overflow-hidden flex-shrink-0">
-            <Image
-              src={getImageUrl(note)}
-              alt="Attachment"
-              width={40}
-              height={40}
-              className="object-cover w-full h-full"
-            />
+        {hasImage(note) && note.attachments && (
+          <div className="flex flex-row gap-2">
+            {note.attachments.map(attachment => (
+              <div className="h-10 w-10 rounded-md bg-secondary/40 ml-4 overflow-hidden flex-shrink-0">
+                <Image
+                  src={attachment.url}
+                  alt="Attachment"
+                  width={40}
+                  height={40}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            ))}
           </div>
         )}
       </div>
