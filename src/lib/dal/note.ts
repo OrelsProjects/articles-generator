@@ -1,6 +1,7 @@
-import {prisma, prismaArticles } from "@/lib/prisma";
+import { maxNotesShceduledPerPlan } from "@/lib/plans-consts";
+import { prisma, prismaArticles } from "@/lib/prisma";
 import { NoteDraft } from "@/types/note";
-import { Note, S3Attachment } from "@prisma/client";
+import { Note, Plan, S3Attachment } from "@prisma/client";
 
 export type CreateNote = Omit<Note, "id" | "createdAt" | "updatedAt">;
 
@@ -153,4 +154,12 @@ export async function getNoteAttachments(
     where: { noteId },
   });
   return attachments;
+}
+
+export async function getMaxScheduledNotes(userId: string, plan: Plan) {
+  const userMetadata = await prisma.userMetadata.findUnique({
+    where: { userId },
+    select: { maxScheduledNotes: true },
+  });
+  return userMetadata?.maxScheduledNotes || maxNotesShceduledPerPlan[plan];
 }

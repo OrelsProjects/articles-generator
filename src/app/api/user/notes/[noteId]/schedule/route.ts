@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import {
+  getMaxScheduledNotes,
   getNoteById,
   getScheduledNotesNotSent,
   isOwnerOfNote,
 } from "@/lib/dal/note";
-import { maxNotesShceduledPerPlan } from "@/lib/plans-consts";
 import {
   createScheduleForNote,
   deleteScheduleForNote,
@@ -48,11 +48,20 @@ export async function POST(
     }
 
     const scheduledNotes = await getScheduledNotesNotSent(session.user.id);
-    if (
-      session.user.meta?.plan &&
-      scheduledNotes.length >=
-        maxNotesShceduledPerPlan[session.user.meta.plan as Plan]
-    ) {
+
+    if (!session.user.meta?.plan) {
+      return NextResponse.json(
+        { error: "You are not a paid user" },
+        { status: 402 },
+      );
+    }
+
+    const maxScheduledNotes = await getMaxScheduledNotes(
+      session.user.id,
+      session.user.meta.plan as Plan,
+    );
+
+    if (scheduledNotes.length >= maxScheduledNotes) {
       return NextResponse.json(
         { error: "You have reached the maximum number of scheduled notes" },
         { status: 429 },
@@ -71,6 +80,8 @@ export async function POST(
       { error: "Internal server error" },
       { status: 500 },
     );
+    // 68276228ad569a4d9a6a4ffd
+    // 6827710fe2a6de3e07c536fd
   }
 }
 
