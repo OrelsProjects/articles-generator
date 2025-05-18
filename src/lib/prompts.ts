@@ -997,7 +997,7 @@ export const generateNotesWritingStylePrompt = (
     {
       role: "user",
       content: `
-          ${publication.personalDescription ? `Here's a description of me (Very important): ${publication.personalDescription}` : ""}
+          ${publication.personalDescription ? `Here's a description of my writing style. I want you to use it and give it priority when you write notes: ${publication.personalDescription}` : ""}
           ${publication.preferredTopics.length > 0 ? `Here are my preferred topics. Use them to generate notes about me: ${publication.preferredTopics.join(", ")}` : ""}
 
           Here are the notes I want you to improve:
