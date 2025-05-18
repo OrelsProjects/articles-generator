@@ -253,7 +253,7 @@ export default function FeatureSection() {
           <FeatureSectionCard
             src="/landing/features/notes-editor-doggo.png"
             title="Use WriteStack's AI to outline and write <span class='highlight-feature-text'>100% of your note</span>"
-            description="Generate notes that are tailored exactly to your audience with WriteStack's AI that's trained on millions of notes and post them instantly from WriteStack."
+            description="Generate notes that are tailored exactly to your audience with WriteStack's AI that is created specifically for you."
             direction="rtl"
           />
           <FeatureSectionCard
@@ -269,12 +269,12 @@ export default function FeatureSection() {
             direction="rtl"
             sideViewImage
           />
-          <FeatureSectionCard
+          {/* <FeatureSectionCard
             src="/landing/features/advanced-filtering.png"
             title="Run your research on <span class='highlight-feature-text'>millions of notes</span>"
             description="Use advanced filtering to research through millions of updating notes and stay update-to-date with the latest trends."
             direction="ltr"
-          />
+          /> */}
         </div>
       </motion.div>
     </motion.section>

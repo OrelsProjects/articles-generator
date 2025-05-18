@@ -20,7 +20,7 @@ const features = [
   {
     title: "Generate Better Newsletter Ideas, Faster",
     description:
-      "Never stare at a blank page again. Get unique ideas, customized titles and outlines suggestions <strong>based on millions of the best Substack newsletters in your niche</strong>. Perfect for writers with <strong>20+ published newsletters</strong>.",
+      "Never stare at a blank page again. Get unique ideas, customized titles and outlines suggestions <strong>based on your unique niche</strong>. Perfect for writers with <strong>20+ published newsletters</strong>.",
     icon: Brain,
     videoUrl:
       "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/generate-ideas.mp4",
