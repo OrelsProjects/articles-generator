@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
 import { Logger } from "@/logger";
+import { rootPath } from "@/types/navbar";
 
 export default function Error({
   error,
@@ -44,7 +45,7 @@ export default function Error({
           <Button variant="outline" size="lg" onClick={reset}>
             Try again
           </Button>
-          <Link href="/home">
+          <Link href={rootPath}>
             <Button size="lg">Back to Home</Button>
           </Link>
         </div>

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EventTracker } from "@/eventTracker";
 import { useSearchParams } from "next/navigation";
+import { rootPath } from "@/types/navbar";
 
 const emailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -34,7 +35,7 @@ export function EmailSignIn() {
       const result = await signIn("email", {
         email: values.email,
         redirect: true,
-        callbackUrl: redirect || "/home",
+        callbackUrl: redirect || rootPath,
       });
       
       if (result?.error) {

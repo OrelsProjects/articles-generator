@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 const featureFlagLabels: Record<FeatureFlag, string> = {
   advancedGPT: "Choose your LLM (Includes GPT-4.5)",
   articles: "Access to The Best Notes Templates",
-  advancedFiltering: "Advanced Notes Research Tools on 5m+ notes",
+  advancedFiltering: "Advanced Notes Research Tools",
   instantPost: "Easy one-click posting",
   populateNotes: "Automatic notes population",
   collaborativeNotes: "Collaborative note editing",

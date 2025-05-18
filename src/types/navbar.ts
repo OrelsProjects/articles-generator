@@ -9,10 +9,13 @@ import {
   Radar,
 } from "lucide-react";
 
+export const rootPath = "/queue";
+
 export const navItems: {
   name: string;
   mobileName: string;
   href: string;
+  toolTip?: string;
   newTab?: boolean;
   icon: React.ElementType;
   locationInMobile: "bottom" | "sidebar";
@@ -23,10 +26,11 @@ export const navItems: {
   {
     name: "Inspiration",
     mobileName: "Inspiration",
+    toolTip: "Inspiration - under construction",
     href: "/home",
     icon: Lightbulb,
     locationInMobile: "bottom",
-    disabled: false,
+    disabled: true,
   },
   {
     name: "Queue",

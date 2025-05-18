@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import Loading from "@/components/ui/loading";
+import { rootPath } from "@/types/navbar";
 
 export default function FreeSubscriptionProvider({
   children,
@@ -45,7 +46,7 @@ export default function FreeSubscriptionProvider({
           window.location.href = response.data.url;
           return;
         } else {
-          window.location.href = "/home";
+          window.location.href = rootPath;
         }
 
         // If no URL is returned (shouldn't happen with new implementation)

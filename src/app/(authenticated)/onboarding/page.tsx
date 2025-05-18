@@ -19,6 +19,7 @@ import usePayments from "@/lib/hooks/usePayments";
 import axiosInstance from "@/lib/axios-instance";
 import { toast } from "react-toastify";
 import { Logger } from "@/logger";
+import { rootPath } from "@/types/navbar";
 
 export default function OnboardingPage() {
   const router = useCustomRouter();
@@ -35,7 +36,7 @@ export default function OnboardingPage() {
 
   const handleNavigateNext = () => {
     if (user?.meta?.plan) {
-      router.push("/home", { paramsToRemove: ["plan", "interval"] });
+      router.push(rootPath, { paramsToRemove: ["plan", "interval"] });
     } else if (plan && interval) {
       setShowPaymentDialog(true);
     } else {

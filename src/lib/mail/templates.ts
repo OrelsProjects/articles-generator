@@ -98,6 +98,7 @@ export function baseEmailTemplate(content: string) {
   `;
 }
 
+// REMOVED 5m+ from the email <li>Access to 5m+ inspiration notes</li>
 export const generateWelcomeTemplateTrial = (name: string): EmailTemplate => ({
   body: baseEmailTemplate(`<!DOCTYPE html>
 <html>
@@ -119,7 +120,6 @@ export const generateWelcomeTemplateTrial = (name: string): EmailTemplate => ({
         <ul>
           <li>AI-powered notes outline and writing</li>
           <li>Easy notes scheduling</li>
-          <li>Access to 5m+ inspiration notes</li>
           <li>Notes AI enhancer</li>
           <li>Smart Substack-like post editor with style enhancements</li>
         </ul>
@@ -279,15 +279,23 @@ export function generatePublicationAnalysisCompleteEmail(userName?: string) {
   };
 }
 
-export function generatePaymentConfirmationEmail(options:   {
-  userName?: string,
-  planName?: string,
-  amount?: string | number,
-  paymentDate?: Date,
-  nextBillingDate?: Date,
-  invoiceNumber?: string,
+// REMOVED 5m+ from the email <li>Inspiration notes from 5m+ pool of notes</li>
+export function generatePaymentConfirmationEmail(options: {
+  userName?: string;
+  planName?: string;
+  amount?: string | number;
+  paymentDate?: Date;
+  nextBillingDate?: Date;
+  invoiceNumber?: string;
 }) {
-  const { userName, planName, amount, paymentDate, nextBillingDate, invoiceNumber } = options;
+  const {
+    userName,
+    planName,
+    amount,
+    paymentDate,
+    nextBillingDate,
+    invoiceNumber,
+  } = options;
   const formattedPaymentDate = paymentDate
     ? paymentDate.toLocaleDateString("en-US", {
         year: "numeric",
@@ -322,7 +330,6 @@ export function generatePaymentConfirmationEmail(options:   {
       <li>Smart, powerful notes outline and writer</li>
       <li>Easy notes scheduling</li>
       <li>Publication analytics and insights</li>
-      <li>Inspiration notes from 5m+ pool of notes</li>
     </ul>
     
     <p>Need to review your subscription details or download your invoice? You can access your account settings at any time:</p>
@@ -382,6 +389,7 @@ export function generateFreeTrialEndingEmail(
   };
 }
 
+// REMOVED 5m+ from the email <li>Access to 5m+ inspiration notes</li>
 export function generateFreeSubscriptionEndedEmail(userName?: string) {
   const content = `
     <h2>Your WriteStack Free Trial Has Ended. Keep the Momentum Going!</h2>
@@ -392,7 +400,6 @@ export function generateFreeSubscriptionEndedEmail(userName?: string) {
     <ul>
       <li>AI-powered notes outline and writer</li>
       <li>Easy notes scheduling</li>
-      <li>Access to 5m+ inspiration notes</li>
       <li>Notes AI enhancer</li>
       <li>Smart Substack-like post editor with style enhancements</li>
     </ul>
@@ -522,7 +529,7 @@ export function generateSubscriptionCouponAppliedEmail(
 
 export function generateMagicLinkEmail(
   email: string,
-  url: string
+  url: string,
 ): { subject: string; body: string } {
   return {
     subject: "Your Magic Link to Sign In to WriteStack",

@@ -14,7 +14,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
 import {
-  featureFlagsPerPlan,
   maxNotesShceduledPerPlan,
 } from "@/lib/plans-consts";
 import { Plan } from "@prisma/client";
@@ -24,7 +23,7 @@ const basicFeatures = (credits: number, interval: "month" | "year") => [
   `${interval === "month" ? credits : credits * 12} WriteStack AI Credits/${interval}`,
   "Easy one-click posting",
   "Specialized AI-Powered Substack editor",
-  "Growing Notes Inspirations (5m+)",
+  "Growing Notes Inspirations",
 ];
 
 const hobbyistFeatures = [
@@ -39,7 +38,7 @@ const advancedFeatures = [
 ];
 
 const premiumFeatures = [
-  "<span class='text-primary'>Advanced Notes Research Tools on 5m+ notes</span>",
+  "<span class='text-primary'>Advanced Notes Research Tools</span>",
   "<span class='text-primary'>Can ask for a feature that will be implemented</span>",
   "<span class='text-primary'>Same price forever</span>",
 ];

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import usePayments from "@/lib/hooks/usePayments";
+import { rootPath } from "@/types/navbar";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -15,7 +16,7 @@ export default function PricingPage() {
   useEffect(() => {
     verifySubscription()
       .then(() => {
-        router.push("/home");
+        router.push(rootPath);
       })
       .catch(() => {
         // Do nothing
@@ -29,7 +30,7 @@ export default function PricingPage() {
           <div className="flex items-center justify-between bg-background/60 backdrop-blur-sm">
             <Logo />
             <Button variant="ghost" size="icon" className="w-fit px-2" asChild>
-              <Link href="/home">
+              <Link href={rootPath}>
                 Have an account?
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

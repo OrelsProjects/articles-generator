@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
 import { useSession } from "next-auth/react";
 import { Logger } from "@/logger";
+import { rootPath } from "@/types/navbar";
 
 const NotFound = () => {
   const { data: session } = useSession();
@@ -26,7 +27,7 @@ const NotFound = () => {
             moved.
           </p>
         </div>
-        <Link href="/home">
+        <Link href={rootPath}>
           <Button size="lg" className="mt-4">
             Back to Home
           </Button>

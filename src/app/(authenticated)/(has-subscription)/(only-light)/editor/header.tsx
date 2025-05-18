@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useSettings } from "@/lib/hooks/useSettings";
 import Link from "next/link";
 import DraftIndicator from "@/components/ui/text-editor/draft-indicator";
+import { rootPath } from "@/types/navbar";
 
 export function Header({
   className,
@@ -43,7 +44,7 @@ export function Header({
     >
       <div className="flex items-center justify-center col-span-1 gap-4 relative">
         <Button variant="ghost" size="icon" asChild className="bg-muted">
-          <Link href="/home" className="hover:cursor-pointer">
+          <Link href={rootPath} className="hover:cursor-pointer">
             <ChevronLeft className="hover:cursor-pointer" size={24} />
           </Link>
         </Button>

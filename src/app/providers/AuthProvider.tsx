@@ -22,6 +22,7 @@ import { useIdea } from "@/lib/hooks/useIdea";
 import { useSettings } from "@/lib/hooks/useSettings";
 import Loading from "@/components/ui/loading";
 import useAuth from "@/lib/hooks/useAuth";
+import { rootPath } from "@/types/navbar";
 
 export default function AuthProvider({
   children,
@@ -120,7 +121,7 @@ export default function AuthProvider({
           paramsToRemove: ["redirect"],
         });
       } else if (pathname.includes("login")) {
-        router.push("/home", { preserveQuery: true });
+        router.push(rootPath, { preserveQuery: true });
       }
     }
   };

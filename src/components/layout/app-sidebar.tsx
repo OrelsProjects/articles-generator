@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Logo from "@/components/ui/logo";
 import { Separator } from "@radix-ui/react-separator";
-import { navItems } from "@/types/navbar";
+import { navItems, rootPath } from "@/types/navbar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUi } from "@/lib/hooks/useUi";
 import { selectUi } from "@/lib/features/ui/uiSlice";
@@ -91,7 +91,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
     // if the pathname is an admin only and the user is not an admin, redirect to the home page
     if (!isPathnameAllowed && !isPathnameAdminOnly) {
-      router.push("/home");
+      router.push(rootPath);
     }
   }, [pathname, user?.meta?.isAdmin, validNavItems]);
 
@@ -190,12 +190,12 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                             {!sidebarCollapsed && <span>{item.name}</span>}
                           </Link>
                         </TooltipTrigger>
-                        {sidebarCollapsed && (
+                        {(sidebarCollapsed || item.toolTip) && (
                           <TooltipContent
                             side="right"
                             className="flex items-center gap-2"
                           >
-                            {item.name}{" "}
+                            {item.toolTip || item.name}{" "}
                             {item.newTab ? <ExternalLink size={12} /> : ""}
                           </TooltipContent>
                         )}
@@ -312,25 +312,35 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                 <ul className="space-y-2">
                   {sidebarNavItems.map(item =>
                     item.adminOnly && !user?.meta?.isAdmin ? null : (
-                      <li key={item.name}>
-                        <Link
-                          href={item.disabled ? "" : item.href}
-                          target={item.newTab ? "_blank" : "_self"}
-                          className={cn(
-                            "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                            isActive(item.href)
-                              ? "text-primary"
-                              : "text-foreground hover:bg-muted",
-                            item.disabled && "cursor-not-allowed opacity-50",
-                          )}
-                        >
-                          <item.icon size={20} />
-                          <span>{item.mobileName}</span>
-                          {item.newTab && (
-                            <ExternalLink size={12} className="ml-auto" />
-                          )}
-                        </Link>
-                      </li>
+                      <TooltipProvider key={item.name} delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <li>
+                              <Link
+                                href={item.disabled ? "" : item.href}
+                                target={item.newTab ? "_blank" : "_self"}
+                                className={cn(
+                                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                                  isActive(item.href)
+                                    ? "text-primary"
+                                    : "text-foreground hover:bg-muted",
+                                  item.disabled &&
+                                    "cursor-not-allowed opacity-50",
+                                )}
+                              >
+                                <item.icon size={20} />
+                                <span>{item.mobileName}</span>
+                                {item.newTab && (
+                                  <ExternalLink size={12} className="ml-auto" />
+                                )}
+                              </Link>
+                            </li>
+                          </TooltipTrigger>
+                          <TooltipContent side="right">
+                            {item.toolTip || item.name}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     ),
                   )}
                 </ul>

@@ -16,6 +16,7 @@ import { FlameIcon } from "@/components/ui/flame-icon";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, UsersIcon } from "lucide-react";
+import { rootPath } from "@/types/navbar";
 
 const freeTools = [
   {
@@ -141,7 +142,7 @@ export default function Header() {
             asChild
           >
             {status === "authenticated" ? (
-              <Link href="/home">
+              <Link href={rootPath}>
                 <div className="flex items-center gap-2">
                   <Avatar>
                     <AvatarImage
@@ -226,7 +227,7 @@ export default function Header() {
                     onClick={() => setOpen(false)}
                   >
                     {status === "authenticated" ? (
-                      <Link href="/home">
+                      <Link href={rootPath}>
                         <div className="flex items-center gap-2 justify-center">
                           <Avatar>
                             <AvatarImage
