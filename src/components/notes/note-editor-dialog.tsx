@@ -545,7 +545,7 @@ export function NotesEditorDialog() {
                   tooltipContent="Undo"
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 lg:hidden"
                   onClick={() => editor?.chain().focus().undo().run()}
                   disabled={!editor?.can().undo()}
                 >
@@ -555,7 +555,7 @@ export function NotesEditorDialog() {
                   tooltipContent="Redo"
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 lg:hidden"
                   onClick={() => editor?.chain().focus().redo().run()}
                   disabled={!editor?.can().redo()}
                 >
