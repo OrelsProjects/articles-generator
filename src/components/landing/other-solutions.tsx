@@ -75,7 +75,7 @@ export default function OtherSolutions() {
         <div className="landing-section-top">
           <h2>Stop Wasting Time & Energy on Solvable Problems</h2>
           <p>
-            You&apos;re posting notes, writing posts, and chasing trends—on top
+            You&apos;re posting notes, writing posts, and chasing trends, on top
             of everything else. And most tools out there?{" "}
             <strong>They&apos;re not made for Substack.</strong>
           </p>

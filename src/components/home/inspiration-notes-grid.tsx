@@ -26,6 +26,7 @@ import {
   Heart,
   ArrowUpNarrowWide,
   ArrowDownNarrowWide,
+  Construction,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspiration } from "@/lib/hooks/useInspiration";
@@ -438,88 +439,102 @@ export default function InspirationGrid() {
         ) : shouldShowError ? (
           <Error />
         ) : (
-          <ScrollArea className="mx-auto py-6">
-            {notes.length > 0 ? (
-              <div className="w-full">
-                <MasonryGrid cards={gridCards} />
-                {loadingMore && (
-                  <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {[...Array(3)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <Skeleton className="h-8 w-8 rounded-full" />
-                            <div className="space-y-1">
-                              <Skeleton className="h-4 w-24" />
-                              <Skeleton className="h-3 w-16" />
-                            </div>
-                          </div>
-                          <Skeleton className="h-6 w-6 rounded-full" />
-                        </div>
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-4 w-5/6" />
-                        <Skeleton className="h-4 w-2/3" />
-                        <div className="mt-2 flex items-center justify-between">
-                          <Skeleton className="h-6 w-16 rounded-md" />
-                          <div className="flex space-x-1">
-                            <Skeleton className="h-6 w-6 rounded-full" />
-                            <Skeleton className="h-6 w-6 rounded-full" />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {!loadingMore &&
-                  (hasMoreInspirationNotes && hasAdvancedFiltering ? (
-                    <div className="flex justify-center mt-8">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleLoadMore}
-                        disabled={loadingMore}
-                        className="text-primary hover:text-primary/80"
-                      >
-                        {loadingMore ? (
-                          <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 mr-2" />
-                        )}
-                        More
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex justify-center mt-8">
-                      <span className="text-muted-foreground">
-                        You&apos;ve reached the end of the inspiration notes.
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            ) : (
-              <div className="text-center py-20">
-                <h3 className="text-2xl font-medium mb-4 text-foreground">
-                  No notes found
-                </h3>
-                <p className="text-muted-foreground mb-8">
-                  {hasFilters
-                    ? "Try changing the filters to find more notes"
-                    : "Something probably went wrong. Try again."}
-                </p>
-                <Button
-                  variant="ghost"
-                  onClick={() => fetchInspirationNotes()}
-                  className="px-6 py-3 bg-primary text-foreground rounded-md hover:bg-primary/90 transition-colors"
-                >
-                  Try again
-                </Button>
-              </div>
-            )}
-          </ScrollArea>
+          // <ScrollArea className="mx-auto py-6">
+          //   {notes.length > 0 ? (
+          //     <div className="w-full">
+          //       <MasonryGrid cards={gridCards} />
+          //       {loadingMore && (
+          //         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          //           {[...Array(3)].map((_, i) => (
+          //             <div
+          //               key={i}
+          //               className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm"
+          //             >
+          //               <div className="flex items-center justify-between">
+          //                 <div className="flex items-center space-x-2">
+          //                   <Skeleton className="h-8 w-8 rounded-full" />
+          //                   <div className="space-y-1">
+          //                     <Skeleton className="h-4 w-24" />
+          //                     <Skeleton className="h-3 w-16" />
+          //                   </div>
+          //                 </div>
+          //                 <Skeleton className="h-6 w-6 rounded-full" />
+          //               </div>
+          //               <Skeleton className="h-4 w-full" />
+          //               <Skeleton className="h-4 w-3/4" />
+          //               <Skeleton className="h-4 w-5/6" />
+          //               <Skeleton className="h-4 w-2/3" />
+          //               <div className="mt-2 flex items-center justify-between">
+          //                 <Skeleton className="h-6 w-16 rounded-md" />
+          //                 <div className="flex space-x-1">
+          //                   <Skeleton className="h-6 w-6 rounded-full" />
+          //                   <Skeleton className="h-6 w-6 rounded-full" />
+          //                 </div>
+          //               </div>
+          //             </div>
+          //           ))}
+          //         </div>
+          //       )}
+          //       {!loadingMore &&
+          //         (hasMoreInspirationNotes && hasAdvancedFiltering ? (
+          //           <div className="flex justify-center mt-8">
+          //             <Button
+          //               variant="ghost"
+          //               size="sm"
+          //               onClick={handleLoadMore}
+          //               disabled={loadingMore}
+          //               className="text-primary hover:text-primary/80"
+          //             >
+          //               {loadingMore ? (
+          //                 <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+          //               ) : (
+          //                 <ChevronDown className="h-4 w-4 mr-2" />
+          //               )}
+          //               More
+          //             </Button>
+          //           </div>
+          //         ) : (
+          //           <div className="flex justify-center mt-8">
+          //             <span className="text-muted-foreground">
+          //               You&apos;ve reached the end of the inspiration notes.
+          //             </span>
+          //           </div>
+          //         ))}
+          //     </div>
+          //   ) : (
+          //     <div className="text-center py-20">
+          //       <h3 className="text-2xl font-medium mb-4 text-foreground">
+          //         No notes found
+          //       </h3>
+          //       <p className="text-muted-foreground mb-8">
+          //         {hasFilters
+          //           ? "Try changing the filters to find more notes"
+          //           : "Something probably went wrong. Try again."}
+          //       </p>
+          //       <Button
+          //         variant="ghost"
+          //         onClick={() => fetchInspirationNotes()}
+          //         className="px-6 py-3 bg-primary text-foreground rounded-md hover:bg-primary/90 transition-colors"
+          //       >
+          //         Try again
+          //       </Button>
+          //     </div>
+          //   )}
+          // </ScrollArea>
+          <div className="w-full text-center max-w-md p-8 rounded-xl border border-primary/20 shadow-sm bg-card mx-auto mt-10">
+            <div className="flex justify-center mb-4">
+              <Construction className="h-12 w-12 text-primary animate-bounce" />
+            </div>
+            <h2 className="text-2xl font-medium mb-3 text-foreground">
+              Under Construction
+            </h2>
+            <p className="text-muted-foreground mb-2">
+              We&apos;re building something wonderful for you!
+            </p>
+            <p className="text-muted-foreground text-sm">
+              Please check back soon to see the magic unfold ✨
+            </p>
+          </div>
         )}
       </div>
     </div>

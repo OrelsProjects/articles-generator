@@ -217,7 +217,7 @@ export function useInspiration() {
 
   useEffect(() => {
     if (inspirationNotes.length === 0) {
-      fetchInspirationNotes();
+      // fetchInspirationNotes();
     }
   }, []);
 
