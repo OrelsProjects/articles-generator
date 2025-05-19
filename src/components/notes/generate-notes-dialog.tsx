@@ -112,7 +112,7 @@ export function GenerateNotesDialog({
         });
       }
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error("Something went wrong (No credits were used)");
     }
   };
 

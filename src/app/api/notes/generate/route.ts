@@ -18,7 +18,6 @@ import { NoteDraft } from "@/types/note";
 import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
 import { getByline } from "@/lib/dal/byline";
-import { noteTemplates } from "@/app/api/notes/generate/_consts";
 import { Model429Error } from "@/types/errors/Model429Error";
 import { z } from "zod";
 import { getPublicationByIds } from "@/lib/dal/publication";

@@ -1139,13 +1139,6 @@ export const generateNotesWritingStylePrompt_v2 = ({
   const lenFloor = Math.max(30, Math.round(avgLen * 0.8));
   const lenCeil = Math.round(avgLen * 1.2);
 
-  const emojiRegex = /(\p{Extended_Pictographic}|\p{Emoji_Component})/gu;
-  const emojiHits = bodies.reduce(
-    (c, b) => c + (emojiRegex.test(b) ? 1 : 0),
-    0,
-  );
-  const emojiRatio = emojiHits / Math.max(1, bodies.length);
-
   // ───────────────────────── Messages ─────────────────────────────
   const systemMessage = `
 ${userMetadata.noteWritingStyle || publication.writingStyle || ""}
