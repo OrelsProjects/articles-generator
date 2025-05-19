@@ -364,6 +364,28 @@ const testimonials = [
     url: "https://substack.com/@techwithtam",
   },
   {
+    quote: `I found ${appName} right when my workflow was hitting a wall—too bogged down by my daily work, with too little time to post my content.
+    <br/><br/>
+    ${appName} instantly streamlined my process.
+    <br/><br/>
+    Scheduling and automation used to be a pain, but now I can queue up Substack Notes in advance and hit my audience at the perfect time, every day.
+    <br/><br/>
+    Since signing up, I’m posting more consistently, reaching more people, and spending way less time on manual busywork.
+    <br/><br/>
+    ${appName} has made my publishing life <strong>a lot easier</strong>.
+    <br/><br/>
+    Getting started with ${appName} was refreshingly simple.
+    <br/><br/>
+    Orel’s customer service is next-level—he was on top of every detail and even fixed bugs before I noticed them. The onboarding just worked.
+    <br/><br/>
+    I’m so glad I found ${appName}.`,
+    author: "Stefan G.",
+    image: "/testimonials/stefan-girard.webp",
+    title:
+      "Author of Frontier Notes for AI Operators (#90 Rising in Technology)",
+    url: "https://substack.com/@stfgirard",
+  },
+  {
     quote: `I love ${appName}.
     <br/><br/>
     I've been using it to get inspiration for my Substack Notes and it saves me so much time coming up with new ideas.
