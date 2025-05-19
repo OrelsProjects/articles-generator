@@ -74,7 +74,7 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    <AlertTriangle className="h-4 w-4 text-amber-500 hidden md:flex" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>
@@ -233,7 +233,8 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
           <div
             className={cn(
               "text-primary mr-2 bg-primary/10 rounded-md p-1.5",
-              isPastScheduled && "text-red-500 bg-red-100 dark:bg-red-950/30 py-0.5",
+              isPastScheduled &&
+                "text-red-500 bg-red-100 dark:bg-red-950/30 py-0.5",
             )}
           >
             {isPastScheduled ? <p>missed</p> : <CalendarClock size={16} />}
