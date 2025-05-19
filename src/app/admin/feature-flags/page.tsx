@@ -45,6 +45,7 @@ interface User {
   planEndsAt: Date | null;
   isFree: boolean;
   userMetadata: UserMetadata | null;
+  notesPromptVersion: number | null;
 }
 
 // All feature flags from the Prisma enum
@@ -60,6 +61,8 @@ export default function FeatureFlagsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});
+  const [updatingVersion, setUpdatingVersion] = useState<{ [key: string]: boolean }>({});
+  const [userVersions, setUserVersions] = useState<{ [key: string]: string }>({});
   const [sortConfig, setSortConfig] = useState<{
     field: SortField;
     order: SortOrder;
@@ -288,6 +291,52 @@ export default function FeatureFlagsPage() {
     return user.userMetadata.featureFlags.includes(flag);
   };
 
+  // Update notes version for a user
+  const updateNotesVersion = async (userId: string, version: string) => {
+    const updateKey = `${userId}-version`;
+    try {
+      setUpdatingVersion(prev => ({ ...prev, [updateKey]: true }));
+
+      await axiosInstance.patch("/api/admin/feature-flags", {
+        userId,
+        notesPromptVersion: parseInt(version) || null,
+      });
+
+      // Update local state
+      setUsers(prevUsers =>
+        prevUsers.map(user => {
+          if (user.id === userId) {
+            return {
+              ...user,
+              notesPromptVersion: parseInt(version) || null,
+            };
+          }
+          return user;
+        }),
+      );
+
+      toast.success(
+        `Notes version updated for ${
+          users.find(u => u.id === userId)?.name || userId
+        }`,
+      );
+    } catch (err) {
+      console.error("Error updating notes version:", err);
+      toast.error("Failed to update notes version");
+    } finally {
+      setUpdatingVersion(prev => ({ ...prev, [updateKey]: false }));
+    }
+  };
+
+  // Initialize user versions when users data is loaded
+  useEffect(() => {
+    const versions: { [key: string]: string } = {};
+    users.forEach(user => {
+      versions[user.id] = user.notesPromptVersion?.toString() || "";
+    });
+    setUserVersions(versions);
+  }, [users]);
+
   if (loading) {
     return (
       <div className="container mx-auto py-8 flex items-center justify-center">
@@ -370,6 +419,9 @@ export default function FeatureFlagsPage() {
                 </th>
                 <th className="p-3 text-center font-medium text-sm border-b border-border">
                   Admin
+                </th>
+                <th className="p-3 text-center font-medium text-sm border-b border-border">
+                  Notes Version
                 </th>
                 <th
                   className="p-3 text-left font-medium text-sm border-b border-border cursor-pointer hover:text-primary transition-colors"
@@ -457,6 +509,36 @@ export default function FeatureFlagsPage() {
                             }
                             disabled={isCurrentUser || loading}
                           />
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="p-3">
+                      <div className="flex items-center gap-2 justify-center">
+                        {updatingVersion[`${user.id}-version`] ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Input
+                              type="number"
+                              value={userVersions[user.id] || ""}
+                              onChange={(e) => {
+                                setUserVersions(prev => ({
+                                  ...prev,
+                                  [user.id]: e.target.value
+                                }));
+                              }}
+                              className="w-20 h-8"
+                              placeholder="Version"
+                            />
+                            <Button
+                              size="sm"
+                              onClick={() => updateNotesVersion(user.id, userVersions[user.id])}
+                              disabled={loading || userVersions[user.id] === user.notesPromptVersion?.toString()}
+                            >
+                              Save
+                            </Button>
+                          </>
                         )}
                       </div>
                     </td>

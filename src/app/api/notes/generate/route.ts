@@ -2,7 +2,8 @@ import { prisma, prismaArticles } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
 import {
-  generateNotesPrompt,
+  generateNotesPrompt_v1,
+  generateNotesPrompt_v2,
   generateNotesWritingStylePrompt,
 } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
@@ -60,6 +61,7 @@ export async function POST(
     },
     select: {
       notesToGenerateCount: true,
+      notesPromptVersion: true,
     },
   });
 
@@ -285,23 +287,28 @@ export async function POST(
     if (preSelectedPostIds && preSelectedPostIds.length > 0) {
       preSelectedArticles = await getPublicationByIds(preSelectedPostIds);
     }
-
-    const generateNotesMessages = generateNotesPrompt(
+    const promptBody = {
       userMetadata,
-      userMetadata.publication,
-      uniqueInspirations.map((note: NotesComments) => note.body),
-      notesFromAuthor.map(note => note.body),
-      userNotesNoDuplicates,
+      publication: userMetadata.publication,
+      inspirationNotes: uniqueInspirations.map(
+        (note: NotesComments) => note.body,
+      ),
+      userPastNotes: notesFromAuthor.map(note => note.body),
+      userNotes: userNotesNoDuplicates,
       notesUserDisliked,
       notesUserLiked,
-      {
+      options: {
         noteCount: count,
         maxLength: 280,
-        noteTemplates: useTopTypes ? noteTemplates : [],
+        // noteTemplates: useTopTypes ? noteTemplates : [],
         topic,
         preSelectedArticles,
       },
-    );
+    };
+    const generateNotesMessages =
+      userMetadata.notesPromptVersion === 1
+        ? generateNotesPrompt_v1(promptBody)
+        : generateNotesPrompt_v2(promptBody);
 
     const promptResponse = await runPrompt(
       generateNotesMessages,

@@ -793,37 +793,213 @@ export const generateImproveNoteTextPrompt = (
   };
 };
 
-export const generateNotesPrompt = (
-  userMetadata: UserMetadata,
-  publication: PublicationMetadata,
-  inspirationNotes: string[],
-  userPastNotes: string[],
-  userNotes: Note[],
-  notesUserDisliked: Note[],
-  notesUserLiked: Note[],
-  options: {
-    noteCount: number;
-    maxLength: number;
-    noteTemplates: { description: string }[];
-    topic?: string;
-    preSelectedArticles?: Post[];
-  } = {
+export const generateNotesPrompt_v2 = ({
+  userMetadata,
+  publication,
+  inspirationNotes,
+  userPastNotes,
+  userNotes,
+  notesUserDisliked,
+  notesUserLiked,
+  options = {
     noteCount: 3,
     maxLength: 280,
     noteTemplates: [],
     topic: "",
     preSelectedArticles: [],
   },
-) => {
+}: {
+  userMetadata: UserMetadata;
+  publication: PublicationMetadata;
+  inspirationNotes: string[];
+  userPastNotes: string[];
+  userNotes: Note[];
+  notesUserDisliked: Note[];
+  notesUserLiked: Note[];
+  options: {
+    noteCount?: number;
+    maxLength?: number;
+    noteTemplates?: { description: string }[];
+    topic?: string;
+    preSelectedArticles?: Post[];
+  };
+}) => {
+  // ───────────────────────── Defaults ──────────────────────────
+  const {
+    noteCount = 3,
+    maxLength = 280,
+    noteTemplates = [],
+    topic = "",
+    preSelectedArticles = [],
+  } = options;
+
+  // ────────────────────────── Stats ────────────────────────────
+  // Topic frequency map
+  const allTopics = userNotes.flatMap(n => n.topics);
+  const topicsCount = allTopics.reduce<Record<string, number>>((acc, t) => {
+    acc[t] = (acc[t] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  // Average note length of user history
+  const avgLen = userPastNotes.length
+    ? Math.round(
+        userPastNotes.reduce((s, n) => s + n.length, 0) / userPastNotes.length,
+      )
+    : 160;
+
+  // Dynamic length limits (±20 %, but never below 30 chars)
+  const lenFloor = Math.max(30, Math.round(avgLen * 0.8));
+  const lenCeil = Math.min(maxLength, Math.round(avgLen * 1.2));
+
+  // Emoji ratio detection (very rough — good enough for style hinting)
+  const emojiRegex = /\p{Emoji}/u;
+  const emojiHits = userPastNotes.reduce(
+    (c, n) => c + (emojiRegex.test(n) ? 1 : 0),
+    0,
+  );
+  const emojiRatio = emojiHits / Math.max(1, userPastNotes.length);
+
+  // Rare / under‑represented topics (lowest six counts)
+  const rareTopics = Object.entries(topicsCount)
+    .sort(([, a], [, b]) => a - b)
+    .slice(0, 6)
+    .map(([t]) => t);
+
+  // ────────────────────── Style Snapshot ───────────────────────
+  const styleSnapshot = `
+User style snapshot:
+- Avg length ${lenFloor}-${lenCeil} chars
+- Emoji ratio ${emojiRatio.toFixed(2)}
+- Preferred structures: ${
+    noteTemplates.length
+      ? noteTemplates.map(t => t.description).join(", ")
+      : "(none provided)"
+  }
+`.trim();
+
+  // ───────────────────── Topic / Article Mode ──────────────────
+  const lockToArticles = preSelectedArticles.length > 0;
+  const lockToTopic = !lockToArticles && !!topic;
+
+  // ─────────────────────── System Message ──────────────────────
+  const systemMessage = `
+${publication.generatedDescription || ""}
+${userMetadata.noteWritingStyle || publication.writingStyle || ""}
+${publication.highlights || ""}
+
+You are an elite Substack note ghostwriter.
+
+${styleSnapshot}
+
+Rules:
+1. Return exactly ${noteCount} notes.
+2. Length per note \= ${lenFloor}-${lenCeil} characters.
+3. NO hashtags, colons in hooks, or em dashes.
+4. If emojiRatio < 0.20, ensure at least one note has zero emojis.
+5. Use one preferred structure per note (see templates).
+6. Twist every borrowed idea ≥ 40 % so it’s fresh.
+7. Output JSON array only, following schema.
+$${
+    lockToArticles
+      ? "All notes MUST draw inspiration **only** from the provided articles." // locked to articles
+      : lockToTopic
+        ? `All notes MUST revolve around the topic **${topic}**.` // locked to single topic
+        : ""
+  }
+
+Favor these under‑used topics for freshness: ${rareTopics.join(", ")}
+
+  The response **must** be an array of notes in the following JSON format, without additional text:
+  [
+    {
+      "body": "<Generated Note 1>",
+      "summary": "<Generated Summary of note>",
+      "topics": ["<Generated Topic 1>", "<Generated Topic 2>", "<Generated Topic 3>"],
+      "inspiration": "<Inspiration to the note>",
+    },
+  ]
+
+Templates:
+${noteTemplates.map(t => `• ${t.description}`).join("\n")}
+`.trim();
+
+  // ──────────────────────── User Message ───────────────────────
+  const userMessage = `
+$${
+    lockToArticles
+      ? `Articles:\n${preSelectedArticles.map(a => `• ${a.bodyText}`).join("\n")}`
+      : ""
+  }
+
+Preferred topics: ${userMetadata.noteTopics || publication.preferredTopics}
+
+Previously written notes:\n${userPastNotes
+    .map((n, i) => `(${i + 1}) ${n}`)
+    .join("\n")}
+
+Inspiration notes:\n${inspirationNotes
+    .map((n, i) => `(${i + 1}) ${n}`)
+    .join("\n")}
+
+Notes I liked:\n${notesUserLiked
+    .map((n, i) => `(${i + 1}) ${n.body}`)
+    .join("\n")}
+
+Notes I disliked:\n${notesUserDisliked
+    .map((n, i) => `(${i + 1}) ${n.body}`)
+    .join("\n")}
+
+Topic counts: ${JSON.stringify(topicsCount)}
+`.trim();
+
+  // ─────────────────────────── Return ──────────────────────────
+  return [
+    { role: "system", content: systemMessage },
+    { role: "user", content: userMessage },
+  ];
+};
+
+export const generateNotesPrompt_v1 = ({
+  userMetadata,
+  publication,
+  inspirationNotes,
+  userPastNotes,
+  userNotes,
+  notesUserDisliked,
+  notesUserLiked,
+  options = {
+    noteCount: 3,
+    maxLength: 280,
+    noteTemplates: [],
+    topic: "",
+    preSelectedArticles: [],
+  },
+}: {
+  userMetadata: UserMetadata;
+  publication: PublicationMetadata;
+  inspirationNotes: string[];
+  userPastNotes: string[];
+  userNotes: Note[];
+  notesUserDisliked: Note[];
+  notesUserLiked: Note[];
+  options: {
+    noteCount?: number;
+    maxLength?: number;
+    noteTemplates?: { description: string }[];
+    topic?: string;
+    preSelectedArticles?: Post[];
+  };
+}) => {
   const allTopics = [...userNotes.map(note => note.topics).flat()];
-  const { noteCount, maxLength, noteTemplates, topic } = options;
+  const { noteCount, maxLength, noteTemplates, topic, preSelectedArticles } = options;
   // Topics count, json of topic to count
   const topicsCount = allTopics.reduce((acc: Record<string, number>, topic) => {
     acc[topic] = (acc[topic] || 0) + 1;
     return acc;
   }, {});
 
-  const hasPreselectedArticles = options.preSelectedArticles?.length || 0 > 0;
+  const hasPreselectedArticles = preSelectedArticles?.length || 0 > 0;
   const shouldUseTopic = hasPreselectedArticles ? false : true;
 
   const likedTopicsCount = notesUserLiked
@@ -871,7 +1047,7 @@ export const generateNotesPrompt = (
     The notes must be different from the user's previously written notes.
     Each note should have a great hook, that will entice the user to read it from the get-go.
     ${
-      noteTemplates.length > 0
+      noteTemplates && noteTemplates.length > 0
         ? `
     Use the notes that are most relevant to your description and writing style.
     Templates: ${noteTemplates.map(template => `(${template.description})`).join("\\n")}`
