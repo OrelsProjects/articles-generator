@@ -1,8 +1,6 @@
 "use client";
 
-import {
-  Dialog,
-} from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import useMediaQuery from "@/lib/hooks/useMediaQuery";
 import { useNotes } from "@/lib/hooks/useNotes";
@@ -53,7 +51,7 @@ export default function QueueDiscrepancyProvider() {
       return;
     }
     if (schedulesDiscrepancies.length > 0) {
-      // setShowDiscrepancyBar(true);
+      setShowDiscrepancyBar(true);
       Logger.info("SCHEDULE DISCREPANCIES FOR USER", {
         schedulesDiscrepancies,
         user,
@@ -197,13 +195,12 @@ export default function QueueDiscrepancyProvider() {
     setIsCheckingDiscrepancies(false);
 
     // Log the results
-    ;
     if (newDiscrepancies.length > 0) {
       Logger.info(`Found ${newDiscrepancies.length} schedule discrepancies`, {
         discrepancies: newDiscrepancies,
       });
-      // setShowDiscrepancyBar(true);
-      // setShowDialog(true);
+      setShowDiscrepancyBar(true);
+      setShowDialog(true);
     } else {
       Logger.info("No schedule discrepancies found");
     }
@@ -376,7 +373,7 @@ export default function QueueDiscrepancyProvider() {
       {/* Render the discrepancy bar above the dialog when both should be visible */}
       {showDiscrepancyBar && (
         <div
-          className="fixed top-0 left-0 right-0 bg-amber-300 dark:bg-amber-600 text-black dark:text-white z-50 shadow-md animate-in fade-in slide-in-from-top duration-300"
+          className="fixed top-0 left-0 right-0 bg-amber-300 dark:bg-amber-600 text-foreground z-50 shadow-md animate-in fade-in slide-in-from-top duration-300"
           style={{ backdropFilter: "blur(8px)" }}
         >
           <div className="container mx-auto py-2 px-4 flex items-center justify-between">
@@ -402,7 +399,9 @@ export default function QueueDiscrepancyProvider() {
                 disabled={loading || isCheckingDiscrepancies}
                 className="bg-black text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 text-xs"
               >
-                {loading ? "Fixing..." : "Fix Discrepancies"}
+                {loading
+                  ? "Fixing..." + schedulesDiscrepancies.length
+                  : "Fix Discrepancies " + schedulesDiscrepancies.length}
               </Button>
             </div>
           </div>
