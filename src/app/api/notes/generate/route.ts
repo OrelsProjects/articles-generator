@@ -33,6 +33,12 @@ const generateNotesSchema = z.object({
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
+const modelsRequireImprovement = [
+  "anthropic/claude-3.5-haiku",
+  "openai/gpt-4.1",
+  "x-ai/grok-3-beta",
+];
+
 export async function POST(
   req: NextRequest,
 ): Promise<NextResponse<AIUsageResponse<NoteDraft[]>>> {
@@ -215,7 +221,7 @@ export async function POST(
         where: {
           userId: session.user.id,
           isArchived: false,
-          status: "published",
+          OR: [{ status: "published" }, { status: "scheduled" }],
         },
         take: 15,
         orderBy: { updatedAt: "desc" },
@@ -229,7 +235,7 @@ export async function POST(
             },
           ],
         },
-        take: 15,
+        take: 25,
         orderBy: { updatedAt: "desc" },
       }),
       prisma.note.findMany({
@@ -294,6 +300,7 @@ export async function POST(
       inspirationNotes: uniqueInspirations.map(
         (note: NotesComments) => note.body,
       ),
+      // inspirationNotes: [],
       userPastNotes: notesFromAuthor.map(note => note.body),
       userNotes: userNotesNoDuplicates,
       notesUserDisliked,
@@ -330,7 +337,10 @@ export async function POST(
     }));
 
     let improvedNotes: { id: number; body: string }[] = [];
-    if (model !== initialGeneratingModel) {
+    const shouldImprove =
+      model !== initialGeneratingModel ||
+      modelsRequireImprovement.includes(model);
+    if (shouldImprove) {
       const improveNotesMessages = generateNotesWritingStylePrompt(
         userMetadata,
         userMetadata.publication,
@@ -338,7 +348,9 @@ export async function POST(
       );
       const improvedNotesResponse = await runPrompt(
         improveNotesMessages,
-        model,
+        model === "openai/gpt-4.5-preview"
+          ? "openai/gpt-4.5-preview"
+          : "anthropic/claude-3.7-sonnet",
         "N-GEN-" + session.user.name,
       );
       improvedNotes = await parseJson(improvedNotesResponse);

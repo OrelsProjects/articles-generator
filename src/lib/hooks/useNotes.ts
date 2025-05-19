@@ -93,7 +93,6 @@ export const useNotes = () => {
   const cancelRef = useRef<AbortController | null>(null);
   const cancelUpdateBody = useRef<NoteId[]>([]);
 
-
   const fetchNotes = async (limit?: number, loadMore = false) => {
     if (loadingNotesRef.current) return;
     try {
@@ -231,6 +230,7 @@ export const useNotes = () => {
           }
         }
         Logger.error("Error generating new note:", { error: String(error) });
+        throw error;
       } finally {
         dispatch(setLoadingNotesGenerate(false));
       }

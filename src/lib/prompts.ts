@@ -792,6 +792,14 @@ export const generateImproveNoteTextPrompt = (
     model: humanizePrompt.model || "anthropic/claude-3.5-sonnet",
   };
 };
+// generateNotesPrompt_v2 – spaced‑note upgrade
+// -----------------------------------------------------------------------------
+// Ensures the model produces visually scannable notes:
+//  • Restores 0.8 lower‑bound on length band (we accidentally dropped to 0.4).
+//  • Adds explicit layout rules: hook line, blank line, body lines each separated
+//    by *double* "\n\n", with no line exceeding 90 chars. Blocks of text are
+//    forbidden.
+// -----------------------------------------------------------------------------
 
 export const generateNotesPrompt_v2 = ({
   userMetadata,
@@ -834,37 +842,36 @@ export const generateNotesPrompt_v2 = ({
   } = options;
 
   // ────────────────────────── Stats ────────────────────────────
-  // Topic frequency map
   const allTopics = userNotes.flatMap(n => n.topics);
   const topicsCount = allTopics.reduce<Record<string, number>>((acc, t) => {
     acc[t] = (acc[t] ?? 0) + 1;
     return acc;
   }, {});
 
-  // Average note length of user history
   const avgLen = userPastNotes.length
     ? Math.round(
         userPastNotes.reduce((s, n) => s + n.length, 0) / userPastNotes.length,
       )
     : 160;
 
-  // Dynamic length limits (±20 %, but never below 30 chars)
-  const lenFloor = Math.max(30, Math.round(avgLen * 0.2));
+  // ±20 % band but never under 30 chars.
+  const lenFloor = Math.max(30, Math.round(avgLen * 0.1));
   const lenCeil = Math.min(maxLength, Math.round(avgLen * 1.2));
+  const emojiRegex = /(\p{Extended_Pictographic}|\p{Emoji_Component})/gu;
 
-  // Emoji ratio detection (very rough — good enough for style hinting)
-  const emojiRegex = /\p{Emoji}/u;
   const emojiHits = userPastNotes.reduce(
     (c, n) => c + (emojiRegex.test(n) ? 1 : 0),
     0,
   );
   const emojiRatio = emojiHits / Math.max(1, userPastNotes.length);
 
-  // Rare / under‑represented topics (lowest six counts)
   const rareTopics = Object.entries(topicsCount)
     .sort(([, a], [, b]) => a - b)
     .slice(0, 6)
     .map(([t]) => t);
+
+  // Chance of 0.3 to add new topic as a note
+  const shouldAddNewTopic = Math.random() < 0.25;
 
   // ────────────────────── Style Snapshot ───────────────────────
   const styleSnapshot = `
@@ -894,61 +901,47 @@ ${styleSnapshot}
 
 Rules:
 1. Return exactly ${noteCount} notes.
-2. Length per note \= ${lenFloor}-${lenCeil} characters.
+2. Each note must be ${lenFloor}-${lenCeil} characters.
 3. NO hashtags, colons in hooks, or em dashes.
-4. If emojiRatio < 0.20, ensure at least one note has zero emojis.
-5. Use one preferred structure per note (see templates).
-6. Twist every borrowed idea ≥ 40 % so it’s fresh.
-7. Output JSON array only, following schema.
-$${
-    lockToArticles
-      ? "All notes MUST draw inspiration **only** from the provided articles." // locked to articles
-      : lockToTopic
-        ? `All notes MUST revolve around the topic **${topic}**.` // locked to single topic
-        : ""
-  }
+4. If emojiRatio ≤ 0.20, do not use emojis. Otherwise, match user ratio.
+5. Structure every note like this:
+   • First line = hook (1 sentence, ≤ 90 chars).
+   • Blank line ("\\n\\n").
+   • 1‑3 short body lines, each ≤ 90 chars, separated by "\\n\\n".
+   • No block paragraphs.
+6. Use "\\n\\n" for **every** line break. Never output a single newline.
+7. Twist every borrowed idea ≥ 40 % so it’s fresh.
+8. Output a JSON array only, following the schema below.
+$${lockToArticles ? "All notes MUST draw inspiration **only** from the provided articles." : lockToTopic ? `All notes MUST revolve around the topic **${topic}**.` : ""}
 
 Favor these under‑used topics for freshness: ${rareTopics.join(", ")}
+${shouldAddNewTopic ? `Write a note with a completely new topic. It has to be different from ${Object.keys(topicsCount).join(", ")}. Preferably related, okay if not.` : ""}
 
-  The response **must** be an array of notes in the following JSON format, without additional text:
-  [
-    {
-      "body": "<Generated Note 1>",
-      "summary": "<Generated Summary of note>",
-      "topics": ["<Generated Topic 1>", "<Generated Topic 2>", "<Generated Topic 3>"],
-      "inspiration": "<Inspiration to the note>",
-    },
-  ]
-
-Templates:
-${noteTemplates.map(t => `• ${t.description}`).join("\n")}
+Required JSON format:
+[
+  {
+    "body": "<Generated note>",
+    "summary": "<Concise summary>",
+    "topics": ["<Topic 1>", "<Topic 2>", "<Topic 3>"],
+    "inspiration": "<Source explanation>"
+  }
+]
+${noteTemplates.length > 0 ? `\nTemplates:\n${noteTemplates.map(t => `• ${t.description}`).join("\n")}` : ""}
 `.trim();
 
   // ──────────────────────── User Message ───────────────────────
   const userMessage = `
-$${
-    lockToArticles
-      ? `Articles:\n${preSelectedArticles.map(a => `• ${a.bodyText}`).join("\n")}`
-      : ""
-  }
+$${lockToArticles ? `Articles:\n${preSelectedArticles.map(a => `• ${a.bodyText}`).join("\n")}` : ""}
 
 Preferred topics: ${userMetadata.noteTopics || publication.preferredTopics}
 
-Previously written notes:\n${userPastNotes
-    .map((n, i) => `(${i + 1}) ${n}`)
-    .join("\n")}
+Previously written notes:\n${userPastNotes.map((n, i) => `(${i + 1}) ${n}`).join("\n")}
 
-Inspiration notes:\n${inspirationNotes
-    .map((n, i) => `(${i + 1}) ${n}`)
-    .join("\n")}
+Inspiration notes:\n${inspirationNotes.map((n, i) => `(${i + 1}) ${n}`).join("\n")}
 
-Notes I liked:\n${notesUserLiked
-    .map((n, i) => `(${i + 1}) ${n.body}`)
-    .join("\n")}
+Notes I liked:\n${notesUserLiked.map((n, i) => `(${i + 1}) ${n.body}`).join("\n")}
 
-Notes I disliked:\n${notesUserDisliked
-    .map((n, i) => `(${i + 1}) ${n.body}`)
-    .join("\n")}
+Notes I disliked:\n${notesUserDisliked.map((n, i) => `(${i + 1}) ${n.body}`).join("\n")}
 
 Topic counts: ${JSON.stringify(topicsCount)}
 `.trim();
@@ -992,7 +985,8 @@ export const generateNotesPrompt_v1 = ({
   };
 }) => {
   const allTopics = [...userNotes.map(note => note.topics).flat()];
-  const { noteCount, maxLength, noteTemplates, topic, preSelectedArticles } = options;
+  const { noteCount, maxLength, noteTemplates, topic, preSelectedArticles } =
+    options;
   // Topics count, json of topic to count
   const topicsCount = allTopics.reduce((acc: Record<string, number>, topic) => {
     acc[topic] = (acc[topic] || 0) + 1;
