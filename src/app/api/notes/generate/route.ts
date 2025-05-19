@@ -4,12 +4,13 @@ import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
 import {
   generateNotesPrompt_v1,
   generateNotesPrompt_v2,
-  generateNotesWritingStylePrompt,
+  generateNotesWritingStylePrompt_v1,
+  generateNotesWritingStylePrompt_v2,
 } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { NotesComments, Post } from "@/../prisma/generated/articles";
+import { Post } from "@/../prisma/generated/articles";
 import { Model, runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
 import { FeatureFlag, Note, NoteStatus } from "@prisma/client";
@@ -257,7 +258,7 @@ export async function POST(
           photoUrl: true,
           body: true,
         },
-        take: 10,
+        take: 15,
       }),
       getByline(parseInt(authorId.toString())),
       searchSimilarNotes({
@@ -278,7 +279,7 @@ export async function POST(
           !notesUserDisliked.some(dislike => dislike.body === note.body) &&
           !notesUserLiked.some(like => like.body === note.body),
       )
-      .slice(0, 10);
+      .slice(0, 15);
 
     // remove all userNotes that are in uniqueInspirations and in like and dislike
     const userNotesNoDuplicates = userNotes.filter(
@@ -297,10 +298,10 @@ export async function POST(
     const promptBody = {
       userMetadata,
       publication: userMetadata.publication,
-      inspirationNotes: uniqueInspirations.map(
-        (note: NotesComments) => note.body,
-      ),
-      // inspirationNotes: [],
+      // inspirationNotes: uniqueInspirations.map(
+      //   (note: NotesComments) => note.body,
+      // ),
+      inspirationNotes: [],
       userPastNotes: notesFromAuthor.map(note => note.body),
       userNotes: userNotesNoDuplicates,
       notesUserDisliked,
@@ -341,11 +342,15 @@ export async function POST(
       model !== initialGeneratingModel ||
       modelsRequireImprovement.includes(model);
     if (shouldImprove) {
-      const improveNotesMessages = generateNotesWritingStylePrompt(
+      const improveNoteBody = {
         userMetadata,
-        userMetadata.publication,
-        newNotesWithIds,
-      );
+        publication: userMetadata.publication,
+        notesToImprove: newNotesWithIds,
+      };
+      const improveNotesMessages =
+        userMetadata.notesPromptVersion === 1
+          ? generateNotesWritingStylePrompt_v1(improveNoteBody)
+          : generateNotesWritingStylePrompt_v2(improveNoteBody);
       const improvedNotesResponse = await runPrompt(
         improveNotesMessages,
         model === "openai/gpt-4.5-preview"

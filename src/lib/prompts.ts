@@ -855,8 +855,8 @@ export const generateNotesPrompt_v2 = ({
     : 160;
 
   // ±20 % band but never under 30 chars.
-  const lenFloor = Math.max(30, Math.round(avgLen * 0.1));
-  const lenCeil = Math.min(maxLength, Math.round(avgLen * 1.2));
+  const lenFloor = Math.max(20, Math.round(avgLen * 0.2));
+  const lenCeil = Math.min(maxLength, Math.round(avgLen * 1.4));
   const emojiRegex = /(\p{Extended_Pictographic}|\p{Emoji_Component})/gu;
 
   const emojiHits = userPastNotes.reduce(
@@ -904,15 +904,14 @@ Rules:
 2. Each note must be ${lenFloor}-${lenCeil} characters.
 3. NO hashtags, colons in hooks, or em dashes.
 4. If emojiRatio ≤ 0.20, do not use emojis. Otherwise, match user ratio.
-5. Structure every note like this:
-   • First line = hook (1 sentence, ≤ 90 chars).
-   • Blank line ("\\n\\n").
-   • 1‑3 short body lines, each ≤ 90 chars, separated by "\\n\\n".
-   • No block paragraphs.
-6. Use "\\n\\n" for **every** line break. Never output a single newline.
-7. Twist every borrowed idea ≥ 40 % so it’s fresh.
-8. Output a JSON array only, following the schema below.
+5. Use "\\n\\n" for **every** line break. Never output a single newline.
+6. Twist every borrowed idea ≥ 40 % so it’s fresh.
+7. Output a JSON array only, following the schema below.
 $${lockToArticles ? "All notes MUST draw inspiration **only** from the provided articles." : lockToTopic ? `All notes MUST revolve around the topic **${topic}**.` : ""}
+
+⚠️ IMPORTANT – HARD LIMIT  
+Any note > ${lenCeil} chars (spaces *included*) is invalid.  
+Regenerate it until it fits.
 
 Favor these under‑used topics for freshness: ${rareTopics.join(", ")}
 ${shouldAddNewTopic ? `Write a note with a completely new topic. It has to be different from ${Object.keys(topicsCount).join(", ")}. Preferably related, okay if not.` : ""}
@@ -1124,11 +1123,78 @@ export const generateNotesPrompt_v1 = ({
   return messages;
 };
 
-export const generateNotesWritingStylePrompt = (
-  userMetadata: UserMetadata,
-  publication: PublicationMetadata,
-  notesToImprove: { id: number; body: string }[],
-) => {
+export const generateNotesWritingStylePrompt_v2 = ({
+  userMetadata,
+  publication,
+  notesToImprove,
+}: {
+  userMetadata: UserMetadata;
+  publication: PublicationMetadata;
+  notesToImprove: { id: number; body: string }[];
+}) => {
+  // ──────────────── Quick stats from existing notes ────────────────
+  const bodies = notesToImprove.map(n => n.body);
+  const avgLen =
+    bodies.reduce((s, b) => s + b.length, 0) / bodies.length || 120;
+  const lenFloor = Math.max(30, Math.round(avgLen * 0.8));
+  const lenCeil = Math.round(avgLen * 1.2);
+
+  const emojiRegex = /(\p{Extended_Pictographic}|\p{Emoji_Component})/gu;
+  const emojiHits = bodies.reduce(
+    (c, b) => c + (emojiRegex.test(b) ? 1 : 0),
+    0,
+  );
+  const emojiRatio = emojiHits / Math.max(1, bodies.length);
+
+  // ───────────────────────── Messages ─────────────────────────────
+  const systemMessage = `
+${userMetadata.noteWritingStyle || publication.writingStyle || ""}
+
+You are an elite Substack note doctor.
+
+⚙️  **Rewrite Rules (top priority)**
+1. Preserve the *core idea* and factual meaning. Do **not** add or remove claims.
+2. Sharpen the hook and improve readability using the writer's voice.
+3. Each improved note must be ${lenFloor}-${lenCeil} characters (spaces included).
+4. Avoid clichés, hashtags, semicolons, em‑dashes. Never use the word "embrace".
+5. If emoji ratio ≤ 0.20, remove emojis. Else keep ratio roughly the same.
+6. Use Markdown. Insert logical breaks with two consecutive newlines ("\\n\\n").
+7. Flesch‑Kincaid score ≥ 70 (aim 80+). Short sentences, simple words.
+8. Return **only** a JSON array in the exact schema below. No commentary.
+9. Any note longer than ${lenCeil} chars is invalid – regenerate it.
+
+Required schema & sample:
+[
+  {
+    "id": 99,
+    "body": "Stop borrowing permission.\\n\\nShip the damn thing today."
+  }
+]
+`.trim();
+
+  const userMessage = `
+${publication.personalDescription ? `Writer style details: ${publication.personalDescription}` : ""}
+${publication.preferredTopics.length ? `Preferred topics: ${publication.preferredTopics.join(", ")}` : ""}
+
+Improve these notes (use same IDs):
+${notesToImprove.map(n => `(${n.id}) ${n.body}`).join("\n")}
+`.trim();
+
+  return [
+    { role: "system", content: systemMessage },
+    { role: "user", content: userMessage },
+  ];
+};
+
+export const generateNotesWritingStylePrompt_v1 = ({
+  userMetadata,
+  publication,
+  notesToImprove,
+}: {
+  userMetadata: UserMetadata;
+  publication: PublicationMetadata;
+  notesToImprove: { id: number; body: string }[];
+}) => {
   const messages = [
     {
       role: "system",

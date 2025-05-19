@@ -111,7 +111,9 @@ export function GenerateNotesDialog({
           preSelectedPostIds: selectedArticles.map(article => article.id),
         });
       }
-    } catch (e: any) {}
+    } catch (e: any) {
+      toast.error(e.message);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
