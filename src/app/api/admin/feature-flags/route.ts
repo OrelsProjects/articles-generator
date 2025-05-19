@@ -8,9 +8,9 @@ import { FeatureFlag } from "@prisma/client";
 export async function GET() {
   const session = await getServerSession(authOptions);
 
-  // if (!session?.user.meta?.isAdmin) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
+  if (!session?.user.meta?.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     // Fetch users with their metadata (including feature flags)
@@ -97,9 +97,9 @@ export async function GET() {
 export async function PATCH(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  // if (!session?.user?.meta?.isAdmin) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
+  if (!session?.user?.meta?.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const { userId, featureFlag, enabled, adminData, notesPromptVersion } =
