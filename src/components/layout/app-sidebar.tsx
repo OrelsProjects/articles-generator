@@ -181,7 +181,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                             className={cn(
                               "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                               isActive(item.href)
-                                ? "text-primary"
+                                ? "text-primary hover:bg-primary/10"
                                 : "hover:bg-muted",
                               item.disabled && "cursor-not-allowed opacity-50",
                             )}

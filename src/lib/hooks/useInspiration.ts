@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import {
   setLoadingInspiration,
@@ -34,6 +34,7 @@ export function useInspiration() {
     currentPage,
     hasMore,
   } = useAppSelector(state => state.inspiration);
+  const [construction] = useState(false);
   const cancelRef = useRef<AbortController | null>(null);
 
   const loadingInspirationRef = useRef(false);
@@ -103,7 +104,9 @@ export function useInspiration() {
           error instanceof Error ? error.message : "An unknown error occurred",
         ),
       );
-      Logger.error("Error fetching inspiration notes:", { error: String(error) });
+      Logger.error("Error fetching inspiration notes:", {
+        error: String(error),
+      });
       dispatch(setLoadingInspiration(false));
       loadingInspirationRef.current = false;
     }
@@ -210,16 +213,15 @@ export function useInspiration() {
   );
 
   const loadMore = useCallback(async () => {
-    
     await fetchInspirationNotes({ page: currentPage + 1 });
     dispatch(setCurrentPage(currentPage + 1));
   }, [fetchInspirationNotes]);
 
   useEffect(() => {
-    if (inspirationNotes.length === 0) {
-      // fetchInspirationNotes();
+    if (inspirationNotes.length === 0 && !construction) {
+      fetchInspirationNotes();
     }
-  }, []);
+  }, [construction]);
 
   return {
     notes: inspirationNotes,
@@ -233,5 +235,6 @@ export function useInspiration() {
     hasMoreInspirationNotes,
     updateSort,
     hasMore,
+    construction,
   };
 }

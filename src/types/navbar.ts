@@ -26,11 +26,11 @@ export const navItems: {
   {
     name: "Inspiration",
     mobileName: "Inspiration",
-    toolTip: "Inspiration - under construction",
+    // toolTip: "Inspiration - under construction",
     href: "/home",
     icon: Lightbulb,
     locationInMobile: "bottom",
-    disabled: true,
+    disabled: false,
   },
   {
     name: "Queue",
