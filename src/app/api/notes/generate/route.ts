@@ -215,8 +215,9 @@ export async function POST(
         where: {
           userId: session.user.id,
           isArchived: false,
+          status: "published",
         },
-        take: 10,
+        take: 15,
         orderBy: { updatedAt: "desc" },
       }),
       prisma.note.findMany({
