@@ -382,7 +382,7 @@ const testimonials = [
     author: "Stefan G.",
     image: "/testimonials/stefan-girard.webp",
     title:
-      "Author of Frontier Notes for AI Operators (#90 Rising in Technology)",
+      "Author of Frontier Notes for AI Operators (<strong>#90 Rising in Technology</strong>)",
     url: "https://substack.com/@stfgirard",
   },
   {
