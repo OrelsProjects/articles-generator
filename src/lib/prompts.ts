@@ -849,7 +849,7 @@ export const generateNotesPrompt_v2 = ({
     : 160;
 
   // Dynamic length limits (±20 %, but never below 30 chars)
-  const lenFloor = Math.max(30, Math.round(avgLen * 0.8));
+  const lenFloor = Math.max(30, Math.round(avgLen * 0.2));
   const lenCeil = Math.min(maxLength, Math.round(avgLen * 1.2));
 
   // Emoji ratio detection (very rough — good enough for style hinting)
