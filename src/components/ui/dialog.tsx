@@ -18,8 +18,7 @@ const DialogOverlay = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> & {
     backgroundBlur?: boolean;
   }
->(({ className, backgroundBlur = false, ...props }, ref) => {
-  console.log("backgroundBlur", backgroundBlur);
+>(({ className, backgroundBlur, ...props }, ref) => {
   return (
     <DialogPrimitive.Overlay
       ref={ref}
@@ -48,7 +47,7 @@ const DialogContent = React.forwardRef<
       children,
       hideCloseButton,
       closeOnOutsideClick = true,
-      backgroundBlur = true,
+      backgroundBlur = false,
       ...props
     },
     ref,
