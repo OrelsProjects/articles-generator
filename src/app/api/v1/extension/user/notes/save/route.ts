@@ -13,6 +13,10 @@ export async function GET(request: NextRequest) {
   const apiKey = request.headers.get("X-API-Key");
 
   if (!apiKey || apiKey !== process.env.EXTENSION_API_KEY) {
+    loggerServer.error("Unauthorized", {
+      apiKey,
+      userId: "extension",
+    });
     return new Response("Unauthorized", { status: 401 });
   }
   try {
@@ -38,7 +42,11 @@ export async function GET(request: NextRequest) {
           create: item.note,
         });
       } catch (error: any) {
-        
+        loggerServer.error("Error saving user notes", {
+          error: error.message,
+          stack: error.stack,
+          userId: "extension",
+        });
       }
 
       for (const attachment of item.attachments) {
