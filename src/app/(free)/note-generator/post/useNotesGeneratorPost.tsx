@@ -2,7 +2,7 @@
 
 import axiosInstance from "@/lib/axios-instance";
 import { addNotes } from "@/lib/features/notes/notesSlice";
-import { useAppDispatch } from "@/lib/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { Logger } from "@/logger";
 import { Byline } from "@/types/article";
@@ -76,15 +76,22 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
     null,
   );
   const dispatch = useAppDispatch();
+  const { userNotes } = useAppSelector(state => state.notes);
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedByline, setSelectedByline] = useState<Byline | null>(null);
   const [notes, setNotes] = useState<NoteDraft[]>([]);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [nextGenerateDate, setNextGenerateDate] = useState<string | null>(null);
+  const [canGenerate, setCanGenerate] = useState(true);
   const generatingNote = useRef<boolean>(false);
   const fetchingTodaysNotes = useRef<boolean>(false);
   const loadingUserDataRef = useRef(false);
+
+  // if userNotes changes, update the notes useState
+  useEffect(() => {
+    setNotes(userNotes);
+  }, [userNotes]);
 
   const handleBylineSelect = async (byline: Byline) => {
     setSelectedByline(byline);
@@ -102,6 +109,7 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
         notes: NoteDraft[];
         nextGenerateDate: string | null;
         requiresLogin: boolean;
+        canGenerate: boolean;
       }>(`/api/generate-note-from-post`, {
         postUrl,
         authorId: selectedByline?.authorId,
@@ -109,8 +117,11 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
 
       if (response.data.success) {
         if (response.data.requiresLogin) {
-          setShowLoginDialog(true);
           setPostUrl(postUrl);
+          setShowLoginDialog(true);
+          if ("canGenerate" in response.data) {
+            setCanGenerate(response.data.canGenerate);
+          }
           setNotes(
             generateMockData(
               selectedByline?.name || "",
@@ -142,13 +153,16 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
       Logger.error("Error generating note:", {
         error,
       });
+      debugger;
       // if 402, set data to null
       if (error.response.status === 402 && error.response.data) {
         setNotes(error.response.data.todaysNotes);
-      }
-      const nextGenerateDate = error.response.data.nextGenerateDate;
-      if (nextGenerateDate) {
-        setNextGenerateDate(nextGenerateDate);
+        setCanGenerate(false);
+        const nextGenerateDate = error.response.data.nextGenerateDate;
+        if (nextGenerateDate) {
+          setNextGenerateDate(nextGenerateDate);
+        }
+        return;
       }
       throw error;
     } finally {
@@ -167,9 +181,9 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
 
   const getLoginRedirect = () => {
     if (selectedByline) {
-      return `notes-generator/post?author=${selectedByline.authorId}`;
+      return `note-generator/post?author=${selectedByline.authorId}`;
     } else {
-      return "notes-generator/post";
+      return "note-generator/post";
     }
   };
 
@@ -185,9 +199,12 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
         canGenerate: boolean;
         nextGenerateDate: string | null;
       }>(`/api/generate-note-from-post`);
+      debugger;
       if (response.data.success) {
         setNotes(response.data.data);
-        debugger;
+        if ("canGenerate" in response.data) {
+          setCanGenerate(response.data.canGenerate);
+        }
         dispatch(
           addNotes({
             items: response.data.data,
@@ -231,7 +248,6 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
     }
 
     loadingUserDataRef.current = true;
-    setIsLoading(true);
 
     try {
       const publicationRes = await axiosInstance.get<{
@@ -251,7 +267,6 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
     } catch (error) {
       // do nothing
     } finally {
-      setIsLoading(false);
       loadingUserDataRef.current = false;
     }
   };
@@ -285,5 +300,6 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
     generateNote,
     removeNote,
     nextGenerateDate,
+    canGenerate,
   };
 }

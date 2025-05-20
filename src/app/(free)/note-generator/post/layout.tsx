@@ -1,3 +1,4 @@
+import { NotesEditorDialog } from "@/components/notes/note-editor-dialog";
 import { Metadata } from "next";
 
 const OG_IMAGE =
@@ -27,5 +28,10 @@ export default function HeatmapLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      {children}
+      <NotesEditorDialog free/>
+    </>
+  );
 }

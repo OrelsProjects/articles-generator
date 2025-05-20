@@ -12,15 +12,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FlameIcon } from "@/components/ui/flame-icon";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { BookOpenIcon, Menu, UsersIcon } from "lucide-react";
+import {
+
+  BrainCircuit,
+  Flame,
+  Menu,
+  UsersIcon,
+} from "lucide-react";
 import { rootPath } from "@/types/navbar";
 
 const freeTools = [
   {
-    Icon: () => <FlameIcon size={24} className="text-primary" />,
+    Icon: () => <Flame size={24} className="text-primary" />,
     name: "Heatmap",
     href: "/heatmap",
     title: "Heatmap",
@@ -37,11 +42,11 @@ const freeTools = [
     adminOnly: false,
   },
   {
-    Icon: () => <BookOpenIcon size={24} className="text-primary" />,
-    name: "Note Generator",
+    Icon: () => <BrainCircuit size={24} className="text-primary" />,
+    name: "Article Teaser Generator",
     href: "/note-generator/post",
-    title: "Note Generator",
-    description: "Generate notes from your posts.",
+    title: "Article Teaser Generator",
+    description: "Generate a teaser for your article.",
     adminOnly: false,
   },
 ];
@@ -106,7 +111,7 @@ export default function Header() {
                 <DropdownMenuContent
                   side="bottom"
                   align="start"
-                  className="w-72 p-2"
+                  className="max-w-md p-2 grid grid-cols-2 gap-2"
                 >
                   {freeTools.map(tool =>
                     tool.adminOnly && !isAdmin ? null : (

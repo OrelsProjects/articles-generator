@@ -42,9 +42,9 @@ export function LoginDialog({
   const getRedirectURL = () => {
     if (!redirectPath) return undefined;
 
-    const baseRedirect = `?redirect=${redirectPath}`;
+    const baseRedirect = `/${redirectPath}`;
     return additionalRedirectParams
-      ? `${baseRedirect}${additionalRedirectParams}`
+      ? `/${baseRedirect}?${additionalRedirectParams}`
       : baseRedirect;
   };
 

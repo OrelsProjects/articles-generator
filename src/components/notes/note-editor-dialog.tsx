@@ -42,7 +42,7 @@ import { cn } from "@/lib/utils";
 import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
 import { Logger } from "@/logger";
 
-export function NotesEditorDialog() {
+export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const { user } = useAppSelector(selectAuth);
   const { selectedNote, thumbnail, handle } = useAppSelector(selectNotes);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -251,6 +251,7 @@ export function NotesEditorDialog() {
       closeOnSave: true,
     },
   ): Promise<string | null> => {
+    debugger;
     if (!selectedNote) return null;
     if (isPlagiarism()) {
       setShowAvoidPlagiarismDialog(true);
@@ -484,6 +485,7 @@ export function NotesEditorDialog() {
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           hideCloseButton
+          backgroundBlur={false}
           className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl max-md:max-w-screen"
         >
           <div
@@ -537,12 +539,14 @@ export function NotesEditorDialog() {
                 {uploadingFilesCount > 0 && (
                   <div className="max-md:max-h-[96px] max-md:overflow-x-auto max-md:max-w-[260px]">
                     <div className="flex flex-row md:flex-wrap gap-2">
-                      {Array.from({ length: uploadingFilesCount }).map((_, index) => (
-                        <Skeleton
-                          key={index}
-                          className="md:w-[180px] md:h-[96px] w-[108px] h-[60px] rounded-md flex-shrink-0"
-                        />
-                      ))}
+                      {Array.from({ length: uploadingFilesCount }).map(
+                        (_, index) => (
+                          <Skeleton
+                            key={index}
+                            className="md:w-[180px] md:h-[96px] w-[108px] h-[60px] rounded-md flex-shrink-0"
+                          />
+                        ),
+                      )}
                     </div>
                   </div>
                 )}
@@ -555,6 +559,7 @@ export function NotesEditorDialog() {
                 {
                   "justify-end": isInspiration,
                 },
+                { "justify-between": free },
               )}
             >
               <div
@@ -582,10 +587,12 @@ export function NotesEditorDialog() {
                 >
                   <Redo className="h-5 w-5 text-muted-foreground" />
                 </TooltipButton>
-                <AIToolsDropdown
-                  note={selectedNote}
-                  onImprovement={handleImprovement}
-                />
+                {!free && (
+                  <AIToolsDropdown
+                    note={selectedNote}
+                    onImprovement={handleImprovement}
+                  />
+                )}
                 <EmojiPopover onEmojiSelect={handleEmojiSelect} />
                 <TooltipButton
                   tooltipContent={
@@ -626,7 +633,7 @@ export function NotesEditorDialog() {
                 </TooltipButton>
               </div>
               <div className="flex gap-3">
-                {!isInspiration && (
+                {!isInspiration && !free && (
                   <InstantPostButton
                     onSave={() => handleSave({ closeOnSave: false })}
                     noteId={selectedNote?.id || null}
@@ -638,26 +645,29 @@ export function NotesEditorDialog() {
                     }}
                   />
                 )}
-                <SaveDropdown
-                  onSave={({ closeOnSave }) => handleSave({ closeOnSave })}
-                  onSchedule={() => {
-                    setScheduleDialogOpen(true);
-                  }}
-                  onAddToQueue={(date: Date) => {
-                    setScheduledDate(date);
-                    return handleSave({
-                      schedule: {
-                        to: date,
-                      },
-                    });
-                  }}
-                  presetSchedule={scheduledDate}
-                  disabled={
-                    loadingEditNote || loadingScheduleNote || isSendingNote
-                  }
-                  saving={loadingEditNote}
-                  isInspiration={isInspiration}
-                />
+                {
+                  <SaveDropdown
+                    onSave={({ closeOnSave }) => handleSave({ closeOnSave })}
+                    onSchedule={() => {
+                      setScheduleDialogOpen(true);
+                    }}
+                    onAddToQueue={(date: Date) => {
+                      setScheduledDate(date);
+                      return handleSave({
+                        schedule: {
+                          to: date,
+                        },
+                      });
+                    }}
+                    presetSchedule={scheduledDate}
+                    disabled={
+                      loadingEditNote || loadingScheduleNote || isSendingNote
+                    }
+                    saving={loadingEditNote}
+                    isInspiration={isInspiration}
+                    isFree={free}
+                  />
+                }
               </div>
             </div>
           </div>

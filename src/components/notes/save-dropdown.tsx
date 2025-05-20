@@ -26,6 +26,7 @@ interface SaveDropdownProps {
   confirmedSchedule?: boolean;
   saving?: boolean;
   isInspiration?: boolean;
+  isFree?: boolean;
 }
 
 export function SaveDropdown({
@@ -36,6 +37,7 @@ export function SaveDropdown({
   disabled = false,
   saving = false,
   isInspiration = false,
+  isFree = false,
 }: SaveDropdownProps) {
   const { getNextAvailableSchedule, loading: queueLoading } = useQueue();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -86,7 +88,7 @@ export function SaveDropdown({
     }
   };
 
-  if (isInspiration) {
+  if (isInspiration || isFree) {
     return (
       <Button
         variant="default"
@@ -96,7 +98,7 @@ export function SaveDropdown({
           onSave({ closeOnSave: false });
         }}
       >
-        Save to drafts
+        {saving ? "Saving..." : isFree ? "Save" : "Save to drafts"}
       </Button>
     );
   }

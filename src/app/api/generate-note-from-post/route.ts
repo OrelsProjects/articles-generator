@@ -22,75 +22,135 @@ const schema = z.object({
   authorId: z.number().optional(),
 });
 
-const MAX_NOTES_PER_DAY = 2;
+const MAX_NOTES_PER_WEEK = 1;
 
+const updateNextAvailableDate = async (userId: string) => {
+  const userUsage = await prisma.freeUsageNoteGeneration.findFirst({
+    where: {
+      userId,
+    },
+  });
+
+  const nextWeekDate = new Date();
+  const lastWeekDate = new Date();
+  lastWeekDate.setDate(lastWeekDate.getDate() - 7);
+  nextWeekDate.setDate(nextWeekDate.getDate() + 7);
+
+  if (!userUsage) {
+    await prisma.freeUsageNoteGeneration.create({
+      data: {
+        userId,
+        nextAvailableDate: nextWeekDate,
+        maxNotes: MAX_NOTES_PER_WEEK,
+        notesGenerated: 0,
+      },
+    });
+    return;
+  }
+
+  // If next available date is null or more than a week ago, update to next week
+  if (
+    !userUsage.nextAvailableDate ||
+    userUsage.nextAvailableDate < lastWeekDate
+  ) {
+    await prisma.freeUsageNoteGeneration.update({
+      where: {
+        id: userUsage.id,
+      },
+      data: {
+        nextAvailableDate: nextWeekDate,
+        notesGenerated: 0,
+        maxNotes: MAX_NOTES_PER_WEEK,
+      },
+    });
+  }
+};
+
+const useNoteGeneration = async (userId: string) => {
+  const userUsage = await prisma.freeUsageNoteGeneration.findFirst({
+    where: {
+      userId,
+    },
+  });
+  const nextAvailableDate = new Date();
+  nextAvailableDate.setDate(nextAvailableDate.getDate() + 7);
+  if (!userUsage) {
+    await prisma.freeUsageNoteGeneration.create({
+      data: {
+        userId,
+        nextAvailableDate,
+        maxNotes: MAX_NOTES_PER_WEEK,
+        notesGenerated: 1,
+      },
+    });
+  } else {
+    await prisma.freeUsageNoteGeneration.update({
+      where: {
+        id: userUsage.id,
+      },
+      data: {
+        notesGenerated: userUsage.notesGenerated + 1,
+      },
+    });
+  }
+};
+
+const undoUsage = async (userId: string) => {
+  const userUsage = await prisma.freeUsageNoteGeneration.findFirst({
+    where: {
+      userId,
+    },
+  });
+
+  if (!userUsage) {
+    return;
+  }
+
+  await prisma.freeUsageNoteGeneration.update({
+    where: { id: userUsage.id },
+    data: { notesGenerated: userUsage.notesGenerated - 1 },
+  });
+};
 const getNextGenerateDate = async (userId: string) => {
   const canGenerate = await canGenerateMoreNotes(userId);
   if (canGenerate) {
     return null;
   }
-  const today = new Date();
-  const startOfDay = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
-  const endOfDay = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
-  endOfDay.setHours(23, 59, 59, 999);
-
-  // Can generate 24 hours after the first generated note of today
-  const lastGeneratedNote = await prisma.note.findFirst({
+  const userUsage = await prisma.freeUsageNoteGeneration.findFirst({
     where: {
       userId,
-      type: "free-article-teaser",
-      createdAt: {
-        gte: startOfDay,
-        lte: endOfDay,
-      },
     },
-    orderBy: {
-      createdAt: "asc",
+    select: {
+      nextAvailableDate: true,
     },
   });
-  // Calculate 24 hours after the first generated note of today
-  if (!lastGeneratedNote) {
-    return startOfDay;
+
+  if (!userUsage) {
+    return null;
   }
-  const nextGenerateDate = new Date(lastGeneratedNote.createdAt);
-  nextGenerateDate.setHours(nextGenerateDate.getHours() + 24);
-  return nextGenerateDate;
+  return userUsage.nextAvailableDate;
 };
 
 const canGenerateMoreNotes = async (userId: string) => {
-  const today = new Date();
-  const startOfDay = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
-  const endOfDay = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
-  endOfDay.setHours(23, 59, 59, 999);
-
-  const freeNotes = await prisma.note.count({
+  const userUsage = await prisma.freeUsageNoteGeneration.findFirst({
     where: {
       userId,
-      type: "free-article-teaser",
-      createdAt: {
-        gte: startOfDay,
-        lte: endOfDay,
-      },
+    },
+    select: {
+      nextAvailableDate: true,
+      maxNotes: true,
+      notesGenerated: true,
     },
   });
 
-  return freeNotes < MAX_NOTES_PER_DAY;
+  if (!userUsage) {
+    return true;
+  }
+
+  if (userUsage.notesGenerated < userUsage.maxNotes) {
+    return true;
+  }
+  return false;
 };
 
 const getTodaysNotes = async (userId: string) => {
@@ -199,6 +259,7 @@ export async function POST(request: NextRequest) {
       }
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
     const canGenerate = await canGenerateMoreNotes(session.user.id);
     if (!canGenerate) {
       const todaysNotes = await getTodaysNotes(session.user.id);
@@ -219,6 +280,7 @@ export async function POST(request: NextRequest) {
         { status: 402 },
       );
     }
+    await useNoteGeneration(session.user.id);
 
     if (!session.user.meta?.tempAuthorId) {
       loggerServer.error("No temp author ID found", {
@@ -311,17 +373,21 @@ export async function POST(request: NextRequest) {
     }
 
     const nextGenerateDate = await getNextGenerateDate(session.user.id);
-
+    await updateNextAvailableDate(session.user.id);
     return NextResponse.json({
       success: true,
       notes: notesCreated,
       nextGenerateDate,
+      canGenerate,
     });
   } catch (error) {
     loggerServer.error("Error generating note from post", {
       error,
       userId: session?.user.id || "unknown",
     });
+    if (session?.user.id) {
+      await undoUsage(session.user.id);
+    }
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }

@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import NoteComponent from "@/components/ui/note-component";
 import { ToastStepper } from "@/components/ui/toast-stepper";
 import { CountdownBanner } from "@/components/ui/countdown-banner";
-import { AxiosError } from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import useAuth from "@/lib/hooks/useAuth";
+import { cn } from "@/lib/utils";
 
 const loadingStates = [
   {
@@ -20,11 +20,11 @@ const loadingStates = [
   },
   {
     text: "Getting your past notes...",
-    delay: 12000,
+    delay: 6000,
   },
   {
     text: "Generating note...",
-    delay: 10000,
+    delay: 6000,
   },
   {
     text: "Finalizing...",
@@ -34,6 +34,7 @@ const loadingStates = [
 
 export default function NoteGeneratorArticlePage() {
   const [postUrl, setPostUrl] = useState("");
+  const { signOut } = useAuth();
   const {
     isLoading,
     hasData,
@@ -49,7 +50,12 @@ export default function NoteGeneratorArticlePage() {
     selectedByline,
     removeNote,
     nextGenerateDate,
+    canGenerate,
   } = useNotesGeneratorPost();
+
+  console.log("canGenerate", canGenerate);
+  console.log("isLoading", isLoading);
+  console.log("nextGenerateDate", nextGenerateDate);
 
   return (
     <div className="flex flex-col gap-4">
@@ -64,7 +70,8 @@ export default function NoteGeneratorArticlePage() {
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
           Enter your Substack URL below to generate a teasing note for your
-          article.
+          article. <br />
+          (Up to 5 per week)
         </p>
       </motion.div>
 
@@ -94,9 +101,15 @@ export default function NoteGeneratorArticlePage() {
               value={postUrl}
               onChange={e => setPostUrl(e.target.value)}
               disabled={isLoading}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  generateNote(postUrl);
+                }
+              }}
             />
             <Button
-              disabled={isLoading || !!nextGenerateDate}
+              disabled={isLoading || !canGenerate}
               onClick={() => generateNote(postUrl)}
             >
               Generate
@@ -105,11 +118,12 @@ export default function NoteGeneratorArticlePage() {
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {nextGenerateDate && (
+        {!!nextGenerateDate && !canGenerate && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className={`${canGenerate && "hidden"}`}
           >
             <CountdownBanner nextGenerateDate={new Date(nextGenerateDate)} />
           </motion.div>
