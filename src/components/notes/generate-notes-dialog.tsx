@@ -12,9 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogTrigger } from "@radix-ui/react-dialog";
-import { ChevronDown, Pencil, Sparkles, X } from "lucide-react";
+import { ChevronDown, Sparkles, X } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
-import { cn } from "@/lib/utils";
 import { useNotes } from "@/lib/hooks/useNotes";
 import {
   AiModelsDropdown,
@@ -112,7 +111,7 @@ export function GenerateNotesDialog({
         });
       }
     } catch (e: any) {
-      toast.error("Something went wrong (No credits were used)");
+      toast.error(e.message);
     }
   };
 

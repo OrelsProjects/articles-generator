@@ -227,10 +227,11 @@ export const useNotes = () => {
               message: "You ran out of credits.",
               hideAfter: 5000,
             });
+            throw new Error("Not enough credits");
           }
         }
         Logger.error("Error generating new note:", { error: String(error) });
-        throw error;
+        throw new Error("Something went wrong, no credits were used");
       } finally {
         dispatch(setLoadingNotesGenerate(false));
       }
