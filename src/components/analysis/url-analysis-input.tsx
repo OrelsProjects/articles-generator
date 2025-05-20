@@ -62,6 +62,10 @@ interface UrlAnalysisInputProps {
   isInputDisabled?: boolean;
   placeholder?: string;
   onUrlChange?: (url: string) => void;
+  disabledButton?: boolean;
+  buttonText?: string;
+  headerClassName?: string;
+  headerText?: string;
 }
 
 export default function UrlAnalysisInput({
@@ -73,6 +77,10 @@ export default function UrlAnalysisInput({
   isInputDisabled = false,
   onUrlChange,
   placeholder = "Your Substack URL (e.g., yourname.substack.com)",
+  disabledButton = false,
+  buttonText = "Analyze Activity",
+  headerClassName = "",
+  headerText = "Substack Activity",
 }: UrlAnalysisInputProps) {
   const { data: session } = useSession();
   const [substackUrl, setSubstackUrl] = useState("");
@@ -89,7 +97,8 @@ export default function UrlAnalysisInput({
   );
 
   const isAdmin = useMemo(() => {
-    return session?.user.meta?.isAdmin;
+    // return session?.user.meta?.isAdmin;
+    return false;
   }, [session]);
 
   const inputDisabled = useMemo(() => {
@@ -104,7 +113,9 @@ export default function UrlAnalysisInput({
 
   const validatePublication = async (url: string) => {
     try {
-      const res = await axiosInstance.get(`/api/user/analyze/validate?q=${url}`);
+      const res = await axiosInstance.get(
+        `/api/user/analyze/validate?q=${url}`,
+      );
       return res.data;
     } catch (error) {
       console.error("Error validating publication: " + url, error);
@@ -140,9 +151,9 @@ export default function UrlAnalysisInput({
         setSubstackUrl(validUrl);
       }
 
-      const response = await axiosInstance.get(
-        `/api/publication/bylines?url=${validUrl || substackUrl}`,
-      );
+      const response = await axiosInstance.post(`/api/publication/bylines`, {
+        url: validUrl || substackUrl,
+      });
 
       setBylines(response.data || []);
       setOpenAuthorSelectionDialog(true);
@@ -163,7 +174,7 @@ export default function UrlAnalysisInput({
   };
 
   const ActivityHeader = () => (
-    <div className="flex items-center gap-4 justify-center">
+    <div className={`flex items-center gap-4 justify-center ${headerClassName}`}>
       <div className="h-14 w-14 rounded-full flex-shrink-0">
         <Avatar className="h-14 w-14 rounded-full">
           <AvatarImage src={authorImage || ""} alt="User" />
@@ -173,7 +184,7 @@ export default function UrlAnalysisInput({
         </Avatar>
       </div>
       <h3 className="text-xl font-medium">
-        {authorName || ""}&apos;s Substack Activity
+        {authorName || ""}&apos;s {headerText}
       </h3>
     </div>
   );
@@ -214,13 +225,15 @@ export default function UrlAnalysisInput({
                 getBylines();
               }
             }}
-            disabled={isLoading || loadingBylines || !substackUrl}
+            disabled={
+              isLoading || loadingBylines || !substackUrl || disabledButton
+            }
           >
             {loadingBylines
               ? "Looking up authors..."
               : isLoading
                 ? "Analyzing..."
-                : "Analyze Activity"}
+                : buttonText || "Analyze Activity"}
           </Button>
         </div>
       )}
