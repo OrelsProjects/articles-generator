@@ -30,6 +30,7 @@ import { MotionAlert } from "@/components/ui/motion-components";
 import { Byline } from "@/types/article";
 import { toast } from "react-toastify";
 import { AuthorSelectionDialog } from "@/components/onboarding/author-selection-dialog";
+import axiosInstance from "@/lib/axios-instance";
 
 const ERRORS = {
   INVALID_URL: {
@@ -121,10 +122,10 @@ export function AnalyzePublicationDialog({
       if (validUrl) {
         setUrl(validUrl);
       }
-      const response = await fetch(
-        `/api/publication/bylines?url=${validUrl || url}`,
-      );
-      const data = await response.json();
+      const response = await axiosInstance.post(`/api/publication/bylines`, {
+        url: validUrl || url,
+      });
+      const data = response.data;
       setBylines(data || []);
       setOpenAuthorSelectionDialog(true);
     } catch (error) {
@@ -145,7 +146,6 @@ export function AnalyzePublicationDialog({
 
   const handleSubmit = async (byline: Byline) => {
     if (loading) return;
-    ;
     if (!validateUrl(url)) {
       setError(ERRORS.INVALID_URL);
       return;

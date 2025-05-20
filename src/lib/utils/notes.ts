@@ -1,5 +1,3 @@
-import { NoteDraft } from "@/types/note";
-
 /**
  * Formatting includes:
  * * Replacing a single \n to \n\n

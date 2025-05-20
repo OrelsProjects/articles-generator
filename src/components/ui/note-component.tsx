@@ -34,6 +34,8 @@ import { Logger } from "@/logger";
 export type NoteProps = {
   note: Note | NoteDraft;
   onAuthorClick?: (handle: string) => void;
+  onNoteArchived?: () => void;
+  isFree?: boolean;
   options?: {
     allowAuthorClick?: boolean;
   };
@@ -50,6 +52,7 @@ const NotesActions = ({
   handleArchive,
   note,
   extraFeedbackText,
+  isFree,
 }: {
   isUserNote: boolean;
   loadingFeedback: string | null;
@@ -64,10 +67,15 @@ const NotesActions = ({
   ) => void;
   handleArchive: () => void;
   note: Note | NoteDraft;
+  isFree: boolean;
 }) =>
   isUserNote && (
     <div className={cn("w-full flex items-center justify-between")}>
-      <div className={cn("w-full flex items-center gap-0")}>
+      <div
+        className={cn("w-full flex items-center gap-0", {
+          hidden: isFree,
+        })}
+      >
         <TooltipButton
           tooltipContent="Like - this helps our AI understand what you like"
           disabled={loadingFeedback === "like" || loadingArchive}
@@ -112,12 +120,14 @@ const NotesActions = ({
       </TooltipButton>
 
       {/* Replace the Substack posting button with the new component */}
-      <InstantPostButton
-        noteId={note.id}
-        size="sm"
-        variant="ghost"
-        source="note_component"
-      />
+      {!isFree && (
+        <InstantPostButton
+          noteId={note.id}
+          size="sm"
+          variant="ghost"
+          source="note_component"
+        />
+      )}
     </div>
   );
 
@@ -127,6 +137,8 @@ export default function NoteComponent({
   options = {
     allowAuthorClick: true,
   },
+  isFree = false,
+  onNoteArchived,
 }: NoteProps) {
   const {
     selectImage,
@@ -136,7 +148,6 @@ export default function NoteComponent({
     selectedNote,
   } = useNotes();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [, setIsHovering] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [showExpandButton, setShowExpandButton] = useState(false);
   const [loadingFeedback, setLoadingFeedback] = useState<string | null>(null);
@@ -340,6 +351,9 @@ export default function NoteComponent({
     setLoadingArchive(true);
     try {
       await updateNoteStatus(note.id, "archived");
+      if (onNoteArchived) {
+        onNoteArchived();
+      }
     } catch (error) {
       toast.error("Failed to delete note");
     } finally {
@@ -373,10 +387,8 @@ export default function NoteComponent({
 
   return (
     <div
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
       className={cn(
-        "flex flex-col relative rounded-xl shadow-md border border-border/60 bg-card",
+        "h-full flex flex-col relative rounded-xl shadow-md border border-border/60 bg-card",
         {
           "border-primary/80": note.id === selectedNote?.id,
         },
@@ -425,17 +437,19 @@ export default function NoteComponent({
               <div
                 ref={contentRef}
                 className={cn(
-                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 cursor-pointer z-10 min-h-[180px] md:min-h-[200px]",
+                  "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 z-10 min-h-[180px] md:min-h-[200px]",
                   isExpanded ? "max-h-none" : "max-h-[260px]",
-                  isUserNote && "cursor-pointer",
+                  isUserNote && !isFree && "cursor-pointer",
                 )}
               >
                 {/* Transparent overlay for click handling */}
-                <div
-                  className="absolute inset-0 z-20 cursor-pointer"
-                  onClick={handleSelectNote}
-                  aria-hidden="true"
-                />
+                {!isFree && (
+                  <div
+                    className="absolute inset-0 z-20 cursor-pointer"
+                    onClick={handleSelectNote}
+                    aria-hidden="true"
+                  />
+                )}
 
                 <div
                   className="prose prose-sm max-w-none note-component-content relative z-10"
@@ -525,6 +539,7 @@ export default function NoteComponent({
           </div>
         </div>
         <div className="w-full flex items-center justify-between border-t border-border/60 py-2">
+          {/* {!isFree && ( */}
           <div className="w-full flex items-center justify-between gap-2">
             <Reactions />
             <div
@@ -543,6 +558,7 @@ export default function NoteComponent({
                 handleArchive={handleArchive}
                 note={note}
                 extraFeedbackText={extraFeedbackText}
+                isFree={isFree}
               />
               <Button
                 onClick={() =>
@@ -564,6 +580,7 @@ export default function NoteComponent({
               </Button>
             </div>
           </div>
+          {/* )} */}
         </div>
       </div>
     </div>

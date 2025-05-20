@@ -792,6 +792,7 @@ export const generateImproveNoteTextPrompt = (
     model: humanizePrompt.model || "anthropic/claude-3.5-sonnet",
   };
 };
+
 // generateNotesPrompt_v2 – spaced‑note upgrade
 // -----------------------------------------------------------------------------
 // Ensures the model produces visually scannable notes:
@@ -1485,4 +1486,95 @@ const subtitleImprovementPromptTemplates: {
     task: "generate a subtitle",
     prompt: `You are an expert writer and marketing guru. Generate a subtitle for the user's article that is engaging and relevant to the article's content.`,
   },
+};
+
+/**
+ * FREE LEADMAGNETS PROMPTS
+ */
+
+export const generateTeaserNotesPrompt = ({
+  userNotes,
+  articlesBody,
+  options = {
+    noteCount: 3,
+    maxLength: 280,
+  },
+}: {
+  userNotes: string[];
+  articlesBody: string[];
+  options: {
+    noteCount?: number;
+    maxLength?: number;
+  };
+}) => {
+  /* ─── Defaults ─── */
+  const { noteCount = 1, maxLength = 280 } = options;
+
+  /* ─── Stats ─── */
+  const avgLen = userNotes.length
+    ? Math.round(userNotes.reduce((s, n) => s + n.length, 0) / userNotes.length)
+    : 160;
+
+  // ±20 %, never < 30
+  const lenFloor = Math.max(30, Math.round(avgLen * 0.2));
+  const lenCeil = Math.min(maxLength, Math.round(avgLen * 1.4));
+
+  const emojiRegex = /(\p{Extended_Pictographic}|\p{Emoji_Component})/gu;
+  const emojiHits = userNotes.reduce(
+    (c, n) => c + (emojiRegex.test(n) ? 1 : 0),
+    0,
+  );
+  const emojiRatio = emojiHits / Math.max(1, userNotes.length);
+
+  /* ─── Style Snapshot ─── */
+  const styleSnapshot = `
+User style snapshot
+- Avg length ${lenFloor}-${lenCeil} chars
+- Emoji ratio ${emojiRatio.toFixed(2)}
+`.trim();
+
+  /* ─── System Message ─── */
+  const systemMessage = `
+You are an outlaw-level Substack note ghostwriter.
+
+${styleSnapshot}
+
+MISSION
+Craft ${noteCount} short notes that act as ruthless teasers, yanking readers in without spilling the guts of the articles.
+
+RULES
+1. Exactly ${noteCount} notes, no extras.
+2. ${lenFloor}-${lenCeil} characters each (spaces count).
+3. NO hashtags, colons in hooks, or em dashes.
+4. If emojiRatio ≤ 0.20 → zero emojis. Else match ratio, never exceed it.
+5. Use "\\n\\n" for EVERY line break. Never output a lone newline.
+6. Each note must:
+   • Open with a punch-in-the-face hook (question, bold claim, or wild stat).
+   • Reveal just enough to spark FOMO—never spoil the article.
+   • End with an implicit invitation to “see what’s inside” (no direct CTA text).
+7. Twist every borrowed idea ≥ 40 % so it’s fresh as roadkill on a July highway.
+8. HARD LIMIT: any note > ${lenCeil} chars is invalid. Regenerate until it fits.
+9. Output ONLY a JSON array in this schema:
+[
+  {
+    "body": "<Generated note>",
+    "summary": "<One-line what’s really inside (for the author only)>",
+    "topics": ["<Topic 1>", "<Topic 2>", "<Topic 3>"],
+    "inspiration": "<Short trace to article(s)>"
+  }
+]
+All content must pull inspo ONLY from the provided articles.
+`.trim();
+
+  /* ─── User Message ─── */
+  const userMessage = `
+Articles:
+${articlesBody.map((a, i) => `(${i + 1}) ${a}`).join("\n")}
+`.trim();
+
+  /* ─── Return chat prompt ─── */
+  return [
+    { role: "system", content: systemMessage },
+    { role: "user", content: userMessage },
+  ];
 };

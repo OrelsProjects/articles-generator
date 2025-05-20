@@ -15,7 +15,7 @@ import {
 import { FlameIcon } from "@/components/ui/flame-icon";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, UsersIcon } from "lucide-react";
+import { BookOpenIcon, Menu, UsersIcon } from "lucide-react";
 import { rootPath } from "@/types/navbar";
 
 const freeTools = [
@@ -34,6 +34,14 @@ const freeTools = [
     href: "/fans",
     title: "Find your fans",
     description: "Find out who are your top readers.",
+    adminOnly: false,
+  },
+  {
+    Icon: () => <BookOpenIcon size={24} className="text-primary" />,
+    name: "Note Generator",
+    href: "/note-generator/post",
+    title: "Note Generator",
+    description: "Generate notes from your posts.",
     adminOnly: false,
   },
 ];

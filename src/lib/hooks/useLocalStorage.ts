@@ -15,7 +15,8 @@ export type LocalStorageKey =
   | "has_extension"
   | "did_show_schedule_instructions"
   | "public_streak_data"
-  | "show_welcome_users_radar";
+  | "show_welcome_users_radar"
+  | "free_post_url";
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue

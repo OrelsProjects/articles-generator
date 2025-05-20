@@ -92,13 +92,13 @@ export default function UrlAnalysisInput({
   const [selectedByline, setSelectedByline] = useState<Byline | null>(null);
 
   const showHeader = useMemo(
-    () => !!authorImage && !!authorName && hasData,
-    [authorImage, authorName, hasData],
+    () => !!authorImage && !!authorName,
+    [authorImage, authorName],
   );
 
   const isAdmin = useMemo(() => {
-    // return session?.user.meta?.isAdmin;
-    return false;
+    return session?.user.meta?.isAdmin;
+    // return false;
   }, [session]);
 
   const inputDisabled = useMemo(() => {
@@ -174,7 +174,9 @@ export default function UrlAnalysisInput({
   };
 
   const ActivityHeader = () => (
-    <div className={`flex items-center gap-4 justify-center ${headerClassName}`}>
+    <div
+      className={`flex items-center gap-4 justify-center ${headerClassName}`}
+    >
       <div className="h-14 w-14 rounded-full flex-shrink-0">
         <Avatar className="h-14 w-14 rounded-full">
           <AvatarImage src={authorImage || ""} alt="User" />

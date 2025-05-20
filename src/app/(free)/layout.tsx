@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
 import { ArrowRight } from "lucide-react";
 import { appName } from "@/lib/consts";
-import { motion } from "framer-motion";
 import TempAuthorProvider from "@/app/providers/TempAuthorProvider";
 
 export default function FreeLayout({
@@ -44,7 +43,11 @@ export default function FreeLayout({
 
       {/* Main content */}
       <main className="flex-grow max-w-6xl mx-auto">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+            {children}
+          </div>
+        </ThemeProvider>
 
         <div className="bg-primary/5 rounded-lg p-8 border border-primary/40 text-center">
           <h2 className="text-2xl font-bold mb-4">

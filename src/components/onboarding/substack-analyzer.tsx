@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "react-toastify";
 import { AuthorSelectionDialog } from "@/components/onboarding/author-selection-dialog";
+import axiosInstance from "@/lib/axios-instance";
 
 export function SubstackAnalyzer() {
   const [url, setUrl] = useState("");
@@ -24,8 +25,11 @@ export function SubstackAnalyzer() {
 
     setIsAnalyzing(true);
     try {
-      const response = await fetch(`/api/publication/bylines?url=${url}`);
-      const data = await response.json();
+      const response = await axiosInstance.post(
+        `/api/publication/bylines`,
+        { url },
+      );
+      const data = response.data;
       setBylines(data || []);
 
       if (!data || data.length === 0) {

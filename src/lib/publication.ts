@@ -12,6 +12,7 @@ import { z } from "zod";
 import { Post } from "../../prisma/generated/articles";
 import loggerServer from "@/loggerServer";
 import { Byline as BylineDB } from "../../prisma/generated/articles";
+import { fetchAuthor } from "@/lib/utils/lambda";
 
 export async function getPublicationUpdatedUrl(url: string) {
   const publicationDataResponse = await axiosInstance.get(
@@ -124,6 +125,11 @@ export async function getBylinesByUrl(
             update: bylineDBUpdate,
             create: bylineDBCreate,
           });
+
+          await fetchAuthor({
+            authorId: byline.authorId.toString(),
+            publicationUrl: validUrl,
+          });
         }
       } catch (error: any) {
         loggerServer.error("Failed to create byline", {
@@ -174,10 +180,10 @@ export async function getWriter(
   const postBylines = await prismaArticles.postByline.findMany({
     where: {
       bylineId: byline.id,
-      },
-      include: {
-        post: true,
-      },
+    },
+    include: {
+      post: true,
+    },
   });
   loggerServer.timeEnd("Fetching notes from byline");
 

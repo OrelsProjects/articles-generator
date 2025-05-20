@@ -55,9 +55,15 @@ interface ApiResponse {
 
 export async function fetchAllNoteComments(
   authorId: number,
+  options: {
+    maxNotes?: number;
+    marginOfSafety?: number;
+  } = {
+    maxNotes: 99999,
+    marginOfSafety: 999,
+  },
 ): Promise<{ allNotes: NotesComments[]; newNotes: NotesComments[] }> {
-  const maxNotes = 99999;
-  const marginOfSafety = 999;
+  const { maxNotes = 99999, marginOfSafety = 999 } = options;
   let currentNoNewNotesCount = 0;
   let previousStreakCount = 0;
   let didStreakEnd = false; // If the new streak is the same as the previous streak, it means the user has skipped a day
@@ -71,6 +77,13 @@ export async function fetchAllNoteComments(
     },
   });
   let userNewNotes: SubstackNoteComment[] = [];
+
+  if (allUserNotes.length >= maxNotes) {
+    return {
+      allNotes: allUserNotes,
+      newNotes: [],
+    };
+  }
 
   const collectedComments: SubstackNoteComment[] = [];
   const initialUrl = `https://substack.com/api/v1/reader/feed/profile/${authorId}`;

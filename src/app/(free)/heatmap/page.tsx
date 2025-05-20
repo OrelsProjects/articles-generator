@@ -13,7 +13,6 @@ import ActivityHeatmap from "@/components/ui/activity-heatmap";
 import { Logger } from "@/logger";
 import { Streak } from "@/types/notes-stats";
 import { Button } from "@/components/ui/button";
-import { EventTracker } from "@/eventTracker";
 import { LoginDialog } from "@/components/auth/login-dialog";
 
 export default function AnalyzeSubstack() {
@@ -21,7 +20,6 @@ export default function AnalyzeSubstack() {
   const [authorName, setAuthorName] = useState<string | null>(null);
   const [authorImage, setAuthorImage] = useState<string | null>(null);
   const { signInWithGoogle } = useAuth();
-  const pathname = usePathname();
   const [selectedByline, setSelectedByline] = useState<Byline | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
@@ -196,7 +194,7 @@ export default function AnalyzeSubstack() {
   };
 
   return (
-    <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+    <>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -317,6 +315,6 @@ export default function AnalyzeSubstack() {
         description="To avoid abuse and keep this tool a unique experience, I'll need you to quickly sign up (Less than 10 seconds)."
         redirectPath={getLoginRedirect()}
       />
-    </div>
+    </>
   );
 }

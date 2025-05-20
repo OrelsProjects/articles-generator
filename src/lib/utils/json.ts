@@ -5,7 +5,7 @@ import { Model } from "@/lib/open-router";
 import { fixJsonPrompt } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 
-function fixJsonRepair<T>(json: string): T | null {
+export function fixJsonRepair<T>(json: string): T | null {
   try {
     const jsonFixed = jsonrepair(json);
     const jsonFixedObject = JSON.parse(jsonFixed) as T;

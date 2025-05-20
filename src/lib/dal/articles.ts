@@ -3,7 +3,6 @@ import { Article, ArticleWithBody } from "@/types/article";
 import { Post } from "../../../prisma/generated/articles";
 import { ArticleContent } from "@/lib/dal/milvus";
 import { getSubstackArticleData } from "@/lib/utils/article";
-import { scrapePosts } from "@/lib/utils/publication";
 
 export interface GetArticlesOptionsOrder {
   by: "reactionCount" | "publishedAt" | "audience";

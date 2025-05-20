@@ -166,6 +166,12 @@ export async function POST(
     );
 
     if (!canUseAIResult.result) {
+      loggerServer.error(
+        "User tried to generate notes but not enough credits",
+        {
+          userId: session.user.id,
+        },
+      );
       return NextResponse.json(
         { success: false, error: "Not enough credits" },
         { status: canUseAIResult.status },
@@ -421,22 +427,24 @@ export async function POST(
     }
     const code = error.code || "unknown";
     if (code === 429 || error instanceof Model429Error) {
+      loggerServer.error("Rate limit exceeded", {
+        error,
+        userId: session?.user.id,
+      });
       return NextResponse.json(
         { success: false, error: "Rate limit exceeded" },
         { status: 429 },
       );
     }
-    loggerServer.error("Failed to fetch notes", {
+    loggerServer.error("Failed to generate notes", {
       error,
       userId: session?.user.id,
     });
     return NextResponse.json(
-      { success: false, error: "Failed to fetch notes" },
+      { success: false, error: "Failed to generate notes" },
       { status: 500 },
     );
   } finally {
     console.timeEnd("generate notes");
-    await prisma.$disconnect();
-    await prismaArticles.$disconnect();
   }
 }

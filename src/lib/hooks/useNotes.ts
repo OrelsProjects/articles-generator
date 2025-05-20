@@ -252,6 +252,7 @@ export const useNotes = () => {
       status: NoteStatus | "archived",
       scheduledTo?: Date,
     ) => {
+      debugger;
       EventTracker.track("notes_update_note_status_" + status);
       const previousNote = userNotes.find(note => note.id === noteId);
       const previousStatus = previousNote?.status;
