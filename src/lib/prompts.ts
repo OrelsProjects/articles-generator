@@ -1156,13 +1156,13 @@ You are an elite Substack note doctor.
 8. Return **only** a JSON array in the exact schema below. No commentary.
 9. Any note longer than ${lenCeil} chars is invalid – regenerate it.
 
-Required schema & sample:
-[
-  {
-    "id": 99,
-    "body": "Stop borrowing permission.\\n\\nShip the damn thing today."
-  }
-]
+  The response **must** be an array of notes in the following JSON format, without additional text:
+  [
+    {
+      "id": "<note id>",
+      "body": "<improved note>"
+    },
+  ]
 `.trim();
 
   const userMessage = `
