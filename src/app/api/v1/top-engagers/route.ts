@@ -13,6 +13,8 @@ import { FreeUserEngagers } from "@prisma/client";
 import { fetchAllNoteComments } from "@/app/api/analyze-substack/utils";
 import { scrapePosts } from "@/lib/utils/publication";
 
+export const maxDuration = 300; // This function can run for a maximum of 5 minutes
+
 const schema = z.object({
   authorId: z.string().or(z.number()).optional(),
   url: z.string().optional(),

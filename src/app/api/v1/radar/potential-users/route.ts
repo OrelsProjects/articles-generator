@@ -360,20 +360,22 @@ export async function POST(req: NextRequest) {
         includeSelf,
         userId: session.user.id,
       });
-    } else if (process.env.NODE_ENV === "production") {
-      void (async () => {
-        try {
-          await promiseFetchNewPotentialUsers;
-        } catch (error) {
-          loggerServer.error(
-            "[RADAR-POTENTIAL-USERS] Error fetching new potential users",
-            {
-              userId: session.user.id,
-              error,
-            },
-          );
-        }
-      })();
+
+      if (process.env.NODE_ENV === "production") {
+        void (async () => {
+          try {
+            await promiseFetchNewPotentialUsers;
+          } catch (error) {
+            loggerServer.error(
+              "[RADAR-POTENTIAL-USERS] Error fetching new potential users",
+              {
+                userId: session.user.id,
+                error,
+              },
+            );
+          }
+        })();
+      }
     }
 
     if (bylinesClientOrdered.length === 0 && promiseFetchNewPotentialUsers) {
