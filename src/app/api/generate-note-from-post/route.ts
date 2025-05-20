@@ -22,7 +22,7 @@ const schema = z.object({
   authorId: z.number().optional(),
 });
 
-const MAX_NOTES_PER_WEEK = 1;
+const MAX_NOTES_PER_WEEK = 4;
 
 const updateNextAvailableDate = async (userId: string) => {
   const userUsage = await prisma.freeUsageNoteGeneration.findFirst({

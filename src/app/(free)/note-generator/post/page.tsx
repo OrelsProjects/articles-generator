@@ -71,7 +71,7 @@ export default function NoteGeneratorArticlePage() {
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
           Enter your Substack URL below to generate a teasing note for your
           article. <br />
-          (Up to 5 per week)
+          (Up to 4 per week)
         </p>
       </motion.div>
 
