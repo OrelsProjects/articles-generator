@@ -387,7 +387,17 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
 
         <TabsContent value="drafts">
           {draftNotes.length === 0 ? (
-            <div className="text-center py-8 text-zinc-500">No drafts yet</div>
+            <div className="flex flex-col items-center justify-center h-full gap-2">
+              <div className="text-center py-8 text-muted-foreground">
+                No drafts yet
+              </div>
+              <GenerateNotesDialog
+                onOpenChange={handleGenerateNotesOpenChange}
+                defaultOpen={generateParam ? true : false}
+                defaultSource={postsParam ? "posts" : "description"}
+              />
+              <CreateNoteButton />
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {draftNotes.map(note => (
@@ -399,7 +409,7 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
 
         <TabsContent value="published">
           {publishedNotes.length === 0 ? (
-            <div className="text-center py-8 text-zinc-500">
+            <div className="text-center py-8 text-muted-foreground">
               No published notes yet
             </div>
           ) : (
