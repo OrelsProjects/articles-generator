@@ -8,7 +8,10 @@ export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return new Response("Unauthorized", { status: 401 });
+    loggerServer.error("Unauthorized", {
+      userId: "unknown",
+    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
     const userMetadata = await prisma.userMetadata.findUnique({
@@ -18,7 +21,10 @@ export async function GET(request: NextRequest) {
     });
 
     if (!userMetadata) {
-      return new Response("User not found", { status: 404 });
+      loggerServer.error("User not found", {
+        userId: session.user.id,
+      });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const shouldUpdate = userMetadata.notesLastUpdatedAt
@@ -33,6 +39,9 @@ export async function GET(request: NextRequest) {
       stack: error.stack,
       userId: session?.user?.id,
     });
-    return new Response("Internal Server Error", { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
