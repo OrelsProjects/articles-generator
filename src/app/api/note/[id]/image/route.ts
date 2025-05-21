@@ -33,16 +33,29 @@ export async function POST(
   }
   try {
     const { id } = params;
+    loggerServer.info("Uploading image to note", {
+      userId: session?.user.id,
+      noteId: id,
+    });
 
     const note = await prisma.note.findUnique({
       where: { id },
     });
 
     if (!note) {
+      loggerServer.warn("Note not found when uploading image", {
+        userId: session?.user.id,
+        noteId: id,
+      });
       return NextResponse.json(JSON.stringify({ error: "Note not found" }), {
         status: 404,
       });
     }
+
+    loggerServer.info("Uploading image to note", {
+      userId: session?.user.id,
+      noteId: id,
+    });
 
     const formData = await req.formData();
     const file = formData.get("file") as File;
@@ -54,6 +67,12 @@ export async function POST(
       noteId: id,
       fileName,
       userName: session.user.name || session.user.email || session.user.id,
+    });
+
+    loggerServer.info("Image uploaded to S3", {
+      userId: session?.user.id,
+      noteId: id,
+      imageUrl,
     });
 
     const s3Attachment = await prisma.s3Attachment.create({
