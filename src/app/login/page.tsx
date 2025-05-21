@@ -31,6 +31,7 @@ const Auth = () => {
   }, []);
 
   const handleGoogleSignIn = () => {
+    console.log("redirect", redirect);
     signInWithGoogle(redirect);
   };
 
@@ -50,10 +51,12 @@ const Auth = () => {
           >
             <FcGoogle className="mr-2 h-6 w-6" /> Continue with Google
           </Button>
-          
+
           <div className="relative flex items-center justify-center">
             <div className="border-t border-border w-full"></div>
-            <span className="bg-background text-muted-foreground px-3 text-sm absolute mb-0.5">or</span>
+            <span className="bg-background text-muted-foreground px-3 text-sm absolute mb-0.5">
+              or
+            </span>
           </div>
 
           <EmailSignIn />

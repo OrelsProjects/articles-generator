@@ -29,15 +29,15 @@ export function EmailSignIn() {
   ) {
     try {
       setError(null);
-      
+
       EventTracker.track("magic_link_sign_in_attempt", { email: values.email });
-      
+      console.log("Redirect magic link", redirect);
       const result = await signIn("email", {
         email: values.email,
         redirect: true,
         callbackUrl: redirect || rootPath,
       });
-      
+
       if (result?.error) {
         setError("Failed to send the magic link. Please try again.");
         EventTracker.track("magic_link_sign_in_error", { error: result.error });
