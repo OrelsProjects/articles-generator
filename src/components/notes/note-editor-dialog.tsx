@@ -41,6 +41,7 @@ import slugify from "slugify";
 import { cn } from "@/lib/utils";
 import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
 import { Logger } from "@/logger";
+import { MAX_FILE_SIZE } from "@/lib/consts";
 
 export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const { user } = useAppSelector(selectAuth);
@@ -373,8 +374,18 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     toast.success("Copied to clipboard");
   };
 
+  const validateFileSize = (files: File[]) => {
+    const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
+    if (oversizedFiles.length > 0) {
+      toast.info(`File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
+      return false;
+    }
+    return true;
+  };
+
   const handleFileUpload = async (files: File[]) => {
     if (!selectedNote) return;
+    if (!validateFileSize(files)) return;
     try {
       let noteId = selectedNote.id;
       if (isEmpty) {
@@ -397,6 +408,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   // Handle file upload when an image is dropped
   const handleFileDrop = async (files: File[]) => {
     if (!selectedNote) return;
+    if (!validateFileSize(files)) {
+      setIsDraggingOver(false);
+      return;
+    }
 
     // Check if there's already an image
     if (
@@ -442,6 +457,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
 
   const handleImageSelect = async (files: File[]) => {
     if (!selectedNote) return;
+    if (!validateFileSize(files)) return;
 
     // Check if there's already an image
     if (selectedNote.attachments && selectedNote.attachments.length > 0) {

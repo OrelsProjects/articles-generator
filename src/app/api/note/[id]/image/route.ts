@@ -1,11 +1,19 @@
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import { uploadImage } from "@/lib/files-note";
-import { uploadImageSubstack } from "@/lib/substack";
 import loggerServer from "@/loggerServer";
 import { NoteDraftImage } from "@/types/note";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { MAX_FILE_SIZE } from "@/lib/consts";
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: MAX_FILE_SIZE,
+    },
+  },
+};
 
 export async function POST(
   req: NextRequest,
@@ -60,7 +68,7 @@ export async function POST(
       id: s3Attachment.id,
       url: s3Attachment.s3Url,
     };
-    
+
     return NextResponse.json(response, {
       status: 200,
     });
