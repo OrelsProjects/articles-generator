@@ -376,10 +376,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
 
   const validateFileSize = (files: File[]) => {
     const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
-    if (oversizedFiles.length > 0) {
-      toast.info(`File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
-      return false;
-    }
+    // if (oversizedFiles.length > 0) {
+    //   toast.info(`File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
+    //   return false;
+    // }
     return true;
   };
 

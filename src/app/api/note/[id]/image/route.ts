@@ -7,6 +7,17 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { MAX_FILE_SIZE } from "@/lib/consts";
 
+// In-memory store for chunks
+const chunksMap = new Map<
+  string,
+  {
+    chunks: (Buffer | null)[];
+    totalChunks: number;
+    fileName: string;
+    mimeType: string;
+  }
+>();
+
 export const config = {
   api: {
     bodyParser: {
@@ -15,92 +26,113 @@ export const config = {
   },
 };
 
+async function cleanupChunks(fileId: string) {
+  chunksMap.delete(fileId);
+}
+
 export async function POST(
   req: NextRequest,
   {
     params,
   }: {
-    params: {
-      id: string;
-    };
+    params: { id: string };
   },
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.json(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   try {
-    const { id } = params;
-    loggerServer.info("Uploading image to note", {
-      userId: session?.user.id,
-      noteId: id,
+    const noteId = params.id;
+    loggerServer.info("Uploading image chunk", {
+      userId: session.user.id,
+      noteId,
     });
 
-    const note = await prisma.note.findUnique({
-      where: { id },
-    });
-
+    const note = await prisma.note.findUnique({ where: { id: noteId } });
     if (!note) {
-      loggerServer.warn("Note not found when uploading image", {
-        userId: session?.user.id,
-        noteId: id,
+      loggerServer.warn("Note not found for upload", {
+        userId: session.user.id,
+        noteId,
       });
-      return NextResponse.json(JSON.stringify({ error: "Note not found" }), {
-        status: 404,
+      return NextResponse.json({ error: "Note not found" }, { status: 404 });
+    }
+
+    const form = await req.formData();
+    const file = form.get("file") as File;
+    const fileId = form.get("fileId") as string;
+    const chunkIndex = parseInt(form.get("chunkIndex") as string, 10);
+    const totalChunks = parseInt(form.get("totalChunks") as string, 10);
+    const fileName = form.get("fileName") as string;
+    const mimeType = form.get("mimeType") as string;
+
+    if (!file || !fileId) {
+      throw new Error("Missing file or fileId");
+    }
+
+    // Read chunk
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Initialize storage if first chunk
+    if (!chunksMap.has(fileId)) {
+      chunksMap.set(fileId, {
+        chunks: Array(totalChunks).fill(null),
+        totalChunks,
+        fileName,
+        mimeType,
       });
     }
 
-    loggerServer.info("Uploading image to note", {
-      userId: session?.user.id,
-      noteId: id,
-    });
+    const fileData = chunksMap.get(fileId)!;
+    fileData.chunks[chunkIndex] = buffer;
 
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const fileName = formData.get("fileName") as string;
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // Check completeness
+    const allReceived = fileData.chunks.every(c => c !== null);
+    if (!allReceived) {
+      return NextResponse.json({ status: "chunk_received" }, { status: 200 });
+    }
 
-    const imageUrl = await uploadImage(buffer, {
-      noteId: id,
-      fileName,
+    // Concatenate
+    const completeBuffer = Buffer.concat(fileData.chunks as Buffer[]);
+
+    // Upload
+    const imageUrl = await uploadImage(completeBuffer, {
+      noteId,
+      fileName: fileData.fileName,
       userName: session.user.name || session.user.email || session.user.id,
     });
 
     loggerServer.info("Image uploaded to S3", {
-      userId: session?.user.id,
-      noteId: id,
-      imageUrl,
+      userId: session.user.id,
+      noteId,
+      url: imageUrl.url,
     });
 
     const s3Attachment = await prisma.s3Attachment.create({
       data: {
-        noteId: id,
+        noteId,
         s3Url: imageUrl.url,
         fileName: imageUrl.fileName,
       },
     });
 
+    // Cleanup
+    await cleanupChunks(fileId);
+
     const response: NoteDraftImage = {
       id: s3Attachment.id,
       url: s3Attachment.s3Url,
     };
-
-    return NextResponse.json(response, {
-      status: 200,
-    });
-  } catch (error: any) {
-    loggerServer.error("Error uploading image: " + JSON.stringify(error), {
+    return NextResponse.json(response, { status: 200 });
+  } catch (err: any) {
+    loggerServer.error("Upload error", {
       userId: session?.user.id,
-      error,
+      error: err?.message || err,
     });
     return NextResponse.json(
-      JSON.stringify({ error: "Failed to upload image" }),
-      {
-        status: 500,
-      },
+      { error: "Failed to upload image" },
+      { status: 500 },
     );
   }
 }

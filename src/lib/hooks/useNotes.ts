@@ -52,8 +52,9 @@ import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { setNotePostedData } from "@/lib/features/ui/uiSlice";
 import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
 import axiosInstance from "@/lib/axios-instance";
+import { CHUNK_SIZE, MAX_FILE_SIZE } from "@/lib/consts";
 
-export const MAX_ATTACHMENTS = 4;
+export const MAX_ATTACHMENTS = Math.ceil(MAX_FILE_SIZE / CHUNK_SIZE);
 
 export const useNotes = () => {
   const { user } = useAppSelector(selectAuth);
@@ -587,7 +588,10 @@ export const useNotes = () => {
     if (uploadingFilesCount >= MAX_ATTACHMENTS) {
       throw new Error(`Only ${MAX_ATTACHMENTS} images allowed`);
     }
+
+    const CHUNK_SIZE = MAX_FILE_SIZE;
     let filesUploading = 0;
+
     try {
       const existingNote = userNotes.find(note => note.id === noteId);
       const currentAttachments = existingNote?.attachments || [];
@@ -598,39 +602,58 @@ export const useNotes = () => {
       ) {
         throw new Error(`Only ${MAX_ATTACHMENTS} images allowed`);
       }
+
       const maxAllowedAttachments = MAX_ATTACHMENTS - currentAttachments.length;
       const attachmentsToUpload = files.slice(0, maxAllowedAttachments);
       filesUploading = attachmentsToUpload.length;
       setUploadingFilesCount(filesUploading);
       const uploadedFiles: NoteDraftImage[] = [];
+
       for (const file of attachmentsToUpload) {
         try {
-          // make data to send to the server
-          const formData = new FormData();
-          formData.append("file", file);
-          formData.append("fileName", file.name);
+          const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+          const fileId = crypto.randomUUID(); // Generate unique ID for this file upload
+          
+          for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+            const start = chunkIndex * CHUNK_SIZE;
+            const end = Math.min(start + CHUNK_SIZE, file.size);
+            const chunk = file.slice(start, end);
 
-          const response = await axiosInstance.post<NoteDraftImage>(
-            `/api/note/${noteId}/image`,
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
+            const formData = new FormData();
+            formData.append("file", chunk);
+            formData.append("fileName", file.name);
+            formData.append("fileId", fileId);
+            formData.append("chunkIndex", chunkIndex.toString());
+            formData.append("totalChunks", totalChunks.toString());
+            formData.append("fileSize", file.size.toString());
+            formData.append("mimeType", file.type);
+
+            const response = await axiosInstance.post<NoteDraftImage>(
+              `/api/note/${noteId}/image`,
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
               },
-            },
-          );
-          if (noteId) {
-            // Update the note with the image URL from the response
-            dispatch(
-              addAttachmentToNote({
-                noteId,
-                attachment: response.data,
-              }),
             );
-            uploadedFiles.push(response.data);
+
+            // Only process the response on the last chunk
+            if (chunkIndex === totalChunks - 1 && response.data) {
+              if (noteId) {
+                dispatch(
+                  addAttachmentToNote({
+                    noteId,
+                    attachment: response.data,
+                  }),
+                );
+                uploadedFiles.push(response.data);
+              }
+            }
           }
         } catch (error: any) {
           Logger.error("Error uploading file:", error);
+          throw error;
         } finally {
           setUploadingFilesCount(prev => prev - 1);
         }
