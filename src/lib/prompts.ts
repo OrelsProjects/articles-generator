@@ -933,6 +933,8 @@ ${noteTemplates.length > 0 ? `\nTemplates:\n${noteTemplates.map(t => `• ${t.de
   const userMessage = `
 $${lockToArticles ? `Articles:\n${preSelectedArticles.map(a => `• ${a.bodyText}`).join("\n")}` : ""}
 
+${publication.personalDescription ? `Here's my personal description: ${publication.personalDescription}` : ""}
+
 Preferred topics: ${userMetadata.noteTopics || publication.preferredTopics}
 
 Previously written notes:\n${userPastNotes.map((n, i) => `(${i + 1}) ${n}`).join("\n")}
