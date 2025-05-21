@@ -127,7 +127,7 @@ export const HeroSection = () => {
                     className="text-lg mt-[30px] px-8 sm:px-12 lg:mt-0 py-6 font-bold rounded-xl w-full sm:w-auto"
                     asChild
                   >
-                    <Link href="/login">Explore features</Link>
+                    <Link href="#features">Explore features</Link>
                   </Button>
                 </div>
               </div>
