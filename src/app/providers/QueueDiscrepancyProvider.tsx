@@ -371,7 +371,7 @@ export default function QueueDiscrepancyProvider() {
   return (
     <Dialog open={showDialog} onOpenChange={handleCloseDialog}>
       {/* Render the discrepancy bar above the dialog when both should be visible */}
-      {showDiscrepancyBar && (
+      {showDiscrepancyBar && false && (
         <div
           className="fixed top-0 left-0 right-0 bg-amber-300 dark:bg-amber-600 text-foreground z-50 shadow-md animate-in fade-in slide-in-from-top duration-300"
           style={{ backdropFilter: "blur(8px)" }}
