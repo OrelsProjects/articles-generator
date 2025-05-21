@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { EventTracker } from "@/eventTracker";
 import { useSearchParams } from "next/navigation";
 import { rootPath } from "@/types/navbar";
+import { Logger } from "@/logger";
 
 const emailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -31,7 +32,10 @@ export function EmailSignIn() {
       setError(null);
 
       EventTracker.track("magic_link_sign_in_attempt", { email: values.email });
-      console.log("Redirect magic link", redirect);
+      Logger.info("[EMAIL-SIGN-IN] Signing in with email", {
+        email: values.email,
+        redirect,
+      });
       const result = await signIn("email", {
         email: values.email,
         redirect: true,
@@ -39,10 +43,16 @@ export function EmailSignIn() {
       });
 
       if (result?.error) {
+        Logger.error("[EMAIL-SIGN-IN] Failed to send the magic link", {
+          error: result.error,
+        });
         setError("Failed to send the magic link. Please try again.");
         EventTracker.track("magic_link_sign_in_error", { error: result.error });
       }
     } catch (err) {
+      Logger.error("[EMAIL-SIGN-IN] Failed to send the magic link", {
+        error: err,
+      });
       setError("An unexpected error occurred. Please try again.");
       EventTracker.track("magic_link_sign_in_error", { error: String(err) });
     } finally {

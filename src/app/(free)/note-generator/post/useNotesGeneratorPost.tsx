@@ -180,11 +180,12 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
   };
 
   const getLoginRedirect = () => {
+    let redirect = "note-generator/post";
     if (selectedByline) {
-      return `note-generator/post?author=${selectedByline.authorId}`;
-    } else {
-      return "note-generator/post";
+      redirect = `note-generator/post?author=${selectedByline.authorId}`;
     }
+    Logger.info("[USE-NOTES-GENERATOR-POST] Redirecting to", { redirect });
+    return redirect;
   };
 
   const getTodaysNotes = async () => {

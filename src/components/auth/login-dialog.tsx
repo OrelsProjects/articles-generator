@@ -13,6 +13,7 @@ import { EmailSignIn } from "@/components/auth/email-sign-in";
 import useAuth from "@/lib/hooks/useAuth";
 import { EventTracker } from "@/eventTracker";
 import { useEffect } from "react";
+import { Logger } from "@/logger";
 
 interface LoginDialogProps {
   isOpen: boolean;
@@ -49,6 +50,9 @@ export function LoginDialog({
   };
 
   const handleGoogleSignIn = () => {
+    Logger.info("Signing in with Google in login dialog", {
+      redirectPath: getRedirectURL(),
+    });
     EventTracker.track("login_dialog_google_click", { path: redirectPath });
     signInWithGoogle(getRedirectURL());
   };

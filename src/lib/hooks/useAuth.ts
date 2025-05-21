@@ -20,6 +20,7 @@ const useAuth = () => {
 
   const signInWithGoogle = useCallback(async (redirectTo?: string) => {
     try {
+        Logger.info("Signing in with Google", { redirectTo, redirect });
       const redirectDefault = "/onboarding";
       let redirectPath = new URL(
         `${window.location.origin}${redirectTo || redirect || redirectDefault}`,
