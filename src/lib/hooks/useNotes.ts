@@ -254,7 +254,6 @@ export const useNotes = () => {
       status: NoteStatus | "archived",
       scheduledTo?: Date,
     ) => {
-      debugger;
       EventTracker.track("notes_update_note_status_" + status);
       const previousNote = userNotes.find(note => note.id === noteId);
       const previousStatus = previousNote?.status;
@@ -588,8 +587,6 @@ export const useNotes = () => {
     if (uploadingFilesCount >= MAX_ATTACHMENTS) {
       throw new Error(`Only ${MAX_ATTACHMENTS} images allowed`);
     }
-
-    const CHUNK_SIZE = MAX_FILE_SIZE;
     let filesUploading = 0;
 
     try {
@@ -609,11 +606,14 @@ export const useNotes = () => {
       setUploadingFilesCount(filesUploading);
       const uploadedFiles: NoteDraftImage[] = [];
 
+      console.log("attachmentsToUpload", attachmentsToUpload.length);
+
       for (const file of attachmentsToUpload) {
         try {
           const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
           const fileId = crypto.randomUUID(); // Generate unique ID for this file upload
-          
+          console.log("File size", file.size);
+          console.log("Total chunks", totalChunks);
           for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
             const start = chunkIndex * CHUNK_SIZE;
             const end = Math.min(start + CHUNK_SIZE, file.size);
@@ -627,6 +627,8 @@ export const useNotes = () => {
             formData.append("totalChunks", totalChunks.toString());
             formData.append("fileSize", file.size.toString());
             formData.append("mimeType", file.type);
+
+            console.log("Chunk size", chunk.size);
 
             const response = await axiosInstance.post<NoteDraftImage>(
               `/api/note/${noteId}/image`,
