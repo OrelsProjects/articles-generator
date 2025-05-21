@@ -282,12 +282,29 @@ export async function POST(request: NextRequest) {
     }
     await useNoteGeneration(session.user.id);
 
-    if (!session.user.meta?.tempAuthorId) {
-      loggerServer.error("No temp author ID found", {
+    let authorId = session.user.meta?.tempAuthorId || parsedBody.authorId;
+    if (!authorId) {
+      const userMetadata = await prisma.userMetadata.findFirst({
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          publication: {
+            select: {
+              authorId: true,
+            },
+          },
+        },
+      });
+      authorId = userMetadata?.publication?.authorId;
+    }
+
+    if (!authorId) {
+      loggerServer.error("No author ID found", {
         userId: session.user.id,
       });
       return NextResponse.json(
-        { error: "No temp author ID found" },
+        { error: "No author ID found" },
         { status: 401 },
       );
     }
@@ -305,7 +322,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No content found" }, { status: 400 });
     }
 
-    let byline = await getByline(parseInt(session.user.meta?.tempAuthorId));
+    let byline = await getByline(parseInt(authorId.toString()));
 
     if (!byline) {
       return NextResponse.json({ error: "Byline not found" }, { status: 400 });
