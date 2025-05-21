@@ -933,7 +933,7 @@ ${noteTemplates.length > 0 ? `\nTemplates:\n${noteTemplates.map(t => `• ${t.de
   const userMessage = `
 $${lockToArticles ? `Articles:\n${preSelectedArticles.map(a => `• ${a.bodyText}`).join("\n")}` : ""}
 
-${publication.personalDescription ? `Here's my personal description: ${publication.personalDescription}` : ""}
+${publication.personalDescription ? `Here's my preffered way of writing. Give it priority when you write notes: ${publication.personalDescription}` : ""}
 
 Preferred topics: ${userMetadata.noteTopics || publication.preferredTopics}
 

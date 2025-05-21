@@ -126,8 +126,8 @@ export function PublicationPreferences() {
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="personalDescription">Personal Description</Label>
-            <TooltipProvider>
+            <Label htmlFor="personalDescription">Personal Prompt</Label>
+            <TooltipProvider delayDuration={50}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
@@ -144,7 +144,7 @@ export function PublicationPreferences() {
           </div>
           <Textarea
             id="personalDescription"
-            placeholder="Describe yourself, your background, expertise, and writing style..."
+            placeholder="Describe anything you want to add to the prompt. This description will take precedence over the generated description."
             value={personalDescription}
             onChange={e => setPersonalDescription(e.target.value)}
             rows={4}
