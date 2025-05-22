@@ -101,6 +101,7 @@ export async function POST(
         where: { id: note.id },
         data: {
           sentViaScheduleAt: new Date(),
+          substackNoteId: substackNoteId ? substackNoteId.toString() : null,
         },
       });
     } catch (error) {
