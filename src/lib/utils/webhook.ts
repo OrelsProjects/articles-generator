@@ -111,8 +111,8 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
   let creditsRemaining = newCredits + priorCredits;
 
   if (interval === "year") {
-    creditsPerPeriod = creditsPerPeriod * 12;
-    creditsRemaining = newCredits * 12 + priorCredits;
+    creditsPerPeriod = creditsPerPeriod;
+    creditsRemaining = newCredits + priorCredits;
   }
 
   const subscriptionData = {
