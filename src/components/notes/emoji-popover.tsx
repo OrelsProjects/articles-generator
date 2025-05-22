@@ -10,12 +10,15 @@ import Picker from "@emoji-mart/react";
 import { useTheme } from "next-themes";
 import { Skin } from "@emoji-mart/data";
 import { TooltipButton } from "@/components/ui/tooltip-button";
+import { EventTracker } from "@/eventTracker";
+
 interface EmojiPopoverProps {
   onEmojiSelect: (emoji: Skin) => void;
 }
 
 export default function EmojiPopover({ onEmojiSelect }: EmojiPopoverProps) {
   const { resolvedTheme } = useTheme();
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -24,6 +27,9 @@ export default function EmojiPopover({ onEmojiSelect }: EmojiPopoverProps) {
           variant="ghost"
           size="sm"
           className="h-8 w-8 p-0"
+          onClick={() => {
+            EventTracker.track("emoji_popover_open");
+          }}
         >
           <SmilePlus className="h-5 w-5 text-muted-foreground" />
         </TooltipButton>

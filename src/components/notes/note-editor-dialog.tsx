@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils";
 import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
 import { Logger } from "@/logger";
 import { MAX_FILE_SIZE } from "@/lib/consts";
+import { EventTracker } from "@/eventTracker";
 
 export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const { user } = useAppSelector(selectAuth);
@@ -365,6 +366,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   };
 
   const handleCopy = async () => {
+    EventTracker.track("note_editor_dialog_copy");
     const html = editor?.getHTML();
     if (!html) {
       toast.error("No content to copy");
@@ -376,10 +378,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
 
   const validateFileSize = (files: File[]) => {
     const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
-    // if (oversizedFiles.length > 0) {
-    //   toast.info(`File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
-    //   return false;
-    // }
+    if (oversizedFiles.length > 0) {
+      toast.info(`File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
+      return false;
+    }
     return true;
   };
 
@@ -407,6 +409,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
 
   // Handle file upload when an image is dropped
   const handleFileDrop = async (files: File[]) => {
+    EventTracker.track("note_editor_dialog_file_drop");
     if (!selectedNote) return;
     if (!validateFileSize(files)) {
       setIsDraggingOver(false);
@@ -588,7 +591,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0 md:hidden"
-                  onClick={() => editor?.chain().focus().undo().run()}
+                  onClick={() => {
+                    EventTracker.track("note_editor_dialog_undo");
+                    editor?.chain().focus().undo().run();
+                  }}
                   disabled={!editor?.can().undo()}
                 >
                   <Undo className="h-5 w-5 text-muted-foreground" />
@@ -598,7 +604,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0 md:hidden"
-                  onClick={() => editor?.chain().focus().redo().run()}
+                  onClick={() => {
+                    EventTracker.track("note_editor_dialog_redo");
+                    editor?.chain().focus().redo().run();
+                  }}
                   disabled={!editor?.can().redo()}
                 >
                   <Redo className="h-5 w-5 text-muted-foreground" />
@@ -620,7 +629,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                   size="sm"
                   className="h-8 w-8 p-0"
                   disabled={!canUploadImages}
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => {
+                    EventTracker.track("note_editor_dialog_add_image");
+                    fileInputRef.current?.click();
+                  }}
                 >
                   <ImageIcon className="h-5 w-5 text-muted-foreground" />
                 </TooltipButton>
