@@ -269,12 +269,12 @@ export default function FeatureSection() {
             direction="rtl"
             sideViewImage
           />
-          {/* <FeatureSectionCard
+          <FeatureSectionCard
             src="/landing/features/advanced-filtering.png"
             title="Run your research on <span class='highlight-feature-text'>millions of notes</span>"
             description="Use advanced filtering to research through millions of updating notes and stay update-to-date with the latest trends."
             direction="ltr"
-          /> */}
+          />
         </div>
       </motion.div>
     </motion.section>
