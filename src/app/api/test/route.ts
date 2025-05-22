@@ -14,7 +14,7 @@ import {
 } from "@/lib/mail/templates";
 import { prisma } from "@/lib/prisma";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
-import { NoteStatus } from "@prisma/client";
+import { Note, NoteStatus } from "@prisma/client";
 // async function processUser(userId: string) {
 //   try {
 //     const userMetadata = await prisma.userMetadata.findUnique({
@@ -58,9 +58,55 @@ import { NoteStatus } from "@prisma/client";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session || !session.user || !session.user.meta) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  if (!session.user.meta.isAdmin) {
+    return NextResponse.json(
+      { error: "Unauthorized - Not an admin" },
+      { status: 401 },
+    );
+  }
+
+  // const allSubstackNotes = await prisma.substackPublishedNote.findMany({
+  //   select: {
+  //     substackNoteId: true,
+  //     noteId: true,
+  //   },
+  // });
+
+  // const noteIdToSubstackNoteId = allSubstackNotes.reduce(
+  //   (acc, substackNote) => {
+  //     acc[substackNote.noteId] = substackNote.substackNoteId;
+  //     return acc;
+  //   },
+  //   {} as Record<string, string>,
+  // );
+
+  // const allNotes = await prisma.note.findMany({});
+  // const notesToUpdate = allNotes.filter(
+  //   note => note.id in noteIdToSubstackNoteId,
+  // );
+
+  // const allNotesWithSubstackNoteId: Note[] = notesToUpdate.map(note => ({
+  //   ...note,
+  //   substackNoteId: noteIdToSubstackNoteId[note.id],
+  // }));
+
+  // try {
+  //   let i = 0;
+  //   for (const note of allNotesWithSubstackNoteId) {
+  //     i++;
+  //     console.log(`Updating note ${i} of ${allNotesWithSubstackNoteId.length}`);
+  //     await prisma.note.update({
+  //       where: { id: note.id },
+  //       data: { substackNoteId: note.substackNoteId },
+  //     });
+  //   }
+  // } catch (error: any) {
+  //   console.error("Error processing users:", error);
+  //   return NextResponse.json({ error: error.message }, { status: 500 });
+  // }
 
   // const user = await prisma.user.findUnique({
   //   where: {

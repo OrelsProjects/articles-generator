@@ -176,7 +176,14 @@ function App() {
               cards={testimonials.map((testimonial, index) => ({
                 id: index,
                 content: (
-                  <div className="p-6 flex flex-col gap-4 shadow-lg">
+                  <div
+                    className={cn(
+                      "p-6 flex flex-col gap-4 shadow-lg overflow-visible",
+                      {
+                        "z-50": !!testimonial.noteImage,
+                      },
+                    )}
+                  >
                     <div className="flex items-center gap-2">
                       <img
                         src={testimonial.image}
@@ -197,12 +204,36 @@ function App() {
                         />
                       </div>
                     </div>
-                    <p
-                      className="text-foreground mb-4"
-                      dangerouslySetInnerHTML={{
-                        __html: testimonial.quote,
-                      }}
-                    />
+                    {testimonial.noteImage ? (
+                      <motion.img
+                        whileHover={{
+                          scale: 1.6,
+                          // make it incraese size to the left side
+                          x: -40,
+                        }}
+                        transition={{ duration: 0.3 }}
+                        src={testimonial.noteImage}
+                        alt={testimonial.author}
+                        onClick={() => {
+                          if (testimonial.noteUrl) {
+                            window.open(testimonial.noteUrl, "_blank");
+                          }
+                        }}
+                        className={cn(
+                          "w-full h-40 object-cover rounded-lg hover:border hover:border-foreground/20 hover:shadow-md transition-shadow duration-300",
+                          {
+                            "cursor-pointer": !!testimonial.noteUrl,
+                          },
+                        )}
+                      />
+                    ) : (
+                      <p
+                        className="text-foreground mb-4"
+                        dangerouslySetInnerHTML={{
+                          __html: testimonial.quote || "",
+                        }}
+                      />
+                    )}
                   </div>
                 ),
                 className: "bg-card rounded-lg shadow-lg",
@@ -302,6 +333,14 @@ const testimonials = [
     url: "https://substack.com/@timdenning",
   },
   {
+    noteImage: "/testimonials/anton-testimonial.png",
+    noteUrl: "https://substack.com/@antonzaides/note/c-119174331",
+    author: "Anton Zaides",
+    title: "Author of Manager.dev (<strong>26K subscribers</strong>)",
+    url: "https://substack.com/@antonzaides",
+    image: "/testimonials/anton.webp",
+  },
+  {
     quote: `WriteStack is my go-to tool for figuring out what's working on Substack—and what isn't. 
     <br/><br/>
     It saves me hours of research and helps me stay ahead of the curve.
@@ -363,6 +402,7 @@ const testimonials = [
     title: "Author of Simply AI",
     url: "https://substack.com/@techwithtam",
   },
+
   {
     quote: `I found ${appName} right when my workflow was hitting a wall—too bogged down by my daily work, with too little time to post my content.
     <br/><br/>
