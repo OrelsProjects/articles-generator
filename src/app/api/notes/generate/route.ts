@@ -95,6 +95,9 @@ export async function POST(
       case "gpt-4.5":
         model = "openai/gpt-4.5-preview";
         break;
+      case "claude-sonnet-4":
+        model = "anthropic/claude-sonnet-4";
+        break;
       case "claude-3.5":
         model = "anthropic/claude-3.5-sonnet";
         break;

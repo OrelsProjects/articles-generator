@@ -16,6 +16,7 @@ export type FrontendModel =
   | "claude-3.5"
   | "claude-3.7"
   | "claude-3.5-haiku"
+  | "claude-sonnet-4"
   // | "gemini-2.5-pro"
   | "grok-3-beta"
   | "gpt-4.1";
@@ -29,6 +30,7 @@ const AI_MODELS: {
   { value: "auto", label: "Auto", shortName: "auto", recommended: true },
   { value: "gpt-4.5", label: "GPT-4.5", shortName: "o4.5" },
   { value: "gpt-4.1", label: "GPT-4.1", shortName: "o4.1" },
+  { value: "claude-sonnet-4", label: "Claude Sonnet 4", shortName: "c4" },
   // {
   //   value: "gemini-2.5-pro",
   //   label: "Gemini 2.5 Pro",

@@ -9,6 +9,7 @@ import { createParser, EventSourceMessage } from "eventsource-parser";
 export type Model =
   | "openai/gpt-4o"
   | "openai/gpt-4o-mini"
+  | "anthropic/claude-sonnet-4"
   | "anthropic/claude-3.7-sonnet"
   | "anthropic/claude-3.5-sonnet"
   | "anthropic/claude-3.5-haiku"
@@ -30,6 +31,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
   const pricePerMillionTokensInput = {
     "openai/gpt-4o": 2.5,
     "openai/gpt-4o-mini": 0.15,
+    "anthropic/claude-sonnet-4": 3,
     "anthropic/claude-3.7-sonnet": 3,
     "anthropic/claude-3.5-sonnet": 3,
     "google/gemini-2.0-flash-001": 0.15,
@@ -44,6 +46,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
   const pricePerMillionTokensOutput = {
     "openai/gpt-4o": 10,
     "openai/gpt-4o-mini": 0.6,
+    "anthropic/claude-sonnet-4": 15,
     "anthropic/claude-3.7-sonnet": 15,
     "anthropic/claude-3.5-sonnet": 15,
     "google/gemini-2.0-flash-001": 0.6,
