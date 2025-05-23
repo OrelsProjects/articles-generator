@@ -20,11 +20,21 @@ const useAuth = () => {
 
   const signInWithGoogle = useCallback(async (redirectTo?: string) => {
     try {
-        Logger.info("Signing in with Google", { redirectTo, redirect });
+      Logger.info("Signing in with Google", { redirectTo, redirect });
       const redirectDefault = "/onboarding";
-      let redirectPath = new URL(
-        `${window.location.origin}${redirectTo || redirect || redirectDefault}`,
-      );
+      let redirectPath = new URL(`${window.location.origin}`);
+      try {
+        redirectPath = new URL(
+          `${window.location.origin}${redirectTo || redirect || redirectDefault}`,
+        );
+      } catch (error: any) {
+        Logger.error("Error parsing redirect path", {
+          error,
+          redirectTo,
+          redirect,
+          redirectDefault,
+        });
+      }
 
       // preserve query params
       searchParams.forEach((val, key) => {
@@ -32,6 +42,8 @@ const useAuth = () => {
           redirectPath.searchParams.append(key, val);
         }
       });
+
+      Logger.info("Redirect path", { redirectPath: redirectPath.toString() });
 
       setLoading(true);
       await signIn("google", {
