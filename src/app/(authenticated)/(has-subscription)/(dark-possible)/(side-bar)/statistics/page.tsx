@@ -6,6 +6,7 @@ import ActivityHeatmap from "@/components/ui/activity-heatmap";
 import TopEngagers from "@/app/(free)/fans/components/top-engagers";
 import { Engager } from "@/types/engager";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { NotesReactionsChart } from "@/components/stats/NotesReactionsChart";
 
 export default function StatisticsPage() {
   const { streak, loading, error, topEngagers, errorEngagers } =
@@ -21,6 +22,7 @@ export default function StatisticsPage() {
   return (
     <div className="container mx-auto py-8 space-y-8 pb-20 md:pb-8">
       <div>
+        <NotesReactionsChart />
         <h1 className="text-3xl font-bold mb-4">Your Writing Activity</h1>
         <p className="text-muted-foreground mb-6">
           Track your daily writing habits and see your streak progress over

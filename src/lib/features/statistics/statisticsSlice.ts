@@ -1,20 +1,26 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
-import { HourlyStats, Streak } from "@/types/notes-stats";
+import { HourlyStats, Streak, NoteReactions, ReactionInterval } from "@/types/notes-stats";
 import { Engager } from "@/types/engager";
 
 export interface StatisticsState {
   bestTimeToPublish: HourlyStats[];
   streak: Streak[];
   topEngagers: Engager[];
+  reactions: NoteReactions[];
   loadingFetchBestTimeToPublish: boolean;
+  loadingReactions: boolean;
+  reactionsInterval: ReactionInterval;
 }
 
 export const initialState: StatisticsState = {
   bestTimeToPublish: [],
   streak: [],
   topEngagers: [],
+  reactions: [],
   loadingFetchBestTimeToPublish: false,
+  loadingReactions: false,
+  reactionsInterval: "day",
 };
 
 const statisticsSlice = createSlice({
@@ -30,8 +36,17 @@ const statisticsSlice = createSlice({
     setLoadingFetchBestTimeToPublish: (state, action: PayloadAction<boolean>) => {
       state.loadingFetchBestTimeToPublish = action.payload;
     },
-      setTopEngagers: (state, action: PayloadAction<Engager[]>) => {
+    setTopEngagers: (state, action: PayloadAction<Engager[]>) => {
       state.topEngagers = action.payload;
+    },
+    setReactions: (state, action: PayloadAction<NoteReactions[]>) => {
+      state.reactions = action.payload;
+    },
+    setLoadingReactions: (state, action: PayloadAction<boolean>) => {
+      state.loadingReactions = action.payload;
+    },
+    setReactionsInterval: (state, action: PayloadAction<ReactionInterval>) => {
+      state.reactionsInterval = action.payload;
     },
   },
 });
@@ -41,6 +56,9 @@ export const {
   setStreak,
   setLoadingFetchBestTimeToPublish,
   setTopEngagers,
+  setReactions,
+  setLoadingReactions,
+  setReactionsInterval,
 } = statisticsSlice.actions;
 
 export const selectStatistics = (state: RootState): StatisticsState =>

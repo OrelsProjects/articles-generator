@@ -153,7 +153,6 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
       Logger.error("Error generating note:", {
         error,
       });
-      debugger;
       // if 402, set data to null
       if (error.response.status === 402 && error.response.data) {
         setNotes(error.response.data.todaysNotes);
@@ -200,7 +199,6 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
         canGenerate: boolean;
         nextGenerateDate: string | null;
       }>(`/api/generate-note-from-post`);
-      debugger;
       if (response.data.success) {
         setNotes(response.data.data);
         if ("canGenerate" in response.data) {

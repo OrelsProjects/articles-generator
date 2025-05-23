@@ -1,6 +1,6 @@
 import { prismaArticles } from "@/lib/prisma";
 import { getAuthorId } from "@/lib/dal/publication";
-import { HourlyStats, Streak } from "@/types/notes-stats";
+import { HourlyStats, ReactionInterval, Streak } from "@/types/notes-stats";
 import { NotesComments } from "../../../prisma/generated/articles";
 import { Prisma } from "@prisma/client";
 import moment from "moment-timezone";
@@ -135,4 +135,53 @@ export function calculateStreak(notes: NotesComments[], timezone?: string) {
   }, []);
 
   return streak;
+}
+
+export async function getNotesReactions(
+  interval: ReactionInterval,
+  authorId: number,
+  options?: {
+    maxDaysBack?: number;
+  },
+) {
+  let groupFormat: string;
+
+  switch (interval) {
+    case "day":
+      groupFormat = "YYYY-MM-DD";
+      break;
+    case "week":
+      groupFormat = "IYYY-IW";
+      break;
+    case "month":
+      groupFormat = "YYYY-MM";
+      break;
+    case "year":
+      groupFormat = "YYYY";
+      break;
+    default:
+      throw new Error("Invalid interval");
+  }
+
+  // Optional date filtering
+  const whereClause = options?.maxDaysBack
+    ? `WHERE timestamp >= NOW() - INTERVAL '${options.maxDaysBack} days'`
+    : "";
+
+  const results = await prismaArticles.$queryRawUnsafe<
+    { period: string; total: number }[]
+  >(
+    `
+    SELECT TO_CHAR(timestamp, $1) AS period,
+           SUM(reaction_count)::int AS total
+    FROM notes_comments
+    WHERE user_id = ${authorId} AND note_is_restacked = false
+    ${whereClause}
+    GROUP BY period
+    ORDER BY period;
+    `,
+    groupFormat,
+  );
+
+  return results;
 }

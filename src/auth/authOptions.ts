@@ -21,6 +21,9 @@ export const authOptions: AuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_AUTH_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET as string,
+      httpOptions: {
+        timeout:  process.env.NODE_ENV === "development" ? 15000 : 3500,
+      },
     }),
     EmailProvider({
       from: "noreply@writestack.io",

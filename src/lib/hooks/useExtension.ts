@@ -298,7 +298,6 @@ export function useExtension(): UseExtension {
       setIsLoading(true);
       setError(null);
 
-      debugger;
       try {
         Logger.info("Sending note from useExtension", params);
         // Validate parameters

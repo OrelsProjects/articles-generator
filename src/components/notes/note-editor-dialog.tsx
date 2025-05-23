@@ -3,7 +3,13 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Copy, Image as ImageIcon, Undo, Redo } from "lucide-react";
+import {
+  Copy,
+  Image as ImageIcon,
+  Undo,
+  Redo,
+  BookOpenIcon,
+} from "lucide-react";
 import { selectNotes } from "@/lib/features/notes/notesSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { TooltipButton } from "@/components/ui/tooltip-button";
@@ -43,11 +49,24 @@ import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
 import { Logger } from "@/logger";
 import { MAX_FILE_SIZE } from "@/lib/consts";
 import { EventTracker } from "@/eventTracker";
+import NoteEditorAdvancedSheet from "@/components/notes/note-editor-advanced-sheet";
+import { Switch } from "@/components/ui/switch";
+import { useAutoDM } from "@/lib/hooks/useAutoDM";
+import { compareTwoStrings } from "string-similarity";
+import { useUi } from "@/lib/hooks/useUi";
 
 export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const { user } = useAppSelector(selectAuth);
   const { selectedNote, thumbnail, handle } = useAppSelector(selectNotes);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { canAutoDM } = useUi();
+  const {
+    autoDMs,
+    createAutoDM,
+    updateAutoDM,
+    deleteAutoDM,
+    loading: loadingAutoDM,
+  } = useAutoDM();
   const {
     updateNoteBody,
     editNoteBody,
@@ -81,6 +100,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [uploadingFilesCount, setUploadingFilesCount] = useState(0);
   const [isSendingNote, setIsSendingNote] = useState(false);
+  const [showAdvancedSheet, setShowAdvancedSheet] = useState(false);
 
   // State for drag and drop
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -227,17 +247,12 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     const unformattedBody = unformatText(editor?.getHTML() || "");
     const unformattedNoteBody = unformatText(selectedNote?.body || "");
 
-    const slugifiedBody = slugify(unformattedBody, {
-      lower: true,
-      strict: true,
-    });
-    const slugifiedNoteBody = slugify(unformattedNoteBody, {
-      lower: true,
-      strict: true,
-    });
+    const similarity = compareTwoStrings(unformattedBody, unformattedNoteBody);
+
+    const isSimilarEnough = similarity > 0.85; // tweak this threshold as needed
 
     return (
-      slugifiedBody === slugifiedNoteBody &&
+      isSimilarEnough &&
       selectedNote?.status === "inspiration" &&
       selectedNote?.handle !== handle
     );
@@ -253,7 +268,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
       closeOnSave: true,
     },
   ): Promise<string | null> => {
-    debugger;
     if (!selectedNote) return null;
     if (isPlagiarism()) {
       setShowAvoidPlagiarismDialog(true);
@@ -379,7 +393,9 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const validateFileSize = (files: File[]) => {
     const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
     if (oversizedFiles.length > 0) {
-      toast.info(`File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
+      toast.info(
+        `File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
+      );
       return false;
     }
     return true;
@@ -499,6 +515,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     );
   }, [loadingEditNote, loadingScheduleNote, isSendingNote, isInspiration]);
 
+  const noteAutoDM = useMemo(() => {
+    return autoDMs.find(autoDM => autoDM.noteId === selectedNote?.id);
+  }, [autoDMs, selectedNote?.id]);
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -507,195 +527,226 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
           backgroundBlur={false}
           className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl max-md:max-w-screen"
         >
-          <div
-            className="flex flex-col w-full relative"
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-          >
-            <ImageDropOverlay
-              isVisible={isDraggingOver}
-              onFileDrop={handleFileDrop}
-              disabled={!canUploadImages}
-              onHide={() => setIsDraggingOver(false)}
-              maxAttachments={MAX_ATTACHMENTS}
-            />
-
-            <div className="flex items-start p-4 gap-3">
-              <Avatar className="h-10 w-10 border">
-                <AvatarImage
-                  src={noteThumbnail || user?.image || ""}
-                  alt="User"
+          <div className="relative overflow-visible">
+            <div className="w-full h-full absolute bottom-0 z-10">
+              <NoteEditorAdvancedSheet
+                open={showAdvancedSheet}
+                onOpenChange={setShowAdvancedSheet}
+              />
+            </div>
+            <div
+              className="flex flex-col w-full relative z-20 bg-background rounded-2xl h-[99%]
+            "
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+            >
+              {canAutoDM && (
+                <Switch
+                  checked={!!noteAutoDM}
+                  loading={loadingAutoDM}
+                  onCheckedChange={checked => {
+                    if (!checked && noteAutoDM) {
+                      deleteAutoDM(noteAutoDM.id);
+                    } else {
+                      createAutoDM({
+                        noteId: selectedNote?.id || "",
+                        message: "",
+                      });
+                    }
+                  }}
+                  className="absolute top-2 right-2"
                 />
-                <AvatarFallback>{userInitials}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 flex flex-col">
-                <h3 className="font-medium text-foreground">
-                  {noteAuthorName || userName}
-                </h3>
-                {editor && (
-                  <NoteEditor
-                    editor={editor}
-                    onSave={() => handleSave({ closeOnSave: false })}
-                    className="w-full h-full"
-                    textEditorClassName="!px-0"
+              )}
+              <ImageDropOverlay
+                isVisible={isDraggingOver}
+                onFileDrop={handleFileDrop}
+                disabled={!canUploadImages}
+                onHide={() => setIsDraggingOver(false)}
+                maxAttachments={MAX_ATTACHMENTS}
+              />
+
+              <div className="flex items-start p-4 gap-3 z-20">
+                <Avatar className="h-10 w-10 border">
+                  <AvatarImage
+                    src={noteThumbnail || user?.image || ""}
+                    alt="User"
                   />
-                )}
-                {selectedNote?.attachments &&
-                  selectedNote.attachments.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {selectedNote.attachments.map(attachment => (
-                        <NoteImageContainer
-                          key={attachment.id || attachment.url}
-                          imageUrl={attachment.url}
-                          onImageSelect={handleImageSelect}
-                          onImageDelete={handleImageDelete}
-                          attachment={attachment}
-                          allowDelete={attachment.id !== ""}
-                        />
-                      ))}
+                  <AvatarFallback>{userInitials}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 flex flex-col">
+                  <h3 className="font-medium text-foreground">
+                    {noteAuthorName || userName}
+                  </h3>
+                  {editor && (
+                    <NoteEditor
+                      editor={editor}
+                      onSave={() => handleSave({ closeOnSave: false })}
+                      className="w-full h-full"
+                      textEditorClassName="!px-0"
+                    />
+                  )}
+                  {selectedNote?.attachments &&
+                    selectedNote.attachments.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedNote.attachments.map(attachment => (
+                          <NoteImageContainer
+                            key={attachment.id || attachment.url}
+                            imageUrl={attachment.url}
+                            onImageSelect={handleImageSelect}
+                            onImageDelete={handleImageDelete}
+                            attachment={attachment}
+                            allowDelete={attachment.id !== ""}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  {uploadingFilesCount > 0 && (
+                    <div className="max-md:max-h-[96px] max-md:overflow-x-auto max-md:max-w-[260px]">
+                      <div className="flex flex-row md:flex-wrap gap-2">
+                        {Array.from({ length: uploadingFilesCount }).map(
+                          (_, index) => (
+                            <Skeleton
+                              key={index}
+                              className="md:w-[180px] md:h-[96px] w-[108px] h-[60px] rounded-md flex-shrink-0"
+                            />
+                          ),
+                        )}
+                      </div>
                     </div>
                   )}
-                {uploadingFilesCount > 0 && (
-                  <div className="max-md:max-h-[96px] max-md:overflow-x-auto max-md:max-w-[260px]">
-                    <div className="flex flex-row md:flex-wrap gap-2">
-                      {Array.from({ length: uploadingFilesCount }).map(
-                        (_, index) => (
-                          <Skeleton
-                            key={index}
-                            className="md:w-[180px] md:h-[96px] w-[108px] h-[60px] rounded-md flex-shrink-0"
-                          />
-                        ),
-                      )}
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
 
-            <div
-              className={cn(
-                "flex flex-col md:flex-row items-center justify-between p-4 border-t border-border gap-4 md:gap-0",
-                {
-                  "justify-end": isInspiration,
-                },
-                { "justify-between": free },
-              )}
-            >
               <div
-                className={cn("h-full flex gap-2 items-center", {
-                  hidden: isInspiration,
-                })}
+                className={cn(
+                  "flex flex-col md:flex-row items-center justify-between p-4 border-t border-border gap-4 md:gap-0 z-20",
+                  {
+                    "justify-between": isInspiration,
+                  },
+                  { "justify-between": free },
+                )}
               >
-                <TooltipButton
-                  tooltipContent="Undo"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 md:hidden"
-                  onClick={() => {
-                    EventTracker.track("note_editor_dialog_undo");
-                    editor?.chain().focus().undo().run();
-                  }}
-                  disabled={!editor?.can().undo()}
-                >
-                  <Undo className="h-5 w-5 text-muted-foreground" />
-                </TooltipButton>
-                <TooltipButton
-                  tooltipContent="Redo"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 md:hidden"
-                  onClick={() => {
-                    EventTracker.track("note_editor_dialog_redo");
-                    editor?.chain().focus().redo().run();
-                  }}
-                  disabled={!editor?.can().redo()}
-                >
-                  <Redo className="h-5 w-5 text-muted-foreground" />
-                </TooltipButton>
-                {!free && (
-                  <AIToolsDropdown
-                    note={selectedNote}
-                    onImprovement={handleImprovement}
+                <div className={cn("h-full flex gap-2 items-center")}>
+                  <TooltipButton
+                    tooltipContent="Undo"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 md:hidden"
+                    onClick={() => {
+                      EventTracker.track("note_editor_dialog_undo");
+                      editor?.chain().focus().undo().run();
+                    }}
+                    disabled={!editor?.can().undo()}
+                  >
+                    <Undo className="h-5 w-5 text-muted-foreground" />
+                  </TooltipButton>
+                  <TooltipButton
+                    tooltipContent="Redo"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 md:hidden"
+                    onClick={() => {
+                      EventTracker.track("note_editor_dialog_redo");
+                      editor?.chain().focus().redo().run();
+                    }}
+                    disabled={!editor?.can().redo()}
+                  >
+                    <Redo className="h-5 w-5 text-muted-foreground" />
+                  </TooltipButton>
+                  {!free && (
+                    <AIToolsDropdown
+                      note={selectedNote}
+                      onImprovement={handleImprovement}
+                    />
+                  )}
+                  <EmojiPopover onEmojiSelect={handleEmojiSelect} />
+                  <TooltipButton
+                    tooltipContent={
+                      selectedNote?.attachments?.length
+                        ? `Only ${MAX_ATTACHMENTS} images allowed`
+                        : "Add image"
+                    }
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    disabled={!canUploadImages}
+                    onClick={() => {
+                      EventTracker.track("note_editor_dialog_add_image");
+                      fileInputRef.current?.click();
+                    }}
+                  >
+                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                  </TooltipButton>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={e => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length > 0) {
+                        handleImageSelect(files);
+                      }
+                      e.target.value = "";
+                    }}
+                    disabled={!canUploadImages}
                   />
-                )}
-                <EmojiPopover onEmojiSelect={handleEmojiSelect} />
-                <TooltipButton
-                  tooltipContent={
-                    selectedNote?.attachments?.length
-                      ? `Only ${MAX_ATTACHMENTS} images allowed`
-                      : "Add image"
+                  <TooltipButton
+                    tooltipContent="Copy"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hidden md:flex"
+                    onClick={handleCopy}
+                  >
+                    <Copy className="h-5 w-5 text-muted-foreground" />
+                  </TooltipButton>
+                  {/* <TooltipButton
+                    tooltipContent="Copy"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hidden md:flex"
+                    onClick={() => setShowAdvancedSheet(!showAdvancedSheet)}
+                  >
+                    <BookOpenIcon className="h-5 w-5 text-muted-foreground" />
+                  </TooltipButton> */}
+                </div>
+                <div className="flex gap-3">
+                  {!isInspiration && !free && (
+                    <InstantPostButton
+                      onSave={() => handleSave({ closeOnSave: false })}
+                      noteId={selectedNote?.id || null}
+                      source="note-editor-dialog"
+                      onLoadingChange={setIsSendingNote}
+                      disabled={!canSendNote}
+                      onNoteSent={() => {
+                        handleOpenChange(false);
+                      }}
+                    />
+                  )}
+                  {
+                    <SaveDropdown
+                      onSave={({ closeOnSave }) => handleSave({ closeOnSave })}
+                      onSchedule={() => {
+                        setScheduleDialogOpen(true);
+                      }}
+                      onAddToQueue={(date: Date) => {
+                        setScheduledDate(date);
+                        return handleSave({
+                          schedule: {
+                            to: date,
+                          },
+                        });
+                      }}
+                      presetSchedule={scheduledDate}
+                      disabled={
+                        loadingEditNote || loadingScheduleNote || isSendingNote
+                      }
+                      saving={loadingEditNote}
+                      isInspiration={isInspiration}
+                      isFree={free}
+                    />
                   }
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  disabled={!canUploadImages}
-                  onClick={() => {
-                    EventTracker.track("note_editor_dialog_add_image");
-                    fileInputRef.current?.click();
-                  }}
-                >
-                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                </TooltipButton>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={e => {
-                    const files = Array.from(e.target.files || []);
-                    if (files.length > 0) {
-                      handleImageSelect(files);
-                    }
-                    e.target.value = "";
-                  }}
-                  disabled={!canUploadImages}
-                />
-                <TooltipButton
-                  tooltipContent="Copy"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 hidden md:flex"
-                  onClick={handleCopy}
-                >
-                  <Copy className="h-5 w-5 text-muted-foreground" />
-                </TooltipButton>
-              </div>
-              <div className="flex gap-3">
-                {!isInspiration && !free && (
-                  <InstantPostButton
-                    onSave={() => handleSave({ closeOnSave: false })}
-                    noteId={selectedNote?.id || null}
-                    source="note-editor-dialog"
-                    onLoadingChange={setIsSendingNote}
-                    disabled={!canSendNote}
-                    onNoteSent={() => {
-                      handleOpenChange(false);
-                    }}
-                  />
-                )}
-                {
-                  <SaveDropdown
-                    onSave={({ closeOnSave }) => handleSave({ closeOnSave })}
-                    onSchedule={() => {
-                      setScheduleDialogOpen(true);
-                    }}
-                    onAddToQueue={(date: Date) => {
-                      setScheduledDate(date);
-                      return handleSave({
-                        schedule: {
-                          to: date,
-                        },
-                      });
-                    }}
-                    presetSchedule={scheduledDate}
-                    disabled={
-                      loadingEditNote || loadingScheduleNote || isSendingNote
-                    }
-                    saving={loadingEditNote}
-                    isInspiration={isInspiration}
-                    isFree={free}
-                  />
-                }
+                </div>
               </div>
             </div>
           </div>

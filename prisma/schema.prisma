@@ -72,6 +72,7 @@ enum FeatureFlag {
   scheduleNotes
   canViewWriters
   canUseRadar
+  canAutoDM
 }
 
 enum CookieName {
@@ -98,6 +99,11 @@ enum Interval {
   year
 }
 
+enum UserDMType {
+  chat
+  directMessage
+}
+
 model User {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
@@ -110,16 +116,18 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  userMetadata   UserMetadata[]
-  ideas          Idea[]
-  payment        Payment[]
-  subscription   Subscription[]
-  substackCookie SubstackCookie[]
-  ScheduledNote  ScheduledNote[]
-  UserSchedule   UserSchedule[]
-  Settings       Settings[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  userMetadata       UserMetadata[]
+  ideas              Idea[]
+  payment            Payment[]
+  subscription       Subscription[]
+  substackCookie     SubstackCookie[]
+  ScheduledNote      ScheduledNote[]
+  UserSchedule       UserSchedule[]
+  Settings           Settings[]
+  userDMs            UserDM[]
+  autoDMNotes        AutoDMNote[]
 
   @@map("users")
 }
@@ -680,4 +688,60 @@ model FreeUsageNoteGeneration {
   updatedAt DateTime @updatedAt
 
   @@map("freeUsageNoteGeneration")
+}
+
+model UserDM {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @db.ObjectId
+
+  chatId    String     @db.ObjectId
+  type      UserDMType
+  title     String
+  subtitle  String
+  timestamp DateTime
+
+  recentMessageId        String?
+  recentMessageCreatedAt DateTime?
+  recentMessageBody      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("userDMs")
+}
+
+model AutoDMNote {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  noteId  String @db.ObjectId
+  userId  String @db.ObjectId
+  message String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  autoDMMessagesSent AutoDMMessageSent[]
+
+  @@map("autoDMNotes")
+}
+
+model AutoDMMessageSent {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  autoDMNoteId       String @db.ObjectId
+  sentToAutoDMNoteId String @db.ObjectId
+  message            String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  autoDMNote AutoDMNote @relation(fields: [autoDMNoteId], references: [id], onDelete: Cascade)
+
+  @@map("autoDMMessageSent")
 }

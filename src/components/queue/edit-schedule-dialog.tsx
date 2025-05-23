@@ -45,16 +45,9 @@ interface ScheduleEntry {
   };
 }
 
-interface EditScheduleDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSave?: (schedule: ScheduleEntry[]) => void;
-}
+interface EditScheduleDialogProps {}
 
-export function EditScheduleDialog({
-  open,
-  onOpenChange,
-}: EditScheduleDialogProps) {
+export function EditScheduleDialog({}: EditScheduleDialogProps) {
   const {
     addSchedule,
     removeSchedule,
@@ -65,7 +58,6 @@ export function EditScheduleDialog({
   const { showCreateScheduleDialog, updateShowCreateScheduleDialog } = useUi();
   const { userSchedules } = useAppSelector(state => state.notes);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
   const [isAddingSlot, setIsAddingSlot] = useState(false);
 
   // Time picker state
@@ -73,20 +65,8 @@ export function EditScheduleDialog({
   const [minutes, setMinutes] = useState(0);
 
   const updateOpen = (open: boolean) => {
-    setIsOpen(open);
-    onOpenChange(open);
+    updateShowCreateScheduleDialog(open);
   };
-
-  useEffect(() => {
-    setIsOpen(open);
-  }, [open]);
-
-  useEffect(() => {
-    if (showCreateScheduleDialog) {
-      updateOpen(true);
-      updateShowCreateScheduleDialog(false);
-    }
-  }, [showCreateScheduleDialog]);
 
   // Convert userSchedules to ScheduleEntries format for the UI
   useEffect(() => {
@@ -312,7 +292,7 @@ export function EditScheduleDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={updateOpen}>
+    <Dialog open={showCreateScheduleDialog} onOpenChange={updateOpen}>
       <DialogContent className="sm:max-w-[600px] max-h-screen md:max-h-[90%] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-medium">

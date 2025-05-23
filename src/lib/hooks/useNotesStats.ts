@@ -5,19 +5,24 @@ import {
   setStreak,
   selectStatistics,
   setTopEngagers,
+  setReactions,
+  setLoadingReactions,
+  setReactionsInterval,
 } from "@/lib/features/statistics/statisticsSlice";
-import { Streak } from "@/types/notes-stats";
+import { Streak, NoteReactions, ReactionInterval } from "@/types/notes-stats";
 import { getStreakCount } from "@/lib/utils/streak";
 import { Engager } from "@/types/engager";
 
 export function useNotesStats() {
-  const { streak, topEngagers } = useSelector(selectStatistics);
+  const { streak, topEngagers, reactions, loadingReactions, reactionsInterval } = useSelector(selectStatistics);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorEngagers, setErrorEngagers] = useState<string | null>(null);
+  const [errorReactions, setErrorReactions] = useState<string | null>(null);
   const loadingRef = useRef(false);
   const loadingTopEngagersRef = useRef(false);
+  const loadingReactionsRef = useRef(false);
 
   async function fetchStreakData() {
     if (streak.length > 0 || loading) {
@@ -63,12 +68,58 @@ export function useNotesStats() {
     }
   };
 
+  const fetchReactions = async (interval: ReactionInterval = reactionsInterval, forceRefresh = false) => {
+    if (!forceRefresh && reactions.length > 0 && interval === reactionsInterval) {
+      return;
+    }
+    
+    if (loadingReactionsRef.current) {
+      return;
+    }
+
+    try {
+      loadingReactionsRef.current = true;
+      dispatch(setLoadingReactions(true));
+      const response = await axiosInstance.get<NoteReactions[]>(
+        `/api/user/notes/stats/reactions?interval=${interval}`,
+      );
+      dispatch(setReactions(response.data));
+      dispatch(setReactionsInterval(interval));
+      setErrorReactions(null);
+    } catch (err) {
+      setErrorReactions(
+        err instanceof Error ? err.message : "An unknown error occurred",
+      );
+    } finally {
+      loadingReactionsRef.current = false;
+      dispatch(setLoadingReactions(false));
+    }
+  };
+
+  const changeReactionsInterval = (interval: ReactionInterval) => {
+    fetchReactions(interval, true);
+  };
+
   useEffect(() => {
     fetchStreakData();
     fetchTopEngagers();
+    fetchReactions();
   }, []);
 
   const streakCount = useMemo(() => getStreakCount(streak), [streak]);
 
-  return { streak, streakCount, loading, error, topEngagers, errorEngagers };
+  return { 
+    streak, 
+    streakCount, 
+    loading, 
+    error, 
+    topEngagers, 
+    errorEngagers,
+    reactions,
+    loadingReactions,
+    errorReactions,
+    reactionsInterval,
+    fetchReactions,
+    changeReactionsInterval,
+  };
 }

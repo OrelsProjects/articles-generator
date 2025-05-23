@@ -1,21 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FcGoogle } from "react-icons/fc";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, RefreshCw } from "lucide-react";
 import useAuth from "@/lib/hooks/useAuth";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { EmailSignIn } from "@/components/auth/email-sign-in";
 import { EventTracker } from "@/eventTracker";
+import { Logger } from "@/logger";
 
 const Auth = () => {
   const { signInWithGoogle } = useAuth();
   const router = useCustomRouter();
   const searchParams = useSearchParams();
+  const [loadingSignIn, setLoadingSignIn] = useState(false);
 
   const code = searchParams.get("code");
   const redirect = searchParams.get("redirect") || undefined;
@@ -31,8 +33,11 @@ const Auth = () => {
   }, []);
 
   const handleGoogleSignIn = () => {
-    console.log("redirect", redirect);
-    signInWithGoogle(redirect);
+    Logger.info("Redirecting after google sign in: ", { redirect });
+    setLoadingSignIn(true);
+    signInWithGoogle(redirect).finally(() => {
+      setLoadingSignIn(false);
+    });
   };
 
   return (
@@ -47,9 +52,15 @@ const Auth = () => {
           <Button
             variant="outline"
             onClick={handleGoogleSignIn}
+            disabled={loadingSignIn}
             className="w-full py-6 text-lg font-semibold transition-all hover:bg-primary hover:text-primary-foreground"
           >
-            <FcGoogle className="mr-2 h-6 w-6" /> Continue with Google
+            {loadingSignIn ? (
+              <RefreshCw className="h-6 w-6 mr-2 animate-spin" />
+            ) : (
+              <FcGoogle className="mr-2 h-6 w-6" />
+            )}
+            Continue with Google
           </Button>
 
           <div className="relative flex items-center justify-center">

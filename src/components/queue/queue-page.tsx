@@ -20,6 +20,7 @@ import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { CreateNoteButton } from "@/components/notes/create-note-button";
+import { useUi } from "@/lib/hooks/useUi";
 
 export interface QueuePageProps {
   onFetchingForUpdate: (isFetching: boolean) => void;
@@ -42,7 +43,7 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
   } = useQueue();
   const { selectNote, fetchNotes } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { updateShowCreateScheduleDialog } = useUi();
   const [activeDays, setActiveDays] = useState<Date[]>([]);
   const [activeTab, setActiveTab] = useState("scheduled");
 
@@ -261,7 +262,7 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
           <CreateNoteButton />
           <Button
             variant="outline"
-            onClick={() => setIsEditDialogOpen(true)}
+            onClick={() => updateShowCreateScheduleDialog(true)}
             className="items-center gap-2"
           >
             <Pencil size={16} />
@@ -376,7 +377,7 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
         <TabsContent value="scheduled" className="mt-0">
           <ScheduledNotesList
             days={activeDays}
-            onEditQueue={() => setIsEditDialogOpen(true)}
+            onEditQueue={() => updateShowCreateScheduleDialog(true)}
             groupedNotes={groupedScheduledNotes()}
             groupedSchedules={groupedSchedules()}
             onSelectNote={handleSelectNote}
@@ -455,11 +456,6 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
           )}
         </TabsContent>
       </Tabs>
-
-      <EditScheduleDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-      />
     </ScrollArea>
   );
 }

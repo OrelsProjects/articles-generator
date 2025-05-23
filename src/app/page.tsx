@@ -54,10 +54,20 @@ const faq = [
     question: "Do you use my paid articles?",
     answer: `No. We do not show, use or give access to your paid articles to anyone but you.`,
   },
-  // {
-  //   question: `What if I forgot to leave ${appName} running?`,
-  //   answer: `No problem! You will get an email with a button to one-click publish the missing note.`,
-  // },
+  {
+    question: `I don’t get it. Are you recommending I copy other people’s notes?`,
+    answer: `No. Definitely not. Not only is this something you shouldn't do, it also won't work.
+    <br/><br/>
+    Perhaps in the short term you'll get a little bit more engagement, but you are bound to be called out for it at some point and lose credibility.
+    <br/><br/>
+    It also goes against Substack's Policy to be purposefully creating identical or near-identical content repeatedly.
+    <br/><br/>
+    What we believe is it’s perfectly fine and an effective process to consume amazing content that helps you come up with your own authentic ideas and content.
+    <br/>
+    It’s what everyone does, in just about every field and line of work. Artists learn and get inspiration from artists before them. So do athletes. Scientists. Designers. And so does everyone on Substack.
+    <br/><br/>
+    What’s not OK is to take people’s content and claim it as your own.`,
+  },
   {
     question: `Can I tell WriteStack's AI on which topic I want to generate notes?`,
     answer: `Absolutely! You can tell WriteStack's AI on which topic you want to generate notes and it will generate 3 unique and original notes for you.`,

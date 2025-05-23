@@ -62,6 +62,10 @@ export function useUi() {
     FeatureFlag.scheduleNotes,
   );
 
+  const canAutoDM = user?.meta?.featureFlags.includes(
+    FeatureFlag.canAutoDM,
+  );
+
   return {
     setState,
     hasAdvancedGPT,
@@ -77,5 +81,6 @@ export function useUi() {
     updateShowCreateScheduleDialog,
     showCreateScheduleDialog,
     canScheduleNotes,
+    canAutoDM,
   };
 }
