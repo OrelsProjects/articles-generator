@@ -43,7 +43,6 @@ import { CancelError } from "@/types/errors/CancelError";
 import { urlToFile } from "@/lib/utils/file";
 import { SaveDropdown } from "@/components/notes/save-dropdown";
 import { AvoidPlagiarismDialog } from "@/components/notes/avoid-plagiarism-dialog";
-import slugify from "slugify";
 import { cn } from "@/lib/utils";
 import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
 import { Logger } from "@/logger";
@@ -63,7 +62,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const {
     autoDMs,
     createAutoDM,
-    updateAutoDM,
     deleteAutoDM,
     loading: loadingAutoDM,
   } = useAutoDM();

@@ -6,9 +6,7 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { resetNotification } from "@/lib/features/notes/notesSlice";
-import { TooltipButton } from "@/components/ui/tooltip-button";
 import { GenerateNotesDialog } from "@/components/notes/generate-notes-dialog";
-import { Plus } from "lucide-react";
 import { CreateNoteButton } from "@/components/notes/create-note-button";
 
 const TITLE = "Your notes (Kanban)";
@@ -21,10 +19,6 @@ export default function StatusBoardPage() {
     dispatch(resetNotification());
     fetchNotes(30);
   }, []);
-
-  const handleCreateDraftNote = () => {
-    createDraftNote();
-  };
 
   if (loadingNotes && userNotes.length === 0) {
     return (

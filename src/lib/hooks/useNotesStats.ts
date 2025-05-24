@@ -5,16 +5,22 @@ import {
   setStreak,
   selectStatistics,
   setTopEngagers,
-  setReactions,
+  setNoteStats,
   setLoadingReactions,
   setReactionsInterval,
 } from "@/lib/features/statistics/statisticsSlice";
-import { Streak, NoteReactions, ReactionInterval } from "@/types/notes-stats";
+import { Streak, NoteStats, ReactionInterval } from "@/types/notes-stats";
 import { getStreakCount } from "@/lib/utils/streak";
 import { Engager } from "@/types/engager";
 
 export function useNotesStats() {
-  const { streak, topEngagers, reactions, loadingReactions, reactionsInterval } = useSelector(selectStatistics);
+  const {
+    streak,
+    topEngagers,
+    noteStats,
+    loadingReactions,
+    reactionsInterval,
+  } = useSelector(selectStatistics);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,11 +74,18 @@ export function useNotesStats() {
     }
   };
 
-  const fetchReactions = async (interval: ReactionInterval = reactionsInterval, forceRefresh = false) => {
-    if (!forceRefresh && reactions.length > 0 && interval === reactionsInterval) {
+  const fetchReactions = async (
+    interval: ReactionInterval = reactionsInterval,
+    forceRefresh = false,
+  ) => {
+    if (
+      !forceRefresh &&
+      noteStats &&
+      interval === reactionsInterval
+    ) {
       return;
     }
-    
+
     if (loadingReactionsRef.current) {
       return;
     }
@@ -80,10 +93,10 @@ export function useNotesStats() {
     try {
       loadingReactionsRef.current = true;
       dispatch(setLoadingReactions(true));
-      const response = await axiosInstance.get<NoteReactions[]>(
+      const response = await axiosInstance.get<NoteStats>(
         `/api/user/notes/stats/reactions?interval=${interval}`,
       );
-      dispatch(setReactions(response.data));
+      dispatch(setNoteStats(response.data));
       dispatch(setReactionsInterval(interval));
       setErrorReactions(null);
     } catch (err) {
@@ -108,14 +121,14 @@ export function useNotesStats() {
 
   const streakCount = useMemo(() => getStreakCount(streak), [streak]);
 
-  return { 
-    streak, 
-    streakCount, 
-    loading, 
-    error, 
-    topEngagers, 
+  return {
+    streak,
+    streakCount,
+    loading,
+    error,
+    topEngagers,
     errorEngagers,
-    reactions,
+    noteStats,
     loadingReactions,
     errorReactions,
     reactionsInterval,

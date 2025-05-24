@@ -13,7 +13,13 @@ export interface Streak {
 
 export type ReactionInterval = "day" | "week" | "month" | "year";
 
-export type NoteReactions = {
+export type IntervalStats = {
   period: string; // e.g. "2025-01-01", "2025-01-02", etc.
   total: number;
+};
+
+export type NoteStats = {
+  reactions: IntervalStats[];
+  restacks: IntervalStats[];
+  comments: IntervalStats[];
 };

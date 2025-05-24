@@ -1,5 +1,5 @@
 import { authOptions } from "@/auth/authOptions";
-import { getNotesReactions } from "@/lib/dal/notes-stats";
+import { getNoteStats } from "@/lib/dal/notes-stats";
 import { getAuthorId } from "@/lib/dal/publication";
 import loggerServer from "@/loggerServer";
 import { ReactionInterval } from "@/types/notes-stats";
@@ -24,13 +24,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Author not found" }, { status: 404 });
     }
 
-    const reactions = await getNotesReactions(
+    const noteStats = await getNoteStats(
       interval as ReactionInterval,
       authorId,
     );
-    return NextResponse.json(reactions);
+    return NextResponse.json(noteStats);
   } catch (error) {
-    loggerServer.error("Error getting notes reactions", {
+    loggerServer.error("Error getting notes stats", {
       error,
       userId: session.user.id,
     });

@@ -17,10 +17,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { MotionAlert } from "@/components/ui/motion-components";
 import { AlertDescription } from "@/components/ui/alert";
 import { useSession } from "next-auth/react";
+import HowToFindNewsletterUrlDialog from "@/components/ui/how-to-find-newsletter-url-dialog";
 
 export const ERRORS = {
   INVALID_URL: {
@@ -239,46 +240,56 @@ export default function UrlAnalysisInput({
           </Button>
         </div>
       )}
-      <AnimatePresence mode="popLayout">
-        {error?.value && (
-          <MotionAlert
-            key={error.value}
-            variant={error.type === "error" ? "destructive" : "warning"}
-            className="flex flex-row items-center pb-1.5 pr-2 mt-4"
+      {error?.value && (
+        <div className="flex flex-col items-start">
+          <AnimatePresence mode="popLayout">
+            <MotionAlert
+              key={error.value}
+              variant={error.type === "error" ? "destructive" : "warning"}
+              className="flex flex-row items-center pb-1.5 pr-2"
+            >
+              {error.type === "error" ? (
+                <AlertCircle className="h-4 w-4" />
+              ) : (
+                <AlertTriangle className="h-4 w-4" />
+              )}
+              <AlertDescription className="flex-1 leading-7">
+                {error.value}
+              </AlertDescription>
+              <TooltipProvider delayDuration={350}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 rounded-full !p-0 !pb-1.5"
+                      type="button"
+                    >
+                      <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p
+                      className="text-sm"
+                      dangerouslySetInnerHTML={{
+                        __html: error.explanation,
+                      }}
+                    />
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </MotionAlert>
+          </AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
           >
-            {error.type === "error" ? (
-              <AlertCircle className="h-4 w-4" />
-            ) : (
-              <AlertTriangle className="h-4 w-4" />
-            )}
-            <AlertDescription className="flex-1 leading-7 ml-2">
-              {error.value}
-            </AlertDescription>
-            <TooltipProvider delayDuration={350}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 rounded-full !p-0 !pb-1.5"
-                    type="button"
-                  >
-                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p
-                    className="text-sm"
-                    dangerouslySetInnerHTML={{
-                      __html: error.explanation,
-                    }}
-                  />
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </MotionAlert>
-        )}
-      </AnimatePresence>
+            <HowToFindNewsletterUrlDialog />
+          </motion.div>
+        </div>
+      )}
 
       {/* Author Selection Dialog */}
       <AuthorSelectionDialog
