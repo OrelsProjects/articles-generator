@@ -1,17 +1,19 @@
 import { prisma } from "@/lib/prisma";
 
+const OR = [
+  {
+    status: "active",
+  },
+  {
+    status: "trialing",
+  },
+];
+
 export async function getActiveSubscription(userId: string) {
   const subscription = await prisma.subscription.findFirst({
     where: {
       userId,
-      OR: [
-        {
-          status: "active",
-        },
-        {
-          status: "trialing",
-        },
-      ],
+      OR,
     },
     orderBy: {
       createdAt: "desc",
@@ -25,14 +27,7 @@ export async function getActiveSubscriptionByStripeSubId(stripeSubId: string) {
   const subscription = await prisma.subscription.findFirst({
     where: {
       stripeSubId,
-      OR: [
-        {
-          status: "active",
-        },
-        {
-          status: "trialing",
-        },
-      ],
+      OR,
     },
     orderBy: {
       createdAt: "desc",

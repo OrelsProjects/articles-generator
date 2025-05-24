@@ -20,7 +20,7 @@ import { Plan } from "@prisma/client";
 import PlanComparisonDialog from "./plan-comparison-dialog";
 
 const basicFeatures = (credits: number, interval: "month" | "year") => [
-  `${interval === "month" ? credits : credits} WriteStack AI Credits/${interval}`,
+  `${interval === "month" ? credits : credits * 12} WriteStack AI Credits/${interval}`,
   "Easy one-click posting",
   "Specialized AI-Powered Substack editor",
   "Growing Notes Inspirations",

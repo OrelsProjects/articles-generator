@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import {
-  getActiveSubscription,
-} from "@/lib/dal/subscription";
+import { getActiveSubscription } from "@/lib/dal/subscription";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addTagToEmail, removeTagFromEmail, sendMail } from "@/lib/mail/mail";
 import {
@@ -89,17 +87,6 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
     return;
   }
 
-  const userPriorSubscriptions = await prisma.subscription.findMany({
-    where: {
-      userId: user.id,
-    },
-  });
-
-  // Gather all his prior credits
-  const priorCredits = userPriorSubscriptions.reduce((acc, curr) => {
-    return acc + curr.creditsRemaining;
-  }, 0);
-
   const newCredits = isFreeSubscription
     ? 10
     : isTrialing // If the subscription is trialing, we add credits here. If not, we add them after the first payment.
@@ -108,15 +95,15 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
 
   const interval = (price.recurring?.interval || "month") as Interval;
   let creditsPerPeriod = creditsPerPlan[plan];
-  let creditsRemaining = newCredits + priorCredits;
+  let creditsRemaining = newCredits;
 
   if (interval === "year") {
     creditsPerPeriod = creditsPerPeriod;
-    creditsRemaining = newCredits + priorCredits;
+    creditsRemaining = newCredits;
   }
 
   const subscriptionData = {
-    status: "active",
+    status: subscription.status,
     userId: user?.id,
     plan: plan,
     stripeSubId: subscriptionId,
@@ -202,16 +189,15 @@ export async function handleSubscriptionUpdated(event: any) {
   const isRenewal =
     currentSubscription.currentPeriodStart &&
     subscription.current_period_start !==
-      (new Date(currentSubscription.currentPeriodStart).getTime() / 1000) &&
+      new Date(currentSubscription.currentPeriodStart).getTime() / 1000 &&
     subscription.status === "active";
 
   if (isRenewal) {
-
-      const { creditsLeft, creditsForPlan } = await calculateNewPlanCreditsLeft(
-        user.id,
-        plan,
-        currentSubscription,
-      );
+    const { creditsLeft, creditsForPlan } = await calculateNewPlanCreditsLeft(
+      user.id,
+      plan,
+      currentSubscription,
+    );
     const { id, ...currentSubscriptionNoId } = currentSubscription;
 
     const newSubscription: Omit<Subscription, "id"> = {
@@ -324,7 +310,7 @@ export async function handleSubscriptionResumed(event: Stripe.Event) {
       stripeSubId: subscriptionId,
     },
     data: {
-      status: "active",
+      status: subscription.status,
     },
   });
 }
@@ -371,6 +357,17 @@ export async function handleSubscriptionTrialEnding(event: any) {
     customerId,
   )) as Stripe.Customer;
   const userEmail = customer.email;
+
+  if (!user) {
+    loggerServer.error(
+      "No user found for subscription" +
+        " " +
+        subscription.id +
+        " In handleSubscriptionTrialEnding",
+    );
+    return;
+  }
+
   if (!userEmail) {
     loggerServer.error(
       "No email found for customer" +
@@ -391,14 +388,7 @@ export async function handleSubscriptionTrialEnding(event: any) {
     return;
   }
 
-  const subscriptionFromDb = await prisma.subscription.findUnique({
-    where: {
-      stripeSubId: subscription.id,
-    },
-    select: {
-      plan: true,
-    },
-  });
+  const subscriptionFromDb = await getActiveSubscription(user.id);
 
   if (!subscriptionFromDb) {
     loggerServer.error(
@@ -409,6 +399,7 @@ export async function handleSubscriptionTrialEnding(event: any) {
     );
     return;
   }
+
   let subject = "";
   let body = "";
   // Send email notification about trial ending
@@ -473,12 +464,7 @@ export async function handleInvoicePaymentSucceeded(event: any) {
     return;
   }
 
-  const subscription = await prisma.subscription.findFirst({
-    where: {
-      userId: user.id,
-      status: "active",
-    },
-  });
+  const subscription = await getActiveSubscription(user.id);
 
   if (!subscription) {
     loggerServer.error(
