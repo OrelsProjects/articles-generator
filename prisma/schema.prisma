@@ -59,6 +59,7 @@ enum AIUsageType {
   titleOrSubtitleRefinement
   notesGeneration
   analyze
+  seo
 }
 
 enum FeatureFlag {

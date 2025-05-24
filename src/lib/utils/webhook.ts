@@ -184,15 +184,11 @@ export async function handleSubscriptionUpdated(event: any) {
     });
     throw new Error("No subscription found for user");
   }
-
+  // trialing
   // If new month, we need to add new credits
-  const isRenewal =
-    currentSubscription.currentPeriodStart &&
-    subscription.current_period_start !==
-      new Date(currentSubscription.currentPeriodStart).getTime() / 1000 &&
-    subscription.status === "active";
+  const isTrial = currentSubscription.isTrialing;
 
-  if (isRenewal) {
+  if (!isTrial) {
     const { creditsLeft, creditsForPlan } = await calculateNewPlanCreditsLeft(
       user.id,
       plan,

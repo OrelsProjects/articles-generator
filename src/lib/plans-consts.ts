@@ -62,6 +62,7 @@ export const creditCosts: CreditsCost = {
   [AIUsageType.titleOrSubtitleRefinement]: 1,
   [AIUsageType.notesGeneration]: 3,
   [AIUsageType.analyze]: 10,
+  [AIUsageType.seo]: 1,
 };
 
 // userMetadata is an object with {isAdmin: boolean, featureFlags: FeatureFlag[]}

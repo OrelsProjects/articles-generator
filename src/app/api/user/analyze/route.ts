@@ -179,6 +179,9 @@ export async function POST(req: NextRequest) {
       publications = await getPublicationByUrl(url);
       userPublication = publications[0];
       if (!userPublication) {
+        if (didConsumeCredits) {
+          await undoUseCredits(session.user.id, "analyze");
+        }
         return NextResponse.json(
           { error: "The publication was not found." },
           { status: 404 },

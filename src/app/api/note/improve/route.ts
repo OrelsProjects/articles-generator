@@ -69,6 +69,7 @@ export async function POST(
     const publication = userPublication?.publication;
 
     if (!publication) {
+      await undoUseCredits(session.user.id, "textEnhancement");
       return NextResponse.json(
         { success: false, error: "User publication not found" },
         { status: 400 },

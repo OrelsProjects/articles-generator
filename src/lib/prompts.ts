@@ -1580,3 +1580,73 @@ ${articlesBody.map((a, i) => `(${i + 1}) ${a}`).join("\n")}
     { role: "user", content: userMessage },
   ];
 };
+
+// generateSEOMetadataPrompt – creates messages for an LLM to craft
+// an SEO‑optimised title, meta description and URL slug from a draft article.
+// -----------------------------------------------------------------------------
+// Design notes
+// • Respects user quirks stored in userMetadata / publication (e.g. no colons
+//   in titles, no em‑dashes, avoid word "embrace").
+// • Allows an optional focusKeyword – if given, title + description must lead
+//   with it.
+// • Returns messages usable with OpenAI chat completions, expecting a JSON
+//   response:
+//   {
+//     "title":        "...",
+//     "description":  "...",
+//     "slug":         "..."   // lower‑case, dash‑separated, no stop‑words
+//   }
+// -----------------------------------------------------------------------------
+
+export interface SEOPromptOptions {
+  maxTitleChars?: number; // default 60
+  maxDescriptionChars?: number; // default 160
+  focusKeyword?: string; // optional primary keyword
+}
+
+export const generateSEOMetadataPrompt = (
+  articleBody: string,
+  userMetadata?: UserMetadata | null,
+  publication?: PublicationMetadata | null,
+  options: SEOPromptOptions = {},
+) => {
+  const {
+    maxTitleChars = 60,
+    maxDescriptionChars = 160,
+    focusKeyword = "",
+  } = options;
+
+  const systemMessage = `
+${userMetadata?.noteWritingStyle || publication?.writingStyle || ""}
+
+You are an expert SEO copywriter.
+
+**Output requirements (top priority)**
+1. Generate exactly one JSON object with keys: title, description, slug. No other text.
+2. Title: ≤ ${maxTitleChars} characters (including spaces). Clear, compelling, no emojis, no colons, no em‑dashes, no semicolons. Capitalise major words. ${focusKeyword ? `Start with the keyword \"${focusKeyword}\".` : "Lead with the main topic."}
+3. Description: 120‑${maxDescriptionChars} characters. Natural language, includes the focus keyword once (near start). Encourage click‑through but avoid clickbait clichés.
+4. Slug: lowercase, dash‑separated, ASCII only, no stop words (the, a, an, of, to, and, for, with, in). Strip punctuation, trim to ≤ 8 words.
+5. Never change author’s tone drastically – keep concise & direct.
+6. Forbidden words: embrace.
+7. Do not output colons, em‑dashes or semicolons anywhere.
+8. If any field exceeds its limit, regenerate internally before responding.
+
+Response MUST be in the following format:
+{
+  "title": <generated title>,
+  "description": <generated description>,
+  "slug": <generated slug>
+}
+`.trim();
+
+  const userMessage = `
+${focusKeyword ? `Primary keyword: ${focusKeyword}` : ""}
+
+Draft article body:\n\n${articleBody}
+`.trim();
+
+  return [
+    { role: "system", content: systemMessage },
+    { role: "user", content: userMessage },
+  ];
+};
