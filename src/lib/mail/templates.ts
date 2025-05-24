@@ -561,3 +561,19 @@ export function generateMagicLinkEmail(
     `,
   };
 }
+
+export function generateSubstackDownEmail(userName?: string) {
+  const content = `
+    <h2>Heads up: Substack services are currently down</h2>
+    <p>Hi ${userName || "there"},</p>
+    <p>I wanted to give you a quick heads-up. Substack's systems are currently experiencing issues on their end.</p>
+    <p>Because of this, scheduled notes won't be sent out until they fix the problem.</p>
+    <p>You don't need to do anything right now. Once Substack is back online, notes will be sent out, given your Chrome is running.</p>
+    <p><br/>Orel</p>
+  `;
+
+  return {
+    body: baseEmailTemplate(content),
+    subject: "Substack is down — scheduled notes delayed",
+  };
+}

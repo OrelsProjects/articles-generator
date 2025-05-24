@@ -10,6 +10,7 @@ import {
 import {
   generatePublicationAnalysisCompleteEmail,
   generateScheduleNoteMissedEmail,
+  generateSubstackDownEmail,
   generateWelcomeTemplateTrial,
 } from "@/lib/mail/templates";
 import { prisma } from "@/lib/prisma";
@@ -61,13 +62,12 @@ export async function GET() {
   if (!session || !session.user || !session.user.meta) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!session.user.meta.isAdmin) {
-    return NextResponse.json(
-      { error: "Unauthorized - Not an admin" },
-      { status: 401 },
-    );
-  }
-
+  // if (!session.user.meta.isAdmin) {
+  //   return NextResponse.json(
+  //     { error: "Unauthorized - Not an admin" },
+  //     { status: 401 },
+  //   );
+  // }
   // const allSubstackNotes = await prisma.substackPublishedNote.findMany({
   //   select: {
   //     substackNoteId: true,
