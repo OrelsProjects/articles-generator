@@ -82,8 +82,13 @@ interface HitRateResponse {
   };
 }
 
-type SortField = 'hitRate' | 'lastScheduledAt' | 'name' | 'totalScheduledNotes' | 'sentNotes';
-type SortDirection = 'asc' | 'desc' | null;
+type SortField =
+  | "hitRate"
+  | "lastScheduledAt"
+  | "name"
+  | "totalScheduledNotes"
+  | "sentNotes";
+type SortDirection = "asc" | "desc" | null;
 
 const planColors: Record<Plan, string> = {
   standard: "bg-blue-100 text-blue-800",
@@ -116,11 +121,11 @@ export default function HitRatePage() {
     endDate: string;
     range: string;
   } | null>(null);
-  
+
   // Search and sorting state
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<SortField>('hitRate');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [sortField, setSortField] = useState<SortField>("hitRate");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const fetchHitRateData = async (
     range?: string,
@@ -173,24 +178,26 @@ export default function HitRatePage() {
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       // Toggle direction: asc -> desc -> null -> asc
-      if (sortDirection === 'asc') {
-        setSortDirection('desc');
-      } else if (sortDirection === 'desc') {
+      if (sortDirection === "asc") {
+        setSortDirection("desc");
+      } else if (sortDirection === "desc") {
         setSortDirection(null);
-        setSortField('hitRate'); // Default back to hit rate
+        setSortField("hitRate"); // Default back to hit rate
       } else {
-        setSortDirection('asc');
+        setSortDirection("asc");
       }
     } else {
       setSortField(field);
-      setSortDirection('desc'); // Default to desc for new field
+      setSortDirection("desc"); // Default to desc for new field
     }
   };
 
   const renderSortIcon = (field: SortField) => {
     if (sortField !== field) return null;
-    if (sortDirection === 'asc') return <ChevronUp className="inline-block w-4 h-4 ml-1" />;
-    if (sortDirection === 'desc') return <ChevronDown className="inline-block w-4 h-4 ml-1" />;
+    if (sortDirection === "asc")
+      return <ChevronUp className="inline-block w-4 h-4 ml-1" />;
+    if (sortDirection === "desc")
+      return <ChevronDown className="inline-block w-4 h-4 ml-1" />;
     return null;
   };
 
@@ -204,7 +211,7 @@ export default function HitRatePage() {
       filtered = data.filter(
         user =>
           user.name.toLowerCase().includes(query) ||
-          user.email.toLowerCase().includes(query)
+          user.email.toLowerCase().includes(query),
       );
     }
 
@@ -215,25 +222,25 @@ export default function HitRatePage() {
         let valueB: any = b[sortField];
 
         // Handle null values for lastScheduledAt
-        if (sortField === 'lastScheduledAt') {
+        if (sortField === "lastScheduledAt") {
           if (!valueA && !valueB) return 0;
-          if (!valueA) return sortDirection === 'asc' ? -1 : 1;
-          if (!valueB) return sortDirection === 'asc' ? 1 : -1;
+          if (!valueA) return sortDirection === "asc" ? -1 : 1;
+          if (!valueB) return sortDirection === "asc" ? 1 : -1;
           valueA = new Date(valueA).getTime();
           valueB = new Date(valueB).getTime();
         }
 
         // Handle string comparison for name
-        if (sortField === 'name') {
+        if (sortField === "name") {
           valueA = valueA.toLowerCase();
           valueB = valueB.toLowerCase();
         }
 
         if (valueA < valueB) {
-          return sortDirection === 'asc' ? -1 : 1;
+          return sortDirection === "asc" ? -1 : 1;
         }
         if (valueA > valueB) {
-          return sortDirection === 'asc' ? 1 : -1;
+          return sortDirection === "asc" ? 1 : -1;
         }
         return 0;
       });
@@ -244,7 +251,9 @@ export default function HitRatePage() {
 
   // Calculate aggregated time series data for all users
   const aggregatedTimeSeriesData = useMemo(() => {
-    const weeklyAggregated: { [key: string]: { scheduled: number; sent: number } } = {};
+    const weeklyAggregated: {
+      [key: string]: { scheduled: number; sent: number };
+    } = {};
 
     filteredAndSortedData.forEach(user => {
       user.timeSeriesData.forEach(weekData => {
@@ -272,7 +281,10 @@ export default function HitRatePage() {
     (sum, user) => sum + user.totalScheduledNotes,
     0,
   );
-  const totalSentNotes = filteredAndSortedData.reduce((sum, user) => sum + user.sentNotes, 0);
+  const totalSentNotes = filteredAndSortedData.reduce(
+    (sum, user) => sum + user.sentNotes,
+    0,
+  );
   const overallHitRate =
     totalScheduledNotes > 0 ? (totalSentNotes / totalScheduledNotes) * 100 : 0;
 
@@ -285,17 +297,23 @@ export default function HitRatePage() {
     },
     {
       name: "70-89%",
-      value: filteredAndSortedData.filter(u => u.hitRate >= 70 && u.hitRate < 90).length,
+      value: filteredAndSortedData.filter(
+        u => u.hitRate >= 70 && u.hitRate < 90,
+      ).length,
       color: "#0088FE",
     },
     {
       name: "50-69%",
-      value: filteredAndSortedData.filter(u => u.hitRate >= 50 && u.hitRate < 70).length,
+      value: filteredAndSortedData.filter(
+        u => u.hitRate >= 50 && u.hitRate < 70,
+      ).length,
       color: "#FFBB28",
     },
     {
       name: "30-49%",
-      value: filteredAndSortedData.filter(u => u.hitRate >= 30 && u.hitRate < 50).length,
+      value: filteredAndSortedData.filter(
+        u => u.hitRate >= 30 && u.hitRate < 50,
+      ).length,
       color: "#FF8042",
     },
     {
@@ -422,26 +440,6 @@ export default function HitRatePage() {
                   Apply Range
                 </Button>
               </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Search Bar */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search users by name or email..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-            {searchQuery && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                {filteredAndSortedData.length} results
-              </div>
             )}
           </div>
         </CardContent>
@@ -661,16 +659,33 @@ export default function HitRatePage() {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                    {filteredAndSortedData.length === 0 
+                    {filteredAndSortedData.length === 0
                       ? "No data available for the selected filters"
-                      : "Click on a user in the table below to view their individual hit rate trend"
-                    }
+                      : "Click on a user in the table below to view their individual hit rate trend"}
                   </div>
                 )}
               </CardContent>
             </Card>
           </div>
-
+          {/* Search Bar */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search users by name or email..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+                {searchQuery && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                    {filteredAndSortedData.length} results
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
           {/* Users Table */}
           <Card>
             <CardHeader>
@@ -681,41 +696,41 @@ export default function HitRatePage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead 
+                      <TableHead
                         className="cursor-pointer select-none"
-                        onClick={() => handleSort('name')}
+                        onClick={() => handleSort("name")}
                       >
                         User
-                        {renderSortIcon('name')}
+                        {renderSortIcon("name")}
                       </TableHead>
                       <TableHead>Plan</TableHead>
-                      <TableHead 
+                      <TableHead
                         className="text-center cursor-pointer select-none"
-                        onClick={() => handleSort('hitRate')}
+                        onClick={() => handleSort("hitRate")}
                       >
                         Hit Rate
-                        {renderSortIcon('hitRate')}
+                        {renderSortIcon("hitRate")}
                       </TableHead>
-                      <TableHead 
+                      <TableHead
                         className="text-center cursor-pointer select-none"
-                        onClick={() => handleSort('sentNotes')}
+                        onClick={() => handleSort("sentNotes")}
                       >
                         Sent
-                        {renderSortIcon('sentNotes')}
+                        {renderSortIcon("sentNotes")}
                       </TableHead>
-                      <TableHead 
+                      <TableHead
                         className="text-center cursor-pointer select-none"
-                        onClick={() => handleSort('totalScheduledNotes')}
+                        onClick={() => handleSort("totalScheduledNotes")}
                       >
                         Scheduled
-                        {renderSortIcon('totalScheduledNotes')}
+                        {renderSortIcon("totalScheduledNotes")}
                       </TableHead>
-                      <TableHead 
+                      <TableHead
                         className="cursor-pointer select-none"
-                        onClick={() => handleSort('lastScheduledAt')}
+                        onClick={() => handleSort("lastScheduledAt")}
                       >
                         Last Scheduled
-                        {renderSortIcon('lastScheduledAt')}
+                        {renderSortIcon("lastScheduledAt")}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
