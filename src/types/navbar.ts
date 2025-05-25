@@ -7,6 +7,7 @@ import {
   Calendar,
   BarChart,
   Radar,
+    Bot,
 } from "lucide-react";
 
 export const rootPath = "/queue";
@@ -47,6 +48,13 @@ export const navItems: {
     icon: KanbanSquare,
     locationInMobile: "bottom",
   },
+  // {
+  //   name: "WriteStack AI",
+  //   mobileName: "AI",
+  //   href: "/writestack-ai",
+  //   icon: Bot,
+  //   locationInMobile: "sidebar",
+  // },
   {
     name: "Editor",
     mobileName: "Editor",
