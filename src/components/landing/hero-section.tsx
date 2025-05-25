@@ -63,10 +63,10 @@ export const HeroSection = () => {
           <div className="flex-1 space-y-8 w-full">
             <div className="flex flex-col gap-16 items-center text-center lg:text-left">
               <div className="flex flex-col gap-3">
-                <h3>
+                {/* <h3>
                   A simple to use, AI-powered writing assistant for Substack
                   creators
-                </h3>
+                </h3> */}
                 <h1 className="text-center font-extrabold text-4xl sm:text-6xl tracking-tight !leading-[1.2]">
                   Turn Your Writing
                   <br />
