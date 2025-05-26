@@ -92,7 +92,7 @@ model Post {
   searchEngineTitle       String?   @map("search_engine_title") @db.VarChar(255)
   searchEngineDescription String?   @map("search_engine_description") @db.VarChar(500)
   slug                    String?   @map("slug") @db.VarChar(255)
-  postDate                DateTime? @map("post_date") @db.Timestamp(6)
+  postDate                DateTime @map("post_date") @db.Timestamp(6)
   audience                String?   @map("audience") @db.VarChar(50)
   canonicalUrl            String?   @map("canonical_url") @db.VarChar(1024)
   reactions               Json?     @map("reactions")

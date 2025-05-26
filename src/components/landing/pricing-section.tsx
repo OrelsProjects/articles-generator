@@ -13,9 +13,7 @@ import PriceContainer from "@/components/ui/price-container";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
-import {
-  maxNotesShceduledPerPlan,
-} from "@/lib/plans-consts";
+import { maxNotesShceduledPerPlan } from "@/lib/plans-consts";
 import { Plan } from "@prisma/client";
 import PlanComparisonDialog from "./plan-comparison-dialog";
 
@@ -32,8 +30,8 @@ const hobbyistFeatures = [
 ];
 
 const advancedFeatures = [
-  "Choose your LLM (Includes GPT-4.5)",
-  "Access to The Best Notes Templates",
+  "Choose your preferred LLM (Includes GPT-4.5)",
+  // "Access to The Best Notes Templates",
   "Notes scheduling, <span class='text-primary'>unlimited (Requires Chrome)</span>  ",
 ];
 

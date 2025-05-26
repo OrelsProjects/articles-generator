@@ -5,10 +5,9 @@ import { useSession } from "next-auth/react";
 import { MessageBubble } from "./message-bubble";
 import { ChatInput } from "./chat-input";
 import { LoadingBubble } from "./loading-bubble";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, MessageSquare } from "lucide-react";
+import { Loader2, Plus, MessageSquare, ArrowDown } from "lucide-react";
 import { AIChat, AIMessage } from "@/types/ai-chat";
 import { cn } from "@/lib/utils";
 
@@ -25,62 +24,90 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState("");
   const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastMessageCountRef = useRef(0);
+
+  // Check if user is at bottom of scroll
+  const isAtBottom = useCallback(() => {
+    if (!scrollAreaRef.current) return true;
+    const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
+    return scrollHeight - scrollTop - clientHeight < 80;
+  }, []);
 
   // Detect if user is manually scrolling
   const handleScroll = useCallback(() => {
-    if (scrollAreaRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
-      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
-      
-      // Clear existing timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      
-      // Set user scrolling state
-      if (!isAtBottom) {
-        setIsUserScrolling(true);
-      } else {
-        setIsUserScrolling(false);
-      }
-      
-      // Reset user scrolling after 2 seconds of no scroll activity
-      scrollTimeoutRef.current = setTimeout(() => {
-        if (isAtBottom) {
-          setIsUserScrolling(false);
-        }
-      }, 2000);
-    }
-  }, []);
+    if (!scrollAreaRef.current) return;
+    debugger;
+    const atBottom = isAtBottom();
 
-  // Intelligent auto-scroll
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
-    if (!isUserScrolling && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior, block: "end" });
+    // Clear existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
     }
-  }, [isUserScrolling]);
+
+    // Update scroll states
+    setIsUserScrolling(!atBottom);
+    setShowScrollButton(!atBottom);
+
+    // If user scrolled back to bottom, enable auto-scroll again
+    if (atBottom) {
+      setIsUserScrolling(false);
+    }
+
+    // Reset user scrolling after brief delay if at bottom
+    if (atBottom) {
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsUserScrolling(false);
+      }, 500);
+    }
+  }, [isAtBottom]);
+
+  // Smooth scroll to bottom
+  const scrollToBottom = useCallback(
+    (force: boolean = false, behavior: ScrollBehavior = "smooth") => {
+      if ((force || !isUserScrolling) && messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior, block: "end" });
+        setShowScrollButton(false);
+      }
+    },
+    [isUserScrolling],
+  );
+
+  // Manual scroll to bottom (for button click)
+  const handleScrollToBottom = useCallback(() => {
+    setIsUserScrolling(false);
+    scrollToBottom(true, "smooth");
+  }, [scrollToBottom]);
 
   // Fetch chat history on mount
   useEffect(() => {
     fetchChatHistory();
   }, []);
 
-  // Auto-scroll when streaming or new messages (but respect user scrolling)
+  // Auto-scroll during streaming (only if user hasn't scrolled away)
   useEffect(() => {
-    if (isStreaming || messages.length > 0) {
-      scrollToBottom();
+    if (isStreaming && streamingMessage && !isUserScrolling) {
+      scrollToBottom(false, "auto");
     }
-  }, [streamingMessage, isStreaming, scrollToBottom]);
+  }, [streamingMessage, isStreaming, isUserScrolling, scrollToBottom]);
 
-  // Scroll to bottom when a new message is added (not during streaming)
+  // Auto-scroll when new messages are added (but not during streaming)
   useEffect(() => {
-    if (!isStreaming && messages.length > 0) {
-      scrollToBottom("auto");
+    const currentMessageCount = messages.length;
+    const hasNewMessages = currentMessageCount > lastMessageCountRef.current;
+
+    if (hasNewMessages && !isStreaming && !isUserScrolling) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToBottom(false, "smooth");
+      }, 100);
     }
-  }, [messages.length, isStreaming, scrollToBottom]);
+
+    lastMessageCountRef.current = currentMessageCount;
+  }, [messages.length, isStreaming, isUserScrolling, scrollToBottom]);
 
   const fetchChatHistory = async () => {
     try {
@@ -89,8 +116,8 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
         const chatHistory = await response.json();
         setChats(chatHistory);
 
-        // Load the most recent chat if exists
-        if (chatHistory.length > 0) {
+        // Load the most recent chat if exists and no current chat
+        if (chatHistory.length > 0 && !currentChatId) {
           await loadChat(chatHistory[0].id);
         }
       }
@@ -107,6 +134,9 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
         const chat = await response.json();
         setCurrentChatId(chat.id);
         setMessages(chat.messages || []);
+        // Reset scroll states when loading new chat
+        setIsUserScrolling(false);
+        setShowScrollButton(false);
       }
     } catch (error) {
       console.error("Failed to load chat:", error);
@@ -120,12 +150,17 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
     setMessages([]);
     setStreamingMessage("");
     setIsUserScrolling(false);
+    setShowScrollButton(false);
   };
 
   const sendMessage = async (message: string) => {
     try {
       setIsStreaming(true);
       setIsUserScrolling(false); // Reset user scrolling when sending new message
+      setShowScrollButton(false);
+      setTimeout(() => {
+        scrollToBottom(true, "smooth");
+      }, 100);
 
       // Add user message to UI immediately
       const tempUserMessage: AIMessage = {
@@ -170,7 +205,7 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
             try {
               const data = JSON.parse(line.slice(6));
 
-              if (data.chatId) {
+              if (data.chatId && !chatId) {
                 chatId = data.chatId;
                 setCurrentChatId(data.chatId);
 
@@ -199,15 +234,17 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
                   createdAt: new Date(),
                   updatedAt: new Date(),
                 };
-                
-                // Use functional update to avoid re-renders
+
                 setMessages(prev => [...prev, assistantMessage]);
                 setStreamingMessage("");
 
-                // Refresh chat list without causing jumps
-                requestAnimationFrame(() => {
-                  fetchChatHistory();
-                });
+                // Only refresh chat list if this is a new chat, and do it without affecting scroll
+                if (!currentChatId && chatId) {
+                  // Delay the history fetch to avoid re-render during scroll
+                  setTimeout(() => {
+                    fetchChatHistory();
+                  }, 1000);
+                }
               }
 
               if (data.error) {
@@ -280,21 +317,21 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2">
+      <div className="flex-1 flex flex-col relative">
+        <div className="border-b p-4">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
             <MessageSquare className="h-5 w-5" />
             WriteStack AI Assistant
-          </CardTitle>
-        </CardHeader>
+          </h2>
+        </div>
 
-        <CardContent className="flex-1 p-0 flex flex-col">
-          <ScrollArea 
-            className="flex-1" 
+        <div className="h-full flex-1 flex flex-col">
+          <div
+            className="flex-shrink overflow-auto"
             ref={scrollAreaRef}
             onScroll={handleScroll}
           >
-            <div className="min-h-full flex flex-col justify-end">
+            <div className="min-h-full flex flex-col justify-end p-4">
               {isLoading ? (
                 <div className="flex items-center justify-center p-8">
                   <Loader2 className="h-6 w-6 animate-spin" />
@@ -337,10 +374,26 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
               )}
               <div ref={messagesEndRef} />
             </div>
-          </ScrollArea>
+          </div>
 
-          <ChatInput onSendMessage={sendMessage} isLoading={isStreaming} />
-        </CardContent>
+          <ChatInput
+            className="min-h-[8.5rem] max-h-[15rem] flex-shrink-0"
+            onSendMessage={sendMessage}
+            isLoading={isStreaming}
+          />
+        </div>
+
+        {/* Scroll to Bottom Button */}
+        {showScrollButton && (
+          <Button
+            onClick={handleScrollToBottom}
+            size="sm"
+            className="absolute bottom-20 right-6 rounded-full shadow-lg z-10"
+            variant="secondary"
+          >
+            <ArrowDown className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );

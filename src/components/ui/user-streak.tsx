@@ -53,7 +53,11 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
   return (
     <Button
       variant={"outline"}
-      className={cn("flex items-center gap-1", className)}
+      className={cn(
+        "flex items-center gap-1",
+        !showText && "px-0.5 border-none shadow-none hover:bg-transparent",
+        className,
+      )}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       asChild

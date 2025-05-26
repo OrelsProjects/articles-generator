@@ -74,6 +74,7 @@ enum FeatureFlag {
   canViewWriters
   canUseRadar
   canAutoDM
+  chat
 }
 
 enum CookieName {
@@ -344,6 +345,8 @@ model Note {
 
   sentViaScheduleAt DateTime?
   substackNoteId    String?
+
+  sendFailedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -754,35 +757,35 @@ model AutoDMMessageSent {
 // WriteStack AI Chat Models
 model AIChat {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-  
+
   userId String @db.ObjectId
   title  String @default("New Chat")
-  
+
   lastMessageAt DateTime?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages AIChatMessage[]
-  
+
   @@map("aiChats")
 }
 
 model AIChatMessage {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-  
+
   chatId  String @db.ObjectId
   role    String // "user" | "assistant" | "system"
   content String @db.String
-  
+
   // For tracking function calls made by the assistant
   functionCalls Json?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   chat AIChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  
+
   @@map("aiChatMessages")
 }

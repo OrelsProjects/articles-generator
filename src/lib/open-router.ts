@@ -69,6 +69,10 @@ export async function runPrompt(
   messages: { role: string; content: string }[],
   model: Model = "openrouter/auto",
   sourceName: string,
+  options: {
+    temperature?: number;
+    max_tokens?: number;
+  } = {},
 ): Promise<string> {
   let tokenCount = 0;
   tokenCount = getTokenCount(messages.map(m => m.content).join("\n"));
@@ -88,6 +92,7 @@ export async function runPrompt(
     {
       model,
       messages,
+      ...options,
     },
     {
       headers: {

@@ -66,6 +66,10 @@ export function useUi() {
     FeatureFlag.canAutoDM,
   );
 
+  const canUseChat = user?.meta?.featureFlags.includes(
+    FeatureFlag.chat,
+  );
+
   return {
     setState,
     hasAdvancedGPT,
@@ -82,5 +86,6 @@ export function useUi() {
     showCreateScheduleDialog,
     canScheduleNotes,
     canAutoDM,
+    canUseChat,
   };
 }

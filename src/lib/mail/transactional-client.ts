@@ -1,5 +1,5 @@
 import { SendEmailParams } from "@/lib/mail/client";
-import { Resend } from "resend";
+import { CreateEmailResponse, CreateEmailResponseSuccess, Resend } from "resend";
 
 const client = new Resend(process.env.RESEND_API_KEY);
 
@@ -13,7 +13,7 @@ export interface ITransactionalClient {
 export class TransactionalClient implements ITransactionalClient {
   async sendEmail(params: SendEmailParams): Promise<{
     error: Error | null;
-    data: any;
+    data: CreateEmailResponseSuccess | null;
   }> {
     try {
       const response = await client.emails.send({

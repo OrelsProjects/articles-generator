@@ -2,10 +2,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
 import { prisma, prismaArticles } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { runPromptStream } from "@/lib/open-router";
+import { runPrompt, runPromptStream } from "@/lib/open-router";
 import { z } from "zod";
 import { IdeaStatus } from "@prisma/client";
 import { getAuthorId } from "@/lib/dal/publication";
+import { getPreProcessorPrompt } from "@/lib/utils/chat/prompts";
+import { parseJson } from "@/lib/utils/json";
+import loggerServer from "@/loggerServer";
+import { generateNotes } from "@/lib/utils/generate/notes";
+import { generateIdeas } from "@/lib/utils/ideas";
+import { getUserArticles, getUserArticlesByUserId } from "@/lib/dal/articles";
 
 const createChatSchema = z.object({
   message: z.string().min(1).max(10000),
@@ -18,12 +24,26 @@ const sendMessageSchema = z.object({
 
 // Pre-processor response schema
 interface PreProcessorResponse {
-  tool?: string;
+  tool?: "generateNotes" | "generateArticleIdeas" | "unknown";
+  needed?: "getNotes" | "getArticles" | "getArticlesWithBody";
+  amount?: number;
+  otherLLMPrompt?: string;
   nextStep: "ready" | "useTool";
+  // Legacy fields for backward compatibility
+  notesRequired?: boolean;
+  articlesRequired?: boolean;
+  notesBodyRequired?: boolean;
+  articlesBodyRequired?: boolean;
+  articlesVectorSearch?: boolean;
+  articlesVectorSearchPhrase?: string;
+  otherLLM?: boolean;
 }
 
 // Helper function to get user context
-async function getUserContext(userId: string) {
+async function getUserContext(
+  userId: string,
+  includeRecentNotes: boolean = false,
+) {
   const userMetadata = await prisma.userMetadata.findUnique({
     where: { userId },
     include: {
@@ -31,23 +51,27 @@ async function getUserContext(userId: string) {
     },
   });
 
-  const authorId = await getAuthorId(userId);
   let recentNotes: { body: string }[] = [];
-  if (authorId) {
-    const userNotes = await prismaArticles.notesComments.findMany({
-      where: {
-        authorId,
-      },
-      take: 10,
-      orderBy: { timestamp: "desc" },
-      select: {
-        body: true,
-      },
-    });
-    recentNotes =
-      userNotes?.map(note => ({
-        body: note.body,
-      })) || [];
+
+  // Only fetch recent notes if explicitly requested to avoid unnecessary data pulling
+  if (includeRecentNotes) {
+    const authorId = await getAuthorId(userId);
+    if (authorId) {
+      const userNotes = await prismaArticles.notesComments.findMany({
+        where: {
+          authorId,
+        },
+        take: 10,
+        orderBy: { timestamp: "desc" },
+        select: {
+          body: true,
+        },
+      });
+      recentNotes =
+        userNotes?.map(note => ({
+          body: note.body,
+        })) || [];
+    }
   }
 
   return {
@@ -65,91 +89,76 @@ async function getUserContext(userId: string) {
       userMetadata?.notesDescription ||
       userMetadata?.publication?.generatedDescription ||
       "",
-    recentNotes: recentNotes.map(note => ({
-      preview: note.body.substring(0, 200) + "...",
-    })),
+    recentNotes: includeRecentNotes
+      ? recentNotes.map(note => ({
+          preview: note.body.substring(0, 200) + "...",
+        }))
+      : [],
   };
 }
 
 // Helper function to call GPT-4-Nano pre-processor
 async function callPreProcessor(
   userMessage: string,
+  previousMessages: { role: string; content: string }[],
 ): Promise<PreProcessorResponse> {
-  const preProcessorPrompt = `You are a routing engine that decides what action to take based on the user's request.
-
-Available tools:
-- getUserNotes: Returns the user's published and draft notes
-- getUserArticles: Returns the user's articles
-
-Analyze this request: "${userMessage}"
-
-Respond ONLY with a JSON object in this exact format:
-{
-  "tool": "toolName" or null,
-  "nextStep": "ready" or "useTool"
-}
-
-Rules:
-- If the user asks about their past writing, notes, or articles, set tool to the appropriate tool name and nextStep to "useTool"
-- If the user wants to generate new content or get help with writing, set tool to null and nextStep to "ready"
-- If the user mentions searching their content or finding something they wrote, use the appropriate tool
-- Default to "ready" if unsure`;
+  const preProcessorPrompt = getPreProcessorPrompt({
+    userMessage,
+  });
 
   try {
     // Use the OpenRouter API directly for a single response
-    const response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
+    const response = await runPrompt(
+      [
+        {
+          role: "system",
+          content: preProcessorPrompt,
         },
-        body: JSON.stringify({
-          model: "openai/gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content: preProcessorPrompt,
-            },
-          ],
-          temperature: 0.1,
-          max_tokens: 100,
-        }),
+        ...previousMessages,
+      ],
+      "openai/gpt-4o-mini",
+      "ai-chat",
+      {
+        temperature: 0.1,
+        max_tokens: 100,
       },
     );
 
-    if (!response.ok) {
-      console.error("Pre-processor API error:", await response.text());
-      return { nextStep: "ready" };
-    }
-
-    const data = await response.json();
-    const content = data.choices[0]?.message?.content || "{}";
-
     // Parse JSON response
     try {
-      const parsed = JSON.parse(content);
-      return {
-        tool: parsed.tool || undefined,
-        nextStep: parsed.nextStep || "ready",
-      };
+      const parsed = await parseJson<PreProcessorResponse>(response);
+      return parsed;
     } catch (e) {
-      console.error("Failed to parse pre-processor response:", content);
+      loggerServer.error("Failed to parse pre-processor response:", {
+        content: response,
+        message: userMessage,
+        preProcessorPrompt,
+        userId: "ai-chat",
+      });
       return { nextStep: "ready" };
     }
   } catch (error) {
-    console.error("Pre-processor error:", error);
+    loggerServer.error("Pre-processor error:", {
+      error,
+      message: userMessage,
+      preProcessorPrompt,
+      userId: "ai-chat",
+    });
     return { nextStep: "ready" };
   }
 }
 
 // Helper function to execute tools
-async function executeTool(toolName: string, userId: string): Promise<string> {
+async function executeTool(
+  toolName: string,
+  userId: string,
+  amount: number = 10,
+): Promise<string> {
   try {
     // Instead of making HTTP calls, directly execute the tool logic
     switch (toolName) {
       case "getUserNotes": {
+        const limitedAmount = Math.min(Math.max(amount, 1), 50); // Ensure amount is between 1 and 50
         const notes = await prisma.note.findMany({
           where: {
             userId: userId,
@@ -166,11 +175,10 @@ async function executeTool(toolName: string, userId: string): Promise<string> {
             createdAt: true,
             feedback: true,
           },
-          take: 100,
+          take: limitedAmount,
         });
 
-        return `Found ${notes.length} notes. Here are the most recent ones:\n\n${notes
-          .slice(0, 10)
+        return `Found ${notes.length} notes. Here are the ${limitedAmount === notes.length ? "all" : "most recent"} ones:\n\n${notes
           .map(
             (note: any) =>
               `- ${note.summary} (Topics: ${note.topics.join(", ")})\n  Status: ${note.status}, Created: ${new Date(note.createdAt).toLocaleDateString()}`,
@@ -179,32 +187,102 @@ async function executeTool(toolName: string, userId: string): Promise<string> {
       }
 
       case "getUserArticles": {
-        const articles = await prisma.idea.findMany({
-          where: {
-            userId: userId,
-            status: { not: IdeaStatus.archived },
+        const limitedAmount = Math.min(Math.max(amount, 1), 50); // Ensure amount is between 1 and 50
+        const articles = await getUserArticlesByUserId(userId, {
+          limit: limitedAmount,
+          includeBody: false,
+          order: {
+            by: "postDate",
+            direction: "desc",
           },
-          orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            title: true,
-            subtitle: true,
-            description: true,
-            body: true,
-            topic: true,
-            status: true,
-            createdAt: true,
-          },
-          take: 50,
+          select: ["title", "subtitle", "description", "postDate"],
         });
 
-        return `Found ${articles.length} articles. Here are the most recent ones:\n\n${articles
-          .slice(0, 10)
+        return `Found ${articles.length} articles. Here are the ${limitedAmount === articles.length ? "all" : "most recent"} ones:\n\n${articles
           .map(
             (article: any) =>
-              `- "${article.title}" - ${article.subtitle}\n  ${article.description}`,
+              `- "${article.title}" - ${article.subtitle}\n  ${article.bodyText || article.description}`,
           )
           .join("\n\n")}`;
+      }
+
+      case "getArticlesWithBody": {
+        const limitedAmount = Math.min(Math.max(amount, 1), 50); // Ensure amount is between 1 and 50
+        const articles = await getUserArticlesByUserId(userId, {
+          limit: limitedAmount * 2, // Fetch more to account for filtering
+          includeBody: true,
+          order: {
+            by: "postDate",
+            direction: "desc",
+          },
+          select: ["title", "postDate", "description", "bodyText"],
+        });
+
+        // Filter out articles without body content
+        const articlesWithBody = articles
+          .filter(article => article.bodyText && article.bodyText.length > 0)
+          .slice(0, limitedAmount); // Limit to requested amount after filtering
+
+        return `Found ${articlesWithBody.length} articles with body content. Here are the ${limitedAmount === articlesWithBody.length ? "all" : "most recent"} ones:\n\n${articlesWithBody
+          .map(
+            (article: any) =>
+              `- "${article.title}" - ${article.subtitle}\n  ${article.description}\n  Body: ${article.bodyText}`,
+          )
+          .join("\n\n")}`;
+      }
+
+      case "generateNotes": {
+        // Stream status first
+        const result = await generateNotes({
+          notesCount: 3,
+          requestedModel: "auto",
+          useTopTypes: false,
+          topic: "",
+          preSelectedPostIds: [],
+        });
+
+        if (!result.success) {
+          return `Error generating notes: ${result.errorMessage}`;
+        }
+
+        const notes = result.data?.responseBody?.body || [];
+        return `## Generated Notes:\n\n${notes
+          .map(
+            (note: any, i: number) =>
+              `### Note ${i + 1}:\n${note.body}\n\n**Topics:** ${note.topics?.join(", ") || "general"}\n**Summary:** ${note.summary || ""}`,
+          )
+          .join("\n\n---\n\n")}`;
+      }
+
+      case "generateArticleIdeas": {
+        const userMetadata = await prisma.userMetadata.findUnique({
+          where: { userId },
+          include: { publication: true },
+        });
+
+        if (!userMetadata?.publication) {
+          return "Error: Publication metadata not found. Please complete your profile setup first.";
+        }
+
+        const ideas = await generateIdeas(
+          userId,
+          "",
+          userMetadata.publication,
+          3,
+          "false",
+          [],
+          {
+            modelUsedForIdeas: "anthropic/claude-3.7-sonnet",
+            modelUsedForOutline: "anthropic/claude-3.7-sonnet",
+          },
+        );
+
+        return `## Generated Article Ideas:\n\n${ideas
+          .map(
+            (idea: any, i: number) =>
+              `### Idea ${i + 1}: ${idea.title}\n**Subtitle:** ${idea.subtitle}\n**Description:** ${idea.description}\n\n**Outline:**\n${idea.outline}`,
+          )
+          .join("\n\n---\n\n")}`;
       }
 
       default:
@@ -218,6 +296,12 @@ async function executeTool(toolName: string, userId: string): Promise<string> {
 
 // Helper function to build system prompt
 function buildSystemPrompt(userContext: any) {
+  const recentNotesSection =
+    userContext.recentNotes?.length > 0
+      ? `Recent Notes Preview:
+${userContext.recentNotes.map((note: any) => `- ${note.preview}`).join("\n")}`
+      : "";
+
   return `You are WriteStack MCP – a deeply integrated AI writing companion built into the user's editor. You operate with full access to the user's context, tone, and writing style. You are their second brain – focused, efficient, and never preachy.
 
 You're not a generic chatbot. You're a high-IQ writing assistant that helps the user generate, improve, or rework content based on their past work.
@@ -228,8 +312,7 @@ User's Writing Context:
 - Personality: ${userContext.personality}
 - About: ${userContext.description}
 
-Recent Notes Preview:
-${userContext.recentNotes?.map((note: any) => `- ${note.preview}`).join("\n")}
+${recentNotesSection}
 
 Your outputs must always:
 - Match the user's writing style described above
@@ -288,10 +371,14 @@ export async function POST(request: NextRequest) {
       // Call pre-processor to decide what to do
       const preProcessorDecision = await callPreProcessor(
         validatedData.message,
+        chat.messages.map((msg: any) => ({
+          role: msg.role,
+          content: msg.content,
+        })),
       );
 
       // Create user message
-      const userMessage = await prisma.aIChatMessage.create({
+      await prisma.aIChatMessage.create({
         data: {
           chatId: chat.id,
           role: "user",
@@ -305,8 +392,16 @@ export async function POST(request: NextRequest) {
         data: { lastMessageAt: new Date() },
       });
 
+      // Optimization: Determine if we need to include recent notes in user context
+      // Only include them if the pre-processor doesn't suggest using a tool (to avoid redundant data)
+      // This prevents unnecessary database queries and reduces prompt size when tools will provide the needed data
+      const includeRecentNotes = preProcessorDecision.nextStep !== "useTool";
+
       // Get user context
-      const userContext = await getUserContext(session.user.id);
+      const userContext = await getUserContext(
+        session.user.id,
+        includeRecentNotes,
+      );
       const systemPrompt = buildSystemPrompt(userContext);
 
       // Build messages array for the LLM
@@ -324,15 +419,37 @@ export async function POST(request: NextRequest) {
         preProcessorDecision.nextStep === "useTool" &&
         preProcessorDecision.tool
       ) {
+        let toolToExecute: string = preProcessorDecision.tool;
+
+        // Handle "unknown" tool case
+        if (
+          preProcessorDecision.tool === "unknown" &&
+          preProcessorDecision.needed
+        ) {
+          // Map the needed data type to the actual tool name
+          const toolMap: Record<string, string> = {
+            getNotes: "getUserNotes",
+            getArticles: "getUserArticles",
+            getArticlesWithBody: "getArticlesWithBody",
+          };
+          toolToExecute =
+            toolMap[preProcessorDecision.needed] || "getUserNotes";
+        }
+
         const toolResult = await executeTool(
-          preProcessorDecision.tool,
+          toolToExecute,
           session.user.id,
+          preProcessorDecision.amount || 10,
         );
 
         // Add tool result to the conversation context
         messages.push({
           role: "system",
-          content: `Tool ${preProcessorDecision.tool} returned:\n${toolResult}\n\nUse this information to answer the user's question.`,
+          content: `Tool ${toolToExecute} returned:\n${toolResult}\n\n${
+            preProcessorDecision.otherLLMPrompt
+              ? `User's request context: ${preProcessorDecision.otherLLMPrompt}`
+              : "Use this information to answer the user's question."
+          }`,
         });
       }
 
@@ -355,9 +472,27 @@ export async function POST(request: NextRequest) {
               },
             });
 
+            // If generating content, stream status first
+            if (
+              preProcessorDecision.tool === "generateNotes" ||
+              preProcessorDecision.tool === "generateArticleIdeas"
+            ) {
+              const statusMessage =
+                preProcessorDecision.tool === "generateNotes"
+                  ? "Generating personalized notes..."
+                  : "Generating article ideas and outlines...";
+
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ token: statusMessage + "\n\n" })}\n\n`,
+                ),
+              );
+              fullResponse += statusMessage + "\n\n";
+            }
+
             for await (const chunk of runPromptStream(
               messages,
-              "anthropic/claude-3.5-sonnet",
+              "anthropic/claude-3.7-sonnet",
             )) {
               fullResponse += chunk;
 
@@ -403,6 +538,7 @@ export async function POST(request: NextRequest) {
       // Call pre-processor to decide what to do
       const preProcessorDecision = await callPreProcessor(
         validatedData.message,
+        [],
       );
 
       // Create chat with first message
@@ -420,8 +556,15 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Determine if we need to include recent notes in user context
+      // Only include them if the pre-processor doesn't suggest using a tool (to avoid redundant data)
+      const includeRecentNotes = preProcessorDecision.nextStep !== "useTool";
+
       // Get user context
-      const userContext = await getUserContext(session.user.id);
+      const userContext = await getUserContext(
+        session.user.id,
+        includeRecentNotes,
+      );
       const systemPrompt = buildSystemPrompt(userContext);
 
       // Build messages array
@@ -435,15 +578,37 @@ export async function POST(request: NextRequest) {
         preProcessorDecision.nextStep === "useTool" &&
         preProcessorDecision.tool
       ) {
+        let toolToExecute: string = preProcessorDecision.tool;
+
+        // Handle "unknown" tool case
+        if (
+          preProcessorDecision.tool === "unknown" &&
+          preProcessorDecision.needed
+        ) {
+          // Map the needed data type to the actual tool name
+          const toolMap: Record<string, string> = {
+            getNotes: "getUserNotes",
+            getArticles: "getUserArticles",
+            getArticlesWithBody: "getArticlesWithBody",
+          };
+          toolToExecute =
+            toolMap[preProcessorDecision.needed] || "getUserNotes";
+        }
+
         const toolResult = await executeTool(
-          preProcessorDecision.tool,
+          toolToExecute,
           session.user.id,
+          preProcessorDecision.amount || 10,
         );
 
         // Add tool result to the conversation context
         messages.push({
           role: "system",
-          content: `Tool ${preProcessorDecision.tool} returned:\n${toolResult}\n\nUse this information to answer the user's question.`,
+          content: `Tool ${toolToExecute} returned:\n${toolResult}\n\n${
+            preProcessorDecision.otherLLMPrompt
+              ? `User's request context: ${preProcessorDecision.otherLLMPrompt}`
+              : "Use this information to answer the user's question."
+          }`,
         });
       }
 
@@ -475,7 +640,7 @@ export async function POST(request: NextRequest) {
 
             for await (const chunk of runPromptStream(
               messages,
-              "anthropic/claude-3.5-sonnet",
+              "anthropic/claude-3.7-sonnet",
             )) {
               fullResponse += chunk;
 

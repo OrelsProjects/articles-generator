@@ -250,15 +250,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {sidebarCollapsed && (
-                  <>
-                    <DropdownMenuItem className="flex items-center gap-2">
-                      <UserStreak />
-                      <span>Your Streak</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive flex items-center gap-2"
                   onClick={signOut}

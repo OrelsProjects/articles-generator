@@ -51,19 +51,26 @@ export async function POST(
 
     const { ok, error, text, substackNoteId, newStatus } = parsedBody.data;
 
-    if (!ok) {
-      Logger.error(
-        `[TRIGGERED] Failed to trigger schedule: ${scheduleId}, error: ${error}, with text: ${text}`,
-      );
-      return NextResponse.json({}, { status: 200 });
-    }
-
-    // update schedule status to "published"
     const note = await getNoteByScheduleId(scheduleId);
+
     if (!note) {
       Logger.error(`[TRIGGERED] Note not found for schedule: ${scheduleId}`);
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
+
+    if (!ok) {
+      Logger.error(
+        `[TRIGGERED] Failed to trigger schedule: ${scheduleId}, error: ${error}, with text: ${text}`,
+      );
+      await prisma.note.update({
+        where: { id: note.id },
+        data: {
+          sendFailedAt: new Date(),
+        },
+      });
+      return NextResponse.json({}, { status: 200 });
+    }
+
     let user: User | null = null;
     try {
       user = await prisma.user.findUnique({

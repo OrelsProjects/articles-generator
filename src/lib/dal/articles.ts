@@ -5,7 +5,7 @@ import { ArticleContent } from "@/lib/dal/milvus";
 import { getSubstackArticleData } from "@/lib/utils/article";
 
 export interface GetArticlesOptionsOrder {
-  by: "reactionCount" | "publishedAt" | "audience";
+  by: "reactionCount" | "postDate" | "audience";
   direction: "asc" | "desc";
 }
 
@@ -15,7 +15,63 @@ export interface GetUserArticlesOptions {
   order?: GetArticlesOptionsOrder;
   select?: (keyof Post)[];
   scrapeIfNotFound?: boolean;
+  includeBody?: boolean;
 }
+
+export const getUserArticlesByUserId = async (
+  userId: string,
+  options: GetUserArticlesOptions = {
+    limit: 10,
+    includeBody: true,
+  },
+) => {
+  const queryOptions = {
+    take: options.limit || 300,
+    orderBy: options.order
+      ? {
+          [options.order.by]: options.order.direction,
+        }
+      : undefined,
+    select: options.select
+      ? Object.fromEntries(options.select.map(column => [column, true]))
+      : undefined,
+  };
+
+  const userMetadata = await prisma.userMetadata.findUnique({
+    where: {
+      userId: userId,
+    },
+    select: {
+      publication: {
+        select: {
+          authorId: true,
+        },
+      },
+    },
+  });
+  if (!userMetadata || !userMetadata.publication) {
+    return [];
+  }
+
+  const userPublications = await prismaArticles.publication.findMany({
+    where: {
+      authorId: userMetadata.publication.authorId,
+    },
+  });
+
+  const publicationIds = userPublications.map(it => it.id);
+
+  const posts = await prismaArticles.post.findMany({
+    where: {
+      publicationId: {
+        in: publicationIds.map(it => it.toString()),
+      },
+    },
+    ...queryOptions,
+  });
+
+  return posts;
+};
 
 export const getUserArticles = async (
   data:
@@ -34,6 +90,7 @@ export const getUserArticles = async (
       },
   options: GetUserArticlesOptions = {
     limit: 10,
+    includeBody: true,
     freeOnly: true,
   },
 ): Promise<Article[]> => {
@@ -103,27 +160,47 @@ export const getUserArticles = async (
       ...queryOptions,
     });
   } else if ("userId" in data) {
-    const publication = await prisma.userMetadata.findMany({
+    const userMetadata = await prisma.userMetadata.findUnique({
       where: {
         userId: data.userId,
       },
       select: {
         publication: {
           select: {
-            idInArticlesDb: true,
+            authorId: true,
           },
         },
       },
     });
-    if (publication.length === 0) {
+    if (!userMetadata || !userMetadata.publication) {
       return [];
     }
+
+    const postBylines = await prismaArticles.postByline.findMany({
+      where: {
+        bylineId: userMetadata.publication.authorId,
+      },
+    });
+    const publicationIds = postBylines.map(it => it.postId);
+
     posts = await prismaArticles.post.findMany({
       where: {
-        publicationId:
-          publication[0].publication?.idInArticlesDb?.toString() || "",
+        id: {
+          in: publicationIds,
+        },
       },
       ...queryOptions,
+    });
+  }
+
+  if (!options.includeBody) {
+    return posts.map(post => {
+      const { bodyText, ...rest } = post;
+      return {
+        ...rest,
+        bodyText: "",
+        canonicalUrl: post.canonicalUrl || "",
+      };
     });
   }
 
@@ -169,7 +246,7 @@ export const getUserArticlesWithBody = async (
   }));
 };
 
-export const getUserArticlesBody = async (  
+export const getUserArticlesBody = async (
   posts: { canonicalUrl: string; id: number; bodyText: string }[],
 ): Promise<{ canonicalUrl: string; id: number; bodyText: string }[]> => {
   const urlsWithoutBody = posts
