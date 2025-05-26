@@ -25,6 +25,7 @@ const featureFlagLabels: Record<FeatureFlag, string> = {
   canViewWriters: "Access to Writers",
   canUseRadar: "Access to Radar",
   canAutoDM: "Access to Auto DM",
+  chat: "Access to Chat",
 };
 
 interface PlanComparisonDialogProps {

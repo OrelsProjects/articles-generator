@@ -18,14 +18,6 @@ const chunksMap = new Map<
   }
 >();
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: MAX_FILE_SIZE,
-    },
-  },
-};
-
 async function cleanupChunks(fileId: string) {
   chunksMap.delete(fileId);
 }
@@ -69,6 +61,11 @@ export async function POST(
 
     if (!file || !fileId) {
       throw new Error("Missing file or fileId");
+    }
+
+    // If file size is bigger than MAX_FILE_SIZE, return 413
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: "File too large" }, { status: 413 });
     }
 
     // Read chunk
