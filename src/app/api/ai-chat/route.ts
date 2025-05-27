@@ -120,7 +120,7 @@ async function callPreProcessor(
       "ai-chat",
       {
         temperature: 0.1,
-        max_tokens: 100,
+        max_tokens: 4000,
       },
     );
 

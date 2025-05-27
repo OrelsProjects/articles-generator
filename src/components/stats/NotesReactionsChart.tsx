@@ -17,9 +17,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNotesStats } from "@/lib/hooks/useNotesStats";
 import { ReactionInterval, IntervalStats } from "@/types/notes-stats";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const intervalLabels: Record<ReactionInterval, string> = {
   day: "Daily",
@@ -86,18 +88,34 @@ const formatPeriod = (period: string, interval: ReactionInterval) => {
   }
 };
 
-const CustomTooltip = ({ active, payload, label, interval }: any) => {
+const CustomTooltip = ({ active, payload, label, interval, isNormalized, originalData }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
         <p className="text-sm font-medium text-foreground mb-2">
           {formatPeriod(label, interval)}
         </p>
-        {payload.map((entry: any, index: number) => (
-          <p key={index} className="text-sm" style={{ color: entry.color }}>
-            <span className="font-semibold">{entry.value}</span> {entry.dataKey}
+        {payload.map((entry: any, index: number) => {
+          const originalValue = isNormalized && originalData 
+            ? originalData.find((d: any) => d.period === label)?.[entry.dataKey] 
+            : null;
+          
+          return (
+            <div key={index} className="text-sm" style={{ color: entry.color }}>
+              <span className="font-semibold">{entry.value}</span> {entry.dataKey}
+              {originalValue && originalValue !== entry.value && (
+                <span className="text-xs text-muted-foreground ml-1">
+                  (was {originalValue})
+                </span>
+              )}
+            </div>
+          );
+        })}
+        {isNormalized && (
+          <p className="text-xs text-muted-foreground mt-1 border-t pt-1">
+            Outliers normalized for better visualization
           </p>
-        ))}
+        )}
       </div>
     );
   }
@@ -133,10 +151,11 @@ export function NotesReactionsChart() {
   const [visibleMetrics, setVisibleMetrics] = useState<Set<string>>(
     new Set(["reactions", "restacks", "comments"]),
   );
+  const [normalizeData, setNormalizeData] = useState(false);
 
   // Combine all the data into a single array for the chart
-  const chartData = useMemo(() => {
-    if (!noteStats) return [];
+  const { chartData, originalData } = useMemo(() => {
+    if (!noteStats) return { chartData: [], originalData: [] };
 
     // Get all unique periods
     const allPeriods = new Set([
@@ -146,7 +165,7 @@ export function NotesReactionsChart() {
     ]);
 
     // Create combined data array
-    return Array.from(allPeriods)
+    const rawData = Array.from(allPeriods)
       .sort()
       .map(period => {
         const reactions =
@@ -163,7 +182,45 @@ export function NotesReactionsChart() {
           comments,
         };
       });
-  }, [noteStats]);
+
+    if (!normalizeData) return { chartData: rawData, originalData: rawData };
+
+    // Apply normalization to handle viral outliers
+    const normalizeMetric = (values: number[]) => {
+      if (values.length === 0) return values;
+      
+      // Calculate percentiles
+      const sorted = [...values].sort((a, b) => a - b);
+      const q75Index = Math.floor(sorted.length * 0.75);
+      const q95Index = Math.floor(sorted.length * 0.95);
+      const q75 = sorted[q75Index];
+      const q95 = sorted[q95Index];
+      
+      // Calculate IQR-based cap (more conservative than just using max)
+      const iqr = q95 - q75;
+      const cap = q95 + (iqr * 1.5);
+      
+      // Apply cap to values
+      return values.map(value => Math.min(value, cap));
+    };
+
+    const reactions = rawData.map(d => d.reactions);
+    const restacks = rawData.map(d => d.restacks);
+    const comments = rawData.map(d => d.comments);
+
+    const normalizedReactions = normalizeMetric(reactions);
+    const normalizedRestacks = normalizeMetric(restacks);
+    const normalizedComments = normalizeMetric(comments);
+
+    const normalizedData = rawData.map((item, index) => ({
+      ...item,
+      reactions: normalizedReactions[index],
+      restacks: normalizedRestacks[index],
+      comments: normalizedComments[index],
+    }));
+
+    return { chartData: normalizedData, originalData: rawData };
+  }, [noteStats, normalizeData]);
 
   const stats = useMemo(() => {
     if (!noteStats)
@@ -275,26 +332,49 @@ export function NotesReactionsChart() {
             <CardTitle className="flex items-center gap-2">
               Notes Statistics
             </CardTitle>
-            <div className="flex gap-2">
-              {intervalOptions.map(interval => (
-                <Button
-                  key={interval}
-                  variant={
-                    reactionsInterval === interval ? "default" : "outline"
-                  }
-                  size="sm"
-                  onClick={() => changeReactionsInterval(interval)}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="normalize-data"
+                  checked={normalizeData}
+                  onCheckedChange={setNormalizeData}
                   disabled={loadingReactions}
-                  className="text-xs"
+                />
+                <Label 
+                  htmlFor="normalize-data" 
+                  className="text-xs text-muted-foreground cursor-pointer flex items-center gap-1"
                 >
-                  {intervalLabels[interval]}
-                </Button>
-              ))}
+                  <BarChart3 className="h-3 w-3" />
+                  Normalize outliers
+                </Label>
+              </div>
+              <div className="flex gap-2">
+                {intervalOptions.map(interval => (
+                  <Button
+                    key={interval}
+                    variant={
+                      reactionsInterval === interval ? "default" : "outline"
+                    }
+                    size="sm"
+                    onClick={() => changeReactionsInterval(interval)}
+                    disabled={loadingReactions}
+                    className="text-xs"
+                  >
+                    {intervalLabels[interval]}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Stats Summary */}
           <div className="flex items-center gap-4 mt-4 flex-wrap">
+            {normalizeData && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                <BarChart3 className="h-3 w-3" />
+                <span>Outliers normalized</span>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <Badge
                 variant="outline"
@@ -459,7 +539,11 @@ export function NotesReactionsChart() {
                     fontSize={12}
                   />
                   <Tooltip
-                    content={<CustomTooltip interval={reactionsInterval} />}
+                    content={<CustomTooltip 
+                      interval={reactionsInterval} 
+                      isNormalized={normalizeData}
+                      originalData={originalData}
+                    />}
                   />
 
                   {/* Reactions Area */}

@@ -160,37 +160,7 @@ export const getUserArticles = async (
       ...queryOptions,
     });
   } else if ("userId" in data) {
-    const userMetadata = await prisma.userMetadata.findUnique({
-      where: {
-        userId: data.userId,
-      },
-      select: {
-        publication: {
-          select: {
-            authorId: true,
-          },
-        },
-      },
-    });
-    if (!userMetadata || !userMetadata.publication) {
-      return [];
-    }
-
-    const postBylines = await prismaArticles.postByline.findMany({
-      where: {
-        bylineId: userMetadata.publication.authorId,
-      },
-    });
-    const publicationIds = postBylines.map(it => it.postId);
-
-    posts = await prismaArticles.post.findMany({
-      where: {
-        id: {
-          in: publicationIds,
-        },
-      },
-      ...queryOptions,
-    });
+    posts = await getUserArticlesByUserId(data.userId, options);
   }
 
   if (!options.includeBody) {
