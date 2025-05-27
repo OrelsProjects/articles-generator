@@ -85,37 +85,37 @@ model PostByline {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Post {
-  id                      String    @id @db.VarChar
-  publicationId           String?   @map("publication_id") @db.VarChar
-  title                   String?   @map("title") @db.VarChar(255)
-  socialTitle             String?   @map("social_title") @db.VarChar(255)
-  searchEngineTitle       String?   @map("search_engine_title") @db.VarChar(255)
-  searchEngineDescription String?   @map("search_engine_description") @db.VarChar(500)
-  slug                    String?   @map("slug") @db.VarChar(255)
+  id                      String   @id @db.VarChar
+  publicationId           String?  @map("publication_id") @db.VarChar
+  title                   String?  @map("title") @db.VarChar(255)
+  socialTitle             String?  @map("social_title") @db.VarChar(255)
+  searchEngineTitle       String?  @map("search_engine_title") @db.VarChar(255)
+  searchEngineDescription String?  @map("search_engine_description") @db.VarChar(500)
+  slug                    String?  @map("slug") @db.VarChar(255)
   postDate                DateTime @map("post_date") @db.Timestamp(6)
-  audience                String?   @map("audience") @db.VarChar(50)
-  canonicalUrl            String?   @map("canonical_url") @db.VarChar(1024)
-  reactions               Json?     @map("reactions")
-  subtitle                String?   @map("subtitle") @db.VarChar(500)
-  coverImage              String?   @map("cover_image") @db.VarChar(1024)
-  coverImageIsSquare      Boolean?  @default(false) @map("cover_image_is_square")
-  coverImageIsExplicit    Boolean?  @default(false) @map("cover_image_is_explicit")
-  description             String?   @map("description")
-  bodyJson                Json?     @map("body_json")
-  bodyText                String?   @map("body_text")
-  truncatedBodyText       String?   @map("truncated_body_text")
-  wordcount               Int?      @map("wordcount")
-  postTags                Json?     @map("postTags")
-  reaction                Json?     @map("reaction")
-  reactionCount           Int?      @default(0) @map("reaction_count")
-  commentCount            Int?      @default(0) @map("comment_count")
-  childCommentCount       Int?      @default(0) @map("child_comment_count")
-  hidden                  String?   @map("hidden") @db.VarChar
-  explicit                Boolean?  @default(false) @map("explicit")
-  emailFromName           String?   @map("email_from_name") @db.VarChar(255)
-  isGuest                 Boolean   @default(false) @map("is_guest")
-  bestsellerTier          String?   @map("bestseller_tier") @db.VarChar(255)
-  podcastEpisodeImageInfo Json?     @map("podcast_episode_image_info") @db.Json
+  audience                String?  @map("audience") @db.VarChar(50)
+  canonicalUrl            String?  @map("canonical_url") @db.VarChar(1024)
+  reactions               Json?    @map("reactions")
+  subtitle                String?  @map("subtitle") @db.VarChar(500)
+  coverImage              String?  @map("cover_image") @db.VarChar(1024)
+  coverImageIsSquare      Boolean? @default(false) @map("cover_image_is_square")
+  coverImageIsExplicit    Boolean? @default(false) @map("cover_image_is_explicit")
+  description             String?  @map("description")
+  bodyJson                Json?    @map("body_json")
+  bodyText                String?  @map("body_text")
+  truncatedBodyText       String?  @map("truncated_body_text")
+  wordcount               Int?     @map("wordcount")
+  postTags                Json?    @map("postTags")
+  reaction                Json?    @map("reaction")
+  reactionCount           Int?     @default(0) @map("reaction_count")
+  commentCount            Int?     @default(0) @map("comment_count")
+  childCommentCount       Int?     @default(0) @map("child_comment_count")
+  hidden                  String?  @map("hidden") @db.VarChar
+  explicit                Boolean? @default(false) @map("explicit")
+  emailFromName           String?  @map("email_from_name") @db.VarChar(255)
+  isGuest                 Boolean  @default(false) @map("is_guest")
+  bestsellerTier          String?  @map("bestseller_tier") @db.VarChar(255)
+  podcastEpisodeImageInfo Json?    @map("podcast_episode_image_info") @db.Json
 
   bylines PostByline[]
 
@@ -155,7 +155,7 @@ model Publication {
 
 model NotesComments {
   id              String   @id
-  commentId       String   @map("comment_id")
+  commentId       String   @unique @map("comment_id")
   type            String   @map("type")
   authorId        Int      @map("user_id")
   body            String   @map("body")
@@ -164,7 +164,7 @@ model NotesComments {
   name            String?  @map("name")
   photoUrl        String?  @map("photo_url")
   reactionCount   Int      @map("reaction_count")
-  reactions       String?    @map("reactions")
+  reactions       String?  @map("reactions")
   commentsCount   Int?     @map("children_count")
   restacks        Int      @map("restacks")
   restacked       Boolean  @map("restacked")
@@ -173,7 +173,8 @@ model NotesComments {
   entityKey       String   @map("entity_key")
   noteIsRestacked Boolean  @map("note_is_restacked")
 
-  byline Byline? @relation(fields: [authorId], references: [id])
+  byline Byline?             @relation(fields: [authorId], references: [id])
+  stats  NotesCommentsStats?
 
   @@unique([commentId, authorId])
   @@map("notes_comments")
@@ -227,4 +228,25 @@ model BylineData {
   updatedAt DateTime? @default(now()) @updatedAt @map("updated_at")
 
   @@map("byline_data")
+}
+
+model NotesCommentsStats {
+  id                     String @id @default(dbgenerated("gen_random_uuid()"))
+  commentId              String @map("comment_id")
+  authorId               Int    @map("author_id")
+
+  totalClicks             Int    @default(0) @map("total_clicks")
+  totalFollows           Int    @default(0) @map("total_follows")
+  totalPaidSubscriptions Int    @default(0) @map("total_paid_subscriptions")
+  totalFreeSubscriptions Int    @default(0) @map("total_free_subscriptions")
+  totalArr               Int    @default(0) @map("total_arr")
+  totalShareClicks       Int    @default(0) @map("total_share_clicks")
+
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @default(now()) @updatedAt @map("updated_at")
+  
+  comment   NotesComments @relation(fields: [commentId, authorId], references: [commentId, authorId])
+
+  @@unique([commentId, authorId])
+  @@map("notes_comments_stats")
 }
