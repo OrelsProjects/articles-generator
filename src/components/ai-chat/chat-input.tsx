@@ -14,7 +14,7 @@ interface ChatInputProps {
 export function ChatInput({ 
   onSendMessage, 
   isLoading = false,
-  placeholder = "Ask WriteStack anything about your writing...",
+  placeholder = "Ask WriteStack anything...",
   className 
 }: ChatInputProps) {
   const [message, setMessage] = useState('');
@@ -57,7 +57,7 @@ export function ChatInput({
         onChange={handleInput}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="min-h-[44px] max-h-[200px] resize-none"
+        className="max-h-[46px] resize-none"
         disabled={isLoading}
         rows={1}
       />

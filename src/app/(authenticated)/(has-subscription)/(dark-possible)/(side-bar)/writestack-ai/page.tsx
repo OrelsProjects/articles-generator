@@ -11,7 +11,7 @@ export default function WriteStackAIPage() {
   }
 
   return (
-    <div className="h-[calc(100vh)] overflow-hidden">
+    <div className="h-[calc(100vh-4rem)] lg:h-[calc(100vh)] overflow-hidden">
       <ChatInterface className="h-full" />
     </div>
   );

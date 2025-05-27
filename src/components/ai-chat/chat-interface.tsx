@@ -7,9 +7,10 @@ import { ChatInput } from "./chat-input";
 import { LoadingBubble } from "./loading-bubble";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, MessageSquare, ArrowDown } from "lucide-react";
+import { Loader2, Plus, MessageSquare, ArrowDown, Menu } from "lucide-react";
 import { AIChat, AIMessage } from "@/types/ai-chat";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 interface ChatInterfaceProps {
   className?: string;
@@ -25,6 +26,7 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
   const [streamingMessage, setStreamingMessage] = useState("");
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,7 +42,6 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
   // Detect if user is manually scrolling
   const handleScroll = useCallback(() => {
     if (!scrollAreaRef.current) return;
-    debugger;
     const atBottom = isAtBottom();
 
     // Clear existing timeout
@@ -137,6 +138,8 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
         // Reset scroll states when loading new chat
         setIsUserScrolling(false);
         setShowScrollButton(false);
+        // Close sidebar on mobile after selecting chat
+        setIsSidebarOpen(false);
       }
     } catch (error) {
       console.error("Failed to load chat:", error);
@@ -151,6 +154,8 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
     setStreamingMessage("");
     setIsUserScrolling(false);
     setShowScrollButton(false);
+    // Close sidebar on mobile after creating new chat
+    setIsSidebarOpen(false);
   };
 
   const sendMessage = async (message: string) => {
@@ -285,59 +290,87 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
     }
   };
 
+  // Sidebar content component
+  const SidebarContent = () => (
+    <div className="w-full h-full flex flex-col">
+      <div className="p-3 md:p-4 border-b">
+        <Button
+          onClick={createNewChat}
+          className="w-full gap-2"
+          variant="outline"
+        >
+          <Plus className="h-4 w-4" />
+          New Chat
+        </Button>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="p-2 space-y-1">
+          {chats.map(chat => (
+            <Button
+              key={chat.id}
+              onClick={() => loadChat(chat.id)}
+              variant={currentChatId === chat.id ? "secondary" : "ghost"}
+              className="w-full justify-start text-left truncate"
+            >
+              <MessageSquare className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">{chat.title}</span>
+            </Button>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+
   return (
     <div className={cn("flex h-full", className)}>
-      {/* Chat History Sidebar */}
-      <div className="w-64 border-r flex flex-col">
-        <div className="p-4 border-b">
-          <Button
-            onClick={createNewChat}
-            className="w-full gap-2"
-            variant="outline"
-          >
-            <Plus className="h-4 w-4" />
-            New Chat
-          </Button>
-        </div>
-        <ScrollArea className="flex-1">
-          <div className="p-2 space-y-1">
-            {chats.map(chat => (
-              <Button
-                key={chat.id}
-                onClick={() => loadChat(chat.id)}
-                variant={currentChatId === chat.id ? "secondary" : "ghost"}
-                className="w-full justify-start text-left truncate"
-              >
-                <MessageSquare className="h-4 w-4 mr-2 flex-shrink-0" />
-                <span className="truncate">{chat.title}</span>
-              </Button>
-            ))}
-          </div>
-        </ScrollArea>
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex w-64 border-r flex-col">
+        <SidebarContent />
       </div>
 
+      {/* Mobile Sidebar */}
+      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+        <SheetContent side="left" className="w-64 p-0">
+          <SidebarContent />
+        </SheetContent>
+      </Sheet>
+
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col relative">
-        <div className="border-b p-4">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <MessageSquare className="h-5 w-5" />
-            WriteStack AI Assistant
-          </h2>
+      <div className="w-full h-full flex flex-col relative">
+        {/* Header */}
+        <div className="border-b p-3 md:p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-lg font-semibold">
+              <MessageSquare className="h-5 w-5" />
+              <span className="hidden sm:inline">WriteStack AI Assistant</span>
+              <span className="sm:hidden">AI Assistant</span>
+            </h2>
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         <div className="h-full flex-1 flex flex-col">
+          {/* Messages */}
           <div
-            className="flex-shrink overflow-auto"
+            className="flex-shrink overflow-auto relative"
             ref={scrollAreaRef}
             onScroll={handleScroll}
           >
-            <div className="min-h-full flex flex-col justify-end p-4">
+            <div className="h-full flex flex-col justify-start p-3 md:p-4">
               {isLoading ? (
                 <div className="flex items-center justify-center p-8">
                   <Loader2 className="h-6 w-6 animate-spin" />
                 </div>
               ) : messages.length === 0 ? (
-                <div className="text-center text-muted-foreground p-8">
+                <div className="text-center text-muted-foreground p-6 md:p-8">
                   <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p className="text-lg font-medium mb-2">
                     Start a conversation
@@ -374,26 +407,25 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
               )}
               <div ref={messagesEndRef} />
             </div>
+            {/* Scroll to Bottom Button */}
+            {showScrollButton && (
+              <Button
+                onClick={handleScrollToBottom}
+                size="sm"
+                className="absolute bottom-2 right-4 md:right-6 rounded-full shadow-lg z-10"
+                variant="secondary"
+              >
+                <ArrowDown className="h-4 w-4" />
+              </Button>
+            )}
           </div>
 
           <ChatInput
-            className="min-h-[8.5rem] max-h-[15rem] flex-shrink-0"
+            className="mb-12 lg:mb-0"
             onSendMessage={sendMessage}
             isLoading={isStreaming}
           />
         </div>
-
-        {/* Scroll to Bottom Button */}
-        {showScrollButton && (
-          <Button
-            onClick={handleScrollToBottom}
-            size="sm"
-            className="absolute bottom-20 right-6 rounded-full shadow-lg z-10"
-            variant="secondary"
-          >
-            <ArrowDown className="h-4 w-4" />
-          </Button>
-        )}
       </div>
     </div>
   );
