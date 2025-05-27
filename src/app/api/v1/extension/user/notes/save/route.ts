@@ -8,7 +8,7 @@ import { prismaArticles } from "@/lib/prisma";
 import { NotesAttachments } from "../../../../../../../../prisma/generated/articles";
 import { NotesComments } from "../../../../../../../../prisma/generated/articles";
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   const body = await request.json();
   const apiKey = request.headers.get("X-API-Key");
 
@@ -21,7 +21,6 @@ export async function GET(request: NextRequest) {
   }
   try {
     const notes: ExtensionResponseNoteComment[] = body;
-    // const notes: ExtensionResponseNoteComment[] = data;
 
     const dbItems: { note: NotesComments; attachments: NotesAttachments[] }[] =
       parseToDb(notes);
