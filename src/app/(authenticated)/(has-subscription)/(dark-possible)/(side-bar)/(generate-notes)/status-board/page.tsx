@@ -46,7 +46,7 @@ export default function StatusBoardPage() {
             <h1 className="text-3xl font-bold">{TITLE}</h1>
           </div>
           <div className="flex flex-col md:flex-row justify-end items-center gap-2">
-            <CreateNoteButton/>
+            <CreateNoteButton />
             <GenerateNotesDialog />
           </div>
         </div>

@@ -250,7 +250,6 @@ export function NotesEngagementChart() {
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      debugger;
       if (document.visibilityState === "visible") {
         if (chartData.length === 0) {
           fetchReactions();
@@ -451,7 +450,7 @@ export function NotesEngagementChart() {
       <Card className="w-full">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 mb-4">
               Engagement Statistics
             </CardTitle>
             <div className="flex items-center gap-4">
