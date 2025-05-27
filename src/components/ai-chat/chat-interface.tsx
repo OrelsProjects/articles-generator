@@ -376,8 +376,8 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
                     Start a conversation
                   </p>
                   <p className="text-sm">
-                    Ask me anything about your writing, get ideas, or improve
-                    your content.
+                    Ask me anything about your writing, get ideas, improve your
+                    content or generate notes based on your latest articles.
                   </p>
                 </div>
               ) : (
