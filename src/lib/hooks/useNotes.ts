@@ -53,6 +53,7 @@ import { setNotePostedData } from "@/lib/features/ui/uiSlice";
 import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
 import axiosInstance from "@/lib/axios-instance";
 import { CHUNK_SIZE, MAX_FILE_SIZE } from "@/lib/consts";
+import { NoteWithEngagementStats } from "@/types/notes-stats";
 
 export const MAX_ATTACHMENTS = Math.ceil(MAX_FILE_SIZE / CHUNK_SIZE);
 
@@ -817,6 +818,18 @@ export const useNotes = () => {
     return user?.meta?.notesToGenerateCount || 3;
   }, [user]);
 
+  const fetchNotesForDate = useCallback(async (date: string): Promise<NoteWithEngagementStats[]> => {
+    try {
+      const response = await axiosInstance.get<NoteWithEngagementStats[]>(
+        `/api/user/notes/stats/engagement/${date}`
+      );
+      return response.data;
+    } catch (error) {
+      Logger.error("Error fetching notes for date:", { error: String(error), date });
+      throw error;
+    }
+  }, []);
+
   return {
     userNotes,
     selectedNote,
@@ -851,5 +864,6 @@ export const useNotes = () => {
     rescheduleNote,
     loadingCreateNote,
     notesToGenerate,
+    fetchNotesForDate,
   };
 };

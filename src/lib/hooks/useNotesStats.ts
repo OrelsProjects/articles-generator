@@ -8,8 +8,17 @@ import {
   setNoteStats,
   setLoadingReactions,
   setReactionsInterval,
+  setFetchingStreak,
+  setNotesForDate,
+  setLoadingNotesForDate,
 } from "@/lib/features/statistics/statisticsSlice";
-import { Streak, NoteStats, ReactionInterval } from "@/types/notes-stats";
+import {
+  Streak,
+  NoteStats,
+  ReactionInterval,
+  IntervalStats,
+  NoteWithEngagementStats,
+} from "@/types/notes-stats";
 import { getStreakCount } from "@/lib/utils/streak";
 import { Engager } from "@/types/engager";
 
@@ -18,8 +27,11 @@ export function useNotesStats() {
     streak,
     topEngagers,
     noteStats,
+    notesForDate,
     loadingReactions,
+    loadingNotesForDate,
     reactionsInterval,
+    fetchingStreak,
   } = useSelector(selectStatistics);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -31,12 +43,15 @@ export function useNotesStats() {
   const loadingReactionsRef = useRef(false);
 
   async function fetchStreakData() {
+    if (fetchingStreak) {
+      return;
+    }
     if (streak.length > 0 || loading) {
       return;
     }
     try {
       setLoading(true);
-      console.log("fetching streak data");
+      dispatch(setFetchingStreak(true));
       // Only fetch if we don't already have data
       loadingRef.current = true;
       const response = await axiosInstance.get<Streak[]>(
@@ -52,6 +67,7 @@ export function useNotesStats() {
       console.log("finished fetching streak data");
       loadingRef.current = false;
       setLoading(false);
+      dispatch(setFetchingStreak(false));
     }
   }
 
@@ -78,11 +94,7 @@ export function useNotesStats() {
     interval: ReactionInterval = reactionsInterval,
     forceRefresh = false,
   ) => {
-    if (
-      !forceRefresh &&
-      noteStats &&
-      interval === reactionsInterval
-    ) {
+    if (!forceRefresh && noteStats && interval === reactionsInterval) {
       return;
     }
 
@@ -93,10 +105,42 @@ export function useNotesStats() {
     try {
       loadingReactionsRef.current = true;
       dispatch(setLoadingReactions(true));
-      const response = await axiosInstance.get<NoteStats>(
-        `/api/user/notes/stats/reactions?interval=${interval}`,
-      );
-      dispatch(setNoteStats(response.data));
+
+      // Fetch both reactions and engagement stats in parallel
+      const [reactionsResponse, engagementResponse] = await Promise.all([
+        axiosInstance.get<NoteStats>(
+          `/api/user/notes/stats/reactions?interval=${interval}`,
+        ),
+        axiosInstance.get<{
+          stats: {
+            clicks: IntervalStats[];
+            follows: IntervalStats[];
+            paidSubscriptions: IntervalStats[];
+            freeSubscriptions: IntervalStats[];
+            arr: IntervalStats[];
+            shares: IntervalStats[];
+          };
+          totals: {
+            follows: number;
+            freeSubscriptions: number;
+            paidSubscriptions: number;
+          };
+        }>(`/api/user/notes/stats/engagement?interval=${interval}`),
+      ]);
+
+      // Combine the data
+      const combinedStats: NoteStats = {
+        ...reactionsResponse.data,
+        totalClicks: engagementResponse.data.stats.clicks,
+        totalFollows: engagementResponse.data.stats.follows,
+        totalPaidSubscriptions: engagementResponse.data.stats.paidSubscriptions,
+        totalFreeSubscriptions: engagementResponse.data.stats.freeSubscriptions,
+        totalArr: engagementResponse.data.stats.arr,
+        totalShareClicks: engagementResponse.data.stats.shares,
+        engagementTotals: engagementResponse.data.totals,
+      };
+
+      dispatch(setNoteStats(combinedStats));
       dispatch(setReactionsInterval(interval));
       setErrorReactions(null);
     } catch (err) {
@@ -111,6 +155,21 @@ export function useNotesStats() {
 
   const changeReactionsInterval = (interval: ReactionInterval) => {
     fetchReactions(interval, true);
+  };
+
+  const fetchNotesForDate = async (date: string) => {
+    try {
+      dispatch(setLoadingNotesForDate(true));
+      const response = await axiosInstance.get<NoteWithEngagementStats[]>(
+        `/api/user/notes/stats/engagement/${date}`,
+      );
+      dispatch(setNotesForDate(response.data));
+    } catch (err) {
+      console.error("Error fetching notes for date:", err);
+      dispatch(setNotesForDate([]));
+    } finally {
+      dispatch(setLoadingNotesForDate(false));
+    }
   };
 
   useEffect(() => {
@@ -129,10 +188,13 @@ export function useNotesStats() {
     topEngagers,
     errorEngagers,
     noteStats,
+    notesForDate,
     loadingReactions,
+    loadingNotesForDate,
     errorReactions,
     reactionsInterval,
     fetchReactions,
     changeReactionsInterval,
+    fetchNotesForDate,
   };
 }

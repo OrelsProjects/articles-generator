@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
-import { HourlyStats, Streak, NoteStats, ReactionInterval } from "@/types/notes-stats";
+import { HourlyStats, Streak, NoteStats, ReactionInterval, NoteWithEngagementStats } from "@/types/notes-stats";
 import { Engager } from "@/types/engager";
 
 export interface StatisticsState {
@@ -8,9 +8,16 @@ export interface StatisticsState {
   streak: Streak[];
   topEngagers: Engager[];
   noteStats: NoteStats | null;
+  notesForDate: NoteWithEngagementStats[];
   loadingFetchBestTimeToPublish: boolean;
   loadingReactions: boolean;
+  loadingNotesForDate: boolean;
   reactionsInterval: ReactionInterval;
+
+  fetchingStreak: boolean;
+  fetchingTopEngagers: boolean;
+  fetchingReactions: boolean;
+  fetchingBestTimeToPublish: boolean;
 }
 
 export const initialState: StatisticsState = {
@@ -18,9 +25,15 @@ export const initialState: StatisticsState = {
   streak: [],
   topEngagers: [],
   noteStats: null,
+  notesForDate: [],
   loadingFetchBestTimeToPublish: false,
   loadingReactions: false,
+  loadingNotesForDate: false,
   reactionsInterval: "day",
+  fetchingStreak: false,
+  fetchingTopEngagers: false,
+  fetchingReactions: false,
+  fetchingBestTimeToPublish: false,
 };
 
 const statisticsSlice = createSlice({
@@ -51,6 +64,24 @@ const statisticsSlice = createSlice({
     setReactionsInterval: (state, action: PayloadAction<ReactionInterval>) => {
       state.reactionsInterval = action.payload;
     },
+    setFetchingStreak: (state, action: PayloadAction<boolean>) => {
+      state.fetchingStreak = action.payload;
+    },
+    setFetchingTopEngagers: (state, action: PayloadAction<boolean>) => {
+      state.fetchingTopEngagers = action.payload;
+    },
+    setFetchingReactions: (state, action: PayloadAction<boolean>) => {
+      state.fetchingReactions = action.payload;
+    },
+    setFetchingBestTimeToPublish: (state, action: PayloadAction<boolean>) => {
+      state.fetchingBestTimeToPublish = action.payload;
+    },
+    setNotesForDate: (state, action: PayloadAction<NoteWithEngagementStats[]>) => {
+      state.notesForDate = action.payload;
+    },
+    setLoadingNotesForDate: (state, action: PayloadAction<boolean>) => {
+      state.loadingNotesForDate = action.payload;
+    },
   },
 });
 
@@ -62,6 +93,12 @@ export const {
   setNoteStats,
   setLoadingReactions,
   setReactionsInterval,
+  setFetchingStreak,
+  setFetchingTopEngagers,
+  setFetchingReactions,
+  setFetchingBestTimeToPublish,
+  setNotesForDate,
+  setLoadingNotesForDate,
 } = statisticsSlice.actions;
 
 export const selectStatistics = (state: RootState): StatisticsState =>

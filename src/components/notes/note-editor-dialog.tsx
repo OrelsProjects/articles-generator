@@ -113,10 +113,8 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   };
 
   const canUploadImages = useMemo(() => {
-    return (
-      (selectedNote?.attachments?.length || 0) < MAX_ATTACHMENTS &&
-      uploadingFilesCount === 0
-    );
+    debugger;
+    return (selectedNote?.attachments?.length || 0) < MAX_ATTACHMENTS;
   }, [selectedNote?.attachments?.length]);
 
   const handleOpenChange = (open: boolean) => {

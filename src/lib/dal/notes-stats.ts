@@ -217,5 +217,15 @@ export async function getNoteStats(
     ),
   ]);
 
-  return { reactions, restacks, comments };
+  return {
+    reactions,
+    restacks,
+    comments,
+    totalClicks: [],
+    totalFollows: [],
+    totalPaidSubscriptions: [],
+    totalFreeSubscriptions: [],
+    totalArr: [],
+    totalShareClicks: [],
+  };
 }
