@@ -1,3 +1,5 @@
+import { NotesComments } from "../../prisma/generated/articles";
+
 export interface HourlyStats {
   userId: number;
   hourOfDayUTC: string;
@@ -22,4 +24,34 @@ export type NoteStats = {
   reactions: IntervalStats[];
   restacks: IntervalStats[];
   comments: IntervalStats[];
+  totalClicks: IntervalStats[];
+  totalFollows: IntervalStats[];
+  totalPaidSubscriptions: IntervalStats[];
+  totalFreeSubscriptions: IntervalStats[];
+  totalArr: IntervalStats[];
+  totalShareClicks: IntervalStats[];
+  engagementTotals?: {
+    follows: number;
+    freeSubscriptions: number;
+    paidSubscriptions: number;
+  };
 };
+
+export interface NoteWithEngagementStats {
+  commentId: string;
+  body: string;
+  date: Date;
+  handle: string;
+  name: string;
+  photoUrl: string;
+  reactionCount: number;
+  commentsCount: number;
+  restacks: number;
+
+  totalClicks: number;
+  totalFollows: number;
+  totalPaidSubscriptions: number;
+  totalFreeSubscriptions: number;
+  totalArr: number;
+  totalShareClicks: number;
+}
