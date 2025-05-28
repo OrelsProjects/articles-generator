@@ -5,7 +5,24 @@ import { IntervalStats, ReactionInterval } from "@/types/notes-stats";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { prismaArticles } from "@/lib/prisma";
-import { format } from "date-fns";
+import { format, getISOWeek, getISOWeekYear } from "date-fns";
+
+const getFormattedPeriod = (ts: Date, interval: string): string => {
+  switch (interval) {
+    case "day":
+      return format(ts, "yyyy-MM-dd");
+    case "week":
+      const week = getISOWeek(ts);
+      const year = getISOWeekYear(ts);
+      return `${year}-W${String(week).padStart(2, "0")}`; // Example: 2025-W05
+    case "month":
+      return format(ts, "yyyy-MM");
+    case "year":
+      return format(ts, "yyyy");
+    default:
+      throw new Error("Invalid interval");
+  }
+};
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -27,6 +44,7 @@ export async function GET(request: NextRequest) {
 
     const formatMap: Record<string, string> = {
       day: "yyyy-MM-dd",
+      week: "IYYY-IW",
       month: "yyyy-MM",
       year: "yyyy",
     };
@@ -51,7 +69,7 @@ export async function GET(request: NextRequest) {
       const ts = row.comment?.timestamp;
       if (!ts) continue;
 
-      const period = format(ts, dateFormat);
+      const period = getFormattedPeriod(ts, interval);
 
       clicksMap[period] = (clicksMap[period] || 0) + row.totalClicks;
       followsMap[period] = (followsMap[period] || 0) + row.totalFollows;

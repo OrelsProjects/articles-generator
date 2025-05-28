@@ -5,6 +5,7 @@ import {
   addSubscriber,
   addTagToEmail,
   addTagToManyEmails,
+  getUsersFromDate,
   sendMailSafe,
 } from "@/lib/mail/mail";
 import {
@@ -62,6 +63,10 @@ export async function GET() {
   if (!session || !session.user || !session.user.meta) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // const users = await getUsersFromDate(new Date("2025-05-28T00:00:00.000Z"));
+  // debugger;
+
   // if (!session.user.meta.isAdmin) {
   //   return NextResponse.json(
   //     { error: "Unauthorized - Not an admin" },

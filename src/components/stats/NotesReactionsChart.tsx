@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   LineChart,
   Line,
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { toast } from "react-toastify";
 
 const intervalLabels: Record<ReactionInterval, string> = {
   day: "Daily",
@@ -88,7 +89,14 @@ const formatPeriod = (period: string, interval: ReactionInterval) => {
   }
 };
 
-const CustomTooltip = ({ active, payload, label, interval, isNormalized, originalData }: any) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+  interval,
+  isNormalized,
+  originalData,
+}: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
@@ -96,13 +104,17 @@ const CustomTooltip = ({ active, payload, label, interval, isNormalized, origina
           {formatPeriod(label, interval)}
         </p>
         {payload.map((entry: any, index: number) => {
-          const originalValue = isNormalized && originalData 
-            ? originalData.find((d: any) => d.period === label)?.[entry.dataKey] 
-            : null;
-          
+          const originalValue =
+            isNormalized && originalData
+              ? originalData.find((d: any) => d.period === label)?.[
+                  entry.dataKey
+                ]
+              : null;
+
           return (
             <div key={index} className="text-sm" style={{ color: entry.color }}>
-              <span className="font-semibold">{entry.value}</span> {entry.dataKey}
+              <span className="font-semibold">{entry.value}</span>{" "}
+              {entry.dataKey}
               {originalValue && originalValue !== entry.value && (
                 <span className="text-xs text-muted-foreground ml-1">
                   (was {originalValue})
@@ -153,6 +165,12 @@ export function NotesReactionsChart() {
   );
   const [normalizeData, setNormalizeData] = useState(false);
 
+  useEffect(() => {
+    if (errorReactions) {
+      toast.error("Failed to load notes reactions stats");
+    }
+  }, [errorReactions]);
+
   // Combine all the data into a single array for the chart
   const { chartData, originalData } = useMemo(() => {
     if (!noteStats) return { chartData: [], originalData: [] };
@@ -188,18 +206,18 @@ export function NotesReactionsChart() {
     // Apply normalization to handle viral outliers
     const normalizeMetric = (values: number[]) => {
       if (values.length === 0) return values;
-      
+
       // Calculate percentiles
       const sorted = [...values].sort((a, b) => a - b);
       const q75Index = Math.floor(sorted.length * 0.75);
       const q95Index = Math.floor(sorted.length * 0.95);
       const q75 = sorted[q75Index];
       const q95 = sorted[q95Index];
-      
+
       // Calculate IQR-based cap (more conservative than just using max)
       const iqr = q95 - q75;
-      const cap = q95 + (iqr * 1.5);
-      
+      const cap = q95 + iqr * 1.5;
+
       // Apply cap to values
       return values.map(value => Math.min(value, cap));
     };
@@ -300,26 +318,6 @@ export function NotesReactionsChart() {
     return isMetricVisible(metric) ? 1 : 0.5;
   };
 
-  if (errorReactions) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Notes Statistics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <p className="text-destructive">Failed to load statistics data</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              {errorReactions}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -340,8 +338,8 @@ export function NotesReactionsChart() {
                   onCheckedChange={setNormalizeData}
                   disabled={loadingReactions}
                 />
-                <Label 
-                  htmlFor="normalize-data" 
+                <Label
+                  htmlFor="normalize-data"
                   className="text-xs text-muted-foreground cursor-pointer flex items-center gap-1"
                 >
                   <BarChart3 className="h-3 w-3" />
@@ -539,11 +537,13 @@ export function NotesReactionsChart() {
                     fontSize={12}
                   />
                   <Tooltip
-                    content={<CustomTooltip 
-                      interval={reactionsInterval} 
-                      isNormalized={normalizeData}
-                      originalData={originalData}
-                    />}
+                    content={
+                      <CustomTooltip
+                        interval={reactionsInterval}
+                        isNormalized={normalizeData}
+                        originalData={originalData}
+                      />
+                    }
                   />
 
                   {/* Reactions Area */}

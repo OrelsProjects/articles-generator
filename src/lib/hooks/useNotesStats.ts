@@ -172,12 +172,6 @@ export function useNotesStats() {
     }
   };
 
-  useEffect(() => {
-    fetchStreakData();
-    fetchTopEngagers();
-    fetchReactions();
-  }, []);
-
   const streakCount = useMemo(() => getStreakCount(streak), [streak]);
 
   return {
@@ -196,5 +190,7 @@ export function useNotesStats() {
     fetchReactions,
     changeReactionsInterval,
     fetchNotesForDate,
+    fetchStreakData,
+    fetchTopEngagers,
   };
 }

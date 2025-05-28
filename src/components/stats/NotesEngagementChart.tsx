@@ -31,8 +31,8 @@ import { useExtension } from "@/lib/hooks/useExtension";
 type MetricType =
   | "clicks"
   | "follows"
-  | "paidSubscriptions"
-  | "freeSubscriptions"
+  | "paid Subscriptions"
+  | "free Subscriptions"
   | null;
 
 const formatPeriod = (period: string, interval: ReactionInterval) => {
@@ -494,7 +494,7 @@ export function NotesEngagementChart() {
                 onClick={() => toggleMetricVisibility("clicks")}
               >
                 <div className="w-2 h-2 rounded-full bg-primary mr-1"></div>
-                Clicks
+                Note clicks
               </Badge>
               <Badge
                 variant="outline"
@@ -515,13 +515,13 @@ export function NotesEngagementChart() {
                 variant="outline"
                 className={cn(
                   "text-xs cursor-pointer transition-all duration-200",
-                  hoveredMetric === "paidSubscriptions"
+                  hoveredMetric === "paid Subscriptions"
                     ? "ring-2 ring-blue-500"
                     : "",
                   !isMetricVisible("paidSubscriptions") && "opacity-50",
                 )}
-                style={{ opacity: getBadgeOpacity("paidSubscriptions") }}
-                onMouseEnter={() => setHoveredMetric("paidSubscriptions")}
+                style={{ opacity: getBadgeOpacity("paid Subscriptions") }}
+                onMouseEnter={() => setHoveredMetric("paid Subscriptions")}
                 onMouseLeave={() => setHoveredMetric(null)}
                 onClick={() => toggleMetricVisibility("paidSubscriptions")}
               >
@@ -532,13 +532,13 @@ export function NotesEngagementChart() {
                 variant="outline"
                 className={cn(
                   "text-xs cursor-pointer transition-all duration-200",
-                  hoveredMetric === "freeSubscriptions"
+                  hoveredMetric === "free Subscriptions"
                     ? "ring-2 ring-purple-500"
                     : "",
                   !isMetricVisible("freeSubscriptions") && "opacity-50",
                 )}
                 style={{ opacity: getBadgeOpacity("freeSubscriptions") }}
-                onMouseEnter={() => setHoveredMetric("freeSubscriptions")}
+                onMouseEnter={() => setHoveredMetric("free Subscriptions")}
                 onMouseLeave={() => setHoveredMetric(null)}
                 onClick={() => toggleMetricVisibility("freeSubscriptions")}
               >
@@ -749,8 +749,8 @@ export function NotesEngagementChart() {
                       stroke="#3b82f6"
                       strokeWidth={2}
                       fill="url(#paidSubscriptionsGradient)"
-                      fillOpacity={getOpacity("paidSubscriptions")}
-                      strokeOpacity={getOpacity("paidSubscriptions")}
+                      fillOpacity={getOpacity("paid Subscriptions")}
+                      strokeOpacity={getOpacity("paid Subscriptions")}
                       dot={
                         reactionsInterval === "day"
                           ? false
@@ -758,7 +758,7 @@ export function NotesEngagementChart() {
                               fill: "#3b82f6",
                               strokeWidth: 2,
                               r: 3,
-                              fillOpacity: getOpacity("paidSubscriptions"),
+                              fillOpacity: getOpacity("paid Subscriptions"),
                             }
                       }
                       activeDot={{
@@ -767,7 +767,7 @@ export function NotesEngagementChart() {
                         strokeWidth: 2,
                         stroke: "hsl(var(--background))",
                       }}
-                      onMouseEnter={() => setHoveredMetric("paidSubscriptions")}
+                      onMouseEnter={() => setHoveredMetric("paid Subscriptions")}
                       onMouseLeave={() => setHoveredMetric(null)}
                     />
                   )}
@@ -780,8 +780,8 @@ export function NotesEngagementChart() {
                       stroke="#a855f7"
                       strokeWidth={2}
                       fill="url(#freeSubscriptionsGradient)"
-                      fillOpacity={getOpacity("freeSubscriptions")}
-                      strokeOpacity={getOpacity("freeSubscriptions")}
+                      fillOpacity={getOpacity("free Subscriptions")}
+                      strokeOpacity={getOpacity("free Subscriptions")}
                       dot={
                         reactionsInterval === "day"
                           ? false
@@ -789,7 +789,7 @@ export function NotesEngagementChart() {
                               fill: "#a855f7",
                               strokeWidth: 2,
                               r: 3,
-                              fillOpacity: getOpacity("freeSubscriptions"),
+                              fillOpacity: getOpacity("free Subscriptions"),
                             }
                       }
                       activeDot={{
@@ -798,7 +798,7 @@ export function NotesEngagementChart() {
                         strokeWidth: 2,
                         stroke: "hsl(var(--background))",
                       }}
-                      onMouseEnter={() => setHoveredMetric("freeSubscriptions")}
+                      onMouseEnter={() => setHoveredMetric("free Subscriptions")}
                       onMouseLeave={() => setHoveredMetric(null)}
                     />
                   )}

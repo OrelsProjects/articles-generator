@@ -59,6 +59,56 @@ export class MailClient {
     this.config = config;
   }
 
+  async getUsersFromDate(startDate: Date): Promise<string[]> {
+    const matchingEmails: string[] = [];
+    let hasNextPage = true;
+    let cursor: string | null = null;
+
+    try {
+      while (hasNextPage) {
+        const url = new URL(`${this.config.baseUrl}/subscribers`);
+        url.searchParams.append("created_after", startDate.toISOString());
+
+        if (cursor) {
+          url.searchParams.append("after", cursor);
+        }
+
+        const response = await fetch(url.toString(), {
+          method: "GET",
+          headers,
+        });
+
+        if (!response.ok) {
+          const responseText = await response.text();
+          throw new Error(
+            `Failed to fetch subscribers: ${response.statusText}, ${responseText}`,
+          );
+        }
+
+        const data = await response.json();
+        const subscribers = data.subscribers || [];
+
+        for (const sub of subscribers) {
+          const created = new Date(sub.created_at);
+          if (created > startDate) {
+            matchingEmails.push(sub.email_address);
+          }
+        }
+
+        hasNextPage = data.pagination?.has_next_page;
+        cursor = data.pagination?.end_cursor ?? null;
+      }
+
+      loggerServer.info(
+        `✅ Found ${matchingEmails.length} subscribers after ${startDate.toISOString()}`,
+      );
+      return matchingEmails;
+    } catch (error: any) {
+      loggerServer.error(`❌ Error in getUsersFromDate: ${error.message}`);
+      return [];
+    }
+  }
+
   async addSubscriber({ email, name, fields = {} }: AddSubscriberParams) {
     try {
       // Here you would implement your provider-specific logic

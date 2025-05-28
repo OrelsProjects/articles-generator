@@ -59,6 +59,10 @@ export const addTagToEmail = async (email: string, tag: Tag) => {
   return client.addTagToEmail({ email, tag });
 };
 
+export const getUsersFromDate = async (startDate: Date) => {
+  return client.getUsersFromDate(startDate);
+};
+
 export const addTagToManyEmails = async (emails: string[], tag: Tag) => {
   return client.addTagToManyEmails({ emails, tag });
 };

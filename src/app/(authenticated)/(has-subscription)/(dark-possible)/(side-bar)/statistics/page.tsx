@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useNotesStats } from "@/lib/hooks/useNotesStats";
 import ActivityHeatmap from "@/components/ui/activity-heatmap";
 import TopEngagers from "@/app/(free)/fans/components/top-engagers";
@@ -10,8 +10,17 @@ import { NotesReactionsChart } from "@/components/stats/NotesReactionsChart";
 import { NotesEngagementChart } from "@/components/stats/NotesEngagementChart";
 
 export default function StatisticsPage() {
-  const { streak, loading, error, topEngagers, errorEngagers } =
-    useNotesStats();
+  const {
+    streak,
+    loading,
+    error,
+    topEngagers,
+    errorEngagers,
+    fetchStreakData,
+    fetchTopEngagers,
+    fetchReactions,
+  } = useNotesStats();
+  const loadingRef = useRef(false);
   const router = useCustomRouter();
 
   const handleEngagerClick = (engager: Engager) => {
@@ -20,10 +29,29 @@ export default function StatisticsPage() {
     });
   };
 
+  const fetchData = async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    try {
+      await fetchStreakData();
+      await fetchTopEngagers();
+      await fetchReactions();
+    } catch (error) {
+      console.error("Error fetching notes stats:", error);
+    } finally {
+      loadingRef.current = false;
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   return (
     <div className="container mx-auto py-8 space-y-8 pb-20 md:pb-8">
       <div>
         <div className="flex flex-col gap-4 mb-8">
+          <h2 className="text-2xl font-bold">Notes Statistics</h2>
           <NotesEngagementChart />
           <NotesReactionsChart />
         </div>
