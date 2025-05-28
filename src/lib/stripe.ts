@@ -205,6 +205,7 @@ export const generateSessionId = async (options: {
     allow_promotion_codes: options.allowCoupon || false,
 
     metadata: {
+      referral: options.referralId || "",
       clientName: name || "",
       productId,
       priceId,
