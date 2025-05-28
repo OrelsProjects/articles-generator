@@ -18,6 +18,10 @@ const schema = z.object({
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {
+    loggerServer.error("Unauthorized get seo", {
+      userId: "unknown",
+      url: "unknown",
+    });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   let url = "";
