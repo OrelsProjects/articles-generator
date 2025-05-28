@@ -10,7 +10,10 @@ export interface FreeToolPage<T> {
   data: T | null;
   showLoginDialog: boolean;
   handleCloseLoginDialog: (open: boolean) => void;
-  getLoginRedirect: () => string;
+  getLoginRedirect: () => {
+    pathname: string;
+    query?: Record<string, string>;
+  };
   selectedByline: Byline | null;
   [key: string]: any;
 }

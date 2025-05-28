@@ -180,9 +180,16 @@ function TopEngagersPage() {
 
   const getLoginRedirect = () => {
     if (selectedByline) {
-      return `fans&author=${selectedByline.authorId}`;
+      return {
+        pathname: "fans",
+        query: {
+          author: selectedByline.authorId.toString(),
+        },
+      };
     } else {
-      return "fans";
+      return {
+        pathname: "fans",
+      };
     }
   };
 
@@ -197,10 +204,6 @@ function TopEngagersPage() {
     if (!open) {
       handleDismissDialog();
     }
-  };
-
-  const handleSignIn = () => {
-    signInWithGoogle(getLoginRedirect());
   };
 
   const handleEngagerClick = (engager: Engager) => {

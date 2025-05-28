@@ -20,7 +20,10 @@ interface LoginDialogProps {
   onOpenChange: (open: boolean) => void;
   title?: string;
   description?: string;
-  redirectPath?: string;
+  redirectPath?: {
+    pathname: string;
+    query?: Record<string, string>;
+  };
   additionalRedirectParams?: string;
 }
 
@@ -42,11 +45,14 @@ export function LoginDialog({
 
   const getRedirectURL = () => {
     if (!redirectPath) return undefined;
-
-    const baseRedirect = `/${redirectPath}`;
-    return additionalRedirectParams
-      ? `/${baseRedirect}?${additionalRedirectParams}`
-      : baseRedirect;
+    const baseRedirect = `/${redirectPath.pathname}`;
+    const url = new URL(baseRedirect, window.location.origin);
+    if (redirectPath.query) {
+      Object.entries(redirectPath.query).forEach(([key, value]) => {
+        url.searchParams.set(key, value.toString());
+      });
+    }
+    return url.toString();
   };
 
   const handleGoogleSignIn = () => {

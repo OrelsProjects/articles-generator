@@ -13,6 +13,7 @@ import { FreeUserEngagers } from "@prisma/client";
 import { fetchAllNoteComments } from "@/app/api/analyze-substack/utils";
 import { scrapePosts } from "@/lib/utils/publication";
 import { Post } from "../../../../../prisma/generated/articles";
+import { getPublicationByUrl } from "@/lib/dal/publication";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -171,7 +172,7 @@ export async function POST(request: NextRequest) {
 
     const { mainComponentInUrl } = getUrlComponents(url || "");
 
-    const publicationId = publication?.find(
+    let publicationId = publication?.find(
       p =>
         p.subdomain?.includes(mainComponentInUrl) ||
         p.customDomain?.includes(mainComponentInUrl),
@@ -180,6 +181,20 @@ export async function POST(request: NextRequest) {
     let posts: Post[] = [];
 
     if (publicationId) {
+      posts = await prismaArticles.post.findMany({
+        where: {
+          publicationId: publicationId?.toString(),
+        },
+        take: 10,
+        orderBy: {
+          postDate: "desc",
+        },
+      });
+    } else if (url) {
+      const publication = await getPublicationByUrl(url, {
+        createIfNotFound: true,
+      });
+      publicationId = publication[0].id;
       posts = await prismaArticles.post.findMany({
         where: {
           publicationId: publicationId?.toString(),

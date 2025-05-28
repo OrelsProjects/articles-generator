@@ -53,10 +53,6 @@ export default function NoteGeneratorArticlePage() {
     canGenerate,
   } = useNotesGeneratorPost();
 
-  console.log("canGenerate", canGenerate);
-  console.log("isLoading", isLoading);
-  console.log("nextGenerateDate", nextGenerateDate);
-
   return (
     <div className="flex flex-col gap-4">
       <motion.div

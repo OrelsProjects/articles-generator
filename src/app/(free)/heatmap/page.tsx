@@ -138,9 +138,16 @@ export default function AnalyzeSubstack() {
 
   const getLoginRedirect = () => {
     if (selectedByline) {
-      return `heatmap&author=${selectedByline.authorId}`;
+      return {
+        pathname: "heatmap",
+        query: {
+          author: selectedByline.authorId.toString(),
+        },
+      };
     } else {
-      return "heatmap";
+      return {
+        pathname: "heatmap",
+      };
     }
   };
 
@@ -189,9 +196,6 @@ export default function AnalyzeSubstack() {
     }
   };
 
-  const handleSignIn = () => {
-    signInWithGoogle(getLoginRedirect());
-  };
 
   return (
     <>

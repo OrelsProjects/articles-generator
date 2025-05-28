@@ -24,8 +24,13 @@ const useAuth = () => {
       const redirectDefault = "/onboarding";
       let redirectPath = new URL(`${window.location.origin}`);
       try {
+        let newRedirect = redirectTo || redirect || redirectDefault;
+        if (newRedirect.includes(window.location.origin)) {
+          newRedirect = newRedirect.replace(window.location.origin, "");
+        }
+
         redirectPath = new URL(
-          `${window.location.origin}${redirectTo || redirect || redirectDefault}`,
+          `${window.location.origin}${newRedirect}`,
         );
       } catch (error: any) {
         Logger.error("Error parsing redirect path", {

@@ -179,9 +179,17 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
   };
 
   const getLoginRedirect = () => {
-    let redirect = "note-generator/post";
+    let redirect = {
+      pathname: "note-generator/post",
+      query: {},
+    };
     if (selectedByline) {
-      redirect = `note-generator/post?author=${selectedByline.authorId}`;
+      redirect = {
+        pathname: "note-generator/post",
+        query: {
+          author: selectedByline.authorId,
+        },
+      };
     }
     Logger.info("[USE-NOTES-GENERATOR-POST] Redirecting to", { redirect });
     return redirect;

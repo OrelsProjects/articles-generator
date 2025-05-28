@@ -20,8 +20,14 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 export function UserStreak({ className, showText = true }: UserStreakProps) {
   const [isHovering, setIsHovering] = useState(false);
   const [animationData, setAnimationData] = useState<any>(null);
-  const { streakCount, loading } = useNotesStats();
+  const { streakCount, loading, fetchStreakData } = useNotesStats();
   const lottieRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!streakCount) {
+      fetchStreakData();
+    }
+  }, [streakCount, fetchStreakData]);
 
   // Load animation data on component mount
   useEffect(() => {
