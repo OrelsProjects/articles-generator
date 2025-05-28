@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import loggerServer from "@/loggerServer";
 import { generateScheduleNoteMissedEmail } from "@/lib/mail/templates";
+import { sendMailSafe } from "@/lib/mail/mail";
 
 export async function POST(
   request: NextRequest,
@@ -24,19 +25,25 @@ export async function POST(
       );
     }
 
-    
-    
-    
     loggerServer.info("[CAN-POST] schedule: " + JSON.stringify(schedule));
-    
+
+    const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
     // If the schedule is in the past, more than 20 minutes ago, return false
-    if (schedule.scheduledAt <= new Date(Date.now() - 20 * 60 * 1000)) {
+    if (schedule.scheduledAt <= twentyMinutesAgo) {
       const user = await prisma.user.findUnique({
         where: {
           id: schedule.userId,
         },
       });
-  
+
+      loggerServer.info(
+        "[CAN-POST] Schedule was missed: " + schedule.scheduledAt,
+        {
+          userId: user?.id || "unknown",
+          scheduledAt: schedule.scheduledAt,
+          twentyMinutesAgo: twentyMinutesAgo,
+        },
+      );
       const note = await prisma.note.findUnique({
         where: {
           id: schedule.noteId,
@@ -48,19 +55,20 @@ export async function POST(
         note?.body || "",
         "Note schedule was triggered, but more than 10 minutes have passed since the scheduled time",
       );
-      // await sendMailSafe({
-      //   to: user?.email || "orelsmail@gmail.com",
-      //   from: "noreply",
-      //   subject: missedEmail.subject,
-      //   template: missedEmail.body,
-      //   cc: "orelsmail@gmail.com",
-      // });
+      await sendMailSafe({
+        to: "orelsmail@gmail.com",
+        from: "noreply",
+        subject: missedEmail.subject,
+        template: missedEmail.body,
+      });
       return NextResponse.json(
         { canPost: false, error: "Schedule was missed" },
         { status: 200 },
       );
     }
-
+    loggerServer.info(
+      "[CAN-POST] Schedule is ready to post: " + schedule.scheduledAt,
+    );
     return NextResponse.json({ canPost: true }, { status: 200 });
   } catch (error) {
     loggerServer.error("[CAN-POST] Error: " + error);
