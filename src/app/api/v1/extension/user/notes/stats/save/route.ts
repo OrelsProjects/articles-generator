@@ -26,6 +26,9 @@ export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
+    loggerServer.warn("Unauthorized, no session", {
+      userId: "unknown",
+    });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const secret = request.headers.get("x-api-key");
@@ -52,7 +55,7 @@ export async function POST(request: NextRequest) {
     const batchSize = 10;
     for (let i = 0; i < stats.length; i += batchSize) {
       const batch = stats.slice(i, i + batchSize);
-      
+
       await Promise.all(
         batch.map(stat =>
           prismaArticles.notesCommentsStats.upsert({
@@ -80,8 +83,8 @@ export async function POST(request: NextRequest) {
               totalArr: stat.total_arr,
               totalShareClicks: stat.total_share_clicks,
             },
-          })
-        )
+          }),
+        ),
       );
     }
 
