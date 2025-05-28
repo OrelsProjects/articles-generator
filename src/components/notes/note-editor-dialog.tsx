@@ -8,7 +8,6 @@ import {
   Image as ImageIcon,
   Undo,
   Redo,
-  BookOpenIcon,
 } from "lucide-react";
 import { selectNotes } from "@/lib/features/notes/notesSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
@@ -691,7 +690,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                     tooltipContent="Copy"
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 hidden md:flex"
+                    className="h-8 w-8 p-0 flex"
                     onClick={handleCopy}
                   >
                     <Copy className="h-5 w-5 text-muted-foreground" />

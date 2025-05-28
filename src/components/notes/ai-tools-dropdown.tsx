@@ -34,11 +34,11 @@ const [isHovered, setIsHovered] = useState(false);
           transition={{ duration: 0.2 }}
           className="overflow-hidden md:hidden"
         >
-          <AiModelsDropdown
+          {/* <AiModelsDropdown
             onModelChange={setSelectedModel}
             size="md"
             classNameTrigger="!text-muted-foreground"
-          />
+          /> */}
         </motion.div>
         {/* {hasAdvancedGPT && (
           <AnimatePresence>
