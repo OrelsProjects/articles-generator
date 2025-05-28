@@ -38,6 +38,7 @@ export default function OnboardingPage() {
     if (user?.meta?.plan) {
       router.push(rootPath, { paramsToRemove: ["plan", "interval"] });
     } else if (plan && interval && hasPublication) {
+      debugger;
       setShowPaymentDialog(true);
     } else {
       router.push("/pricing?onboarding=true");
@@ -68,17 +69,19 @@ export default function OnboardingPage() {
 
   const handlePaymentDialogChange = (open: boolean) => {
     if (!open) {
-      if (plan && interval) {
-        goToCheckout(interval as "month" | "year", plan);
-      } else {
-        router.push("/pricing?onboarding=true");
-      }
+      setShowPaymentDialog(false);
+      // if (plan && interval) {
+      //   goToCheckout(interval as "month" | "year", plan);
+      // } else {
+      //   router.push("/pricing?onboarding=true");
+      // }
     } else {
       setShowPaymentDialog(true);
     }
   };
 
   const handleAnalyzed = () => {
+    debugger;
     setShowPaymentDialog(true);
   };
 

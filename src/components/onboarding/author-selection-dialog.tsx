@@ -94,7 +94,10 @@ export function AuthorSelectionDialog({
                       <Button
                         variant="outline"
                         className="hidden md:block"
-                        onClick={() => onSelect(byline)}
+                        onClick={e => {
+                          e.stopPropagation();
+                          onSelect(byline);
+                        }}
                       >
                         Select
                       </Button>

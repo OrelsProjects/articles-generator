@@ -1,7 +1,7 @@
 "use client";
 
 import { usePublication } from "@/lib/hooks/usePublication";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -92,6 +92,8 @@ export function AnalyzePublicationDialog({
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [selectedByline, setSelectedByline] = useState<Byline | null>(null);
 
+  const loadingAnalyze = useRef(false);
+
   useEffect(() => {
     if (open !== undefined) {
       setIsOpen(open);
@@ -146,6 +148,7 @@ export function AnalyzePublicationDialog({
   };
 
   const handleSubmit = async (byline: Byline) => {
+    if (loadingAnalyze.current) return;
     if (loading) return;
     if (!validateUrl(url)) {
       setError(ERRORS.INVALID_URL);
@@ -157,13 +160,16 @@ export function AnalyzePublicationDialog({
     }
     setError(null);
     setLoading(true);
+    loadingAnalyze.current = true;
 
     setIsOpen(false);
     setShowConfirmationDialog(false);
 
     try {
       handleBylineSelect(byline);
+      debugger;
       await analyzePublication(url, byline);
+      debugger;
       onAnalyzed?.();
     } catch (error: any) {
       Logger.error("Error analyzing publication:", error);
@@ -184,6 +190,7 @@ export function AnalyzePublicationDialog({
       setIsOpen(true);
     } finally {
       setLoading(false);
+      loadingAnalyze.current = false;
     }
   };
 
