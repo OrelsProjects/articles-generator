@@ -1,5 +1,6 @@
 "use client";
 
+import { unformatText } from "@/lib/utils/text-editor";
 import { Logger } from "@/logger";
 
 export const copyTextEditorContent = () => {
@@ -31,16 +32,25 @@ export const copyTextEditorContent = () => {
   }
 };
 
+// const htmlToRichText = (html: string) => {
+//   const type = "text/html";
+//   const blob = new Blob([html], { type });
+//   const data = [new ClipboardItem({ [type]: blob })];
 
-const htmlToRichText = (html: string) => {
-  const type = "text/html";
-  const blob = new Blob([html], { type });
-  const data = [new ClipboardItem({ [type]: blob })];
-
-  return data;
-};
+//   return data;
+// };
 
 export const copyHTMLToClipboard = async (html: string) => {
-  const data = htmlToRichText(html);
-  await navigator.clipboard.write(data);
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([unformatText(html)], {
+          type: "text/plain",
+        }),
+      }),
+    ]);
+  } catch (err) {
+    console.error("Clipboard write failed", err);
+  }
 };

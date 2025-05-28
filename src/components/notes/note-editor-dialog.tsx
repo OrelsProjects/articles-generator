@@ -3,12 +3,7 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import {
-  Copy,
-  Image as ImageIcon,
-  Undo,
-  Redo,
-} from "lucide-react";
+import { Copy, Image as ImageIcon, Undo, Redo } from "lucide-react";
 import { selectNotes } from "@/lib/features/notes/notesSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { TooltipButton } from "@/components/ui/tooltip-button";
@@ -112,7 +107,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   };
 
   const canUploadImages = useMemo(() => {
-    debugger;
     return (selectedNote?.attachments?.length || 0) < MAX_ATTACHMENTS;
   }, [selectedNote?.attachments?.length]);
 
