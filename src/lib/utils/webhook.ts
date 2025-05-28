@@ -316,20 +316,29 @@ export async function handleSubscriptionDeleted(event: Stripe.Event) {
   const stripe = getStripeInstance();
   const subscription = event.data.object as Stripe.Subscription;
   const subscriptionId = subscription.id;
+  const user = await getUserBySubscription(subscription);
+  const plan = await getPlanBySubscription(subscription);
+
   const customer = await stripe.customers.retrieve(
     subscription.customer as string,
   );
-  await prisma.subscription.update({
-    where: {
-      stripeSubId: subscriptionId,
-    },
-    data: {
-      status: "inactive",
-    },
-  });
+  try {
+    await prisma.subscription.update({
+      where: {
+        stripeSubId: subscriptionId,
+      },
+      data: {
+        status: "inactive",
+      },
+    });
+  } catch (error) {
+    loggerServer.error("Error updating subscription", {
+      error,
+      subscriptionId,
+      userId: user?.id || "unknown",
+    });
+  }
 
-  const user = await getUserBySubscription(subscription);
-  const plan = await getPlanBySubscription(subscription);
   const userEmail = (customer as any).email;
   const emailTemplate = generateSubscriptionDeletedEmail(
     user?.name || undefined,
@@ -541,6 +550,30 @@ export async function handleCheckoutSessionCompleted(event: any) {
   const userId = session.metadata?.userId as string;
   const creditsString = session.metadata?.credits as string;
   const credits = parseInt(creditsString);
+
+  const referralId = session.client_reference_id as string;
+
+  // if referralId is set, add it to the user's metadata
+  if (referralId) {
+    try {
+      const customer = await getStripeInstance().customers.retrieve(
+        session.customer as string,
+      );
+      if (customer) {
+        await getStripeInstance().customers.update(customer.id, {
+          metadata: { referral: referralId },
+        });
+      }
+    } catch (error) {
+      loggerServer.error(
+        "[CRITICAL-ERROR-REFERRAL] Error updating customer metadata",
+        {
+          error,
+          userId,
+        },
+      );
+    }
+  }
 
   if (!userId || !credits || isNaN(credits)) {
     loggerServer.error(
