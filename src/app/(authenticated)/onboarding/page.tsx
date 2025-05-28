@@ -37,7 +37,7 @@ export default function OnboardingPage() {
   const handleNavigateNext = () => {
     if (user?.meta?.plan) {
       router.push(rootPath, { paramsToRemove: ["plan", "interval"] });
-    } else if (plan && interval) {
+    } else if (plan && interval && hasPublication) {
       setShowPaymentDialog(true);
     } else {
       router.push("/pricing?onboarding=true");
