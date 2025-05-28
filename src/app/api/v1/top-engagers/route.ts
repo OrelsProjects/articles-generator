@@ -12,6 +12,7 @@ import { z } from "zod";
 import { FreeUserEngagers } from "@prisma/client";
 import { fetchAllNoteComments } from "@/app/api/analyze-substack/utils";
 import { scrapePosts } from "@/lib/utils/publication";
+import { Post } from "../../../../../prisma/generated/articles";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const publication = await prismaArticles?.publication.findMany({
+    const publication = await prismaArticles.publication.findMany({
       where: {
         authorId: parseInt(authorId.toString()),
       },
@@ -176,19 +177,32 @@ export async function POST(request: NextRequest) {
         p.customDomain?.includes(mainComponentInUrl),
     )?.id;
 
-    const posts = await prismaArticles?.post.findMany({
-      where: {
-        publicationId: publicationId?.toString(),
-      },
-      take: 10,
-      orderBy: {
-        postDate: "desc",
-      },
-    });
+    let posts: Post[] = [];
+
+    if (publicationId) {
+      posts = await prismaArticles.post.findMany({
+        where: {
+          publicationId: publicationId?.toString(),
+        },
+        take: 10,
+        orderBy: {
+          postDate: "desc",
+        },
+      });
+    }
 
     if ((!posts || posts.length === 0) && url) {
-      await scrapePosts(url, 0, parseInt(authorId.toString()), {
+      await scrapePosts(url, 10, parseInt(authorId.toString()), {
         stopIfNoNewPosts: true,
+      });
+      posts = await prismaArticles.post.findMany({
+        where: {
+          publicationId: publicationId?.toString(),
+        },
+        take: 10,
+        orderBy: {
+          postDate: "desc",
+        },
       });
     }
 

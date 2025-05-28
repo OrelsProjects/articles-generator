@@ -65,11 +65,7 @@ export async function getBylinesByUrl(
 
     const publicationBylines = nonGuestBylines.filter(
       byline =>
-        byline.publicationUsers?.length &&
-        byline.publicationUsers.length > 0 &&
-        byline.publicationUsers.some(
-          user => user.publication_id === publicationId,
-        ),
+        byline.publicationUsers?.length && byline.publicationUsers.length > 0,
     );
 
     const bylineData: Byline[] = publicationBylines.map(byline => ({
