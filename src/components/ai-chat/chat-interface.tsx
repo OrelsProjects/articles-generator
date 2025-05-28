@@ -421,7 +421,7 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
           </div>
 
           <ChatInput
-            className="mb-12 lg:mb-0"
+            className="mb-12"
             onSendMessage={sendMessage}
             isLoading={isStreaming}
           />
