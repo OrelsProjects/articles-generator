@@ -200,7 +200,7 @@ export const generateSessionId = async (options: {
     mode: "subscription",
     success_url: `${urlOrigin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${urlOrigin}/cancel`,
-    client_reference_id: options.referralId || "",
+    client_reference_id: options.referralId || userId,
     customer_email: email || "",
     allow_promotion_codes: options.allowCoupon || false,
 
@@ -250,7 +250,9 @@ export const getStripeSubscription = async (subscriptionId: string) => {
   return subscription;
 };
 
-export const getStripeSubscriptionAppliedCoupon = async (subscriptionId: string) => {
+export const getStripeSubscriptionAppliedCoupon = async (
+  subscriptionId: string,
+) => {
   const stripe = getStripeInstance();
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   return subscription.discount?.coupon;
@@ -277,7 +279,8 @@ export const shouldApplyRetentionCoupon = async (
     const hasPaymentHistory = !!payment;
 
     // Check if the user already has the retention coupon applied
-    const stripeSubscriptionCoupon = await getStripeSubscriptionAppliedCoupon(subscriptionId);
+    const stripeSubscriptionCoupon =
+      await getStripeSubscriptionAppliedCoupon(subscriptionId);
     if (stripeSubscriptionCoupon?.id === RETENTION_COUPON_ID) {
       return false;
     }
@@ -290,11 +293,12 @@ export const shouldApplyRetentionCoupon = async (
     // By default, users with active subscriptions are eligible
     return true;
   } catch (error) {
-    Logger.error("Error checking retention coupon eligibility:", { error: String(error) });
+    Logger.error("Error checking retention coupon eligibility:", {
+      error: String(error),
+    });
     return false;
   }
 };
-
 
 export const getRetentionCoupon = async (stripe: Stripe) => {
   const coupon = await stripe.coupons.retrieve(RETENTION_COUPON_ID);
