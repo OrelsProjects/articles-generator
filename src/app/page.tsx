@@ -447,6 +447,15 @@ const testimonials = [
     url: "https://substack.com/@markwils",
   },
   {
+    quote: `Writestack is not only the tool I was looking for to improve my presence on Substack, but it has also given me the opportunity to help members of my community grow theirs too.
+        <br/><br/>
+        Orel is doing an outstanding job democratizing growth on Substack. It's another step forward in giving creators more chances to share our message with the world.`,
+    author: "David Domínguez",
+    image: "/testimonials/david-dominguez.jpg",
+    title: "Author of Crecer en Substack (<strong>1.2k+ Subscribers</strong>)",
+    url: "https://substack.com/@daviddominguez",
+  },
+  {
     quote: `Writing a newsletter outline used to take me hours. Now I do it in minutes.
   ${appName} makes that possible for me.
 <br/><br/>
