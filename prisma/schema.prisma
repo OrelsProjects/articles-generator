@@ -507,6 +507,16 @@ model Subscription {
   @@map("subscriptions")
 }
 
+model CouponUsage {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  couponCode String
+  userId     String @db.ObjectId
+
+  @@unique([couponCode, userId])
+  @@map("couponUsages")
+}
+
 model Visits {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @db.ObjectId

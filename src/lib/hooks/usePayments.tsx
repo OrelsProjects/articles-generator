@@ -39,7 +39,27 @@ export default function usePayments() {
     }
   };
 
-  const goToCheckout = async (interval: "month" | "year", plan: string) => {
+  const validateCoupon = async (
+    couponCode: string,
+    plans: { name: string; price: number; interval: "month" | "year" }[],
+  ) => {
+    try {
+      const response = await axiosInstance.post(
+        `/api/v1/coupon/${couponCode}/new-prices`,
+        { plans },
+      );
+      return response.data.newPrices;
+    } catch (error: any) {
+      Logger.error("Error validating coupon", { error });
+      throw error;
+    }
+  };
+
+  const goToCheckout = async (
+    interval: "month" | "year",
+    plan: string,
+    couponCode?: string,
+  ) => {
     try {
       let affiliateId = null;
       try {
@@ -51,7 +71,13 @@ export default function usePayments() {
       }
       const response = await axiosInstance.post<{ sessionId: string }>(
         "/api/stripe/checkout",
-        { interval, plan, localReferral: referral, referralId: affiliateId },
+        {
+          interval,
+          plan,
+          localReferral: referral,
+          referralId: affiliateId,
+          couponCode,
+        },
       );
       Logger.info("response", { response: response.data });
       const stripe = await stripePromise;
@@ -173,5 +199,6 @@ export default function usePayments() {
     loadingCredits,
     verifySubscription,
     applyRetentionDiscount,
+    validateCoupon,
   };
 }

@@ -17,6 +17,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { Note, NoteStatus } from "@prisma/client";
+import { getStripeInstance } from "@/lib/stripe";
 // async function processUser(userId: string) {
 //   try {
 //     const userMetadata = await prisma.userMetadata.findUnique({
@@ -62,6 +63,22 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session || !session.user || !session.user.meta) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const stripe = getStripeInstance();
+  const customers = await stripe.customers.list();
+  // const subscriptions = await stripe.subscriptions.list();
+  // const client_reference_ids = subscriptions.data.map(
+  //   subscription => subscription.metadata.client_reference_id,
+  // );
+  const lastFiveCustomers = customers.data.slice(0, 5);
+  for (const customer of lastFiveCustomers) {
+    // set referral = a17b1658-48e0-4315-a60c-0ae7ee2d8621 in metadata
+    await stripe.customers.update(customer.id, {
+      metadata: {
+        referral: "a17b1658-48e0-4315-a60c-0ae7ee2d8621",
+      },
+    });
   }
 
   // const users = await getUsersFromDate(new Date("2025-05-28T00:00:00.000Z"));

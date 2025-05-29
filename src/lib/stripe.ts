@@ -5,7 +5,8 @@ import Stripe from "stripe";
 import { Logger } from "@/logger";
 import { getUserLatestPayment } from "@/lib/dal/payment";
 import { getActiveSubscription } from "@/lib/dal/subscription";
-
+import { getNewPrice } from "@/lib/dal/coupon";
+import slugify from "slugify";
 const LAUNCH_COUPON_NAME = "LAUNCH";
 const MAX_PERCENT_OFF = 20;
 const LAUNCH_EMOJI = "🚀";
@@ -15,6 +16,24 @@ export const RETENTION_PERCENT_OFF = 50;
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME;
 
+const generateNewCouponCode = (data: {
+  userId: string;
+  name?: string;
+  email?: string;
+  couponCode: string;
+}) => {
+  const now = new Date().toISOString();
+  const { userId, name, email, couponCode } = data;
+  return slugify(
+    `${name || email || userId}-${couponCode}-${now.slice(0, 4)}`,
+    {
+      lower: true,
+      strict: true,
+      locale: "en",
+      trim: true,
+    },
+  );
+};
 export const getStripeInstance = (
   data?:
     | {
@@ -102,51 +121,45 @@ async function getOrCreateMonthlyCoupon(stripe: Stripe) {
 
 export async function getCoupon(
   stripe: Stripe,
-  shouldGetLaunch: boolean = true,
-): Promise<Coupon | null> {
-  const coupons = await stripe.coupons.list();
-  const coupon = coupons.data.find(
-    coupon =>
-      coupon.name === LAUNCH_COUPON_NAME && coupon.metadata?.app === appName,
-  );
-  let value = coupon;
-  if (!value || !shouldGetLaunch) {
-    value = await getOrCreateMonthlyCoupon(stripe);
-  }
-  let redeemBy: number | null = (coupon?.redeem_by || 0) * 1000;
-  let timesRedeemed = getTimesRedeemed(value);
-  let maxRedemptions = value.max_redemptions;
+  promoCode: string,
+): Promise<Stripe.Coupon | null> {
+  const promotionCodes = await stripe.promotionCodes.list({
+    code: promoCode,
+    limit: 1,
+    expand: ["data.coupon"], // so you get the full coupon object
+  });
 
-  if (!isCouponValid(value)) {
-    value = await getOrCreateMonthlyCoupon(stripe);
-    redeemBy = value.redeem_by;
-    timesRedeemed = getTimesRedeemed(value);
-    maxRedemptions = value.max_redemptions;
+  if (!promotionCodes.data.length) {
+    throw new Error(`Promotion code '${promoCode}' not found`);
   }
 
-  return {
-    id: value.id,
-    name: value.name || "",
-    percentOff: value.percent_off || 0,
-    timesRedeemed,
-    maxRedemptions,
-    freeTokens: value.metadata?.free_tokens
-      ? parseInt(value.metadata.free_tokens)
-      : null,
-    redeemBy,
-    emoji: value.metadata?.seasonEmoji || LAUNCH_EMOJI,
-    title: value.metadata?.title || null,
-  };
+  const promo = promotionCodes.data[0];
+  const coupon = promo.coupon;
+  if (!coupon) {
+    return null;
+  }
+
+  return coupon;
 }
 
-export const isCouponValid = (coupon: Stripe.Coupon) => {
+export const isCouponValid = async (coupon: Stripe.Coupon | string) => {
+  let couponToCheck: Stripe.Coupon;
+  if (typeof coupon === "string") {
+    const stripe = getStripeInstance();
+    couponToCheck = await stripe.coupons.retrieve(coupon);
+  } else {
+    couponToCheck = coupon;
+  }
+
   const isRedeemable =
-    !coupon.redeem_by ||
-    (coupon.redeem_by && coupon.redeem_by * 1000 > new Date().getTime());
-  const timesRedeemed = getTimesRedeemed(coupon);
+    !couponToCheck.redeem_by ||
+    (couponToCheck.redeem_by &&
+      couponToCheck.redeem_by * 1000 > new Date().getTime());
+  const timesRedeemed = getTimesRedeemed(couponToCheck);
 
   const isNotExpired =
-    !coupon.max_redemptions || timesRedeemed < coupon.max_redemptions;
+    !couponToCheck.max_redemptions ||
+    timesRedeemed < couponToCheck.max_redemptions;
   return isRedeemable && isNotExpired;
 };
 
@@ -176,42 +189,100 @@ export const generateSessionId = async (options: {
   localReferral?: string;
   referralId?: string;
   allowCoupon?: boolean;
+  couponCode?: string;
 }): Promise<string> => {
   const stripe = getStripeInstance();
+  let newCouponId: string | null = null;
+  let newCouponCode: string | null = null;
+  try {
+    const { priceId, productId, urlOrigin, userId, email, name, couponCode } =
+      options;
 
-  const { priceId, productId, urlOrigin, userId, email, name } = options;
+    const subscriptionData = options.freeTrial
+      ? {
+          trial_period_days: options.freeTrial,
+        }
+      : undefined;
 
-  const subscriptionData = options.freeTrial
-    ? {
-        trial_period_days: options.freeTrial,
+    let discountPercent: number | null = null;
+    const price = await stripe.prices.retrieve(priceId);
+    const coupon = couponCode ? await getCoupon(stripe, couponCode) : null;
+    const discounts: Stripe.Checkout.SessionCreateParams.Discount[] = [];
+
+    if (coupon && couponCode && price.unit_amount) {
+      if (price.recurring?.interval === "year") {
+        const newPrices = await getNewPrice(couponCode, [
+          {
+            name: "",
+            price: price.unit_amount / 100,
+            interval: "year",
+          },
+        ]);
+        discountPercent = newPrices?.[0]?.discountForAnnualPlan || null;
+        if (discountPercent) {
+          newCouponCode = generateNewCouponCode({
+            userId,
+            name: name || undefined,
+            email: email || undefined,
+            couponCode,
+          });
+          const newCoupon = await stripe.coupons.create({
+            id: newCouponCode,
+            name: newCouponCode,
+            duration: "once",
+            ...(discountPercent && { percent_off: discountPercent }),
+          });
+          discounts.push({
+            coupon: newCoupon.id,
+          });
+          newCouponId = newCoupon.id;
+        } else {
+          discounts.push({
+            coupon: coupon.id,
+          });
+        }
+      } else {
+        discounts.push({
+          coupon: coupon.id,
+        });
       }
-    : undefined;
+    }
 
-  const stripeSession = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
+    let cancelUrlBase = `${urlOrigin}/api/stripe/subscription/cancel`;
+    if (newCouponCode) {
+      cancelUrlBase += `/${newCouponCode}`;
+    }
+    const stripeSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      discounts,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      subscription_data: subscriptionData,
+      mode: "subscription",
+      success_url: `${urlOrigin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrlBase,
+      client_reference_id: options.referralId || userId || "unknown",
+      customer_email: email || "",
 
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
+      metadata: {
+        couponApplied: couponCode || null,
+        clientName: name || "",
+        productId,
+        priceId,
+        localReferral: options.localReferral || "",
       },
-    ],
-    subscription_data: subscriptionData,
-    mode: "subscription",
-    success_url: `${urlOrigin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${urlOrigin}/cancel`,
-    client_reference_id: options.referralId || userId || "unknown",
-    customer_email: email || "",
-    allow_promotion_codes: options.allowCoupon || false,
-
-    metadata: {
-      clientName: name || "",
-      productId,
-      priceId,
-      localReferral: options.localReferral || "",
-    },
-  });
-  return stripeSession.id;
+    });
+    return stripeSession.id;
+  } catch (error) {
+    if (newCouponId) {
+      await stripe.coupons.del(newCouponId);
+    }
+    throw error;
+  }
 };
 
 export const getPlanPriceId = async (

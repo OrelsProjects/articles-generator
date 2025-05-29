@@ -167,9 +167,7 @@ export function AnalyzePublicationDialog({
 
     try {
       handleBylineSelect(byline);
-      debugger;
       await analyzePublication(url, byline);
-      debugger;
       onAnalyzed?.();
     } catch (error: any) {
       Logger.error("Error analyzing publication:", error);

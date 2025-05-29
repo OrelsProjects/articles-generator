@@ -13,6 +13,7 @@ const checkoutSchema = z.object({
   interval: z.enum(["month", "year"]),
   localReferral: z.string().optional().nullable(),
   referralId: z.string().optional().nullable(),
+  couponCode: z.string().optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
@@ -99,6 +100,7 @@ export async function POST(req: NextRequest) {
     }
 
     const sessionId = await generateSessionId({
+      couponCode: body.couponCode?.toUpperCase() || undefined,
       priceId: price.id,
       productId: productId,
       urlOrigin: nextUrl.origin,
@@ -108,7 +110,7 @@ export async function POST(req: NextRequest) {
       freeTrial: userHasSubscription ? 0 : 7,
       localReferral: localReferral || undefined,
       referralId: referralId || undefined,
-      allowCoupon: true,
+      allowCoupon: false,
     });
 
     console.log("sessionId", sessionId);

@@ -16,6 +16,7 @@ import { calculateNewPlanCreditsLeft } from "@/lib/utils/credits";
 import loggerServer from "@/loggerServer";
 import { Interval, Payment, Plan, Subscription } from "@prisma/client";
 import { Stripe } from "stripe";
+import { applyCoupon, removeCouponUsage } from "@/lib/dal/coupon";
 
 async function getUserBySubscription(subscription: Stripe.Subscription) {
   const customer = await getStripeInstance().customers.retrieve(
@@ -55,6 +56,7 @@ export const getPlanByProductId = async (
 
 export async function handleSubscriptionCreated(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription;
+
   const price = await getStripeInstance().prices.retrieve(
     subscription.items.data[0].plan.id as string,
   );
@@ -139,6 +141,17 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
   if (user.email) {
     await addTagToEmail(user.email, "writestack-new-subscriber");
   }
+  if (subscription.discount?.coupon?.id) {
+    try {
+      await applyCoupon(subscription.discount.coupon.id, user.id);
+    } catch (error) {
+      loggerServer.error("Error applying coupon", {
+        error,
+        couponId: subscription.discount.coupon.id,
+        userId: user.id,
+      });
+    }
+  }
 }
 
 // Cases when Update is called:
@@ -148,12 +161,20 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
 // - Subscription is deleted
 export async function handleSubscriptionUpdated(event: any) {
   const subscription = event.data.object as Stripe.Subscription;
+
+  const isSubscriptionCanceled =
+    subscription.status === "canceled" ||
+    subscription.status === "incomplete_expired" ||
+    subscription.status === "incomplete" ||
+    subscription.status === "past_due";
+
   const subscriptionId = subscription.id;
   const price = await getStripeInstance().prices.retrieve(
     subscription.items.data[0].plan.id as string,
   );
   const plan = await getPlanBySubscription(subscription);
   const user = await getUserBySubscription(subscription);
+
   if (!user) {
     loggerServer.error(
       "[SUBSCRIPTION-UPDATED] No user found for subscription",
@@ -228,15 +249,14 @@ export async function handleSubscriptionUpdated(event: any) {
 
   // if subscription paused/canceled/delete, remove tag. Otherwise, add
   if (user.email) {
-    if (
-      subscription.status === "paused" ||
-      subscription.status === "canceled" ||
-      subscription.status === "incomplete_expired"
-    ) {
+    if (isSubscriptionCanceled) {
       await removeTagFromEmail(user.email, "writestack-new-subscriber");
     } else if (subscription.status === "active") {
       await addTagToEmail(user.email, "writestack-new-subscriber");
     }
+  }
+  if (isSubscriptionCanceled && subscription.discount?.coupon?.id) {
+    await removeCouponUsage(subscription.discount.coupon.id, user.id);
   }
 }
 
@@ -550,30 +570,6 @@ export async function handleCheckoutSessionCompleted(event: any) {
   const userId = session.metadata?.userId as string;
   const creditsString = session.metadata?.credits as string;
   const credits = parseInt(creditsString);
-
-  const referralId = session.client_reference_id as string;
-
-  // if referralId is set, add it to the user's metadata
-  if (referralId) {
-    try {
-      const customer = await getStripeInstance().customers.retrieve(
-        session.customer as string,
-      );
-      if (customer) {
-        await getStripeInstance().customers.update(customer.id, {
-          metadata: { referral: referralId },
-        });
-      }
-    } catch (error) {
-      loggerServer.error(
-        "[CRITICAL-ERROR-REFERRAL] Error updating customer metadata",
-        {
-          error,
-          userId,
-        },
-      );
-    }
-  }
 
   if (!userId || !credits || isNaN(credits)) {
     loggerServer.error(

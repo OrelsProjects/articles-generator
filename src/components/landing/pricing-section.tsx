@@ -16,6 +16,7 @@ import { toast } from "react-toastify";
 import { maxNotesShceduledPerPlan } from "@/lib/plans-consts";
 import { Plan } from "@prisma/client";
 import PlanComparisonDialog from "./plan-comparison-dialog";
+import { Input } from "@/components/ui/input";
 
 const basicFeatures = (credits: number, interval: "month" | "year") => [
   `${interval === "month" ? credits : credits * 12} WriteStack AI Credits/${interval}`,
@@ -51,10 +52,15 @@ export default function Pricing({
   const [billingCycle, setBillingCycle] = useState<"month" | "year">("year");
   const router = useCustomRouter();
   const { user } = useAppSelector(state => state.auth);
-  const { updateSubscription, goToCheckout } = usePayments();
+  const { updateSubscription, goToCheckout, validateCoupon } = usePayments();
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [coupon, setCoupon] = useState("");
+  const [showCouponInput, setShowCouponInput] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [couponDiscounts, setCouponDiscounts] = useState<any[]>([]);
+  const [loadingCoupon, setLoadingCoupon] = useState(false);
 
   const pricingPlans = useMemo(
     () => [
@@ -93,8 +99,28 @@ export default function Pricing({
         popular: false,
       },
     ],
-    [billingCycle],
-  );
+    [billingCycle, couponDiscounts],
+  ).map(plan => {
+    const couponDiscount = couponDiscounts.find(
+      discount => 
+        discount.name.toLowerCase() === plan.name.toLowerCase() &&
+        discount.interval === billingCycle,
+    );
+
+    if (couponDiscount) {
+      const originalPrice =
+        billingCycle === "month" ? plan.monthlyPrice : plan.yearlyPlanPrice;
+      return {
+        ...plan,
+        discountedPrice: couponDiscount.newPrice,
+        couponDiscount: couponDiscount.discount,
+        discountDuration: couponDiscount.discountDuration,
+        originalPrice,
+      };
+    }
+
+    return plan;
+  });
 
   const handleGetStarted = async (plan: string) => {
     // If user is not authenticated or onboarding, proceed without showing dialog
@@ -117,7 +143,7 @@ export default function Pricing({
     setLoading(true);
     try {
       if (onboarding) {
-        await goToCheckout(billingCycle, plan);
+        await goToCheckout(billingCycle, plan, appliedCoupon || undefined);
       } else {
         if (!user) {
           router.push(`/login?plan=${plan}&interval=${billingCycle}`);
@@ -142,6 +168,38 @@ export default function Pricing({
   };
 
   const hadSubscription = user?.meta?.hadSubscription;
+
+  const applyCoupon = async () => {
+    if (!coupon.trim()) return;
+
+    setLoadingCoupon(true);
+    try {
+      // Send both monthly and annual plans to get discounts for both
+      const allPlans = pricingPlans.flatMap(plan => [
+        {
+          name: plan.name,
+          price: plan.monthlyPrice,
+          interval: "month" as const,
+        },
+        {
+          name: plan.name,
+          price: plan.yearlyPlanPrice,
+          interval: "year" as const,
+        },
+      ]);
+
+      const discounts = await validateCoupon(coupon, allPlans);
+      setCouponDiscounts(discounts);
+      setAppliedCoupon(coupon.toUpperCase());
+      toast.success("Coupon applied successfully!");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Invalid coupon code");
+      setCouponDiscounts([]);
+      setAppliedCoupon(null);
+    } finally {
+      setLoadingCoupon(false);
+    }
+  };
 
   return (
     <motion.section
@@ -232,8 +290,95 @@ export default function Pricing({
             </div>
           </RadioGroup>
         </motion.div>
-        <div className="w-full flex justify-center">
-          <div className="isolate mx-auto mt-10 grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-6xl lg:grid-cols-3">
+        <div className="w-full flex flex-col justify-center items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.3,
+              ease: "easeOut",
+            }}
+            className="flex justify-center mb-4 mt-10"
+          >
+            <div className="flex flex-col items-center space-y-3">
+              {!showCouponInput && !appliedCoupon && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCouponInput(true)}
+                  className="text-sm"
+                >
+                  Apply coupon
+                </Button>
+              )}
+
+              <motion.div initial={false} className="overflow-hidden mb-3">
+                {showCouponInput && (
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      placeholder="COUPON30"
+                      value={coupon}
+                      onChange={e => setCoupon(e.target.value)}
+                      className="w-48 uppercase"
+                      disabled={!!appliedCoupon}
+                      onKeyDown={e => e.key === "Enter" && applyCoupon()}
+                    />
+                    <Button
+                      onClick={applyCoupon}
+                      disabled={loadingCoupon || !coupon.trim()}
+                      size="sm"
+                    >
+                      {loadingCoupon ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "Apply"
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setShowCouponInput(false);
+                        setCoupon("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
+
+              {appliedCoupon && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-center space-x-2"
+                >
+                  <span className="text-sm text-green-600">
+                    Coupon "{appliedCoupon}" applied!
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setAppliedCoupon(null);
+                      setCouponDiscounts([]);
+                      setCoupon("");
+                    }}
+                    className="text-xs p-1 h-auto py-0"
+                  >
+                    Remove
+                  </Button>
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+          <div
+            className={cn(
+              "isolate mx-auto grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-6xl lg:grid-cols-3",
+              appliedCoupon && "mt-6",
+            )}
+          >
             {pricingPlans.map((plan, index) => (
               <motion.div
                 key={plan.name}
@@ -247,10 +392,21 @@ export default function Pricing({
               >
                 <Card
                   className={cn(
-                    "h-full ring-1 ring-gray-200 rounded-3xl p-8 xl:p-10 border-none",
+                    "h-full ring-1 ring-gray-200 rounded-3xl p-8 xl:p-10 border-none relative",
                     plan.popular && "ring-2 ring-primary",
                   )}
                 >
+                  {/* Coupon Discount Badge */}
+                  {(plan as any).couponDiscount && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                      <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                        {(plan as any).couponDiscount}% OFF for{" "}
+                        {(plan as any).discountDuration || 1} month
+                        {(plan as any).discountDuration > 1 ? "s" : ""}
+                      </div>
+                    </div>
+                  )}
+
                   <CardHeader className="flex flex-col gap-4 p-0">
                     <CardTitle
                       className={cn(
@@ -275,11 +431,17 @@ export default function Pricing({
                     />
                     <div className="!mt-2">
                       <PriceContainer
-                        originalPrice={plan.monthlyPrice}
+                        originalPrice={
+                          (plan as any).originalPrice ||
+                          (billingCycle === "month"
+                            ? plan.monthlyPrice
+                            : plan.yearlyPlanPrice)
+                        }
                         discountPrice={
-                          billingCycle === "month"
+                          (plan as any).discountedPrice ||
+                          (billingCycle === "month"
                             ? undefined
-                            : plan.yearlyPlanPrice
+                            : plan.yearlyPlanPrice)
                         }
                         isPrimary={plan.popular}
                         annualSavings={
@@ -287,6 +449,7 @@ export default function Pricing({
                             ? undefined
                             : plan.annualSavings
                         }
+                        hasCoupon={!!appliedCoupon}
                       />
                     </div>
                   </CardHeader>

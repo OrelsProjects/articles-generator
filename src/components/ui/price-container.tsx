@@ -8,6 +8,7 @@ export type PriceContainerProps = {
   suffix?: string;
   annualSavings?: number;
   className?: string;
+  hasCoupon?: boolean;
 };
 
 export default function PriceContainer({
@@ -17,6 +18,7 @@ export default function PriceContainer({
   suffix = "/month",
   annualSavings,
   className,
+  hasCoupon = false,
 }: PriceContainerProps) {
   const formattedOriginalPrice = `$${originalPrice.toFixed(2)}`;
   const formattedDiscountPrice = discountPrice
@@ -51,7 +53,7 @@ export default function PriceContainer({
           </div>
         </div>
       )}
-      {annualSavings && (
+      {annualSavings && !hasCoupon && (
         <div className="mt-8 text-sm text-foreground text-right relative">
           ☝️ That&apos;s ${annualSavings} saved annually!
         </div>
