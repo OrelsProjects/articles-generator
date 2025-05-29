@@ -102,7 +102,7 @@ export default function Pricing({
     [billingCycle, couponDiscounts],
   ).map(plan => {
     const couponDiscount = couponDiscounts.find(
-      discount => 
+      discount =>
         discount.name.toLowerCase() === plan.name.toLowerCase() &&
         discount.interval === billingCycle,
     );
@@ -432,10 +432,7 @@ export default function Pricing({
                     <div className="!mt-2">
                       <PriceContainer
                         originalPrice={
-                          (plan as any).originalPrice ||
-                          (billingCycle === "month"
-                            ? plan.monthlyPrice
-                            : plan.yearlyPlanPrice)
+                          (plan as any).originalPrice || plan.monthlyPrice
                         }
                         discountPrice={
                           (plan as any).discountedPrice ||
