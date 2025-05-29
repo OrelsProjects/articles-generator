@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    // TODO: check if user is active
     const authorId = await getAuthorId(session.user.id);
 
     if (!authorId) {

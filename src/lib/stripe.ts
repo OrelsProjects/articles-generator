@@ -22,10 +22,10 @@ const generateNewCouponCode = (data: {
   email?: string;
   couponCode: string;
 }) => {
-  const now = new Date().toISOString();
+  const now = new Date().getTime().toString();
   const { userId, name, email, couponCode } = data;
   return slugify(
-    `${name || email || userId}-${couponCode}-${now.slice(0, 4)}`,
+    `${name || email || userId}-${couponCode}-${now.slice(4, 8)}`,
     {
       lower: true,
       strict: true,

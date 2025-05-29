@@ -47,6 +47,8 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
   const [activeDays, setActiveDays] = useState<Date[]>([]);
   const [activeTab, setActiveTab] = useState("scheduled");
 
+  const lastFetchOnActiveTab = useRef<Date | null>(null);
+
   const lastNoteRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -97,6 +99,43 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
   useEffect(() => {
     setActiveTab(activeTabCache);
   }, [activeTabCache]);
+
+  // Refetch notes when the page becomes visible/focused again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        // If less than 5 minutes have passed since last fetch, don't fetch again
+        if (
+          lastFetchOnActiveTab.current &&
+          Date.now() - lastFetchOnActiveTab.current.getTime() < 5 * 60 * 1000
+        ) {
+          return;
+        }
+        lastFetchOnActiveTab.current = new Date();
+        onFetchingForUpdate(true);
+        fetchNotes().finally(() => {
+          onFetchingForUpdate(false);
+        });
+      }
+    };
+
+    // const handleFocus = () => {
+    //   onFetchingForUpdate(true);
+    //   fetchNotes().finally(() => {
+    //     onFetchingForUpdate(false);
+    //   });
+    // };
+
+    // Add event listeners
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    // window.addEventListener("focus", handleFocus);
+
+    // Cleanup event listeners
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      // window.removeEventListener("focus", handleFocus);
+    };
+  }, [fetchNotes, onFetchingForUpdate]);
 
   // if scroll is at 60% of the page, fetch more scheduled notes.
   // Make sure it doesn't trigger too many times, due to a fast scroll.
