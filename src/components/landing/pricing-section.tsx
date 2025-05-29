@@ -355,7 +355,7 @@ export default function Pricing({
                   className="flex items-center space-x-2"
                 >
                   <span className="text-sm text-green-600">
-                    Coupon "{appliedCoupon}" applied!
+                    Coupon &apos;{appliedCoupon}&apos; applied!
                   </span>
                   <Button
                     variant="ghost"
