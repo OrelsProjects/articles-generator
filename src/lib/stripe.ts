@@ -265,7 +265,7 @@ export const generateSessionId = async (options: {
       mode: "subscription",
       success_url: `${urlOrigin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrlBase,
-      client_reference_id: options.referralId || userId || "unknown",
+      client_reference_id: options.referralId || "none",
       customer_email: email || "",
 
       metadata: {
