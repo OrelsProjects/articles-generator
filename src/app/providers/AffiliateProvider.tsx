@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Script from "next/script";
 import { useSearchParams } from "next/navigation";
 import { Logger } from "@/logger";
 

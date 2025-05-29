@@ -26,7 +26,9 @@ export default function usePayments() {
         return;
       }
       loadingProducts.current = true;
-      const response = await axiosInstance.get<Product[]>("/api/stripe/products");
+      const response = await axiosInstance.get<Product[]>(
+        "/api/stripe/products",
+      );
       dispatch(setProducts(response.data));
       return response.data;
     } catch (error: any) {
@@ -39,17 +41,17 @@ export default function usePayments() {
 
   const goToCheckout = async (interval: "month" | "year", plan: string) => {
     try {
-      let affiliate = null;
+      let affiliateId = null;
       try {
         Logger.info("Rewardful", { Rewardful });
-        affiliate = await Rewardful.affiliate;
-        Logger.info("affiliate", { affiliate });
+        affiliateId = await Rewardful.referral;
+        Logger.info("affiliateId", { affiliateId });
       } catch (error) {
         Logger.error("Error getting affiliate", { error });
       }
       const response = await axiosInstance.post<{ sessionId: string }>(
         "/api/stripe/checkout",
-        { interval, plan, localReferral: referral, referralId: affiliate?.id },
+        { interval, plan, localReferral: referral, referralId: affiliateId },
       );
       Logger.info("response", { response: response.data });
       const stripe = await stripePromise;
@@ -116,9 +118,12 @@ export default function usePayments() {
     }
     setLoadingCredits(true);
     try {
-      const response = await axiosInstance.post("/api/user/subscription/credits", {
-        credits,
-      });
+      const response = await axiosInstance.post(
+        "/api/user/subscription/credits",
+        {
+          credits,
+        },
+      );
       Logger.info("Credits purchased successfully", { response });
       const stripe = await stripePromise;
       const { error } = await stripe!.redirectToCheckout({
