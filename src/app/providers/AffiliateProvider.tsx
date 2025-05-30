@@ -7,7 +7,7 @@ import { Logger } from "@/logger";
 export default function AffiliateProvider() {
   const searchParams = useSearchParams();
   const via = searchParams.get("via");
-  const [referral, setReferral] = useState<string | null>(null);
+  const [_, setReferral] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if rewardful is defined in the global scope
@@ -28,7 +28,7 @@ export default function AffiliateProvider() {
 
   useEffect(() => {
     if (via) {
-      Logger.info(`[REFERRAL]Referral via ${via}`);
+      Logger.info(`[REFERRAL] Referral via ${via}`);
     }
   }, [via]);
 

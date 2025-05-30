@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import loggerServer from "@/loggerServer";
 import { z } from "zod";
-import { prismaArticles } from "@/lib/prisma";
+import { prisma, prismaArticles } from "@/lib/prisma";
 
 export const maxDuration = 180;
 
@@ -87,6 +87,19 @@ export async function POST(request: NextRequest) {
         ),
       );
     }
+
+    await prisma.dataFetchedMetadata.upsert({
+      where: {
+        userId: session.user.id,
+      },
+      update: {
+        lastFetchedNotesAt: new Date(),
+      },
+      create: {
+        userId: session.user.id,
+        lastFetchedNotesAt: new Date(),
+      },
+    });
 
     return NextResponse.json({ message: "Stats saved" });
   } catch (error: any) {

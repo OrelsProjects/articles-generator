@@ -1,7 +1,7 @@
 import { authOptions } from "@/auth/authOptions";
 import { getAuthorId } from "@/lib/dal/publication";
 import loggerServer from "@/loggerServer";
-import { IntervalStats, ReactionInterval } from "@/types/notes-stats";
+import { IntervalStats, NoteStats, ReactionInterval } from "@/types/notes-stats";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { prismaArticles } from "@/lib/prisma";
@@ -29,17 +29,45 @@ export async function GET(request: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const secret = request.headers.get("x-api-key");
+  if (secret !== process.env.EXTENSION_API_KEY) {
+    loggerServer.warn("Unauthorized, bad secret in get notes for stats", {
+      userId: session.user.id,
+    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const interval = searchParams.get("interval") || "day";
+    const authorIdFromExtension = searchParams.get("author_id");
+
+    if (!authorIdFromExtension) {
+      loggerServer.warn("No author id in get notes for stats", {
+        userId: session.user.id,
+      });
+      return NextResponse.json({ error: "No author id" }, { status: 400 });
+    }
 
     const authorId = await getAuthorId(session.user.id);
-
     if (!authorId) {
       loggerServer.error("Author not found in notes stats", {
         userId: session.user.id,
       });
       return NextResponse.json({ error: "Author not found" }, { status: 404 });
+    }
+
+    if (authorIdFromExtension !== authorId.toString()) {
+      loggerServer.warn("Author id mismatch in notes stats", {
+        userId: session.user.id,
+        authorIdFromExtension,
+        authorId,
+      });
+      return NextResponse.json(
+        { error: "Unauthorized access to data" },
+        { status: 401 },
+      );
     }
 
     const formatMap: Record<string, string> = {
@@ -96,21 +124,24 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      stats: {
-        clicks: toIntervalStats(clicksMap),
-        follows: toIntervalStats(followsMap),
-        paidSubscriptions: toIntervalStats(paidSubsMap),
-        freeSubscriptions: toIntervalStats(freeSubsMap),
-        arr: toIntervalStats(arrMap),
-        shares: toIntervalStats(sharesMap),
-      },
-      totals: {
+    const response: NoteStats = {
+      reactions: toIntervalStats(clicksMap),
+      restacks: toIntervalStats(sharesMap),
+      comments: toIntervalStats(followsMap),
+      totalClicks: toIntervalStats(clicksMap),
+      totalFollows: toIntervalStats(followsMap),
+      totalPaidSubscriptions: toIntervalStats(paidSubsMap),
+      totalFreeSubscriptions: toIntervalStats(freeSubsMap),
+      totalArr: toIntervalStats(arrMap),
+      totalShareClicks: toIntervalStats(sharesMap),
+      engagementTotals: {
         follows: totalStats._sum.totalFollows || 0,
         freeSubscriptions: totalStats._sum.totalFreeSubscriptions || 0,
         paidSubscriptions: totalStats._sum.totalPaidSubscriptions || 0,
       },
-    });
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     loggerServer.error("Error getting notes engagement stats", {
       error,

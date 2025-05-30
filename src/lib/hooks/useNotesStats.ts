@@ -21,6 +21,8 @@ import {
 } from "@/types/notes-stats";
 import { getStreakCount } from "@/lib/utils/streak";
 import { Engager } from "@/types/engager";
+import { useExtension } from "@/lib/hooks/useExtension";
+import { Logger } from "@/logger";
 
 export function useNotesStats() {
   const {
@@ -33,6 +35,11 @@ export function useNotesStats() {
     reactionsInterval,
     fetchingStreak,
   } = useSelector(selectStatistics);
+  const {
+    updateNotesStatistics,
+    getNotesStatistics,
+    getNotesWithStatsForDate,
+  } = useExtension();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -107,45 +114,48 @@ export function useNotesStats() {
       dispatch(setLoadingReactions(true));
 
       // Fetch both reactions and engagement stats in parallel
-      const [reactionsResponse, engagementResponse] = await Promise.all([
+      const [reactionsResponse, engagementResponse] = await Promise.allSettled([
         axiosInstance.get<NoteStats>(
           `/api/user/notes/stats/reactions?interval=${interval}`,
         ),
-        axiosInstance.get<{
-          stats: {
-            clicks: IntervalStats[];
-            follows: IntervalStats[];
-            paidSubscriptions: IntervalStats[];
-            freeSubscriptions: IntervalStats[];
-            arr: IntervalStats[];
-            shares: IntervalStats[];
-          };
-          totals: {
-            follows: number;
-            freeSubscriptions: number;
-            paidSubscriptions: number;
-          };
-        }>(`/api/user/notes/stats/engagement?interval=${interval}`),
+        getNotesStatistics(interval),
       ]);
 
-      // Combine the data
-      const combinedStats: NoteStats = {
-        ...reactionsResponse.data,
-        totalClicks: engagementResponse.data.stats.clicks,
-        totalFollows: engagementResponse.data.stats.follows,
-        totalPaidSubscriptions: engagementResponse.data.stats.paidSubscriptions,
-        totalFreeSubscriptions: engagementResponse.data.stats.freeSubscriptions,
-        totalArr: engagementResponse.data.stats.arr,
-        totalShareClicks: engagementResponse.data.stats.shares,
-        engagementTotals: engagementResponse.data.totals,
-      };
+      let combinedStats: NoteStats | null = null;
+      if (reactionsResponse.status === "fulfilled") {
+        combinedStats = reactionsResponse.value.data;
+      }
+      if (engagementResponse.status === "fulfilled") {
+        const engagementData = engagementResponse.value;
+        if (!combinedStats) {
+          combinedStats = engagementData;
+        } else if (engagementData) {
+          combinedStats = {
+            ...combinedStats,
+            totalClicks: engagementData.totalClicks,
+            totalFollows: engagementData.totalFollows,
+            totalPaidSubscriptions: engagementData.totalPaidSubscriptions,
+            totalFreeSubscriptions: engagementData.totalFreeSubscriptions,
+            totalArr: engagementData.totalArr,
+            totalShareClicks: engagementData.totalShareClicks,
+            engagementTotals: engagementData.engagementTotals,
+          };
+        }
+      }
+
+      if (!combinedStats) {
+        setErrorReactions(
+          "Failed to fetch reactions or engagement stats",
+        );
+        return;
+      }
 
       dispatch(setNoteStats(combinedStats));
       dispatch(setReactionsInterval(interval));
       setErrorReactions(null);
-    } catch (err) {
+    } catch (error: any) {
       setErrorReactions(
-        err instanceof Error ? err.message : "An unknown error occurred",
+        error instanceof Error ? error.message : "An unknown error occurred",
       );
     } finally {
       loadingReactionsRef.current = false;
@@ -160,12 +170,10 @@ export function useNotesStats() {
   const fetchNotesForDate = async (date: string) => {
     try {
       dispatch(setLoadingNotesForDate(true));
-      const response = await axiosInstance.get<NoteWithEngagementStats[]>(
-        `/api/user/notes/stats/engagement/${date}`,
-      );
-      dispatch(setNotesForDate(response.data));
-    } catch (err) {
-      console.error("Error fetching notes for date:", err);
+      const response = await getNotesWithStatsForDate(date);
+      dispatch(setNotesForDate(response));
+    } catch (error: any) {
+      Logger.error("Error fetching notes for date:", error);
       dispatch(setNotesForDate([]));
     } finally {
       dispatch(setLoadingNotesForDate(false));
@@ -192,5 +200,7 @@ export function useNotesStats() {
     fetchNotesForDate,
     fetchStreakData,
     fetchTopEngagers,
+    updateNotesStatistics,
+    getNotesStatistics: fetchNotesForDate,
   };
 }

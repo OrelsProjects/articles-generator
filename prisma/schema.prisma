@@ -799,3 +799,17 @@ model AIChatMessage {
 
   @@map("aiChatMessages")
 }
+
+model DataFetchedMetadata {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @db.ObjectId @unique
+
+  lastFetchedNotesStatsAt DateTime?
+  lastFetchedNotesAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("dataFetchedMetadata")
+}

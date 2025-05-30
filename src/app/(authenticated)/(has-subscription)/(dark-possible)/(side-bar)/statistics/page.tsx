@@ -8,6 +8,7 @@ import { Engager } from "@/types/engager";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { NotesReactionsChart } from "@/components/stats/NotesReactionsChart";
 import { NotesEngagementChart } from "@/components/stats/NotesEngagementChart";
+import { Logger } from "@/logger";
 
 export default function StatisticsPage() {
   const {
@@ -33,11 +34,17 @@ export default function StatisticsPage() {
     if (loadingRef.current) return;
     loadingRef.current = true;
     try {
-      await fetchStreakData();
-      await fetchTopEngagers();
-      await fetchReactions();
-    } catch (error) {
-      console.error("Error fetching notes stats:", error);
+      fetchStreakData().catch(error => {
+        Logger.error("Error fetching streak data:", error);
+      });
+      fetchTopEngagers().catch(error => {
+        Logger.error("Error fetching top engagers:", error);
+      });
+      fetchReactions().catch(error => {
+        Logger.error("Error fetching reactions:", error);
+      });
+    } catch (error: any) {
+      Logger.error("Error fetching notes stats:", error);
     } finally {
       loadingRef.current = false;
     }

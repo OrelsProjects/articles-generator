@@ -33,6 +33,7 @@ import { NoCookiesError } from "@/types/errors/NoCookiesError";
 import { useUi } from "@/lib/hooks/useUi";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import axiosInstance from "@/lib/axios-instance";
+import { NoteStats, NoteWithEngagementStats, ReactionInterval } from "@/types/notes-stats";
 
 /**
  * Detects the current browser type
@@ -289,15 +290,15 @@ export function useExtension(): UseExtension {
     });
   };
 
-  const fetchNotesStatistics = useCallback(async () => {
+  const updateNotesStatistics = useCallback(async () => {
     const response = await sendExtensionMessage<any>(
       {
         type: "API_REQUEST",
-        action: "getNotesStats",
+        action: "setNotesStats",
       },
       {
         showDialog: false,
-        throwIfNoExtension: true,
+        throwIfNoExtension: false,
       },
     );
     if (response.success) {
@@ -307,6 +308,50 @@ export function useExtension(): UseExtension {
     }
   }, [sendExtensionMessage]);
 
+  const getNotesStatistics = useCallback(
+    async (interval: ReactionInterval): Promise<NoteStats | null> => {
+      const response = await sendExtensionMessage<NoteStats>(
+        {
+          type: "API_REQUEST",
+          action: "getNotesStats",
+          params: [interval],
+        },
+        {
+          showDialog: false,
+          throwIfNoExtension: false,
+        },
+      );
+      if (response.success) {
+        return response.result || null;
+      } else {
+        throw new Error(response.error || SubstackError.UNKNOWN_ERROR);
+      }
+    },
+    [sendExtensionMessage],
+  );
+
+  const getNotesWithStatsForDate = useCallback(
+    async (date: string) => {
+      const response = await sendExtensionMessage<NoteWithEngagementStats[]>(
+        {
+          type: "API_REQUEST",
+          action: "getNotesWithStatsForDate",
+          params: [date],
+        },
+        {
+          showDialog: false,
+          throwIfNoExtension: false,
+        },
+      );
+      if (response.success) {
+        return response.result || [];
+      } else {
+        setError(response.error || SubstackError.UNKNOWN_ERROR);
+        return [];
+      }
+    },
+    [sendExtensionMessage],
+  );
   /**
    * Create a new Substack post
    * @param {CreatePostParams} params Post parameters
@@ -561,6 +606,8 @@ export function useExtension(): UseExtension {
     deleteSchedule,
     getSchedules,
     verifyExtension,
-    fetchNotesStatistics,
+    updateNotesStatistics,
+    getNotesStatistics,
+    getNotesWithStatsForDate,
   };
 }

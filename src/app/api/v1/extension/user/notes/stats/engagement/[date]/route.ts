@@ -18,16 +18,45 @@ export async function GET(
   }
 
   try {
+    const searchParams = request.nextUrl.searchParams;
     const { date } = params;
+    const secret = request.headers.get("x-api-key");
+    if (secret !== process.env.EXTENSION_API_KEY) {
+      loggerServer.warn("Unauthorized, bad secret in get notes for stats", {
+        userId: session.user.id,
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const authorIdFromExtension = searchParams.get("author_id");
+
+    if (!authorIdFromExtension) {
+      loggerServer.warn("No author id in get notes for stats", {
+        userId: session.user.id,
+      });
+      return NextResponse.json({ error: "No author id" }, { status: 400 });
+    }
+
     if (!date) {
       return NextResponse.json({ error: "Date is required" }, { status: 400 });
     }
+
     const dateObj = new Date(date);
     if (isNaN(dateObj.getTime())) {
       return NextResponse.json({ error: "Invalid date" }, { status: 400 });
     }
     const authorId = await getAuthorId(session.user.id);
     if (!authorId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (authorIdFromExtension !== authorId.toString()) {
+      loggerServer.warn("Author id mismatch in get notes for stats in date", {
+        userId: session.user.id,
+        authorIdFromExtension,
+        authorId,
+        date,
+      });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
