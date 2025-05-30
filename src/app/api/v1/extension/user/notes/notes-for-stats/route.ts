@@ -12,14 +12,19 @@ import { isWithinInterval } from "date-fns";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
-
   if (!session) {
+    loggerServer.warn("[GETTING-NOTES-FOR-STATS] Unauthorized, no session", {
+      userId: "not logged in",
+    });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  loggerServer.info("[GETTING-NOTES-FOR-STATS] User requested notes for stats", {
+    userId: session.user.id,
+  });
   try {
     const secret = request.headers.get("x-api-key");
     if (secret !== process.env.EXTENSION_API_KEY) {
-      loggerServer.warn("Unauthorized, bad secret in get notes for stats", {
+      loggerServer.warn("[GETTING-NOTES-FOR-STATS] Unauthorized, bad secret in get notes for stats", {
         userId: session.user.id,
       });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -28,10 +33,13 @@ export async function GET(request: NextRequest) {
     const authorId = await getAuthorId(session.user.id);
 
     if (!authorId) {
+      loggerServer.warn("[GETTING-NOTES-FOR-STATS] Unauthorized, no authorId", {
+        userId: session.user.id,
+      });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    loggerServer.info("Getting notes for stats", {
+    loggerServer.info("[GETTING-NOTES-FOR-STATS] Getting notes for stats", {
       authorId,
       userId: session.user.id,
     });
@@ -50,6 +58,11 @@ export async function GET(request: NextRequest) {
       where: {
         userId: session.user.id,
       },
+    });
+
+    loggerServer.info("[GETTING-NOTES-FOR-STATS] Found notes", {
+      notesCount: notes.length,
+      userId: session.user.id,
     });
 
     // Unique by commentId
@@ -76,6 +89,9 @@ export async function GET(request: NextRequest) {
         end,
       });
       if (!shouldFetchNotesStats) {
+        loggerServer.info("[GETTING-NOTES-FOR-STATS] No need to fetch notes for stats", {
+          userId: session.user.id,
+        });
         return NextResponse.json([]);
       } else {
         // Return notes from the last 2 weeks
@@ -86,6 +102,10 @@ export async function GET(request: NextRequest) {
             end: new Date(),
           });
         });
+        loggerServer.info("[GETTING-NOTES-FOR-STATS] Fetching notes for stats", {
+          notesCount: notesFromLast2Weeks.length,
+          userId: session.user.id,
+        });
         return NextResponse.json(
           notesFromLast2Weeks.map(({ commentId }) => ({
             commentId,
@@ -93,6 +113,11 @@ export async function GET(request: NextRequest) {
         );
       }
     }
+
+    loggerServer.info("[GETTING-NOTES-FOR-STATS] Fetching notes for stats", {
+      notesCount: uniqueNotes.length,
+      userId: session.user.id,
+    });
 
     return NextResponse.json(
       uniqueNotes.map(({ commentId }) => ({
