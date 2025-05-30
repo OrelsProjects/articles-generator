@@ -9,21 +9,32 @@ import { NotesAttachments } from "../../../../../../../../prisma/generated/artic
 import { NotesComments } from "../../../../../../../../prisma/generated/articles";
 
 export async function POST(request: NextRequest) {
+  loggerServer.info("[SAVING-NOTES] User requested to save notes", {
+    userId: "extension",
+  });
   const body = await request.json();
   const apiKey = request.headers.get("X-API-Key");
 
   if (!apiKey || apiKey !== process.env.EXTENSION_API_KEY) {
-    loggerServer.error("Unauthorized", {
+    loggerServer.error("[SAVING-NOTES] Unauthorized", {
       apiKey,
       userId: "extension",
     });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
+    loggerServer.info("[SAVING-NOTES] Parsing notes", {
+      userId: "extension",
+    });
     const notes: ExtensionResponseNoteComment[] = body;
 
     const dbItems: { note: NotesComments; attachments: NotesAttachments[] }[] =
       parseToDb(notes);
+
+    loggerServer.info("[SAVING-NOTES] Parsed notes", {
+      notesCount: dbItems.length,
+      userId: "extension",
+    });
 
     for (const item of dbItems) {
       if (!item.note.commentId || !item.note.authorId) {
@@ -58,6 +69,9 @@ export async function POST(request: NextRequest) {
         });
       }
     }
+    loggerServer.info("[SAVING-NOTES] Notes saved successfully", {
+      userId: "extension",
+    });
     return NextResponse.json({ message: "Notes saved successfully" });
   } catch (error: any) {
     loggerServer.error("Error saving user notes", {
