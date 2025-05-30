@@ -146,11 +146,7 @@ export default function Pricing({
         await goToCheckout(billingCycle, plan, appliedCoupon || undefined);
       } else {
         if (!user) {
-          let url = `/login?plan=${plan}&interval=${billingCycle}`;
-          if (appliedCoupon) {
-            url += `&coupon=${appliedCoupon}`;
-          }
-          router.push(url);
+          router.push(`/login?plan=${plan}&interval=${billingCycle}`);
         } else {
           await updateSubscription(plan, billingCycle);
           toast.success("Subscription updated successfully!");
@@ -209,7 +205,7 @@ export default function Pricing({
     <motion.section
       id="pricing"
       className={cn(
-        "l !w-full h-full relative z-20",
+        "landing-section-container !w-full h-full relative z-20",
         className,
       )}
     >
