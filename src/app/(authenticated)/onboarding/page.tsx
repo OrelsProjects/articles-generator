@@ -31,12 +31,13 @@ export default function OnboardingPage() {
 
   const plan = searchParams.get("plan");
   const interval = searchParams.get("interval");
+  const coupon = searchParams.get("coupon");
 
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
   const handleNavigateNext = () => {
     if (user?.meta?.plan) {
-      router.push(rootPath, { paramsToRemove: ["plan", "interval"] });
+      router.push(rootPath, { paramsToRemove: ["plan", "interval", "coupon"] });
     } else if (plan && interval) {
       setShowPaymentDialog(true);
     } else {
@@ -69,7 +70,7 @@ export default function OnboardingPage() {
   const handlePaymentDialogChange = (open: boolean) => {
     if (!open) {
       if (plan && interval) {
-        goToCheckout(interval as "month" | "year", plan);
+        goToCheckout(interval as "month" | "year", plan, coupon || undefined);
       } else {
         router.push("/pricing?onboarding=true");
       }

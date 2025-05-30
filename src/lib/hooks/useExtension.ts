@@ -289,6 +289,24 @@ export function useExtension(): UseExtension {
     });
   };
 
+  const fetchNotesStatistics = useCallback(async () => {
+    const response = await sendExtensionMessage<any>(
+      {
+        type: "API_REQUEST",
+        action: "getNotesStats",
+      },
+      {
+        showDialog: false,
+        throwIfNoExtension: true,
+      },
+    );
+    if (response.success) {
+      return response.result;
+    } else {
+      throw new Error(response.error || SubstackError.UNKNOWN_ERROR);
+    }
+  }, [sendExtensionMessage]);
+
   /**
    * Create a new Substack post
    * @param {CreatePostParams} params Post parameters
@@ -543,5 +561,6 @@ export function useExtension(): UseExtension {
     deleteSchedule,
     getSchedules,
     verifyExtension,
+    fetchNotesStatistics,
   };
 }

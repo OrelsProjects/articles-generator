@@ -88,7 +88,8 @@ export interface ExtensionMessage {
     | "getSubstackCookies"
     | "createSchedule"
     | "deleteSchedule"
-    | "getSchedules";
+    | "getSchedules"
+    | "getNotesStats";
   params?: any[];
 }
 
@@ -142,4 +143,5 @@ export interface UseExtension {
     version?: string;
     date?: number;
   }>;
-}
+    fetchNotesStatistics: () => Promise<any>;
+  }
