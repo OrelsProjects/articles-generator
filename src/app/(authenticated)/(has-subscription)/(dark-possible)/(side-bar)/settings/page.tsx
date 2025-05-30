@@ -170,7 +170,7 @@ export default function SettingsPage() {
                   <Progress value={100 - creditPercentage} className="h-2" />
                   <p className="text-sm text-muted-foreground">
                     Credits reset every{" "}
-                    {billingInfo?.interval === "month" ? "month" : "year"} (
+                    {billingInfo?.interval === "month" ? "month" : "month"} (
                     {credits.total})
                   </p>
                 </div>
