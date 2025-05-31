@@ -15,12 +15,14 @@ export interface GetUserArticlesOptions {
   order?: GetArticlesOptionsOrder;
   select?: (keyof Post)[];
   scrapeIfNotFound?: boolean;
+  includeBody?: boolean;
 }
 
 export const getUserArticlesByUserId = async (
   userId: string,
   options: GetUserArticlesOptions = {
     limit: 10,
+    includeBody: true,  
   },
 ) => {
   const queryOptions = {
@@ -67,6 +69,13 @@ export const getUserArticlesByUserId = async (
     },
     ...queryOptions,
   });
+
+  if (!options.includeBody) {
+    return posts.map(post => ({
+      ...post,
+      bodyText: post.bodyText || "",
+    }));
+  }
 
   return posts;
 };
