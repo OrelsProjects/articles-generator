@@ -12,11 +12,7 @@ import {
   setNotesForDate,
   setLoadingNotesForDate,
 } from "@/lib/features/statistics/statisticsSlice";
-import {
-  Streak,
-  NoteStats,
-  ReactionInterval,
-} from "@/types/notes-stats";
+import { Streak, NoteStats, ReactionInterval } from "@/types/notes-stats";
 import { getStreakCount } from "@/lib/utils/streak";
 import { Engager } from "@/types/engager";
 import { useExtension } from "@/lib/hooks/useExtension";
@@ -32,6 +28,7 @@ export function useNotesStats() {
     loadingNotesForDate,
     reactionsInterval,
     fetchingStreak,
+    isFetchingNotesStats,
   } = useSelector(selectStatistics);
   const {
     updateNotesStatistics,
@@ -123,6 +120,7 @@ export function useNotesStats() {
       if (reactionsResponse.status === "fulfilled") {
         combinedStats = reactionsResponse.value.data;
       }
+      debugger;
       if (engagementResponse.status === "fulfilled") {
         const engagementData = engagementResponse.value;
         if (!combinedStats) {
@@ -155,6 +153,7 @@ export function useNotesStats() {
       dispatch(setNoteStats(combinedStats));
       dispatch(setReactionsInterval(interval));
       setErrorReactions(null);
+      dispatch(setLoadingReactions(false));
     } catch (error: any) {
       setErrorReactions(
         error instanceof Error ? error.message : "An unknown error occurred",
@@ -204,5 +203,6 @@ export function useNotesStats() {
     fetchTopEngagers,
     updateNotesStatistics,
     getNotesStatistics: fetchNotesForDate,
+    isFetchingNotesStats,
   };
 }

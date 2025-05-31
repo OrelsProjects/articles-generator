@@ -46,7 +46,7 @@ const schema = z.object({
 
 export const maxDuration = 600; // This function can run for a maximum of 10 minutes
 
-const MAX_ARTICLES_TO_GET_BODY = 30;
+const MAX_ARTICLES_TO_GET_BODY = 60;
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -168,14 +168,15 @@ export async function POST(req: NextRequest) {
     console.timeEnd("Getting publication by url");
 
     loggerServer.info("Scraping posts", { url, userId });
-    console.time("Scraping posts");
-    await scrapePosts(url, MAX_ARTICLES_TO_GET_BODY, byline.authorId);
-    console.timeEnd("Scraping posts");
+    loggerServer.time("Scraping posts");
+    // TODO: Scrape only new ones that are not in the database
+    await scrapePosts(url, MAX_ARTICLES_TO_GET_BODY, byline.authorId, {
+      stopIfNoNewPosts: true,
+    });
+    loggerServer.timeEnd("Scraping posts");
 
     if (!userPublication) {
       // Need to analyze it.
-      console.time("Setting publications");
-      console.timeEnd("Setting publications");
       publications = await getPublicationByUrl(url);
       userPublication = publications[0];
       if (!userPublication) {
@@ -188,17 +189,16 @@ export async function POST(req: NextRequest) {
         );
       }
     }
-
-    console.time("Getting user articles with body");
+    loggerServer.time("Getting user articles with body");
     const userArticles: Article[] = await getUserArticles(
       { publicationId: Number(userPublication.id) },
       {
         limit: 150,
         freeOnly: false,
-        scrapeIfNotFound: true,
+        scrapeIfNotFound: false,
       },
     );
-    console.timeEnd("Getting user articles with body");
+    loggerServer.timeEnd("Getting user articles with body");
 
     // Check if the articles have a bodyText
     // If less than 50%, get their body as well.
@@ -223,9 +223,9 @@ export async function POST(req: NextRequest) {
         })),
       );
 
-      articlesWithBody = articlesWithBody.map(article => {
+      articlesWithBody = userArticles.map(article => {
         const articleBody = articlesBody.find(
-          it => it.canonicalUrl === article.canonicalUrl,
+          it => `${it.id}` === `${article.id}`,
         );
         return { ...article, bodyText: articleBody?.bodyText || "" };
       });
@@ -282,7 +282,7 @@ export async function POST(req: NextRequest) {
     )) as ArticleWithBody[];
 
     let count = getTokenCount(top60Articles.map(a => a.bodyText).join("\n"));
-    while (count > 120000) {
+    while (count > 500000) {
       top60Articles.shift(); // remove the worst-performing article
       count = getTokenCount(top60Articles.map(a => a.bodyText).join("\n"));
     }

@@ -15,14 +15,12 @@ export interface GetUserArticlesOptions {
   order?: GetArticlesOptionsOrder;
   select?: (keyof Post)[];
   scrapeIfNotFound?: boolean;
-  includeBody?: boolean;
 }
 
 export const getUserArticlesByUserId = async (
   userId: string,
   options: GetUserArticlesOptions = {
     limit: 10,
-    includeBody: true,
   },
 ) => {
   const queryOptions = {
@@ -90,7 +88,6 @@ export const getUserArticles = async (
       },
   options: GetUserArticlesOptions = {
     limit: 10,
-    includeBody: true,
     freeOnly: true,
   },
 ): Promise<Article[]> => {
@@ -113,7 +110,15 @@ export const getUserArticles = async (
       : undefined,
   };
 
-  if ("authorId" in data && !isNaN(data.authorId)) {
+  if ("publicationId" in data) {
+    posts = await prismaArticles.post.findMany({
+      where: {
+        publicationId: data.publicationId.toString(),
+        ...postsWhere,
+      },
+      ...queryOptions,
+    });
+  } else if ("authorId" in data && !isNaN(data.authorId)) {
     const publication = await prismaArticles.publication.findMany({
       where: {
         authorId: data.authorId,
@@ -151,27 +156,8 @@ export const getUserArticles = async (
       },
       ...queryOptions,
     });
-  } else if ("publicationId" in data) {
-    posts = await prismaArticles.post.findMany({
-      where: {
-        publicationId: data.publicationId.toString(),
-        ...postsWhere,
-      },
-      ...queryOptions,
-    });
   } else if ("userId" in data) {
     posts = await getUserArticlesByUserId(data.userId, options);
-  }
-
-  if (!options.includeBody) {
-    return posts.map(post => {
-      const { bodyText, ...rest } = post;
-      return {
-        ...rest,
-        bodyText: "",
-        canonicalUrl: post.canonicalUrl || "",
-      };
-    });
   }
 
   return posts.map(post => ({

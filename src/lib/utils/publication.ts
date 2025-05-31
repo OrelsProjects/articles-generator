@@ -1,9 +1,6 @@
 import * as cheerio from "cheerio";
 import { prismaArticles } from "@/lib/prisma";
-import {
-  Post,
-  Publication,
-} from "../../../prisma/generated/articles";
+import { Post, Publication } from "../../../prisma/generated/articles";
 import { fetchWithHeaders } from "./requests";
 import loggerServer from "@/loggerServer";
 import {
@@ -281,7 +278,8 @@ export async function populatePublications(
       break;
     }
     const postsNotInCurrentUserPosts = data.filter(
-      (post: SubstackPost) => !currentUserPosts.some(p => p.id === post.id),
+      (post: SubstackPost) =>
+        !currentUserPosts.some(p => `${p.id}` === `${post.id}`),
     );
     if (postsNotInCurrentUserPosts.length > 0) {
       allPosts.push(...postsNotInCurrentUserPosts);

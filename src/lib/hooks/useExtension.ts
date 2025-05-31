@@ -33,7 +33,11 @@ import { NoCookiesError } from "@/types/errors/NoCookiesError";
 import { useUi } from "@/lib/hooks/useUi";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import axiosInstance from "@/lib/axios-instance";
-import { NoteStats, NoteWithEngagementStats, ReactionInterval } from "@/types/notes-stats";
+import {
+  NoteStats,
+  NoteWithEngagementStats,
+  ReactionInterval,
+} from "@/types/notes-stats";
 
 /**
  * Detects the current browser type
@@ -203,7 +207,11 @@ export function useExtension(): UseExtension {
 
   const sendExtensionMessage = async <T>(
     message: ExtensionMessage,
-    options: { showDialog?: boolean; throwIfNoExtension?: boolean },
+    options: {
+      showDialog?: boolean;
+      throwIfNoExtension?: boolean;
+      timeout?: number;
+    },
   ): Promise<ExtensionResponse<T>> => {
     return new Promise(async (resolve, reject) => {
       try {
@@ -227,7 +235,7 @@ export function useExtension(): UseExtension {
         }
         const timeoutId = setTimeout(
           () => reject(new Error(SubstackError.NETWORK_ERROR)),
-          30000,
+          options.timeout || 30000,
         );
         const runtime = chrome.runtime;
         if (!runtime) {
@@ -266,7 +274,13 @@ export function useExtension(): UseExtension {
                 action,
               });
             } else {
-              reject(new Error(response?.error || SubstackError.UNKNOWN_ERROR));
+              reject({
+                error: response?.error || SubstackError.UNKNOWN_ERROR,
+                message: response?.data?.message || "",
+                action: response?.data?.action || "",
+                result: response?.data?.result || "",
+                success: false,
+              });
             }
           },
         );
@@ -291,6 +305,7 @@ export function useExtension(): UseExtension {
   };
 
   const updateNotesStatistics = useCallback(async () => {
+    const timeoutTenMinutes = 600000;
     const response = await sendExtensionMessage<any>(
       {
         type: "API_REQUEST",
@@ -299,6 +314,7 @@ export function useExtension(): UseExtension {
       {
         showDialog: false,
         throwIfNoExtension: false,
+        timeout: timeoutTenMinutes,
       },
     );
     if (response.success) {
@@ -561,13 +577,6 @@ export function useExtension(): UseExtension {
     }
   }, [sendExtensionMessage]);
 
-  /**
- * <T extends ApiRoute, R = any>(
-  route: T,
-  body: RouteBody<T>,
-  config?: AxiosRequestConfig,
-): Promise<AxiosResponse<R>>
- */
   const sendExtensionApiRequest = async <T extends ApiRoute, R = any>(
     route: T,
     body: RouteBody<T>,
@@ -591,6 +600,50 @@ export function useExtension(): UseExtension {
     return await extensionApiRequest<T, R>(route, body, config);
   };
 
+  const verifyExtensionKey = useCallback(async () => {
+    try {
+      let key: string | null = null;
+      let authorId: number | null = null;
+      const response = await axiosInstance.get("/api/v1/extension/key");
+      if (!response.data.key) {
+        // generate key
+        const keyResponse = await axiosInstance.post(
+          "/api/v1/extension/key/generate",
+        );
+        key = keyResponse.data.key;
+        authorId = keyResponse.data.authorId;
+      } else {
+        key = response.data.key;
+        authorId = response.data.authorId;
+      }
+      if (!key) {
+        Logger.error("No extension key found after generation");
+        return false;
+      }
+
+      // send to extension, if exists, "verifyKey"
+      const message: ExtensionMessage = {
+        type: "API_REQUEST",
+        action: "verifyKey",
+        params: [key, authorId],
+      };
+      const responseExtension = await sendExtensionMessage<boolean>(message, {
+        showDialog: false,
+        throwIfNoExtension: false,
+      });
+      if (!responseExtension.success) {
+        Logger.error("Error verifying extension key", {
+          error: responseExtension.error,
+        });
+        return false;
+      }
+      return true;
+    } catch (error) {
+      Logger.error("Error verifying extension key", { error });
+      return false;
+    }
+  }, []);
+
   return {
     isLoading,
     error,
@@ -609,5 +662,6 @@ export function useExtension(): UseExtension {
     updateNotesStatistics,
     getNotesStatistics,
     getNotesWithStatsForDate,
+    verifyExtensionKey,
   };
 }

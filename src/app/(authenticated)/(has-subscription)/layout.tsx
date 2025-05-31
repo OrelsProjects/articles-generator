@@ -9,7 +9,7 @@ import QueueDiscrepancyProvider from "@/app/providers/QueueDiscrepancyProvider";
 import ShowNoteFromUrlProvider from "@/app/providers/ShowNoteFromUrlProvider";
 import SubscriptionProvider from "@/app/providers/SubscriptionProvider";
 import { SubstackCookiesProvider } from "@/app/providers/SubstackCookiesProvider";
-import { UpdateDataProvider } from "@/app/providers/UpdateDataProvider";
+import { UpdateDataProvider } from "@/app/providers/UpdateExtensionDataProvider";
 import VisitProvider from "@/app/providers/VisitProvider";
 
 export default function ContentLayout({

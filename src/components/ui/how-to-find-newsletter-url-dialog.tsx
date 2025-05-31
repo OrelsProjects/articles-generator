@@ -14,7 +14,7 @@ export default function HowToFindNewsletterUrlDialog() {
         <DialogTrigger asChild>
           <Button variant="link">How to find the newsletter URL?</Button>
         </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogTitle>How to find the newsletter URL</DialogTitle>
         <DialogDescription>
           <p>

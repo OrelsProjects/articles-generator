@@ -92,7 +92,8 @@ export interface ExtensionMessage {
     | "getSchedules"
     | "setNotesStats"
     | "getNotesStats"
-    | "getNotesWithStatsForDate";
+    | "getNotesWithStatsForDate"
+    | "verifyKey";
   params?: any[];
 }
 
@@ -149,4 +150,5 @@ export interface UseExtension {
   getNotesWithStatsForDate: (
     date: string,
   ) => Promise<NoteWithEngagementStats[]>;
+  verifyExtensionKey: () => Promise<boolean>;
 }

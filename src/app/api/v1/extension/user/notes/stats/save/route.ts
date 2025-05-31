@@ -56,36 +56,49 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < stats.length; i += batchSize) {
       const batch = stats.slice(i, i + batchSize);
 
-      await Promise.all(
-        batch.map(stat =>
-          prismaArticles.notesCommentsStats.upsert({
-            where: {
-              commentId_authorId: {
+      try {
+        await Promise.all(
+          batch.map(stat =>
+            prismaArticles.notesCommentsStats.upsert({
+              where: {
+                commentId_authorId: {
+                  commentId: stat.comment_id,
+                  authorId: stat.author_id,
+                },
+              },
+              update: {
+                totalClicks: stat.total_clicks,
+                totalFollows: stat.total_follows,
+                totalPaidSubscriptions: stat.total_paid_subscriptions,
+                totalFreeSubscriptions: stat.total_free_subscriptions,
+                totalArr: stat.total_arr,
+                totalShareClicks: stat.total_share_clicks,
+              },
+              create: {
                 commentId: stat.comment_id,
                 authorId: stat.author_id,
+                totalClicks: stat.total_clicks,
+                totalFollows: stat.total_follows,
+                totalPaidSubscriptions: stat.total_paid_subscriptions,
+                totalFreeSubscriptions: stat.total_free_subscriptions,
+                totalArr: stat.total_arr,
+                totalShareClicks: stat.total_share_clicks,
               },
-            },
-            update: {
-              totalClicks: stat.total_clicks,
-              totalFollows: stat.total_follows,
-              totalPaidSubscriptions: stat.total_paid_subscriptions,
-              totalFreeSubscriptions: stat.total_free_subscriptions,
-              totalArr: stat.total_arr,
-              totalShareClicks: stat.total_share_clicks,
-            },
-            create: {
-              commentId: stat.comment_id,
-              authorId: stat.author_id,
-              totalClicks: stat.total_clicks,
-              totalFollows: stat.total_follows,
-              totalPaidSubscriptions: stat.total_paid_subscriptions,
-              totalFreeSubscriptions: stat.total_free_subscriptions,
-              totalArr: stat.total_arr,
-              totalShareClicks: stat.total_share_clicks,
-            },
-          }),
-        ),
-      );
+            }),
+          ),
+        );
+      } catch (error: any) {
+        await prisma.notesStatsFailed.create({
+          data: {
+            userId: session.user.id,
+            notesJsonString: JSON.stringify(batch),
+          },
+        });
+        loggerServer.error("Error saving notes stats", {
+          error: error.message,
+          userId: session.user.id,
+        });
+      }
     }
 
     await prisma.dataFetchedMetadata.upsert({

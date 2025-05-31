@@ -144,6 +144,7 @@ export function NotesEngagementChart() {
     errorReactions,
     fetchReactions,
     fetchNotesForDate,
+    isFetchingNotesStats,
   } = useNotesStats();
   const { hasExtension } = useExtension();
   const [hoveredMetric, setHoveredMetric] = useState<MetricType>(null);
@@ -269,6 +270,12 @@ export function NotesEngagementChart() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [chartData, fetchReactions]);
+
+  useEffect(() => {
+    if (!isFetchingNotesStats && !noteStats) {
+      fetchReactions();
+    }
+  }, [isFetchingNotesStats]);
 
   useEffect(() => {
     const checkExtensionInstalled = async () => {
@@ -567,7 +574,7 @@ export function NotesEngagementChart() {
         </CardHeader>
 
         <CardContent>
-          {loadingReactions ? (
+          {isFetchingNotesStats && !noteStats ? (
             <div className="h-[300px] flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>

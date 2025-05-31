@@ -1,10 +1,9 @@
-import { authOptions } from "@/auth/authOptions";
 import { getAuthorId } from "@/lib/dal/publication";
 import loggerServer from "@/loggerServer";
-import { IntervalStats, NoteStats, ReactionInterval } from "@/types/notes-stats";
-import { getServerSession } from "next-auth";
+import { IntervalStats, NoteStats } from "@/types/notes-stats";
 import { NextRequest, NextResponse } from "next/server";
 import { prismaArticles } from "@/lib/prisma";
+import { decodeKey } from "@/lib/dal/extension-key";
 import { format, getISOWeek, getISOWeekYear } from "date-fns";
 
 const getFormattedPeriod = (ts: Date, interval: string): string => {
@@ -25,15 +24,32 @@ const getFormattedPeriod = (ts: Date, interval: string): string => {
 };
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
+  const key = request.headers.get("x-extension-key");
+  if (!key) {
+    loggerServer.warn(
+      "[GETTING-NOTES-FOR-STATS] Unauthorized, no extension key",
+      {
+        userId: "not logged in",
+      },
+    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const decoded = decodeKey(key);
+  const userId = decoded.userId;
+  if (!userId) {
+    loggerServer.warn(
+      "[GETTING-NOTES-FOR-STATS] Unauthorized, no userId in key",
+      {
+        userId: "not logged in",
+      },
+    );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const secret = request.headers.get("x-api-key");
   if (secret !== process.env.EXTENSION_API_KEY) {
     loggerServer.warn("Unauthorized, bad secret in get notes for stats", {
-      userId: session.user.id,
+      userId,
     });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -41,26 +57,26 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const interval = searchParams.get("interval") || "day";
-    const authorIdFromExtension = searchParams.get("author_id");
+    const authorIdFromExtension = decoded.authorId;
 
     if (!authorIdFromExtension) {
       loggerServer.warn("No author id in get notes for stats", {
-        userId: session.user.id,
+        userId,
       });
       return NextResponse.json({ error: "No author id" }, { status: 400 });
     }
 
-    const authorId = await getAuthorId(session.user.id);
+    const authorId = await getAuthorId(userId);
     if (!authorId) {
       loggerServer.error("Author not found in notes stats", {
-        userId: session.user.id,
+        userId,
       });
       return NextResponse.json({ error: "Author not found" }, { status: 404 });
     }
 
-    if (authorIdFromExtension !== authorId.toString()) {
+    if (authorIdFromExtension !== authorId) {
       loggerServer.warn("Author id mismatch in notes stats", {
-        userId: session.user.id,
+        userId,
         authorIdFromExtension,
         authorId,
       });
@@ -145,7 +161,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     loggerServer.error("Error getting notes engagement stats", {
       error,
-      userId: session.user.id,
+      userId,
     });
     return NextResponse.json(
       { error: "Internal server error" },

@@ -12,6 +12,7 @@ export interface StatisticsState {
   loadingFetchBestTimeToPublish: boolean;
   loadingReactions: boolean;
   loadingNotesForDate: boolean;
+  isFetchingNotesStats: boolean;
   reactionsInterval: ReactionInterval;
 
   fetchingStreak: boolean;
@@ -29,6 +30,7 @@ export const initialState: StatisticsState = {
   loadingFetchBestTimeToPublish: false,
   loadingReactions: false,
   loadingNotesForDate: false,
+  isFetchingNotesStats: false,
   reactionsInterval: "day",
   fetchingStreak: false,
   fetchingTopEngagers: false,
@@ -82,6 +84,9 @@ const statisticsSlice = createSlice({
     setLoadingNotesForDate: (state, action: PayloadAction<boolean>) => {
       state.loadingNotesForDate = action.payload;
     },
+    setIsFetchingNotesStats: (state, action: PayloadAction<boolean>) => {
+      state.isFetchingNotesStats = action.payload;
+    },
   },
 });
 
@@ -99,6 +104,7 @@ export const {
   setFetchingBestTimeToPublish,
   setNotesForDate,
   setLoadingNotesForDate,
+  setIsFetchingNotesStats,
 } = statisticsSlice.actions;
 
 export const selectStatistics = (state: RootState): StatisticsState =>
