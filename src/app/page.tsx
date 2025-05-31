@@ -338,15 +338,14 @@ const testimonials = [
     `,
     author: "Tim Denning",
     image: "/tim-denning.jpg",
-    title:
-      "Author of Unfiltered by Tim Denning<br/>(<strong>141k+ Subscribers</strong>)",
+    title: "Author of Unfiltered by Tim Denning",
     url: "https://substack.com/@timdenning",
   },
   {
     noteImage: "/testimonials/anton-testimonial.png",
     noteUrl: "https://substack.com/@antonzaides/note/c-119174331",
     author: "Anton Zaides",
-    title: "Author of Manager.dev (<strong>26K subscribers</strong>)",
+    title: "Author of Manager.dev",
     url: "https://substack.com/@antonzaides",
     image: "/testimonials/anton.webp",
   },
@@ -360,8 +359,7 @@ const testimonials = [
     author: "Philip Hofmacher",
     image:
       "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdc125fa8-cfe4-438f-9b30-375d783f944b_865x865.jpeg",
-    title:
-      "Author of Write Build Scale<br/>(<strong>10k+ Subscribers</strong>)",
+    title: "Author of Write Build Scale<br/>",
     url: "https://substack.com/@philiphofmacher",
   },
   {
@@ -374,8 +372,7 @@ const testimonials = [
 `,
     author: "David McIlroy",
     image: "/testimonials/david-mcilroy.jpg",
-    title:
-      "Writer of How to Write for a Living<br/>(<strong>22k+ subscribers</strong>)",
+    title: "Writer of How to Write for a Living<br/>",
     url: "https://substack.com/@thedavidmcilroy",
   },
 
@@ -412,7 +409,15 @@ const testimonials = [
     title: "Author of Simply AI",
     url: "https://substack.com/@techwithtam",
   },
-
+  {
+    quote: `What makes Writestack stand out for me isn’t just how deep the features go, it’s that you can tell it’s a product shaped by people who actually use it.
+    <br/><br/>
+    Using it feels more like a creative partnership than just a platform.`,
+    author: "Karo (Product with Attitude)",
+    image: "/testimonials/karo.png",
+    title: "Author of Product with Attitude",
+    url: "https://substack.com/@karozieminski",
+  },
   {
     quote: `I found ${appName} right when my workflow was hitting a wall—too bogged down by my daily work, with too little time to post my content.
     <br/><br/>
@@ -431,8 +436,7 @@ const testimonials = [
     I’m so glad I found ${appName}.`,
     author: "Stefan G.",
     image: "/testimonials/stefan-girard.webp",
-    title:
-      "Author of Frontier Notes for AI Operators (<strong>#90 Rising in Technology</strong>)",
+    title: "Author of Frontier Notes for AI Operators",
     url: "https://substack.com/@stfgirard",
   },
   {
@@ -447,12 +451,25 @@ const testimonials = [
     url: "https://substack.com/@markwils",
   },
   {
+    quote: `I had been looking for something to help me more consistent with posting Substack Notes as I recognized the importance for helping grow my brand.
+    <br/><br/>
+    What I found was not only a tool that could keep me consistent, but also offered tons of other features that allow me to focus on what I came to Substack for; to share ideas.
+    <br/><br/>
+    Orel has been totally responsive when I have small issues and appreciative of my questions regarding features. He even keeps adding things as we go.
+    <br/><br/>
+    Great product, great support, <strong>highly recommended!</strong>`,
+    author: "Joe Mills",
+    image: "/testimonials/joe-mills.jpg",
+    title: "Author of Aligned Influence",
+    url: "https://substack.com/@infolosophy",
+  },
+  {
     quote: `Writestack is not only the tool I was looking for to improve my presence on Substack, but it has also given me the opportunity to help members of my community grow theirs too.
         <br/><br/>
         Orel is doing an outstanding job democratizing growth on Substack. It's another step forward in giving creators more chances to share our message with the world.`,
     author: "David Domínguez",
     image: "/testimonials/david-dominguez.jpg",
-    title: "Author of Crecer en Substack (<strong>1.2k+ Subscribers</strong>)",
+    title: "Author of Crecer en Substack",
     url: "https://substack.com/@daviddominguez",
   },
   {
