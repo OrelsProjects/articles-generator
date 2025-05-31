@@ -16,8 +16,6 @@ import {
   Streak,
   NoteStats,
   ReactionInterval,
-  IntervalStats,
-  NoteWithEngagementStats,
 } from "@/types/notes-stats";
 import { getStreakCount } from "@/lib/utils/streak";
 import { Engager } from "@/types/engager";

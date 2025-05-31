@@ -218,9 +218,9 @@ export async function getNoteStats(
   ]);
 
   return {
-    reactions,
-    restacks,
-    comments,
+    reactions: reactions || [],
+    restacks: restacks || [],
+    comments: comments || [],
     totalClicks: [],
     totalFollows: [],
     totalPaidSubscriptions: [],

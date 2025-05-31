@@ -150,6 +150,7 @@ export function NotesEngagementChart() {
   const [visibleMetrics, setVisibleMetrics] = useState<Set<string>>(
     new Set(["clicks", "follows", "paidSubscriptions", "freeSubscriptions"]),
   );
+  const [extensionInstalled, setExtensionInstalled] = useState(false);
   const [normalizeData, setNormalizeData] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -269,6 +270,17 @@ export function NotesEngagementChart() {
     };
   }, [chartData, fetchReactions]);
 
+  useEffect(() => {
+    const checkExtensionInstalled = async () => {
+      const result = await hasExtension({
+        showDialog: false,
+        throwIfNoExtension: true,
+      });
+      setExtensionInstalled(result);
+    };
+    checkExtensionInstalled();
+  }, [hasExtension]);
+
   const getOpacity = (metric: MetricType) => {
     if (hoveredMetric === null) return 1;
     return hoveredMetric === metric ? 1 : 0.3;
@@ -336,7 +348,7 @@ export function NotesEngagementChart() {
     }
   };
 
-  if (!hasExtension) {
+  if (!extensionInstalled) {
     const handleInstall = () => {
       // Open Chrome extension store in a new tab
       window.open(
@@ -361,8 +373,8 @@ export function NotesEngagementChart() {
         <CardContent>
           <div className="text-center py-8 space-y-4">
             <p className="text-muted-foreground">
-              In order to see this graph, you need to install the Chrome
-              extension.
+              In order to see how many subscribers, free or paid, you got from
+              your notes, you&apos;ll need to install our Chrome extension.
             </p>
             <p className="text-foreground">
               <span
