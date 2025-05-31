@@ -144,11 +144,15 @@ export function useNotesStats() {
       }
 
       if (!combinedStats) {
-        setErrorReactions(
-          "Failed to fetch reactions or engagement stats",
-        );
+        setErrorReactions("Failed to fetch reactions or engagement stats");
         return;
       }
+
+      Logger.info("Fetched reactions and engagement stats", {
+        combinedStats,
+        reactionsResponse,
+        engagementResponse,
+      });
 
       dispatch(setNoteStats(combinedStats));
       dispatch(setReactionsInterval(interval));
@@ -171,7 +175,7 @@ export function useNotesStats() {
     try {
       dispatch(setLoadingNotesForDate(true));
       const response = await getNotesWithStatsForDate(date);
-      dispatch(setNotesForDate(response));
+      dispatch(setNotesForDate(response || []));
     } catch (error: any) {
       Logger.error("Error fetching notes for date:", error);
       dispatch(setNotesForDate([]));

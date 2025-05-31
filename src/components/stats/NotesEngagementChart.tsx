@@ -162,11 +162,13 @@ export function NotesEngagementChart() {
 
     // Get all unique periods
     const allPeriods = new Set([
-      ...noteStats.totalClicks.map(r => r.period),
-      ...noteStats.totalFollows.map(r => r.period),
-      ...noteStats.totalPaidSubscriptions.map(r => r.period),
-      ...noteStats.totalFreeSubscriptions.map(r => r.period),
+      ...noteStats.totalClicks?.map(r => r.period),
+      ...noteStats.totalFollows?.map(r => r.period),
+      ...noteStats.totalPaidSubscriptions?.map(r => r.period),
+      ...noteStats.totalFreeSubscriptions?.map(r => r.period),
     ]);
+
+    if (allPeriods.size === 0) return { chartData: [], originalData: [] };
 
     // Create combined data array
     const rawData = Array.from(allPeriods)
@@ -212,6 +214,9 @@ export function NotesEngagementChart() {
       // Apply cap to values
       return values.map(value => Math.min(value, cap));
     };
+
+    if (!rawData || rawData.length === 0)
+      return { chartData: [], originalData: [] };
 
     const clicks = rawData.map(d => d.clicks);
     const follows = rawData.map(d => d.follows);
@@ -767,7 +772,9 @@ export function NotesEngagementChart() {
                         strokeWidth: 2,
                         stroke: "hsl(var(--background))",
                       }}
-                      onMouseEnter={() => setHoveredMetric("paid Subscriptions")}
+                      onMouseEnter={() =>
+                        setHoveredMetric("paid Subscriptions")
+                      }
                       onMouseLeave={() => setHoveredMetric(null)}
                     />
                   )}
@@ -798,7 +805,9 @@ export function NotesEngagementChart() {
                         strokeWidth: 2,
                         stroke: "hsl(var(--background))",
                       }}
-                      onMouseEnter={() => setHoveredMetric("free Subscriptions")}
+                      onMouseEnter={() =>
+                        setHoveredMetric("free Subscriptions")
+                      }
                       onMouseLeave={() => setHoveredMetric(null)}
                     />
                   )}
@@ -830,13 +839,13 @@ export function NotesEngagementChart() {
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
               )}
             </div>
-            {notesForDate.length === 0 && !loadingNotesForDate ? (
+            {notesForDate?.length === 0 && !loadingNotesForDate ? (
               <p className="text-sm text-muted-foreground">
                 No notes found for this date.
               </p>
             ) : (
               <div className="space-y-3">
-                {notesForDate.map(note => (
+                {notesForDate?.map(note => (
                   <CompactNoteComponent
                     loading={loadingNotesForDate}
                     key={note.commentId}

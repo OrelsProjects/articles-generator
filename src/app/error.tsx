@@ -16,12 +16,15 @@ export default function Error({
 }) {
   // Log the error to console in development
   useEffect(() => {
+    const pathHistory = window.history.state.back;
     Logger.error("CRITICAL ERROR" + error.message);
     Logger.error(
       JSON.stringify(
         {
           error: error.message,
           stack: error.stack,
+          digest: error.digest,
+          pathHistory: pathHistory,
           message: "CRITICAL ERROR",
         },
         null,
