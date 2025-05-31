@@ -20,14 +20,13 @@ import { Input } from "@/components/ui/input";
 
 const basicFeatures = (credits: number, interval: "month" | "year") => [
   `${interval === "month" ? credits : credits * 12} WriteStack AI Credits/${interval}`,
-  "Easy one-click posting",
+  `One-click note posting`,
   "Specialized AI-Powered Substack editor",
   "Growing Notes Inspirations",
 ];
 
 const hobbyistFeatures = [
   `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time (Requires Chrome Extension)`,
-  `One-click note posting <span class='text-primary'>(Requires Chrome Extension)</span>`,
 ];
 
 const advancedFeatures = [

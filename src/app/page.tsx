@@ -55,6 +55,12 @@ const faq = [
     answer: `No. We do not show, use or give access to your paid articles to anyone but you.`,
   },
   {
+    question: `Can I schedule if I have Firefox or Safari?`,
+    answer: `The extension is only available for Chrome. 
+    <br/><br/>
+    But you can schedule through Chrome and just minimize it and use your favorite browser.`,
+  },
+  {
     question: `I don’t get it. Are you recommending I copy other people’s notes?`,
     answer: `No. Definitely not. Not only is this something you shouldn't do, it also won't work.
     <br/><br/>
