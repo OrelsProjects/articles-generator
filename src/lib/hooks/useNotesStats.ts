@@ -130,12 +130,12 @@ export function useNotesStats() {
         } else if (engagementData) {
           combinedStats = {
             ...combinedStats,
-            totalClicks: engagementData.totalClicks,
-            totalFollows: engagementData.totalFollows,
-            totalPaidSubscriptions: engagementData.totalPaidSubscriptions,
-            totalFreeSubscriptions: engagementData.totalFreeSubscriptions,
-            totalArr: engagementData.totalArr,
-            totalShareClicks: engagementData.totalShareClicks,
+            totalClicks: engagementData.totalClicks || [],
+            totalFollows: engagementData.totalFollows || [],
+            totalPaidSubscriptions: engagementData.totalPaidSubscriptions || [],
+            totalFreeSubscriptions: engagementData.totalFreeSubscriptions || [],
+            totalArr: engagementData.totalArr || [],
+            totalShareClicks: engagementData.totalShareClicks || [],
             engagementTotals: engagementData.engagementTotals,
           };
         }
