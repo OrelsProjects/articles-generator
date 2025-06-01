@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import loggerServer from "@/loggerServer";
 import { z } from "zod";
 import { prisma, prismaArticles } from "@/lib/prisma";
+import { decodeKey } from "@/lib/dal/extension-key";
 
 export const maxDuration = 180;
 
@@ -23,18 +24,32 @@ const schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    loggerServer.warn("Unauthorized, no session", {
-      userId: "unknown",
-    });
+  const key = request.headers.get("x-extension-key");
+  if (!key) {
+    loggerServer.warn(
+      "[GETTING-NOTES-FOR-STATS] Unauthorized, no extension key",
+      {
+        userId: "not logged in",
+      },
+    );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const decoded = decodeKey(key);
+  const userId = decoded.userId;
+  if (!userId) {
+    loggerServer.warn(
+      "[GETTING-NOTES-FOR-STATS] Unauthorized, no userId in key",
+      {
+        userId: "not logged in",
+      },
+    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const secret = request.headers.get("x-api-key");
   if (secret !== process.env.EXTENSION_API_KEY) {
     loggerServer.warn("Unauthorized, bad secret in save notes stats", {
-      userId: session.user.id,
+      userId,
     });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -90,26 +105,26 @@ export async function POST(request: NextRequest) {
       } catch (error: any) {
         await prisma.notesStatsFailed.create({
           data: {
-            userId: session.user.id,
+            userId,
             notesJsonString: JSON.stringify(batch),
           },
         });
         loggerServer.error("Error saving notes stats", {
           error: error.message,
-          userId: session.user.id,
+          userId,
         });
       }
     }
 
     await prisma.dataFetchedMetadata.upsert({
       where: {
-        userId: session.user.id,
+        userId,
       },
       update: {
         lastFetchedNotesAt: new Date(),
       },
       create: {
-        userId: session.user.id,
+        userId,
         lastFetchedNotesAt: new Date(),
       },
     });
@@ -118,7 +133,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     loggerServer.error("Error saving notes stats", {
       error: error.message,
-      userId: session?.user.id,
+      userId,
     });
     return NextResponse.json(
       { error: "Internal server error" },
