@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     userId: "extension",
   });
   const body = await request.json();
-  const apiKey = request.headers.get("X-API-Key");
+  const apiKey = request.headers.get("x-api-key");
 
   if (!apiKey || apiKey !== process.env.EXTENSION_API_KEY) {
     loggerServer.error("[SAVING-NOTES] Unauthorized", {
