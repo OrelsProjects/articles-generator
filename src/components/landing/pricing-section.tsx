@@ -26,7 +26,7 @@ const basicFeatures = (credits: number, interval: "month" | "year") => [
 ];
 
 const hobbyistFeatures = [
-  `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time (Requires Chrome Extension)`,
+  `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time <span class='text-primary'>(Requires Chrome Extension)</span>`,
 ];
 
 const advancedFeatures = [

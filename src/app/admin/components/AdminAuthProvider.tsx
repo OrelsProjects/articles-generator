@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
@@ -26,9 +26,23 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    const lastLogin = localStorage.getItem("lastLogin");
+    if (lastLogin) {
+      const isExpired = new Date(lastLogin).getTime() + 1000 * 60 * 60 * 72 < Date.now(); // 72 hours
+      if (isExpired) {
+        localStorage.removeItem("lastLogin");
+        setIsAuthorized(false);
+      } else {
+        setIsAuthorized(true);
+      }
+    }
+  }, []);
+
   const login = async (password: string) => {
     if (password === process.env.NEXT_PUBLIC_SYSTEM_PASSWORD) {
       setIsAuthorized(true);
+      localStorage.setItem("lastLogin", new Date().toISOString());
       setError(null);
     } else {
       setError("Invalid password");
