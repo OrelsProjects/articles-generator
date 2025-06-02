@@ -225,7 +225,15 @@ export async function getNoteStats(
     totalFollows: [],
     totalPaidSubscriptions: [],
     totalFreeSubscriptions: [],
-    totalArr: [],
-    totalShareClicks: [],
+    notes: [],
+    engagementTotals: {
+      clicks: 0,
+      follows: 0,
+      paidSubscriptions: 0,
+      freeSubscriptions: 0,
+      reactions: 0,
+      restacks: 0,
+      comments: 0,
+    },
   };
 }
