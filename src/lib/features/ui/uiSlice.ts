@@ -12,6 +12,7 @@ export interface UiState {
   didShowSaveTooltip: boolean;
   showScheduleModal: boolean;
   showExtensionDialog: boolean;
+  showExtensionDisabledDialog: boolean;
   showNoSubstackCookiesDialog: boolean;
   showCreateScheduleDialog: boolean;
   notePostedData: CreatePostResponse | null;
@@ -27,6 +28,7 @@ export const initialState: UiState = {
   didShowSaveTooltip: false,
   showScheduleModal: false,
   showExtensionDialog: false,
+  showExtensionDisabledDialog: false,
   showNoSubstackCookiesDialog: false,
   showCreateScheduleDialog: false,
   notePostedData: null,
@@ -63,6 +65,9 @@ const uiSlice = createSlice({
     setShowExtensionDialog: (state, action) => {
       state.showExtensionDialog = action.payload;
     },
+    setShowExtensionDisabledDialog: (state, action) => {
+      state.showExtensionDisabledDialog = action.payload;
+    },
     setShowNoSubstackCookiesDialog: (state, action) => {
       state.showNoSubstackCookiesDialog = action.payload;
     },
@@ -85,6 +90,7 @@ export const {
   setDidShowSaveTooltip,
   setShowScheduleModal,
   setShowExtensionDialog,
+  setShowExtensionDisabledDialog,
   setShowNoSubstackCookiesDialog,
   setShowCreateScheduleDialog,
   setNotePostedData,

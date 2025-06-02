@@ -1,6 +1,7 @@
-import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
+import { ExtensionDisabledDialog } from "@/components/notes/extension-disabled-dialog";
 import {
   setShowExtensionDialog,
+  setShowExtensionDisabledDialog,
   setShowNoSubstackCookiesDialog,
 } from "@/lib/features/ui/uiSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
@@ -11,6 +12,7 @@ import { useExtension } from "@/lib/hooks/useExtension";
 import NoSubstackCookiesDialog from "@/components/notes/no-substack-cookies-dialog";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { Logger } from "@/logger";
+import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog copy";
 
 export function ExtensionProvider() {
   const dispatch = useAppDispatch();
@@ -19,15 +21,21 @@ export function ExtensionProvider() {
     version: string;
     date: number;
   } | null>("has_extension", null);
-  const { showExtensionDialog, showNoSubstackCookiesDialog } = useAppSelector(
-    state => state.ui,
-  );
+  const {
+    showExtensionDialog,
+    showNoSubstackCookiesDialog,
+    showExtensionDisabledDialog,
+  } = useAppSelector(state => state.ui);
   const [showExtensionDialogState, setShowExtensionDialogState] =
     useState(showExtensionDialog);
   const [
     showNoSubstackCookiesDialogState,
     setShowNoSubstackCookiesDialogState,
   ] = useState(showNoSubstackCookiesDialog);
+  const [
+    showExtensionDisabledDialogState,
+    setShowExtensionDisabledDialogState,
+  ] = useState(showExtensionDisabledDialog);
   const [loading, setLoading] = useState(false);
   const { hasExtension, setUserSubstackCookies, verifyExtension } =
     useExtension();
@@ -67,6 +75,13 @@ export function ExtensionProvider() {
     }
   }, [showNoSubstackCookiesDialog]);
 
+  useEffect(() => {
+    if (showExtensionDisabledDialog) {
+      dispatch(setShowExtensionDisabledDialog(false));
+      setShowExtensionDisabledDialogState(true);
+    }
+  }, [showExtensionDisabledDialog]);
+
   const handleRefresh = async () => {
     setLoading(true);
     window.location.reload();
@@ -101,6 +116,11 @@ export function ExtensionProvider() {
           setShowNoSubstackCookiesDialogState(false);
         }}
         loading={loading}
+      />
+      <ExtensionDisabledDialog
+        open={showExtensionDisabledDialogState}
+        onOpenChange={setShowExtensionDisabledDialogState}
+        onRefresh={handleRefresh}
       />
     </>
   );

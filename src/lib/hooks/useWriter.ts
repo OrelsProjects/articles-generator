@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Article } from "@/types/article";
 import { Logger } from "@/logger";
 
-export const useWriter = (handle: string) => {
+export const useWriter = (handle?: string) => {
   const [writer, setWriter] = useState<WriterWithData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -22,6 +22,7 @@ export const useWriter = (handle: string) => {
 
   const loadingRef = useRef(false);
   const loadingArticlesRef = useRef(false);
+  const loadingUserWriterDataRef = useRef(false);
 
   const fetchWriter = async (page: number = 1) => {
     if (!hasMore) return;
@@ -118,7 +119,9 @@ export const useWriter = (handle: string) => {
   };
 
   useEffect(() => {
-    fetchWriter();
+    if (handle) {
+      fetchWriter();
+    }
   }, [handle]);
 
   const fetchNextPage = () => {
@@ -131,6 +134,21 @@ export const useWriter = (handle: string) => {
     fetchPosts(articlesPage + 1).then(() => {
       setArticlesPage(articlesPage + 1);
     });
+  };
+
+  const fetchUserWriterData = async () => {
+    if (loadingUserWriterDataRef.current) return;
+    loadingUserWriterDataRef.current = true;
+    try {
+      const response = await axiosInstance.get<{
+        writer: WriterWithData;
+      }>(`/api/user/writer-data`);
+      setWriter(response.data.writer);
+    } catch (err) {
+      Logger.error("Error fetching user writer data", { error: String(err) });
+    } finally {
+      loadingUserWriterDataRef.current = false;
+    }
   };
 
   const fetchAuthorNotes = useCallback(
@@ -148,6 +166,7 @@ export const useWriter = (handle: string) => {
     fetchNextPage,
     hasMore,
     fetchAuthorNotes,
+    fetchUserWriterData,
 
     // Articles (posts) related data
     articles,

@@ -1,4 +1,5 @@
 import { NotesComments } from "../../prisma/generated/articles";
+import { Note } from "@/types/note";
 
 export interface HourlyStats {
   userId: number;
@@ -15,12 +16,13 @@ export interface Streak {
 
 export type ReactionInterval = "day" | "week" | "month" | "year";
 
-export type IntervalStats = {
-  period: string; // e.g. "2025-01-01", "2025-01-02", etc.
+export interface IntervalStats {
+  period: string;
   total: number;
-};
+  noteId?: string;
+}
 
-export type NoteStats = {
+export interface NoteStats {
   reactions: IntervalStats[];
   restacks: IntervalStats[];
   comments: IntervalStats[];
@@ -28,14 +30,17 @@ export type NoteStats = {
   totalFollows: IntervalStats[];
   totalPaidSubscriptions: IntervalStats[];
   totalFreeSubscriptions: IntervalStats[];
-  totalArr: IntervalStats[];
-  totalShareClicks: IntervalStats[];
-  engagementTotals?: {
+  engagementTotals: {
+    reactions: number;
+    restacks: number;
+    comments: number;
+    clicks: number;
     follows: number;
-    freeSubscriptions: number;
     paidSubscriptions: number;
+    freeSubscriptions: number;
   };
-};
+  notes: (Note & { reactionCount?: number })[];
+}
 
 export interface NoteWithEngagementStats {
   commentId: string;

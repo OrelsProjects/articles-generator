@@ -27,6 +27,7 @@ import { ApiRoute } from "@/lib/api/api";
 import { NoExtensionError } from "@/types/errors/NoExtensionError";
 import {
   setShowExtensionDialog,
+  setShowExtensionDisabledDialog,
   setShowNoSubstackCookiesDialog,
 } from "@/lib/features/ui/uiSlice";
 import { NoCookiesError } from "@/types/errors/NoCookiesError";
@@ -230,6 +231,7 @@ export function useExtension(): UseExtension {
           );
         }
         if (!canUseExtension) {
+          dispatch(setShowExtensionDisabledDialog(true));
           reject(new Error(SubstackError.EXTENSION_DISABLED));
           return;
         }

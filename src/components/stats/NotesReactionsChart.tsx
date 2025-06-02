@@ -150,13 +150,16 @@ const getTrendDirection = (data: IntervalStats[]) => {
   return "neutral";
 };
 
-export function NotesReactionsChart() {
+interface NotesReactionsChartProps {
+  isLoading?: boolean;
+}
+
+export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
   const {
     noteStats,
     loadingReactions,
     errorReactions,
     reactionsInterval,
-    changeReactionsInterval,
   } = useNotesStats();
 
   const [hoveredMetric, setHoveredMetric] = useState<MetricType>(null);
@@ -336,7 +339,7 @@ export function NotesReactionsChart() {
                   id="normalize-data"
                   checked={normalizeData}
                   onCheckedChange={setNormalizeData}
-                  disabled={loadingReactions}
+                  disabled={loadingReactions || isLoading}
                 />
                 <Label
                   htmlFor="normalize-data"
@@ -345,22 +348,6 @@ export function NotesReactionsChart() {
                   <BarChart3 className="h-3 w-3" />
                   Normalize outliers
                 </Label>
-              </div>
-              <div className="flex gap-2">
-                {intervalOptions.map(interval => (
-                  <Button
-                    key={interval}
-                    variant={
-                      reactionsInterval === interval ? "default" : "outline"
-                    }
-                    size="sm"
-                    onClick={() => changeReactionsInterval(interval)}
-                    disabled={loadingReactions}
-                    className="text-xs"
-                  >
-                    {intervalLabels[interval]}
-                  </Button>
-                ))}
               </div>
             </div>
           </div>
@@ -431,7 +418,7 @@ export function NotesReactionsChart() {
         </CardHeader>
 
         <CardContent>
-          {loadingReactions ? (
+          {(loadingReactions || isLoading) ? (
             <div className="h-[300px] flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>

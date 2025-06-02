@@ -134,7 +134,12 @@ const CustomTooltip = ({
   }
   return null;
 };
-export function NotesEngagementChart() {
+
+interface NotesEngagementChartProps {
+  isLoading?: boolean;
+}
+
+export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
   const {
     noteStats,
     notesForDate,
@@ -355,6 +360,116 @@ export function NotesEngagementChart() {
     }
   };
 
+  const renderChart = (
+    dataKey: string,
+    title: string,
+    color: string,
+    gradientId: string,
+    className?: string
+  ) => {
+    return (
+      <Card className={className}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[200px] w-full">
+            {(loadingReactions || isLoading) ? (
+              <div className="h-full flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={chartData}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: reactionsInterval === "week" ? 60 : 5,
+                  }}
+                  className="h-full"
+                  onClick={handleChartClick}
+                >
+                  <defs>
+                    <linearGradient
+                      id={gradientId}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor={color} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={color} stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="opacity-30 h-full"
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <XAxis
+                    dataKey="period"
+                    tickFormatter={value => formatPeriod(value, reactionsInterval)}
+                    className="text-xs"
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                    interval={
+                      reactionsInterval === "day"
+                        ? "preserveStartEnd"
+                        : reactionsInterval === "week"
+                          ? Math.max(Math.floor(chartData.length / 8), 0)
+                          : 0
+                    }
+                    angle={reactionsInterval === "week" ? -45 : 0}
+                    textAnchor={reactionsInterval === "week" ? "end" : "middle"}
+                    height={reactionsInterval === "week" ? 60 : 30}
+                  />
+                  <YAxis
+                    className="text-xs"
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                  />
+                  <Tooltip
+                    content={
+                      <CustomTooltip
+                        interval={reactionsInterval}
+                        isNormalized={normalizeData}
+                        originalData={originalData}
+                      />
+                    }
+                  />
+                  <Area
+                    type={reactionsInterval === "day" ? "basis" : "monotone"}
+                    dataKey={dataKey}
+                    stroke={color}
+                    strokeWidth={2}
+                    fill={`url(#${gradientId})`}
+                    dot={
+                      reactionsInterval === "day"
+                        ? false
+                        : {
+                            fill: color,
+                            strokeWidth: 2,
+                            r: 3,
+                          }
+                    }
+                    activeDot={{
+                      r: 5,
+                      fill: color,
+                      strokeWidth: 2,
+                      stroke: "hsl(var(--background))",
+                    }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   if (!extensionInstalled) {
     const handleInstall = () => {
       // Open Chrome extension store in a new tab
@@ -430,16 +545,21 @@ export function NotesEngagementChart() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="space-y-4"
     >
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Follows</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {noteStats?.engagementTotals?.follows.toLocaleString() || 0}
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              ) : (
+                noteStats?.engagementTotals?.follows.toLocaleString() || 0
+              )}
             </div>
           </CardContent>
         </Card>
@@ -451,8 +571,11 @@ export function NotesEngagementChart() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {noteStats?.engagementTotals?.freeSubscriptions.toLocaleString() ||
-                0}
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              ) : (
+                noteStats?.engagementTotals?.freeSubscriptions.toLocaleString() || 0
+              )}
             </div>
           </CardContent>
         </Card>
@@ -464,378 +587,69 @@ export function NotesEngagementChart() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {noteStats?.engagementTotals?.paidSubscriptions.toLocaleString() ||
-                0}
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              ) : (
+                noteStats?.engagementTotals?.paidSubscriptions.toLocaleString() || 0
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="w-full">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 mb-4">
-              Engagement Statistics
-            </CardTitle>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="normalize-data"
-                  checked={normalizeData}
-                  onCheckedChange={setNormalizeData}
-                  disabled={loadingReactions}
-                />
-                <Label
-                  htmlFor="normalize-data"
-                  className="text-xs text-muted-foreground cursor-pointer flex items-center gap-1"
-                >
-                  <BarChart3 className="h-3 w-3" />
-                  Normalize outliers
-                </Label>
-              </div>
-            </div>
+      {/* Charts */}
+      {isFetchingNotesStats && !noteStats ? (
+        <div className="h-[300px] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : chartData.length === 0 ? (
+        <div className="h-[300px] flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="text-muted-foreground">
+              Your data is being loaded...
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Please keep WriteStack open for a few minutes until the data
+              is fully fetched.
+            </p>
           </div>
-
-          {/* Stats Summary */}
-          <div className="flex items-center gap-4 mt-4 flex-wrap">
-            {normalizeData && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                <BarChart3 className="h-3 w-3" />
-                <span>Outliers normalized</span>
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs cursor-pointer transition-all duration-200",
-                  hoveredMetric === "clicks" ? "ring-2 ring-primary" : "",
-                  !isMetricVisible("clicks") && "opacity-50",
-                )}
-                style={{ opacity: getBadgeOpacity("clicks") }}
-                onMouseEnter={() => setHoveredMetric("clicks")}
-                onMouseLeave={() => setHoveredMetric(null)}
-                onClick={() => toggleMetricVisibility("clicks")}
-              >
-                <div className="w-2 h-2 rounded-full bg-primary mr-1"></div>
-                Note clicks
-              </Badge>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs cursor-pointer transition-all duration-200",
-                  hoveredMetric === "follows" ? "ring-2 ring-green-500" : "",
-                  !isMetricVisible("follows") && "opacity-50",
-                )}
-                style={{ opacity: getBadgeOpacity("follows") }}
-                onMouseEnter={() => setHoveredMetric("follows")}
-                onMouseLeave={() => setHoveredMetric(null)}
-                onClick={() => toggleMetricVisibility("follows")}
-              >
-                <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
-                Follows
-              </Badge>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs cursor-pointer transition-all duration-200",
-                  hoveredMetric === "paid Subscriptions"
-                    ? "ring-2 ring-blue-500"
-                    : "",
-                  !isMetricVisible("paidSubscriptions") && "opacity-50",
-                )}
-                style={{ opacity: getBadgeOpacity("paid Subscriptions") }}
-                onMouseEnter={() => setHoveredMetric("paid Subscriptions")}
-                onMouseLeave={() => setHoveredMetric(null)}
-                onClick={() => toggleMetricVisibility("paidSubscriptions")}
-              >
-                <div className="w-2 h-2 rounded-full bg-blue-500 mr-1"></div>
-                Paid Subscriptions
-              </Badge>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs cursor-pointer transition-all duration-200",
-                  hoveredMetric === "free Subscriptions"
-                    ? "ring-2 ring-purple-500"
-                    : "",
-                  !isMetricVisible("freeSubscriptions") && "opacity-50",
-                )}
-                style={{ opacity: getBadgeOpacity("freeSubscriptions") }}
-                onMouseEnter={() => setHoveredMetric("free Subscriptions")}
-                onMouseLeave={() => setHoveredMetric(null)}
-                onClick={() => toggleMetricVisibility("freeSubscriptions")}
-              >
-                <div className="w-2 h-2 rounded-full bg-purple-500 mr-1"></div>
-                Free Subscriptions
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent>
-          {isFetchingNotesStats && !noteStats ? (
-            <div className="h-[300px] flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : chartData.length === 0 ? (
-            <div className="h-[300px] flex items-center justify-center">
-              <div className="text-center space-y-3">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="text-muted-foreground">
-                  Your data is being loaded...
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Please keep WriteStack open for a few minutes until the data
-                  is fully fetched.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={chartData}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: reactionsInterval === "week" ? 60 : 5,
-                  }}
-                  className="h-full"
-                  onClick={handleChartClick}
-                >
-                  <defs>
-                    <linearGradient
-                      id="clicksGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="5%"
-                        stopColor="hsl(var(--primary))"
-                        stopOpacity={0.3}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="hsl(var(--primary))"
-                        stopOpacity={0.05}
-                      />
-                    </linearGradient>
-                    <linearGradient
-                      id="followsGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
-                      <stop
-                        offset="95%"
-                        stopColor="#22c55e"
-                        stopOpacity={0.05}
-                      />
-                    </linearGradient>
-                    <linearGradient
-                      id="paidSubscriptionsGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                      <stop
-                        offset="95%"
-                        stopColor="#3b82f6"
-                        stopOpacity={0.05}
-                      />
-                    </linearGradient>
-                    <linearGradient
-                      id="freeSubscriptionsGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
-                      <stop
-                        offset="95%"
-                        stopColor="#a855f7"
-                        stopOpacity={0.05}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="opacity-30 h-full"
-                    stroke="hsl(var(--muted-foreground))"
-                  />
-                  <XAxis
-                    dataKey="period"
-                    tickFormatter={value =>
-                      formatPeriod(value, reactionsInterval)
-                    }
-                    className="text-xs"
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                    interval={
-                      reactionsInterval === "day"
-                        ? "preserveStartEnd"
-                        : reactionsInterval === "week"
-                          ? Math.max(Math.floor(chartData.length / 8), 0)
-                          : 0
-                    }
-                    angle={reactionsInterval === "week" ? -45 : 0}
-                    textAnchor={reactionsInterval === "week" ? "end" : "middle"}
-                    height={reactionsInterval === "week" ? 60 : 30}
-                  />
-                  <YAxis
-                    className="text-xs"
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                  />
-                  <Tooltip
-                    content={
-                      <CustomTooltip
-                        interval={reactionsInterval}
-                        isNormalized={normalizeData}
-                        originalData={originalData}
-                      />
-                    }
-                  />
-
-                  {/* Clicks Area */}
-                  {isMetricVisible("clicks") && (
-                    <Area
-                      type={reactionsInterval === "day" ? "basis" : "monotone"}
-                      dataKey="clicks"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      fill="url(#clicksGradient)"
-                      fillOpacity={getOpacity("clicks")}
-                      strokeOpacity={getOpacity("clicks")}
-                      //   dot={{
-                      //     fill: "hsl(var(--primary))",
-                      //     strokeWidth: 2,
-                      //     r: 4,
-                      //     cursor: "pointer",
-                      //   }}
-                      activeDot={{
-                        r: 6,
-                        fill: "hsl(var(--primary))",
-                        strokeWidth: 2,
-                        stroke: "hsl(var(--background))",
-                        cursor: "pointer",
-                      }}
-                      onMouseEnter={() => setHoveredMetric("clicks")}
-                      onMouseLeave={() => setHoveredMetric(null)}
-                    />
-                  )}
-
-                  {/* Follows Area */}
-                  {isMetricVisible("follows") && (
-                    <Area
-                      type={reactionsInterval === "day" ? "basis" : "monotone"}
-                      dataKey="follows"
-                      stroke="#22c55e"
-                      strokeWidth={2}
-                      fill="url(#followsGradient)"
-                      fillOpacity={getOpacity("follows")}
-                      strokeOpacity={getOpacity("follows")}
-                      dot={
-                        reactionsInterval === "day"
-                          ? false
-                          : {
-                              fill: "#22c55e",
-                              strokeWidth: 2,
-                              r: 3,
-                              fillOpacity: getOpacity("follows"),
-                            }
-                      }
-                      activeDot={{
-                        r: 5,
-                        fill: "#22c55e",
-                        strokeWidth: 2,
-                        stroke: "hsl(var(--background))",
-                      }}
-                      onMouseEnter={() => setHoveredMetric("follows")}
-                      onMouseLeave={() => setHoveredMetric(null)}
-                    />
-                  )}
-
-                  {/* Paid Subscriptions Area */}
-                  {isMetricVisible("paidSubscriptions") && (
-                    <Area
-                      type={reactionsInterval === "day" ? "basis" : "monotone"}
-                      dataKey="paidSubscriptions"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      fill="url(#paidSubscriptionsGradient)"
-                      fillOpacity={getOpacity("paid Subscriptions")}
-                      strokeOpacity={getOpacity("paid Subscriptions")}
-                      dot={
-                        reactionsInterval === "day"
-                          ? false
-                          : {
-                              fill: "#3b82f6",
-                              strokeWidth: 2,
-                              r: 3,
-                              fillOpacity: getOpacity("paid Subscriptions"),
-                            }
-                      }
-                      activeDot={{
-                        r: 5,
-                        fill: "#3b82f6",
-                        strokeWidth: 2,
-                        stroke: "hsl(var(--background))",
-                      }}
-                      onMouseEnter={() =>
-                        setHoveredMetric("paid Subscriptions")
-                      }
-                      onMouseLeave={() => setHoveredMetric(null)}
-                    />
-                  )}
-
-                  {/* Free Subscriptions Area */}
-                  {isMetricVisible("freeSubscriptions") && (
-                    <Area
-                      type={reactionsInterval === "day" ? "basis" : "monotone"}
-                      dataKey="freeSubscriptions"
-                      stroke="#a855f7"
-                      strokeWidth={2}
-                      fill="url(#freeSubscriptionsGradient)"
-                      fillOpacity={getOpacity("free Subscriptions")}
-                      strokeOpacity={getOpacity("free Subscriptions")}
-                      dot={
-                        reactionsInterval === "day"
-                          ? false
-                          : {
-                              fill: "#a855f7",
-                              strokeWidth: 2,
-                              r: 3,
-                              fillOpacity: getOpacity("free Subscriptions"),
-                            }
-                      }
-                      activeDot={{
-                        r: 5,
-                        fill: "#a855f7",
-                        strokeWidth: 2,
-                        stroke: "hsl(var(--background))",
-                      }}
-                      onMouseEnter={() =>
-                        setHoveredMetric("free Subscriptions")
-                      }
-                      onMouseLeave={() => setHoveredMetric(null)}
-                    />
-                  )}
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Full width subscription charts */}
+          {renderChart(
+            "freeSubscriptions",
+            "Free Subscriptions Over Time",
+            "#a855f7",
+            "freeSubscriptionsGradient",
+            "w-full"
           )}
-        </CardContent>
-      </Card>
+          {renderChart(
+            "paidSubscriptions",
+            "Paid Subscriptions Over Time",
+            "#3b82f6",
+            "paidSubscriptionsGradient",
+            "w-full"
+          )}
+
+          {/* Side by side engagement charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderChart(
+              "clicks",
+              "Note Clicks Over Time",
+              "hsl(var(--primary))",
+              "clicksGradient"
+            )}
+            {renderChart(
+              "follows",
+              "Follows Over Time",
+              "#22c55e",
+              "followsGradient"
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Notes Popover */}
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
