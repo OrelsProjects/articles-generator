@@ -1,6 +1,6 @@
 import { getLookupKey } from "@/lib/utils/plans";
 import { Coupon } from "@/types/payment";
-import { Plan } from "@prisma/client";
+import { Plan, Subscription } from "@prisma/client";
 import Stripe from "stripe";
 import { Logger } from "@/logger";
 import { getUserLatestPayment } from "@/lib/dal/payment";
@@ -16,6 +16,11 @@ export const RETENTION_PERCENT_OFF = 50;
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME;
 
+const getCouponCodeFromGeneratedCouponCode = (generatedCouponCode: string) => {
+  const parts = generatedCouponCode.split("-");
+  return parts[parts.length - 2];
+};
+
 const generateNewCouponCode = (data: {
   userId: string;
   name?: string;
@@ -24,15 +29,26 @@ const generateNewCouponCode = (data: {
 }) => {
   const now = new Date().getTime().toString();
   const { userId, name, email, couponCode } = data;
-  return slugify(
-    `${name || email || userId}-${couponCode}-${now.slice(4, 8)}`,
-    {
-      lower: true,
-      strict: true,
-      locale: "en",
-      trim: true,
-    },
-  );
+  const emailPrefix = email ? email.split("@")[0] : "";
+  const slugifiedName = slugify(name || emailPrefix || userId, {
+    lower: true,
+    strict: true,
+    locale: "en",
+    trim: true,
+  });
+
+  if (couponCode.includes(slugifiedName)) {
+    const couponCodeLength = couponCode.length;
+    const couponCodeWithoutSuffix = couponCode.slice(0, couponCodeLength - 5);
+    return `${couponCodeWithoutSuffix}-${now.slice(4, 8)}`;
+  }
+
+  return slugify(`${slugifiedName}-${couponCode}-${now.slice(4, 8)}`, {
+    lower: true,
+    strict: true,
+    locale: "en",
+    trim: true,
+  });
 };
 export const getStripeInstance = (
   data?:
@@ -176,6 +192,136 @@ export const validateSubscriptionWebhookExists = async (stripe: Stripe) => {
     webhook => webhook.url === process.env.STRIPE_SUBSCRIPTION_WEBHOOK_URL,
   );
   return webhook;
+};
+
+export const createNewCoupon = async (
+  stripe: Stripe,
+  data: {
+    userId: string;
+    name: string;
+    email: string;
+    couponCode: string;
+    discountPercent: number;
+    interval: "month" | "year";
+    subscription: Stripe.Subscription;
+  },
+  options?: {
+    removeExistingCouponFromSubscription?: boolean;
+    addNewCouponToSubscription?: boolean;
+  },
+) => {
+  try {
+    const {
+      userId,
+      name,
+      email,
+      couponCode,
+      discountPercent,
+      interval,
+      subscription,
+    } = data;
+    if (discountPercent === 0) {
+      return;
+    }
+    if (options?.removeExistingCouponFromSubscription) {
+      const existingCouponId = subscription.discount?.coupon?.id;
+      if (!!existingCouponId) {
+        // Need to remove the existing coupon from the subscription
+        const oldDiscounts = subscription.discounts;
+        if (!oldDiscounts) {
+          return;
+        }
+        let newDiscounts: Stripe.SubscriptionUpdateParams.Discount[] = [];
+
+        if (typeof oldDiscounts === "string") {
+          newDiscounts = [];
+        } else {
+          const newDiscountsFiltered = (
+            oldDiscounts as Stripe.Discount[]
+          )?.filter(discount => discount.coupon?.id !== existingCouponId);
+          if (newDiscountsFiltered.length > 0) {
+            newDiscounts = newDiscountsFiltered.map(discount => ({
+              coupon: discount.coupon?.id,
+            }));
+          } else {
+            newDiscounts = [];
+          }
+        }
+
+        await stripe.subscriptions.update(subscription.id, {
+          discounts: newDiscounts,
+        });
+        try {
+          await stripe.coupons.del(existingCouponId);
+        } catch (error) {
+          // Might not exist anymore
+          Logger.error("Error deleting coupon:", {
+            error: String(error),
+            existingCouponId,
+          });
+        }
+      }
+    }
+
+    const newCouponCode = generateNewCouponCode({
+      userId,
+      name: name || undefined,
+      email: email || undefined,
+      couponCode,
+    });
+    const couponCodeFromGeneratedCouponCode =
+      getCouponCodeFromGeneratedCouponCode(newCouponCode);
+    const originalCoupon = await getCoupon(
+      stripe,
+      couponCodeFromGeneratedCouponCode,
+    );
+    let couponToApply: Stripe.Coupon | null = null;
+    // if annualy, craete new coupon with new discount percent. Otherwise, use the original coupon
+    if (interval === "year") {
+      const priceId = subscription.items.data[0].price.id;
+      const price = await stripe.prices.retrieve(priceId);
+      const newPrices = await getNewPrice(originalCoupon?.id || "", [
+        {
+          name: "",
+          price: price.unit_amount || 0,
+          interval,
+        },
+      ]);
+      const newCoupon = await stripe.coupons.create({
+        id: newCouponCode,
+        name: newCouponCode,
+        duration: "once",
+        ...(newPrices && { percent_off: newPrices[0].discountForAnnualPlan }),
+      });
+
+      await stripe.promotionCodes.create({
+        code: couponCode,
+        coupon: newCoupon.id,
+        max_redemptions: 1,
+        metadata: {
+          app: appName || "",
+          manual_times_redeemed: "0",
+        },
+      });
+
+      couponToApply = newCoupon;
+    } else {
+      couponToApply = originalCoupon;
+    }
+    if (options?.addNewCouponToSubscription && couponToApply) {
+      await stripe.subscriptions.update(subscription.id, {
+        discounts: [{ coupon: couponToApply.id }],
+      });
+    }
+    return couponToApply;
+  } catch (error) {
+    Logger.error("[STRIPE-CRITICAL-ERROR] Error creating new coupon:", {
+      error: String(error),
+      data,
+      options,
+    });
+    throw error;
+  }
 };
 
 export const generateSessionId = async (options: {

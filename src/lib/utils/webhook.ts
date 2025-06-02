@@ -11,7 +11,7 @@ import {
   generateSubscriptionTrialEndingEmail,
 } from "@/lib/mail/templates";
 import { creditsPerPlan } from "@/lib/plans-consts";
-import { getStripeInstance } from "@/lib/stripe";
+import { createNewCoupon, getStripeInstance } from "@/lib/stripe";
 import { calculateNewPlanCreditsLeft } from "@/lib/utils/credits";
 import loggerServer from "@/loggerServer";
 import { Interval, Payment, Plan, Subscription } from "@prisma/client";
@@ -208,6 +208,38 @@ export async function handleSubscriptionUpdated(event: any) {
   // trialing
   // If new month, we need to add new credits
   const isTrial = currentSubscription.isTrialing;
+  const didChangeInterval =
+    currentSubscription.interval !== price.recurring?.interval || "month";
+
+  if (didChangeInterval && subscription.discount?.coupon?.id) {
+    // Need to update coupon.
+    const newCoupon = await createNewCoupon(
+      getStripeInstance(),
+      {
+        userId: user.id,
+        name: user.name || "",
+        email: user.email || "",
+        couponCode: subscription.discount.coupon.id,
+        discountPercent: subscription.discount.coupon.percent_off || 0,
+        interval: (price.recurring?.interval || "month") as Interval,
+        subscription,
+      },
+      {
+        removeExistingCouponFromSubscription: true,
+        addNewCouponToSubscription: true,
+      },
+    );
+    if (newCoupon) {
+      await prisma.subscription.update({
+        where: {
+          stripeSubId: subscriptionId,
+        },
+        data: {
+          couponIdApplied: newCoupon?.id || null,
+        },
+      });
+    }
+  }
 
   if (!isTrial) {
     const { creditsLeft, creditsForPlan } = await calculateNewPlanCreditsLeft(
