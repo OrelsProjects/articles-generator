@@ -34,7 +34,13 @@ import { useBilling } from "@/lib/hooks/useBilling";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Logger } from "@/logger";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Info, Loader2, X } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -300,17 +306,33 @@ export default function SettingsPage() {
                               {billingInfo.coupon.name}
                             </Badge>
                           </div>
-                          <div className="mt-1">
+                          <div className="mt-1 flex items-center">
                             <span>
                               {billingInfo.coupon.percentOff}% discount
                             </span>
-                            {!billingInfo.coupon.isValid && (
-                              <p className="text-sm text-muted-foreground mt-1">
-                                This coupon is no longer active on your
-                                subscription.
-                              </p>
-                            )}
+                            {/* If it's annual, a tooltip should tel lthe user that it's calculated as portion of the year */}
+                            <TooltipProvider delayDuration={20}>
+                              <Tooltip>
+                                <TooltipTrigger className="pt-1 ml-1">
+                                  <Info className="h-4 w-4 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-background text-foreground">
+                                  <p>
+                                    This coupon is calculated as portion of the
+                                    year. (
+                                    <span className="font-bold">Example:</span>
+                                    50% 1 month is ~5% for the whole year)
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
+                          {!billingInfo.coupon.isValid && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              This coupon is no longer active on your
+                              subscription.
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
