@@ -161,6 +161,8 @@ export async function GET(request: NextRequest) {
       totalPaidSubscriptions: toIntervalStats(paidSubsMap),
       totalFreeSubscriptions: toIntervalStats(freeSubsMap),
       notes: [],
+      totalArr: toIntervalStats(arrMap),
+      totalShareClicks: toIntervalStats(sharesMap),
       engagementTotals: {
         follows: totalStats._sum.totalFollows || 0,
         freeSubscriptions: totalStats._sum.totalFreeSubscriptions || 0,

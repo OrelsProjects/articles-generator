@@ -30,6 +30,8 @@ export interface NoteStats {
   totalFollows: IntervalStats[];
   totalPaidSubscriptions: IntervalStats[];
   totalFreeSubscriptions: IntervalStats[];
+  totalArr: IntervalStats[];
+  totalShareClicks: IntervalStats[];
   engagementTotals: {
     reactions: number;
     restacks: number;

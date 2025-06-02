@@ -226,6 +226,8 @@ export async function getNoteStats(
     totalPaidSubscriptions: [],
     totalFreeSubscriptions: [],
     notes: [],
+    totalArr: [],
+    totalShareClicks: [],
     engagementTotals: {
       clicks: 0,
       follows: 0,
