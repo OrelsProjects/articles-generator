@@ -140,6 +140,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    const totalClicks = Object.values(clicksMap).reduce(
+      (acc: number, curr: number) => acc + curr,
+      0,
+    );
+    const totalFollows = Object.values(followsMap).reduce(
+      (acc: number, curr: number) => acc + curr,
+      0,
+    );
+    const totalShareClicks = Object.values(sharesMap).reduce(
+      (acc: number, curr: number) => acc + curr,
+      0,
+    );
     const response: NoteStats = {
       reactions: toIntervalStats(clicksMap),
       restacks: toIntervalStats(sharesMap),
@@ -148,12 +160,15 @@ export async function GET(request: NextRequest) {
       totalFollows: toIntervalStats(followsMap),
       totalPaidSubscriptions: toIntervalStats(paidSubsMap),
       totalFreeSubscriptions: toIntervalStats(freeSubsMap),
-      totalArr: toIntervalStats(arrMap),
-      totalShareClicks: toIntervalStats(sharesMap),
+      notes: [],
       engagementTotals: {
         follows: totalStats._sum.totalFollows || 0,
         freeSubscriptions: totalStats._sum.totalFreeSubscriptions || 0,
         paidSubscriptions: totalStats._sum.totalPaidSubscriptions || 0,
+        clicks: totalClicks,
+        reactions: totalClicks,
+        restacks: totalShareClicks,
+        comments: totalFollows,
       },
     };
 
