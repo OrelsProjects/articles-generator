@@ -91,7 +91,10 @@ export async function getNewPrice(
     return [];
   }
 
-  const discountMonths = coupon.duration_in_months ?? 12;
+  const discountMonths = coupon.duration_in_months
+    ? coupon.duration_in_months
+    : 1;
+
   const newPrices = plans.map(plan => {
     const price = plan.price;
     const interval = plan.interval;
