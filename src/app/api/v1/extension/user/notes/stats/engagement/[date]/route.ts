@@ -7,13 +7,31 @@ import { NextResponse } from "next/server";
 import { startOfDay, endOfDay } from "date-fns";
 import { prismaArticles } from "@/lib/prisma";
 import { NoteWithEngagementStats } from "@/types/notes-stats";
+import { decodeKey } from "@/lib/dal/extension-key";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { date: string } },
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
+  const key = request.headers.get("x-extension-key");
+  if (!key) {
+    loggerServer.warn(
+      "[GETTING-NOTES-FOR-STATS] Unauthorized, no extension key",
+      {
+        userId: "not logged in",
+      },
+    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const decoded = decodeKey(key);
+  const userId = decoded.userId;
+  if (!userId) {
+    loggerServer.warn(
+      "[GETTING-NOTES-FOR-STATS] Unauthorized, no userId in key",
+      {
+        userId: "not logged in",
+      },
+    );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -23,7 +41,7 @@ export async function GET(
     const secret = request.headers.get("x-api-key");
     if (secret !== process.env.EXTENSION_API_KEY) {
       loggerServer.warn("Unauthorized, bad secret in get notes for stats", {
-        userId: session.user.id,
+        userId,
       });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -32,7 +50,7 @@ export async function GET(
 
     if (!authorIdFromExtension) {
       loggerServer.warn("No author id in get notes for stats", {
-        userId: session.user.id,
+        userId,
       });
       return NextResponse.json({ error: "No author id" }, { status: 400 });
     }
@@ -45,14 +63,14 @@ export async function GET(
     if (isNaN(dateObj.getTime())) {
       return NextResponse.json({ error: "Invalid date" }, { status: 400 });
     }
-    const authorId = await getAuthorId(session.user.id);
+    const authorId = await getAuthorId(userId);
     if (!authorId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     if (authorIdFromExtension !== authorId.toString()) {
       loggerServer.warn("Author id mismatch in get notes for stats in date", {
-        userId: session.user.id,
+        userId,
         authorIdFromExtension,
         authorId,
         date,
@@ -81,9 +99,9 @@ export async function GET(
       commentId: note.commentId,
       body: note.body,
       date: new Date(note.date),
-      handle: note.handle || session.user.name?.replace(" ", "") || "",
-      name: note.name || session.user.name || "",
-      photoUrl: note.photoUrl || session.user.image || "",
+      handle: note.handle || "",
+      name: note.name || "",
+      photoUrl: note.photoUrl || "",
       reactionCount: note.reactionCount || 0,
       commentsCount: note.commentsCount || 0,
       restacks: note.restacks || 0,
@@ -99,7 +117,7 @@ export async function GET(
   } catch (error: any) {
     loggerServer.error("Error getting notes engagement stats", {
       error,
-      userId: session.user.id,
+      userId,
     });
     return NextResponse.json(
       { error: "Internal server error" },

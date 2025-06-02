@@ -297,6 +297,15 @@ export async function generateNotes({
         !notesUserLiked.some(like => like.body === note.body),
     );
 
+    // const userNotesComments = await prismaArticles.notesComments.findMany({
+    //   where: {
+    //     commentId: {
+    //       in: userNotes.filter(note => note.substackNoteId).map(note => note.substackNoteId!),
+    //     },
+    //   },
+    //   orderBy: { date: "desc" },
+    // });
+
     let preSelectedArticles: Post[] = [];
     if (preSelectedPostIds && preSelectedPostIds.length > 0) {
       preSelectedArticles = await getPublicationByIds(preSelectedPostIds);

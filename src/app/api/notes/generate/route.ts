@@ -1,27 +1,10 @@
-import { prisma, prismaArticles } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
-import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
-import {
-  generateNotesPrompt_v1,
-  generateNotesPrompt_v2,
-  generateNotesWritingStylePrompt_v1,
-  generateNotesWritingStylePrompt_v2,
-} from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { Post } from "@/../prisma/generated/articles";
-import { Model, runPrompt } from "@/lib/open-router";
-import { parseJson } from "@/lib/utils/json";
-import { FeatureFlag, Note, NoteStatus } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
-import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
-import { getByline } from "@/lib/dal/byline";
-import { Model429Error } from "@/types/errors/Model429Error";
 import { z } from "zod";
-import { getPublicationByIds } from "@/lib/dal/publication";
-import { formatNote } from "@/lib/utils/notes";
 import { generateNotes } from "@/lib/utils/generate/notes";
 
 const generateNotesSchema = z.object({
