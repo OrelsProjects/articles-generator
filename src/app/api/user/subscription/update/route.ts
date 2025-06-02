@@ -1,5 +1,4 @@
 import { authOptions } from "@/auth/authOptions";
-import { prisma } from "@/lib/prisma";
 import { getActiveSubscription } from "@/lib/dal/subscription";
 import { getPlanPriceId, getStripeInstance } from "@/lib/stripe";
 import { getServerSession } from "next-auth";
@@ -24,7 +23,6 @@ export async function POST(req: NextRequest) {
 
   const stripe = getStripeInstance();
   const userId = session.user.id;
-  const userEmail = session.user.email;
 
   const planLower = plan.toLowerCase() as Plan;
   const planId =

@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Webhook processing failed", {
+    loggerServer.error("[CRITICAL-WEBHOOK] Webhook processing failed", {
       error,
       userId: "stripe-webhook",
     });

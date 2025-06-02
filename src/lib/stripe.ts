@@ -1,15 +1,10 @@
 import { getLookupKey } from "@/lib/utils/plans";
-import { Coupon } from "@/types/payment";
 import { Plan } from "@prisma/client";
 import Stripe from "stripe";
 import { Logger } from "@/logger";
 import { getUserLatestPayment } from "@/lib/dal/payment";
 import { getActiveSubscription } from "@/lib/dal/subscription";
-import { getNewPrice } from "@/lib/dal/coupon";
 import slugify from "slugify";
-const LAUNCH_COUPON_NAME = "LAUNCH";
-const MAX_PERCENT_OFF = 20;
-const LAUNCH_EMOJI = "🚀";
 
 export const RETENTION_COUPON_ID = process.env.RETENTION_COUPON_ID as string;
 export const RETENTION_PERCENT_OFF = 50;
@@ -61,70 +56,21 @@ export const getStripeInstance = (
   }
 };
 
-async function findCoupon(stripe: Stripe, month: string) {
-  const coupons = await stripe.coupons.list();
-  const coupon = coupons.data.find(coupon => coupon.name === month);
-  return coupon;
-}
-
-async function getOrCreateMonthlyCoupon(stripe: Stripe) {
-  const thisMonthName = new Date()
-    .toLocaleString("default", {
-      month: "long",
-    })
-    .toUpperCase();
-
-  const existingCoupon = await findCoupon(stripe, thisMonthName);
-  if (existingCoupon) {
-    return existingCoupon;
-  }
-
-  // if between December and February, it's winter, if between March and May, it's spring, if between June and August, it's summer, if between September and November, it's fall
-  const season =
-    new Date().getMonth() >= 12 || new Date().getMonth() <= 2
-      ? "WINTER"
-      : new Date().getMonth() >= 3 && new Date().getMonth() <= 5
-        ? "SPRING"
-        : new Date().getMonth() >= 6 && new Date().getMonth() <= 8
-          ? "SUMMER"
-          : "FALL";
-  const seasonEmoji =
-    season === "WINTER"
-      ? "🥶"
-      : season === "SPRING"
-        ? "🌸"
-        : season === "SUMMER"
-          ? "🌞"
-          : "🍂";
-  // Find coupon that's called DECEMBER, for example, if it's December
-  const coupons = await stripe.coupons.list();
-  let coupon = coupons.data.find(
-    coupon => coupon.name === thisMonthName && coupon.metadata?.app === appName,
-  );
-  if (!coupon) {
-    coupon = await stripe.coupons.create({
-      name: thisMonthName,
-      duration: "repeating",
-      duration_in_months: 1,
-      metadata: {
-        month: thisMonthName,
-        season,
-        seasonEmoji,
-        app: appName || "",
-      },
-      percent_off: MAX_PERCENT_OFF,
-    });
-  }
-
-  return coupon;
-}
-
 export async function getCoupon(
   stripe: Stripe,
   promoCode: string,
-): Promise<Stripe.Coupon | null> {
+  interval: "month" | "year" = "month",
+): Promise<(Stripe.Coupon & { promoId?: string }) | null> {
+  let promoCodeValid = promoCode;
+  const isPromoCodeAnnual = promoCode.includes("YEAR");
+  if (interval === "year" && !isPromoCodeAnnual) {
+    promoCodeValid = `${promoCode}YEAR`;
+  }
+  if (interval === "month" && isPromoCodeAnnual) {
+    promoCodeValid = promoCode.replace("YEAR", "");
+  }
   const promotionCodes = await stripe.promotionCodes.list({
-    code: promoCode,
+    code: promoCodeValid,
     limit: 1,
     expand: ["data.coupon"], // so you get the full coupon object
   });
@@ -139,7 +85,7 @@ export async function getCoupon(
     return null;
   }
 
-  return coupon;
+  return { ...coupon, promoId: promo.id };
 }
 
 export const isCouponValid = async (coupon: Stripe.Coupon | string) => {
@@ -198,49 +144,25 @@ export const generateSessionId = async (options: {
     const { priceId, productId, urlOrigin, userId, email, name, couponCode } =
       options;
 
+    const price = await stripe.prices.retrieve(priceId);
+    const interval = price.recurring?.interval || "month";
+
     const subscriptionData = options.freeTrial
       ? {
           trial_period_days: options.freeTrial,
         }
       : undefined;
 
-    let discountPercent: number | null = null;
-    const price = await stripe.prices.retrieve(priceId);
-    const coupon = couponCode ? await getCoupon(stripe, couponCode) : null;
+    const coupon = couponCode
+      ? await getCoupon(stripe, couponCode, interval as "month" | "year")
+      : null;
     const discounts: Stripe.Checkout.SessionCreateParams.Discount[] = [];
 
-    if (coupon && couponCode && price.unit_amount) {
-      if (price.recurring?.interval === "year") {
-        const newPrices = await getNewPrice(couponCode, [
-          {
-            name: "",
-            price: price.unit_amount / 100,
-            interval: "year",
-          },
-        ]);
-        discountPercent = newPrices?.[0]?.discountForAnnualPlan || null;
-        if (discountPercent) {
-          newCouponCode = generateNewCouponCode({
-            userId,
-            name: name || undefined,
-            email: email || undefined,
-            couponCode,
-          });
-          const newCoupon = await stripe.coupons.create({
-            id: newCouponCode,
-            name: newCouponCode,
-            duration: "once",
-            ...(discountPercent && { percent_off: discountPercent }),
-          });
-          discounts.push({
-            coupon: newCoupon.id,
-          });
-          newCouponId = newCoupon.id;
-        } else {
-          discounts.push({
-            coupon: coupon.id,
-          });
-        }
+    if (coupon && couponCode) {
+      if (coupon.promoId) {
+        discounts.push({
+          promotion_code: coupon.promoId,
+        });
       } else {
         discounts.push({
           coupon: coupon.id,

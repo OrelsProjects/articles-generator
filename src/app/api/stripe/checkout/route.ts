@@ -27,6 +27,10 @@ export async function POST(req: NextRequest) {
     const parseResult = checkoutSchema.safeParse(body);
 
     if (!parseResult.success) {
+      loggerServer.error("[STRIPE-CREATE-SESSION] Invalid request body", {
+        userId: session.user.id,
+        body,
+      });
       return NextResponse.json(
         { error: "Invalid request body" },
         { status: 400 },
@@ -50,10 +54,8 @@ export async function POST(req: NextRequest) {
           ? process.env.STRIPE_PRICING_ID_STANDARD
           : process.env.STRIPE_PRICING_ID_PREMIUM;
 
-    console.log("productId", productId);
-
     if (!productId) {
-      loggerServer.error("Invalid pricing plan", {
+      loggerServer.error("[STRIPE-CREATE-SESSION] Invalid pricing plan", {
         plan,
         userId: session.user.id,
       });
@@ -67,14 +69,12 @@ export async function POST(req: NextRequest) {
 
     const product = await stripe.products.retrieve(productId);
     if (!product) {
-      loggerServer.error("Product not found", {
+      loggerServer.error("[STRIPE-CREATE-SESSION] Product not found", {
         productId,
         userId: session.user.id,
       });
       return NextResponse.json({ error: "Product not found" }, { status: 400 });
     }
-
-    console.log("product", product);
 
     const prices = await stripe.prices.list({
       product: productId,
@@ -88,10 +88,8 @@ export async function POST(req: NextRequest) {
         price.lookup_key === priceLookupKey,
     );
 
-    console.log("price", price);
-
     if (!price) {
-      loggerServer.error("Price not found", {
+      loggerServer.error("[STRIPE-CREATE-SESSION] Price not found", {
         productId,
         interval,
         userId: session.user.id,
@@ -113,14 +111,15 @@ export async function POST(req: NextRequest) {
       allowCoupon: false,
     });
 
-    console.log("sessionId", sessionId);
-
     return NextResponse.json({ sessionId }, { status: 200 });
   } catch (error: any) {
-    loggerServer.error("Error creating a checkout session", {
-      error,
-      userId: session?.user.id,
-    });
+    loggerServer.error(
+      "[STRIPE-CREATE-SESSION] Error creating a checkout session",
+      {
+        error,
+        userId: session?.user.id,
+      },
+    );
     return NextResponse.json(
       { error: "Error creating a checkout session" },
       { status: 500 },

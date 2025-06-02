@@ -11,7 +11,7 @@ import {
   generateSubscriptionTrialEndingEmail,
 } from "@/lib/mail/templates";
 import { creditsPerPlan } from "@/lib/plans-consts";
-import { getStripeInstance } from "@/lib/stripe";
+import { getCoupon, getStripeInstance } from "@/lib/stripe";
 import { calculateNewPlanCreditsLeft } from "@/lib/utils/credits";
 import loggerServer from "@/loggerServer";
 import { Interval, Payment, Plan, Subscription } from "@prisma/client";
@@ -35,7 +35,9 @@ async function getUserBySubscription(subscription: Stripe.Subscription) {
   });
 }
 
-async function getPlanBySubscription(subscription: Stripe.Subscription) {
+async function getPlanBySubscription(
+  subscription: Stripe.Subscription,
+): Promise<Plan | null> {
   const product = await getStripeInstance().products.retrieve(
     subscription.items.data[0].plan.product as string,
   );
@@ -161,6 +163,9 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
 // - Subscription is deleted
 export async function handleSubscriptionUpdated(event: any) {
   const subscription = event.data.object as Stripe.Subscription;
+  const stripe = getStripeInstance();
+
+  const isSubInTrial = subscription.status === "trialing";
 
   const isSubscriptionCanceled =
     subscription.status === "canceled" ||
@@ -207,45 +212,85 @@ export async function handleSubscriptionUpdated(event: any) {
   }
   // trialing
   // If new month, we need to add new credits
-  const isTrial = currentSubscription.isTrialing;
+  const isTrial = currentSubscription.isTrialing || isSubInTrial;
+  const didChangeInterval =
+    currentSubscription.interval !== price.recurring?.interval || "month";
+  const didChangePlan = currentSubscription.plan !== plan;
 
-  if (!isTrial) {
+  const hasCoupon = subscription.discount?.coupon?.id;
+  const promoCode = subscription.discount?.promotion_code;
+
+  if (didChangeInterval && hasCoupon && promoCode) {
+    const newInterval = price.recurring?.interval || "month";
+    const promotionCodeString =
+      typeof promoCode === "string" ? promoCode : promoCode.code;
+    const promotionCode =
+      await stripe.promotionCodes.retrieve(promotionCodeString);
+    const newCoupon = await getCoupon(
+      stripe,
+      promotionCode.code,
+      newInterval as "month" | "year",
+    );
+    if (newCoupon) {
+      // add new coupon
+      if (newCoupon.promoId) {
+        await stripe.subscriptions.update(subscriptionId, {
+          discounts: [{ promotion_code: newCoupon.promoId }],
+        });
+      } else {
+        await stripe.subscriptions.update(subscriptionId, {
+          discounts: [{ coupon: newCoupon.id }],
+        });
+      }
+      await prisma.subscription.update({
+        where: {
+          stripeSubId: subscriptionId,
+        },
+        data: {
+          couponIdApplied: newCoupon.id,
+          interval: newInterval as Interval,
+        },
+      });
+    }
+  }
+  const { id, ...currentSubscriptionNoId } = currentSubscription;
+
+  const newSubscription: Omit<Subscription, "id"> = {
+    ...currentSubscriptionNoId,
+    plan: plan || currentSubscription.plan,
+    status: subscription.status,
+    cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    currentPeriodStart: new Date(subscription.current_period_start * 1000),
+    startDate: currentSubscription.startDate,
+    endDate: currentSubscription.endDate,
+    isTrialing: isSubInTrial,
+    trialStart: subscription.trial_start
+      ? new Date(subscription.trial_start * 1000)
+      : currentSubscription.trialStart,
+    trialEnd: subscription.trial_end
+      ? new Date(subscription.trial_end * 1000)
+      : currentSubscription.trialEnd,
+    interval: (price.recurring?.interval || "month") as Interval,
+    couponIdApplied: subscription.discount?.coupon?.id || null,
+  };
+
+  if (!isTrial || didChangePlan) {
     const { creditsLeft, creditsForPlan } = await calculateNewPlanCreditsLeft(
       user.id,
       plan,
       currentSubscription,
     );
-    const { id, ...currentSubscriptionNoId } = currentSubscription;
-
-    const newSubscription: Omit<Subscription, "id"> = {
-      ...currentSubscriptionNoId,
-      plan: plan || currentSubscription.plan,
-      status: subscription.status,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      creditsPerPeriod: creditsForPlan,
-      creditsRemaining: creditsLeft,
-      startDate: currentSubscription.startDate,
-      endDate: currentSubscription.endDate,
-      isTrialing: subscription.status === "trialing",
-      trialStart: subscription.trial_start
-        ? new Date(subscription.trial_start * 1000)
-        : currentSubscription.trialStart,
-      trialEnd: subscription.trial_end
-        ? new Date(subscription.trial_end * 1000)
-        : currentSubscription.trialEnd,
-      interval: (price.recurring?.interval || "month") as Interval,
-      couponIdApplied: subscription.discount?.coupon?.id || null,
-    };
-
-    await prisma.subscription.update({
-      where: {
-        stripeSubId: subscriptionId,
-      },
-      data: newSubscription,
-    });
+    newSubscription.creditsPerPeriod = creditsForPlan;
+    newSubscription.creditsRemaining = creditsLeft;
   }
+
+  await prisma.subscription.update({
+    where: {
+      stripeSubId: subscriptionId,
+    },
+    data: newSubscription,
+  });
 
   // if subscription paused/canceled/delete, remove tag. Otherwise, add
   if (user.email) {

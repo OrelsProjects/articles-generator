@@ -118,7 +118,7 @@ export default function usePayments() {
     interval: "month" | "year",
   ) => {
     try {
-      const response = await axiosInstance.post<{
+      await axiosInstance.post<{
         success: boolean;
         data: {
           plan: Plan;
@@ -128,7 +128,7 @@ export default function usePayments() {
         interval,
       });
 
-      dispatch(updateUserPlan(plan));
+      dispatch(updateUserPlan({ plan, interval }));
     } catch (error: any) {
       Logger.error("Failed to upgrade subscription", { error });
       throw error;
