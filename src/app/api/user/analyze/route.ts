@@ -151,6 +151,7 @@ export async function POST(req: NextRequest) {
     let publications = await getPublicationByUrl(url, {
       createIfNotFound: true,
     });
+
     let userPublication = publications[0];
 
     await prisma.settings.upsert({
@@ -190,14 +191,17 @@ export async function POST(req: NextRequest) {
       }
     }
     loggerServer.time("Getting user articles with body");
-    const userArticles: Article[] = await getUserArticles(
+    const userArticles: Article[] = (await getUserArticles(
       { publicationId: Number(userPublication.id) },
       {
-        limit: 150,
+        limit: 100,
         freeOnly: false,
-        scrapeIfNotFound: false,
+        order: {
+          by: "reactionCount",
+          direction: "desc",
+        },
       },
-    );
+    )) as ArticleWithBody[];
     loggerServer.timeEnd("Getting user articles with body");
 
     // Check if the articles have a bodyText
@@ -262,24 +266,15 @@ export async function POST(req: NextRequest) {
         url,
       );
     }
+    if (title) {
+      await updatePublication(userPublication.id.toString(), {
+        logoUrl: image,
+        name: title,
+        heroText: description,
+      });
+    }
 
-    await updatePublication(userPublication.id.toString(), {
-      logoUrl: image,
-      name: title,
-      heroText: description,
-    });
-
-    let top60Articles = (await getUserArticles(
-      { publicationId: Number(userPublication.id) },
-      {
-        limit: 60,
-        freeOnly: false,
-        order: {
-          by: "reactionCount",
-          direction: "desc",
-        },
-      },
-    )) as ArticleWithBody[];
+    const top60Articles = articlesWithBody.slice(0, 60);
 
     let count = getTokenCount(top60Articles.map(a => a.bodyText).join("\n"));
     while (count > 500000) {
@@ -287,7 +282,7 @@ export async function POST(req: NextRequest) {
       count = getTokenCount(top60Articles.map(a => a.bodyText).join("\n"));
     }
 
-    const messages = generateDescriptionPrompt(description, top60Articles);
+    const messages = generateDescriptionPrompt(description, top60Articles as ArticleWithBody[]);
 
     const generatedDescription = await runPrompt(
       messages,

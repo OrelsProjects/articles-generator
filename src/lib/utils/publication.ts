@@ -256,14 +256,14 @@ export async function populatePublications(
 ): Promise<Array<{ url: string; status: string }>> {
   const publicationsStatus: Array<{ url: string; status: string }> = [];
   const allPosts: SubstackPost[] = [];
-  console.time("Getting user posts");
+  loggerServer.time("Getting user posts");
   const currentUserPosts = await getUserPosts(
     { url, authorId: Number(byline) },
     {
       scrapeIfNotFound: false,
     },
   );
-  console.timeEnd("Getting user posts");
+  loggerServer.timeEnd("Getting user posts");
 
   const postsWithBody = currentUserPosts.filter(post => post.bodyText);
   if (postsWithBody.length > currentUserPosts.length * 0.5) {

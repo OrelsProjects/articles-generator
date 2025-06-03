@@ -76,6 +76,7 @@ const logger: () => Logger = () => {
     time: (label: string) => {
       timers[label] = performance.now();
       console.time(label);
+      console.log("Timer started", label);
     },
     timeEnd: (label: string) => {
       const start = timers[label];
@@ -88,6 +89,7 @@ const logger: () => Logger = () => {
         log("warn", `Timer '${label}' does not exist`);
       }
       console.timeEnd(label);
+      console.log("Timer ended", label);
     },
   };
 };

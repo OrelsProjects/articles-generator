@@ -23,7 +23,7 @@ export function ExtensionDisabledDialog({
   onRefresh,
 }: ExtensionDisabledDialogProps) {
   const handleOpenExtensionSettings = () => {
-    debugger;
+
     const url = process.env.NEXT_PUBLIC_EXTENSION_CHROME_URL;
     if (url) {
       window.open(url, "_blank");
