@@ -87,6 +87,10 @@ export async function runPrompt(
     },
   );
   console.time("runPrompt");
+  // If the model is auto, choose r1
+  if (model === "openrouter/auto") {
+    model = "deepseek/deepseek-r1";
+  }
   let response = await axiosInstance.post(
     "https://openrouter.ai/api/v1/chat/completions",
     {
