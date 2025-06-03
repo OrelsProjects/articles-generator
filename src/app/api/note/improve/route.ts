@@ -1,4 +1,4 @@
-import {prisma, prismaArticles } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import { getUserNotes } from "@/lib/dal/note";
 import { runPrompt } from "@/lib/open-router";
@@ -98,7 +98,7 @@ export async function POST(
       type,
       {
         note,
-        maxLength: Math.max(280, userNotesBody.length),
+        maxLength: Math.max(280, text.length),
         userNotes: userNotesBody,
         language: userMetadata?.preferredLanguage || "en",
       },
