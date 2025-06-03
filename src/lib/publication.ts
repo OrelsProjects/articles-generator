@@ -207,6 +207,12 @@ export async function getWriter(
   const articles = DBArticlesToArticles(
     posts.filter(post => post !== null) as Post[],
   );
+  const articlesWithoutBody = articles.map(article => ({
+    ...article,
+    body: "",
+    bodyJson: null,
+    truncatedBodyText: "",
+  }));
   const notes = DBNotesToNotes(notesWithAttachments);
 
   const writer: WriterWithData = {
@@ -216,7 +222,7 @@ export async function getWriter(
     bio: byline.bio || "",
     authorId: byline.id.toString(),
     topNotes: notes,
-    topArticles: articles,
+    topArticles: articlesWithoutBody,
   };
 
   return writer;
