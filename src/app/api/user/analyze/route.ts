@@ -266,13 +266,11 @@ export async function POST(req: NextRequest) {
         url,
       );
     }
-    if (title) {
-      await updatePublication(userPublication.id.toString(), {
-        logoUrl: image,
-        name: title,
-        heroText: description,
-      });
-    }
+    await updatePublication(userPublication.id.toString(), {
+      logoUrl: image || userPublication.logoUrl,
+      name: title || userPublication.name,
+      heroText: description || userPublication.heroText,
+    });
 
     const top60Articles = articlesWithBody.slice(0, 60);
 
@@ -282,7 +280,10 @@ export async function POST(req: NextRequest) {
       count = getTokenCount(top60Articles.map(a => a.bodyText).join("\n"));
     }
 
-    const messages = generateDescriptionPrompt(description, top60Articles as ArticleWithBody[]);
+    const messages = generateDescriptionPrompt(
+      description,
+      top60Articles as ArticleWithBody[],
+    );
 
     const generatedDescription = await runPrompt(
       messages,

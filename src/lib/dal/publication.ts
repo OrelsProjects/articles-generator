@@ -48,28 +48,33 @@ export const getPublicationByUrl = async (
     },
   });
 
-  const publication = publicationById;
+  const publication = publicationById || publicationByUrl;
   let publications = publication ? [publication] : [];
 
   if (publications.length === 0) {
     const { image, title, description } = await extractContent(url);
-    let OR: any[] = [
-      {
+    let OR: any[] = [];
+    if (image) {
+      OR.push({
         logoUrl: {
           contains: image,
         },
-      },
-    ];
+      });
+    }
+
     if (title) {
       OR.push({
         name: title,
       });
     }
-    publications = await prismaArticles.publication.findMany({
-      where: {
-        OR,
-      },
-    });
+
+    if (OR.length > 0) {
+      publications = await prismaArticles.publication.findMany({
+        where: {
+          OR,
+        },
+      });
+    }
 
     if (publications.length === 0) {
       if (options.createIfNotFound) {
