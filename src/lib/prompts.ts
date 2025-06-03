@@ -1152,7 +1152,7 @@ export const generateNotesWritingStylePrompt_v2 = ({
   userMetadata: UserMetadata;
   publication: PublicationMetadata;
   notesToImprove: { id: number; body: string }[];
-  language: string;
+  language?: string;
 }) => {
   // ──────────────── Quick stats from existing notes ────────────────
   const bodies = notesToImprove.map(n => n.body);

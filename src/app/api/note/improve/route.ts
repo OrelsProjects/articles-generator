@@ -100,7 +100,7 @@ export async function POST(
         note,
         maxLength: Math.max(280, text.length),
         userNotes: userNotesBody,
-        language: userMetadata?.preferredLanguage || "en",
+        language: userMetadata?.preferredLanguage || undefined,
       },
     );
 

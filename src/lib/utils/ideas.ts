@@ -21,7 +21,6 @@ import { MaxEnhancementsPerDayError } from "@/types/errors/MaxEnhancementsPerDay
 import loggerServer from "@/loggerServer";
 import { UserNotFoundError } from "@/types/errors/UserNotFoundError";
 
-
 export async function generateIdeas(
   userId: string,
   topic: string,
@@ -123,7 +122,7 @@ export async function generateIdeas(
           description: idea.description || "",
         })),
         shouldSearch: shouldSearch === "true",
-        language: userMetadata.preferredLanguage || "en",
+        language: userMetadata.preferredLanguage || undefined,
       },
     );
 

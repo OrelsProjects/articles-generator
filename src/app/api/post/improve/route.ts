@@ -64,7 +64,7 @@ export async function POST(
       {
         extras: customText,
         customText: customText,
-        language: userMetadata?.preferredLanguage || "en",
+        language: userMetadata?.preferredLanguage || undefined,
       },
     );
     const response = await runPrompt(
