@@ -42,6 +42,12 @@ export async function POST(
       );
     }
 
+    const userMetadata = await prisma.userMetadata.findUnique({
+      where: {
+        userId: session.user.id,
+      },
+    });
+
     const { creditsUsed, creditsRemaining } = await useCredits(
       session.user.id,
       "textEnhancement",
@@ -94,6 +100,7 @@ export async function POST(
         note,
         maxLength: Math.max(280, userNotesBody.length),
         userNotes: userNotesBody,
+        language: userMetadata?.preferredLanguage || "en",
       },
     );
 

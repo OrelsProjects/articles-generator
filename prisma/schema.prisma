@@ -133,6 +133,7 @@ model User {
   notes          Note[]
   aiChats        AIChat[]
   extensionKeys  ExtensionKeys[]
+
   @@map("users")
 }
 
@@ -218,6 +219,8 @@ model UserMetadata {
   notesToGenerateCount Int  @default(3)
   maxScheduledNotes    Int?
   notesPromptVersion   Int? @default(1)
+
+  preferredLanguage String? @default("en")
 
   notesLastUpdatedAt DateTime?
   dataUpdatedAt      DateTime?
@@ -803,10 +806,10 @@ model AIChatMessage {
 model DataFetchedMetadata {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId String @db.ObjectId @unique
+  userId String @unique @db.ObjectId
 
   lastFetchedNotesStatsAt DateTime?
-  lastFetchedNotesAt DateTime?
+  lastFetchedNotesAt      DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -822,7 +825,6 @@ model ExtensionKeys {
 
   isActive Boolean @default(true)
 
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -834,7 +836,7 @@ model ExtensionKeys {
 model NotesStatsFailed {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId String @db.ObjectId
+  userId          String @db.ObjectId
   notesJsonString String @db.String
 
   createdAt DateTime @default(now())

@@ -11,6 +11,7 @@ export interface AppUserMeta {
   isAdmin: boolean;
   tempAuthorId: string | null;
   notesToGenerateCount: number;
+  preferredLanguage: string | null;
 }
 
 export default interface AppUser {

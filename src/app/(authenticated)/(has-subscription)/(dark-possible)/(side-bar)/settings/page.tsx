@@ -41,6 +41,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -51,7 +58,7 @@ export default function SettingsPage() {
     applyRetentionDiscount,
   } = usePayments();
   const { user } = useAppSelector(selectAuth);
-  const { hasPublication, shouldShow50PercentOffOnCancel } = useSettings();
+  const { hasPublication, shouldShow50PercentOffOnCancel, updatePreferredLanguage } = useSettings();
   const { credits, cancelAt } = useAppSelector(selectSettings);
   const { billingInfo, loading: loadingBilling } = useBilling();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -60,6 +67,8 @@ export default function SettingsPage() {
   const [loadingCancel, setLoadingCancel] = useState(false);
   const [loadingDiscount, setLoadingDiscount] = useState(false);
   const [loadingCancelDiscount, setLoadingCancelDiscount] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState(user?.meta?.preferredLanguage || "en");
+  const [savingLanguage, setSavingLanguage] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash) {
@@ -143,6 +152,21 @@ export default function SettingsPage() {
     } catch (error: any) {
       Logger.error("Error purchasing credits:", { error });
       toast.error("Failed to purchase credits. Please try again.");
+    }
+  };
+
+  const handleLanguageChange = async (value: string) => {
+    setSelectedLanguage(value);
+    setSavingLanguage(true);
+    try {
+      const success = await updatePreferredLanguage(value);
+      if (success) {
+        toast.success("Language preference updated successfully");
+      } else {
+        toast.error("Failed to update language preference");
+      }
+    } finally {
+      setSavingLanguage(false);
     }
   };
 
@@ -376,6 +400,38 @@ export default function SettingsPage() {
                     Your email address is used for login and cannot be changed.
                   </p>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="language">Preferred Language</Label>
+                  <Select
+                    value={selectedLanguage}
+                    onValueChange={handleLanguageChange}
+                    disabled={savingLanguage}
+                  >
+                    <SelectTrigger id="language" className="w-full">
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Español</SelectItem>
+                      <SelectItem value="fr">Français</SelectItem>
+                      <SelectItem value="de">Deutsch</SelectItem>
+                      <SelectItem value="it">Italiano</SelectItem>
+                      <SelectItem value="pt">Português</SelectItem>
+                      <SelectItem value="ru">Русский</SelectItem>
+                      <SelectItem value="zh">中文</SelectItem>
+                      <SelectItem value="ja">日本語</SelectItem>
+                      <SelectItem value="ko">한국어</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {savingLanguage && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving language preference...
+                    </p>
+                  )}
+                </div>
+
                 <Button onClick={handleSaveSettings}>Save Changes</Button>
               </CardContent>
             </Card>

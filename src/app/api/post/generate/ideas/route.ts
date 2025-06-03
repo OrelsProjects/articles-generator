@@ -122,6 +122,7 @@ export async function GET(
         modelUsedForIdeas,
         modelUsedForOutline,
       },
+      userMetadata,
     );
 
     loggerServer.info("Ideas generated:", {

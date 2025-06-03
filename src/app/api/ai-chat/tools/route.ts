@@ -137,6 +137,7 @@ export async function POST(request: NextRequest) {
               modelUsedForIdeas: "anthropic/claude-3.7-sonnet",
               modelUsedForOutline: "anthropic/claude-3.7-sonnet",
             },
+            userMetadata,
           );
 
           return NextResponse.json({ articles: ideas });

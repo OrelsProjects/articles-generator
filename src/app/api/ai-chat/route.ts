@@ -275,6 +275,7 @@ async function executeTool(
             modelUsedForIdeas: "anthropic/claude-3.7-sonnet",
             modelUsedForOutline: "anthropic/claude-3.7-sonnet",
           },
+          userMetadata,
         );
 
         return `## Generated Article Ideas:\n\n${ideas

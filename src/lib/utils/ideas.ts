@@ -14,11 +14,13 @@ import {
   IdeaStatus,
   Plan,
   PublicationMetadata,
+  UserMetadata,
 } from "@prisma/client";
 import { MaxRefinementsPerDayError } from "@/types/errors/MaxRefinementsPerDayError";
 import { MaxEnhancementsPerDayError } from "@/types/errors/MaxEnhancementsPerDayError";
 import loggerServer from "@/loggerServer";
 import { UserNotFoundError } from "@/types/errors/UserNotFoundError";
+
 
 export async function generateIdeas(
   userId: string,
@@ -31,6 +33,7 @@ export async function generateIdeas(
     modelUsedForIdeas: Model;
     modelUsedForOutline: Model;
   },
+  userMetadata: UserMetadata,
 ) {
   let ideas: IdeaLLM[] = [];
   const { modelUsedForIdeas, modelUsedForOutline } = models;
@@ -120,6 +123,7 @@ export async function generateIdeas(
           description: idea.description || "",
         })),
         shouldSearch: shouldSearch === "true",
+        language: userMetadata.preferredLanguage || "en",
       },
     );
 

@@ -327,6 +327,7 @@ export async function generateNotes({
         // noteTemplates: useTopTypes ? noteTemplates : [],
         topic,
         preSelectedArticles,
+        language: userMetadata.preferredLanguage || "en",
       },
     };
     const generateNotesMessages =
@@ -361,6 +362,7 @@ export async function generateNotes({
         userMetadata,
         publication: userMetadata.publication,
         notesToImprove: newNotesWithIds,
+        language: userMetadata.preferredLanguage || "en",
       };
       const improveNotesMessages =
         userMetadata.notesPromptVersion === 1

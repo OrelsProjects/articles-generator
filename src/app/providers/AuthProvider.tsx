@@ -63,6 +63,7 @@ export default function AuthProvider({
           isAdmin: session?.user?.meta?.isAdmin || false,
           tempAuthorId: session?.user?.meta?.tempAuthorId || null,
           notesToGenerateCount: session?.user?.meta?.notesToGenerateCount || 3,
+          preferredLanguage: session?.user?.meta?.preferredLanguage || null,
         },
       };
       dispatch(setUserAction(appUser));

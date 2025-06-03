@@ -84,6 +84,20 @@ export const useSettings = () => {
     return credits.remaining >= cost;
   };
 
+  const updatePreferredLanguage = async (language: string) => {
+    try {
+      await axiosInstance.post("/api/v1/user/settings/language", {
+        language,
+      });
+      // Refresh settings after update
+      await init();
+      return true;
+    } catch (error: any) {
+      Logger.error("Error updating preferred language", { error });
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (user?.meta?.plan) {
       init();
@@ -97,5 +111,6 @@ export const useSettings = () => {
     hasEnoughCredits,
     credits,
     shouldShow50PercentOffOnCancel,
+    updatePreferredLanguage,
   };
 };

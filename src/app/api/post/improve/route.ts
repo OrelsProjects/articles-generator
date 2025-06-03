@@ -29,6 +29,12 @@ export async function POST(
   try {
     const { text, type, ideaId, customText } = await request.json();
 
+    const userMetadata = await prisma.userMetadata.findUnique({
+      where: {
+        userId: session.user.id,
+      },
+    });
+
     const {result, status} = await canUseAI(session.user.id, "textEnhancement");
     if (!result) {
       return NextResponse.json(
@@ -58,6 +64,7 @@ export async function POST(
       {
         extras: customText,
         customText: customText,
+        language: userMetadata?.preferredLanguage || "en",
       },
     );
     const response = await runPrompt(
