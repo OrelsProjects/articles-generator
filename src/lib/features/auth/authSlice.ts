@@ -66,6 +66,7 @@ const authSlice = createSlice({
           isAdmin: state.user.meta?.isAdmin || false,
           tempAuthorId: state.user.meta?.tempAuthorId || null,
           notesToGenerateCount: state.user.meta?.notesToGenerateCount || 3,
+          preferredLanguage: state.user.meta?.preferredLanguage || "en",
         };
       }
     },

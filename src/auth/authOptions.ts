@@ -72,6 +72,7 @@ export const authOptions: AuthOptions = {
             isAdmin: boolean;
             tempAuthorId: string | null;
             notesToGenerateCount: number;
+            preferredLanguage: string;
           } | null,
           Subscription | null,
         ];
@@ -89,6 +90,7 @@ export const authOptions: AuthOptions = {
           isAdmin: userMetadata?.isAdmin || false,
           tempAuthorId: userMetadata?.tempAuthorId || null,
           notesToGenerateCount: userMetadata?.notesToGenerateCount || 3,
+          preferredLanguage: userMetadata?.preferredLanguage || "en",
         };
         session.user.publicationId = userMetadata?.publicationId || "";
         return session;
