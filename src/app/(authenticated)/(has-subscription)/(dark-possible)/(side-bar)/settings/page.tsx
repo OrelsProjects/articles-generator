@@ -58,7 +58,11 @@ export default function SettingsPage() {
     applyRetentionDiscount,
   } = usePayments();
   const { user } = useAppSelector(selectAuth);
-  const { hasPublication, shouldShow50PercentOffOnCancel, updatePreferredLanguage } = useSettings();
+  const {
+    hasPublication,
+    shouldShow50PercentOffOnCancel,
+    updatePreferredLanguage,
+  } = useSettings();
   const { credits, cancelAt } = useAppSelector(selectSettings);
   const { billingInfo, loading: loadingBilling } = useBilling();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -67,7 +71,9 @@ export default function SettingsPage() {
   const [loadingCancel, setLoadingCancel] = useState(false);
   const [loadingDiscount, setLoadingDiscount] = useState(false);
   const [loadingCancelDiscount, setLoadingCancelDiscount] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState(user?.meta?.preferredLanguage || "en");
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    user?.meta?.preferredLanguage || "en",
+  );
   const [savingLanguage, setSavingLanguage] = useState(false);
 
   useEffect(() => {
@@ -430,6 +436,12 @@ export default function SettingsPage() {
                       Saving language preference...
                     </p>
                   )}
+                  <div className="mt-4 text-sm text-muted-foreground">
+                    <p>
+                      Note: The language preference affects the AI-generated
+                      content only, not the application interface.
+                    </p>
+                  </div>
                 </div>
 
                 <Button onClick={handleSaveSettings}>Save Changes</Button>
