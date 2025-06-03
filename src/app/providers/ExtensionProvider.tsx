@@ -117,11 +117,11 @@ export function ExtensionProvider() {
         }}
         loading={loading}
       />
-      <ExtensionDisabledDialog
+      {/* <ExtensionDisabledDialog
         open={showExtensionDisabledDialogState}
         onOpenChange={setShowExtensionDisabledDialogState}
         onRefresh={handleRefresh}
-      />
+      /> */}
     </>
   );
 }
