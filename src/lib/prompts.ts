@@ -233,7 +233,6 @@ export const generateIdeasPrompt = (
     ideasCount: 3,
     ideasUsed: [],
     shouldSearch: false,
-    language: "en",
   },
 ) => [
   {
@@ -282,7 +281,7 @@ export const generateIdeasPrompt = (
     ${options.ideasUsed && options.ideasUsed.length > 0 ? `- Do not generate ideas that are similar to the ones provided in the "ideasUsed" array: ${options.ideasUsed.join(", ")}.` : ""}
     ${options.shouldSearch ? `- Search the web for data and use the results as inspiration to generate ideas.` : ""}
     - Side note: If all the titles in the articles have the same format, use the same format for the generated titles.
-    - The ideas must be in ${options.language} language.
+    ${options.language ? `- The ideas must be in ${options.language} language.` : ""} 
         `,
   },
   {
@@ -587,7 +586,7 @@ export const generateImprovementPromptPost = (
   }[];
   model: Model;
 } => {
-  const { extras, customText, language = "en" } = options;
+  const { extras, customText, language } = options;
   const { systemMessage, model } = improvementPromptSystemPost(text, type);
   const messages = [
     {
@@ -595,7 +594,7 @@ export const generateImprovementPromptPost = (
       content: `${systemMessage}
         ${idea ? `- Make sure the response is relevant and related to the rest of the article provided.` : ""}
         ${extras ? extras : ""}
-        - The response must be in ${language} language.
+        ${language ? `- The response must be in ${language} language.` : ""}
       `,
     },
     {
@@ -638,7 +637,7 @@ export const generateImprovementPromptNote = (
   }[];
   model: Model;
 } => {
-  const { note, userNotes, maxLength, language = "en" } = options;
+  const { note, userNotes, maxLength, language } = options;
   const shouldShowNotePrompt = note && note.body !== text;
   let validMaxLength = maxLength || 280;
   if (type === "elaborate") {
@@ -655,7 +654,7 @@ export const generateImprovementPromptNote = (
       ${publication.generatedDescription || ""}
       ${publication.writingStyle || ""}
       ${systemMessage}
-      - The response must be in ${language} language.
+      ${language ? `- The response must be in ${language} language.` : ""}
       `,
     },
     {
@@ -822,7 +821,6 @@ export const generateNotesPrompt_v2 = ({
     noteTemplates: [],
     topic: "",
     preSelectedArticles: [],
-    language: "en",
   },
 }: {
   userMetadata: UserMetadata;
@@ -848,7 +846,7 @@ export const generateNotesPrompt_v2 = ({
     noteTemplates = [],
     topic = "",
     preSelectedArticles = [],
-    language = "en",
+    language,
   } = options;
 
   // ────────────────────────── Stats ────────────────────────────
@@ -917,7 +915,7 @@ Rules:
 5. Use "\\n\\n" for **every** line break. Never output a single newline.
 6. Twist every borrowed idea ≥ 40 % so it’s fresh.
 7. Output a JSON array only, following the schema below.
-8. The notes must be in ${language} language.
+${language ? `8. The notes must be in ${language} language.` : ""}
 $${lockToArticles ? "All notes MUST draw inspiration **only** from the provided articles." : lockToTopic ? `All notes MUST revolve around the topic **${topic}**.` : ""}
 
 ⚠️ IMPORTANT – HARD LIMIT  
@@ -979,7 +977,6 @@ export const generateNotesPrompt_v1 = ({
     noteTemplates: [],
     topic: "",
     preSelectedArticles: [],
-    language: "en",
   },
 }: {
   userMetadata: UserMetadata;
@@ -1005,7 +1002,7 @@ export const generateNotesPrompt_v1 = ({
     noteTemplates,
     topic,
     preSelectedArticles,
-    language = "en",
+    language,
   } = options;
   // Topics count, json of topic to count
   const topicsCount = allTopics.reduce((acc: Record<string, number>, topic) => {
@@ -1083,7 +1080,7 @@ export const generateNotesPrompt_v1 = ({
   - Mark a new line with double '\\n' (blackslash n). No hard line breaks.
   - Do not use dashes or em dash.
   
-  - The notes must be in ${language} language.
+  ${language ? `- The notes must be in ${language} language.` : ""}
 
   The response **must** be an array of notes in the following JSON format, without additional text:
   [
@@ -1150,7 +1147,7 @@ export const generateNotesWritingStylePrompt_v2 = ({
   userMetadata,
   publication,
   notesToImprove,
-  language = "en",
+  language,
 }: {
   userMetadata: UserMetadata;
   publication: PublicationMetadata;
@@ -1180,7 +1177,7 @@ You are an elite Substack note writer and an efficient ghostwriter and content c
 7. Flesch‑Kincaid score ≥ 70 (aim 80+). Short sentences, simple words.
 8. Return **only** a JSON array in the exact schema below. No commentary.
 9. Any note longer than ${lenCeil} chars is invalid – regenerate it.
-10. The notes must be in ${language} language.
+10. ${language ? `- The notes must be in ${language} language.` : ""} 
 
   The response **must** be an array of notes in the following JSON format, without additional text:
   [

@@ -417,8 +417,8 @@ export default function SettingsPage() {
                     <SelectTrigger id="language" className="w-full">
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
                       <SelectItem value="es">Español</SelectItem>
                       <SelectItem value="fr">Français</SelectItem>
                       <SelectItem value="de">Deutsch</SelectItem>
