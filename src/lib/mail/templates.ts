@@ -281,9 +281,9 @@ export function generatePublicationAnalysisCompleteEmail(userName?: string) {
 
 // REMOVED 5m+ from the email <li>Inspiration notes from 5m+ pool of notes</li>
 export function generatePaymentConfirmationEmail(options: {
-  userName?: string;
-  planName?: string;
-  amount?: string | number;
+  userName: string;
+  planName: string;
+  amount: string | number;
   paymentDate?: Date;
   nextBillingDate?: Date;
   invoiceNumber?: string;
@@ -312,6 +312,8 @@ export function generatePaymentConfirmationEmail(options: {
       })
     : null;
 
+  const validAmount = amount !== undefined && amount !== null && amount !== "";
+
   const content = `
     <h2>Payment Confirmed! Your WriteStack journey continues</h2>
     <p>Hi ${userName || "there"},</p>
@@ -319,7 +321,7 @@ export function generatePaymentConfirmationEmail(options: {
     
     <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
       <h3 style="color: #cc5500; margin-top: 0;">Payment Details</h3>
-      <p><strong>Amount:</strong> ${amount || "Your subscription amount"}</p>
+      <p><strong>Amount:</strong> ${amount}</p>
       <p><strong>Date:</strong> ${formattedPaymentDate}</p>
       ${invoiceNumber ? `<p><strong>Invoice Number:</strong> ${invoiceNumber}</p>` : ""}
       ${formattedNextBillingDate ? `<p><strong>Next Billing Date:</strong> ${formattedNextBillingDate}</p>` : ""}
