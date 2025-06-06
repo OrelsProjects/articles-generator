@@ -76,7 +76,7 @@ export const getPublicationByUrl = async (
       });
     }
 
-    if (publications.length === 0) {
+    if (publications.length === 0 || publications[0].name === "Unknown") {
       if (options.createIfNotFound) {
         const publicationId = await createPublication(url);
         if (publicationId) {
@@ -240,11 +240,13 @@ export async function createPublication(url: string): Promise<number | null> {
   const existingPublication = await prismaArticles.publication.findUnique({
     where: { id: userPublication.id },
   });
-  if (existingPublication) {
+  if (existingPublication && existingPublication.name !== "Unknown") {
     return Number(existingPublication.id);
   }
-  await prismaArticles.publication.create({
-    data: userPublication,
+  await prismaArticles.publication.upsert({
+    where: { id: userPublication.id },
+    update: userPublication,
+    create: userPublication,
   });
 
   return Number(userPublication.id);
