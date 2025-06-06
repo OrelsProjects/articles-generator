@@ -162,8 +162,8 @@ export default function FeaturesSection() {
                   animate="center"
                   exit="exit"
                   transition={{
-                    x: { type: "spring", stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.1 }
+                    x: { type: "spring", stiffness: 200, damping: 35, mass: 1 },
+                    opacity: { duration: 0.4, ease: "easeInOut" }
                   }}
                   className="absolute inset-0"
                 >
