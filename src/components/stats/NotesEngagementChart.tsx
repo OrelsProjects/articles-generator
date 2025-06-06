@@ -15,7 +15,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNotesStats } from "@/lib/hooks/useNotesStats";
 import { ReactionInterval } from "@/types/notes-stats";
-import { BarChart3, PuzzleIcon } from "lucide-react";
+import {
+  BarChart3,
+  PuzzleIcon,
+  Users,
+  UserPlus,
+  CreditCard,
+  CoinsIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
@@ -27,6 +34,7 @@ import {
 } from "@/components/ui/popover";
 import { CompactNoteComponent } from "@/components/stats/CompactNoteComponent";
 import { useExtension } from "@/lib/hooks/useExtension";
+import { useAppSelector } from "@/lib/hooks/redux";
 
 type MetricType =
   | "clicks"
@@ -140,6 +148,7 @@ interface NotesEngagementChartProps {
 }
 
 export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
+  const { isFetchingNotesStats } = useAppSelector(state => state.statistics);
   const {
     noteStats,
     notesForDate,
@@ -149,13 +158,9 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
     errorReactions,
     fetchReactions,
     fetchNotesForDate,
-    isFetchingNotesStats,
   } = useNotesStats();
   const { hasExtension } = useExtension();
-  const [hoveredMetric, setHoveredMetric] = useState<MetricType>(null);
-  const [visibleMetrics, setVisibleMetrics] = useState<Set<string>>(
-    new Set(["clicks", "follows", "paidSubscriptions", "freeSubscriptions"]),
-  );
+
   const [extensionInstalled, setExtensionInstalled] = useState(false);
   const [normalizeData, setNormalizeData] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -191,7 +196,6 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
         const freeSubscriptions =
           noteStats.totalFreeSubscriptions.find(r => r.period === period)
             ?.total || 0;
-
         return {
           period,
           clicks,
@@ -293,52 +297,6 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
     checkExtensionInstalled();
   }, [hasExtension]);
 
-  const getOpacity = (metric: MetricType) => {
-    if (hoveredMetric === null) return 1;
-    return hoveredMetric === metric ? 1 : 0.3;
-  };
-
-  const toggleMetricVisibility = (metric: string) => {
-    // If all metrics are visible, hide all but the one that is being toggled
-    if (visibleMetrics.size === 4) {
-      setVisibleMetrics(new Set([metric]));
-      return;
-    }
-
-    // If only one metric is visible, and that one is being toggled, show all metrics
-    if (visibleMetrics.size === 1) {
-      if (visibleMetrics.has(metric)) {
-        setVisibleMetrics(
-          new Set([
-            "clicks",
-            "follows",
-            "paidSubscriptions",
-            "freeSubscriptions",
-          ]),
-        );
-      } else {
-        setVisibleMetrics(new Set([metric, ...Array.from(visibleMetrics)]));
-      }
-      return;
-    }
-
-    setVisibleMetrics(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(metric)) {
-        newSet.delete(metric);
-      } else {
-        newSet.add(metric);
-      }
-      return newSet;
-    });
-  };
-
-  const isMetricVisible = (metric: string) => visibleMetrics.has(metric);
-
-  const getBadgeOpacity = (metric: string) => {
-    return isMetricVisible(metric) ? 1 : 0.5;
-  };
-
   const handleDotClick = async (period: string) => {
     if (!period) return;
 
@@ -365,7 +323,14 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
     title: string,
     color: string,
     gradientId: string,
-    className?: string
+    className?: string,
+    dummyData?: {
+      period: string;
+      clicks: number;
+      follows: number;
+      paidSubscriptions: number;
+      freeSubscriptions: number;
+    }[],
   ) => {
     return (
       <Card className={className}>
@@ -374,14 +339,14 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
         </CardHeader>
         <CardContent>
           <div className="h-[200px] w-full">
-            {(loadingReactions || isLoading) ? (
+            {loadingReactions || isLoading ? (
               <div className="h-full flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={chartData}
+                  data={dummyData || chartData}
                   margin={{
                     top: 5,
                     right: 30,
@@ -392,13 +357,7 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
                   onClick={handleChartClick}
                 >
                   <defs>
-                    <linearGradient
-                      id={gradientId}
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={color} stopOpacity={0.3} />
                       <stop offset="95%" stopColor={color} stopOpacity={0.05} />
                     </linearGradient>
@@ -410,7 +369,9 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
                   />
                   <XAxis
                     dataKey="period"
-                    tickFormatter={value => formatPeriod(value, reactionsInterval)}
+                    tickFormatter={value =>
+                      formatPeriod(value, reactionsInterval)
+                    }
                     className="text-xs"
                     stroke="hsl(var(--muted-foreground))"
                     fontSize={12}
@@ -551,7 +512,10 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Follows</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <UserPlus className="h-4 w-4 text-primary" />
+              Total Follows
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -565,7 +529,8 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
               Free Subscriptions
             </CardTitle>
           </CardHeader>
@@ -574,14 +539,16 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
               {isLoading ? (
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
               ) : (
-                noteStats?.engagementTotals?.freeSubscriptions.toLocaleString() || 0
+                noteStats?.engagementTotals?.freeSubscriptions.toLocaleString() ||
+                0
               )}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <CoinsIcon className="h-4 w-4 text-primary" />
               Paid Subscriptions
             </CardTitle>
           </CardHeader>
@@ -590,7 +557,8 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
               {isLoading ? (
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
               ) : (
-                noteStats?.engagementTotals?.paidSubscriptions.toLocaleString() || 0
+                noteStats?.engagementTotals?.paidSubscriptions.toLocaleString() ||
+                0
               )}
             </div>
           </CardContent>
@@ -610,8 +578,8 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
               Your data is being loaded...
             </p>
             <p className="text-sm text-muted-foreground">
-              Please keep WriteStack open for a few minutes until the data
-              is fully fetched.
+              Please keep WriteStack open for a few minutes until the data is
+              fully fetched.
             </p>
           </div>
         </div>
@@ -623,14 +591,33 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
             "Free Subscriptions Over Time",
             "#a855f7",
             "freeSubscriptionsGradient",
-            "w-full"
+            "w-full",
           )}
+
+          {/* Dummy free subscriptions data starting from Feb 11, 2024 */}
+          {/* {renderChart(
+            "freeSubscriptions",
+            "Free Subscriptions Over Time",
+            "#a855f7",
+            "freeSubscriptionsGradient",
+            "w-full",
+            generateMessyGrowingStats("2024-02-11", 30, 4397),
+          )}
+          {renderChart(
+            "freeSubscriptions",
+            "Paid Subscriptions Over Time",
+            "#3b82f6",
+            "paidSubscriptionsGradient",
+            "w-full",
+            generateMessyGrowingStats("2024-02-11", 30, 371),
+          )} */}
+
           {renderChart(
             "paidSubscriptions",
             "Paid Subscriptions Over Time",
             "#3b82f6",
             "paidSubscriptionsGradient",
-            "w-full"
+            "w-full",
           )}
 
           {/* Side by side engagement charts */}
@@ -639,13 +626,13 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
               "clicks",
               "Note Clicks Over Time",
               "hsl(var(--primary))",
-              "clicksGradient"
+              "clicksGradient",
             )}
             {renderChart(
               "follows",
               "Follows Over Time",
               "#22c55e",
-              "followsGradient"
+              "followsGradient",
             )}
           </div>
         </div>
@@ -692,4 +679,62 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
       </Popover>
     </motion.div>
   );
+}
+
+type DailyStat = {
+  period: string;
+  clicks: number;
+  follows: number;
+  paidSubscriptions: number;
+  freeSubscriptions: number;
+};
+
+function generateMessyGrowingStats(
+  startDateStr: string,
+  days: number,
+  totalFreeSubs: number,
+): DailyStat[] {
+  const startDate = new Date(startDateStr);
+  const raw: number[] = [];
+
+  // Create a base curve with exponential-ish growth and noise
+  for (let i = 0; i < days; i++) {
+    const progress = i / (days - 1);
+    const base = Math.pow(progress, 1.7); // starts slow, grows hard
+    const chaos = Math.sin(i * 0.9 + Math.random() * 2) * 0.3; // chaotic but smoothish
+    const noise = 1 + chaos + (Math.random() - 0.5) * 0.4; // more noise
+    raw.push(Math.max(0, base * noise)); // avoid negatives
+  }
+
+  // Normalize to totalFreeSubs
+  const totalRaw = raw.reduce((sum, n) => sum + n, 0);
+  const scaled = raw.map(n => (n / totalRaw) * totalFreeSubs);
+  const rounded = scaled.map(n => Math.round(n));
+
+  // Fix rounding errors
+  let diff = totalFreeSubs - rounded.reduce((sum, val) => sum + val, 0);
+  while (diff !== 0) {
+    const i = Math.floor(Math.random() * days);
+    if (diff > 0) {
+      rounded[i]++;
+      diff--;
+    } else if (rounded[i] > 0) {
+      rounded[i]--;
+      diff++;
+    }
+  }
+
+  const stats: DailyStat[] = Array.from({ length: days }, (_, i) => {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i);
+    return {
+      period: date.toISOString().split("T")[0],
+      clicks: 8,
+      follows: 0,
+      paidSubscriptions: 0,
+      freeSubscriptions: rounded[i],
+    };
+  });
+
+  return stats;
 }

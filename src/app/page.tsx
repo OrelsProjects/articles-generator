@@ -41,6 +41,22 @@ const DividerPrimary = ({
   </div>
 );
 
+const AnimatedHighlight = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <span className="relative inline-block">
+      <motion.span
+        className="absolute inset-0 bg-orange-400 rounded-lg"
+        initial={{ scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.1, ease: "easeInOut" }}
+        style={{ transformOrigin: "left" }}
+      />
+      <span className="relative px-4">{children}</span>
+    </span>
+  );
+};
+
 const faq = [
   {
     question: `Do I need to leave my computer running to schedule notes?`,
@@ -61,18 +77,18 @@ const faq = [
     But you can schedule through Chrome and just minimize it and use your favorite browser.`,
   },
   {
-    question: `I don’t get it. Are you recommending I copy other people’s notes?`,
+    question: `I don't get it. Are you recommending I copy other people's notes?`,
     answer: `No. Definitely not. Not only is this something you shouldn't do, it also won't work.
     <br/><br/>
     Perhaps in the short term you'll get a little bit more engagement, but you are bound to be called out for it at some point and lose credibility.
     <br/><br/>
     It also goes against Substack's Policy to be purposefully creating identical or near-identical content repeatedly.
     <br/><br/>
-    What we believe is it’s perfectly fine and an effective process to consume amazing content that helps you come up with your own authentic ideas and content.
+    What we believe is it's perfectly fine and an effective process to consume amazing content that helps you come up with your own authentic ideas and content.
     <br/>
-    It’s what everyone does, in just about every field and line of work. Artists learn and get inspiration from artists before them. So do athletes. Scientists. Designers. And so does everyone on Substack.
+    It's what everyone does, in just about every field and line of work. Artists learn and get inspiration from artists before them. So do athletes. Scientists. Designers. And so does everyone on Substack.
     <br/><br/>
-    What’s not OK is to take people’s content and claim it as your own.`,
+    What's not OK is to take people's content and claim it as your own.`,
   },
   {
     question: `Can I tell WriteStack's AI on which topic I want to generate notes?`,
@@ -145,11 +161,7 @@ function App() {
           <h2 className="text-center text-primary-foreground text-3xl lg:text-[56px] lg:leading-[4rem] font-bold">
             <span className="text-orange-950">Discover</span> how {appName} will
             help you
-            <br />{" "}
-            <span className="bg-orange-400 rounded-lg px-4">
-              {" "}
-              grow your community
-            </span>
+            <br /> <AnimatedHighlight>grow your community</AnimatedHighlight>
             <br /> 5x faster.
           </h2>
           <Button
@@ -170,13 +182,15 @@ function App() {
             <span className="text-orange-950">Writing notes</span> is the best
             way
             <br /> to grow on Substack
-            <span className="bg-orange-400 rounded-lg px-4">FAST</span>
+            <AnimatedHighlight>FAST</AnimatedHighlight>
           </h2>
         </DividerPrimary>
         <WhyNotesSection />
         <DividerPrimary>
           <h2 className="text-center text-primary-foreground text-3xl lg:text-[56px] lg:leading-[4rem] font-bold">
-            <span className="text-orange-950">Go beyond</span> notes
+            <span className="text-orange-950">Go deeper</span> into your notes.
+            <br /> There are{" "}
+            <AnimatedHighlight>stats to explore</AnimatedHighlight>
           </h2>
         </DividerPrimary>
         <FeaturesSection />
@@ -416,7 +430,7 @@ const testimonials = [
     url: "https://substack.com/@techwithtam",
   },
   {
-    quote: `What makes Writestack stand out for me isn’t just how deep the features go, it’s that you can tell it’s a product shaped by people who actually use it.
+    quote: `What makes Writestack stand out for me isn't just how deep the features go, it's that you can tell it's a product shaped by people who actually use it.
     <br/><br/>
     Using it feels more like a creative partnership than just a platform.`,
     author: "Karo (Product with Attitude)",
@@ -431,15 +445,15 @@ const testimonials = [
     <br/><br/>
     Scheduling and automation used to be a pain, but now I can queue up Substack Notes in advance and hit my audience at the perfect time, every day.
     <br/><br/>
-    Since signing up, I’m posting more consistently, reaching more people, and spending way less time on manual busywork.
+    Since signing up, I'm posting more consistently, reaching more people, and spending way less time on manual busywork.
     <br/><br/>
     ${appName} has made my publishing life <strong>a lot easier</strong>.
     <br/><br/>
     Getting started with ${appName} was refreshingly simple.
     <br/><br/>
-    Orel’s customer service is next-level—he was on top of every detail and even fixed bugs before I noticed them. The onboarding just worked.
+    Orel's customer service is next-level—he was on top of every detail and even fixed bugs before I noticed them. The onboarding just worked.
     <br/><br/>
-    I’m so glad I found ${appName}.`,
+    I'm so glad I found ${appName}.`,
     author: "Stefan G.",
     image: "/testimonials/stefan-girard.webp",
     title: "Author of Frontier Notes for AI Operators",

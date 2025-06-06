@@ -18,6 +18,7 @@ const EngagerAvatar: React.FC<EngagerAvatarProps> = ({
   onViewProfile,
 }) => {
   const [isHovering, setIsHovering] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = () => {
@@ -36,6 +37,16 @@ const EngagerAvatar: React.FC<EngagerAvatarProps> = ({
   };
 
   const showHover = isHovering;
+
+  const getInitials = (name: string) => {
+    if (!name || name === "Unknown") return "?";
+    return name
+      .split(" ")
+      .map(word => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const HoverContent = () => (
     <>
@@ -59,7 +70,6 @@ const EngagerAvatar: React.FC<EngagerAvatarProps> = ({
             size="sm"
             className="md:hidden"
             onClick={() => {
-              ;
               onViewProfile?.(engager);
             }}
           >
@@ -99,11 +109,20 @@ const EngagerAvatar: React.FC<EngagerAvatarProps> = ({
             damping: 12,
           }}
         >
-          <img
-            src={engager.photoUrl}
-            alt={`${engager.name}'s avatar`}
-            className={`w-full h-full object-cover ${isFake ? "blur-sm" : ""}`}
-          />
+          {!imageError ? (
+            <img
+              src={engager.photoUrl}
+              alt={`${engager.name}'s avatar`}
+              onError={() => {
+                setImageError(true);
+              }}
+              className={`w-full h-full object-cover ${isFake ? "blur-sm" : ""}`}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted text-foreground font-medium text-lg">
+              {getInitials(engager.name)}
+            </div>
+          )}
 
           {/* Highlight effect on hover */}
           {showHover && (

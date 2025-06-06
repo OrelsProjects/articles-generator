@@ -4,7 +4,6 @@ import { setIsFetchingNotesStats } from "@/lib/features/statistics/statisticsSli
 import { useAppDispatch } from "@/lib/hooks/redux";
 import { useExtension } from "@/lib/hooks/useExtension";
 import { Logger } from "@/logger";
-import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 export const UpdateDataProvider = () => {

@@ -41,11 +41,11 @@ const standardFeatureFlags = [
   FeatureFlag.advancedGPT,
   FeatureFlag.canViewWriters,
   FeatureFlag.advancedFiltering,
+  FeatureFlag.canUseRadar,
 ];
 
 const premiumFeatureFlags = [
   ...standardFeatureFlags,
-  FeatureFlag.canUseRadar,
   FeatureFlag.collaborativeNotes,
 ];
 

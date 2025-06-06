@@ -28,7 +28,6 @@ export function useNotesStats() {
     loadingNotesForDate,
     reactionsInterval,
     fetchingStreak,
-    isFetchingNotesStats,
   } = useSelector(selectStatistics);
   const {
     updateNotesStatistics,
@@ -120,7 +119,6 @@ export function useNotesStats() {
       if (reactionsResponse.status === "fulfilled") {
         combinedStats = reactionsResponse.value.data;
       }
-      debugger;
       if (engagementResponse.status === "fulfilled") {
         const engagementData = engagementResponse.value;
         if (!combinedStats) {
@@ -203,6 +201,5 @@ export function useNotesStats() {
     fetchTopEngagers,
     updateNotesStatistics,
     getNotesStatistics: fetchNotesForDate,
-    isFetchingNotesStats,
   };
 }

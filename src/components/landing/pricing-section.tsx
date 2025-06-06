@@ -33,6 +33,7 @@ const advancedFeatures = [
   "Choose your preferred LLM (Includes GPT-4.5)",
   // "Access to The Best Notes Templates",
   "Notes scheduling, <span class='text-primary'>unlimited (Requires Chrome)</span>  ",
+  "Find potential clients <span class='text-primary'>with Radar</span>",
 ];
 
 const premiumFeatures = [

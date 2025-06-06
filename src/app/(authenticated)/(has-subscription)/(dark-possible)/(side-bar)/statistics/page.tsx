@@ -14,7 +14,7 @@ import { ReactionInterval } from "@/types/notes-stats";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import { TopNotesTabs } from "@/components/stats/TopNotesTabs";
+import { useAppSelector } from "@/lib/hooks/redux";
 
 const intervalLabels: Record<ReactionInterval, string> = {
   day: "Daily",
@@ -26,6 +26,7 @@ const intervalLabels: Record<ReactionInterval, string> = {
 const intervalOptions: ReactionInterval[] = ["day", "week", "month", "year"];
 
 export default function StatisticsPage() {
+  const { isFetchingNotesStats } = useAppSelector(state => state.statistics);
   const {
     streak,
     loading,
@@ -37,7 +38,6 @@ export default function StatisticsPage() {
     fetchReactions,
     reactionsInterval,
     changeReactionsInterval,
-    isFetchingNotesStats,
   } = useNotesStats();
   const loadingRef = useRef(false);
   const router = useCustomRouter();
@@ -90,7 +90,7 @@ export default function StatisticsPage() {
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Notes Statistics</h2>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex gap-2 bg-muted/50 p-1 rounded-lg relative"
@@ -103,13 +103,15 @@ export default function StatisticsPage() {
                 {intervalOptions.map(interval => (
                   <Button
                     key={interval}
-                    variant={reactionsInterval === interval ? "default" : "ghost"}
+                    variant={
+                      reactionsInterval === interval ? "default" : "ghost"
+                    }
                     size="sm"
                     onClick={() => handleIntervalChange(interval)}
                     disabled={loading || isChangingInterval}
                     className={cn(
                       "text-xs transition-all duration-200",
-                      reactionsInterval === interval && "shadow-sm"
+                      reactionsInterval === interval && "shadow-sm",
                     )}
                   >
                     {intervalLabels[interval]}
@@ -118,11 +120,16 @@ export default function StatisticsPage() {
               </motion.div>
             </div>
             <p className="text-muted-foreground text-sm">
-              View your notes statistics across different time periods. Select an interval above to adjust the time range for all charts.
+              View your notes statistics across different time periods. Select
+              an interval above to adjust the time range for all charts.
             </p>
           </div>
-          <NotesEngagementChart isLoading={isChangingInterval || isFetchingNotesStats} />
-          <NotesReactionsChart isLoading={isChangingInterval || isFetchingNotesStats} />
+          <NotesEngagementChart
+            isLoading={isChangingInterval || isFetchingNotesStats}
+          />
+          <NotesReactionsChart
+            isLoading={isChangingInterval || isFetchingNotesStats}
+          />
         </div>
         <h1 className="text-3xl font-bold mb-4">Your Writing Activity</h1>
         <p className="text-muted-foreground mb-6">
@@ -160,10 +167,6 @@ export default function StatisticsPage() {
           />
         )}
       </div>
-
-      {/* <div className="mt-12">
-        <TopNotesTabs isLoading={isChangingInterval || isFetchingNotesStats} />
-      </div> */}
     </div>
   );
 }

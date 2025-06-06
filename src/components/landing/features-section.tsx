@@ -1,228 +1,231 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Brain, Pen, Folders, DollarSign, Users } from "lucide-react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { BarChart, Users } from "lucide-react";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
-import useMediaQuery from "@/lib/hooks/useMediaQuery";
-import { appName } from "@/lib/consts";
 
-const SubstackLogo = ({ className }: { className?: string }) => (
-  <div className={cn("bg-primary rounded-lg p-1", className)}>
-    <Image
-      src="/landing/substack-logo-white.png"
-      alt="Substack Logo"
-      fill
-      className={cn("!relative object-contain")}
-    />
-  </div>
-);
 const features = [
   {
-    title: "Generate Better Newsletter Ideas, Faster",
-    description:
-      "Never stare at a blank page again. Get unique ideas, customized titles and outlines suggestions <strong>based on your unique niche</strong>. Perfect for writers with <strong>20+ published newsletters</strong>.",
-    icon: Brain,
-    videoUrl:
-      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/generate-ideas.mp4",
-    objectFit: "fit",
+    id: "notes-statistics",
+    title: "Notes Statistics - All in one place",
+    description: "See all your scattered notes statistics in one glance",
+    icon: BarChart,
+    preview: "/landing/features/stats-notes.png",
   },
   {
-    title: "Stop Copying & Pasting",
-    description:
-      "No more copying and pasting between ChatGPT and Substack. WriteStack is directly integrated with Substack. That means you can write, enhance, and publish—all in one place, and <strong>save hours every week</strong> with our seamless workflow.",
-    icon: SubstackLogo,
-    videoUrl:
-      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/substack-adjusted-full.mp4",
-    objectFit: "cover",
+    id: "fan-statistics",
+    title: "Learn more about your Substack",
+    description: "Get detailed statistics about your notes, and your fans.",
+    icon: Users,
+    preview: "/landing/features/stats-personal.png",
   },
   {
-    title: "Keep Your Voice Intact",
+    id: "potential-users",
+    title: "Find potential clients",
     description:
-      "Refine your tone, improve readability, and add details without losing your unique writing style. <strong>Grow your audience</strong> with consistently high-quality newsletters.",
-    icon: Pen,
-    videoUrl:
-      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/ai-assistance.mp4",
-    objectFit: "fit",
-  },
-  {
-    title: "Organize Your Posts With Ease",
-    description: `Instead of having a massive list of drafts, you can easily organize your posts into folders. Fast.`,
-    icon: Folders,
-    videoUrl:
-      "https://apps-og-images.s3.us-east-1.amazonaws.com/write-room/videos/organized-folders.mp4",
-    objectFit: "fit",
+      "Find top engagers of your competitors and get potential clients",
+    icon: Users,
+    preview: "/landing/features/potential-clients.png",
   },
 ];
 
-function FeatureCard({
-  feature,
-  isReversed = false,
-  isMobile = false,
-}: {
-  feature: any;
-  isReversed: boolean;
-  isMobile: boolean;
-}) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const mediaRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const {
-    title,
-    description,
-    icon: Icon,
-    imageUrl,
-    videoUrl,
-    objectFit = "cover",
-  } = feature;
+export default function FeaturesSection() {
+  const [activeTab, setActiveTab] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
+  // Preload all images
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            setTimeout(() => {
-              videoRef.current?.play();
-            }, 200);
+    const imagePromises = features.map((feature) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = feature.preview;
+      });
+    });
 
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      {
-        threshold: isMobile ? 0.3 : 0.4,
-        rootMargin: isMobile ? "-30%" : "0px 0px -40% 0px",
-      },
-    );
+    Promise.all(imagePromises)
+      .then(() => setImagesLoaded(true))
+      .catch(() => setImagesLoaded(true)); // Set to true even on error to prevent infinite loading
+  }, []);
 
-    if (mediaRef.current) {
-      observer.observe(mediaRef.current);
-    }
-
-    return () => {
-      if (mediaRef.current) {
-        observer.unobserve(mediaRef.current);
-      }
-    };
-  }, [isMobile]);
-
-  // set video speed to 1.5
-  useEffect(() => {
-    if (videoUrl) {
-      if (videoRef.current) {
-        videoRef.current.playbackRate = 1.5;
-      }
-    }
-  }, [videoUrl]);
+  const handleTabChange = (newTab: number) => {
+    // next → slide left, prev → slide right
+    setDirection(newTab > activeTab ? 1 : -1);
+    setActiveTab(newTab);
+  };
 
   return (
-    <div
-      ref={cardRef}
-      className={cn(
-        "w-full overflow-clip flex flex-col lg:flex-row lg:justify-between items-center gap-8 rounded-2xl relative",
-        isReversed ? "lg:flex-row-reverse bg-gradient-to-tr pr-6" : "pl-6",
-      )}
-    >
-      {isReversed ? (
-        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_bottom_right,_hsla(24.6,95%,53.1%,0.15),_transparent,_transparent)] z-20"></div>
-      ) : (
-        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_bottom_left,_hsla(24.6,95%,53.1%,0.15),_transparent,_transparent)] z-20"></div>
-      )}
-      <div className="flex-1 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/15 rounded-lg p-2">
-            <Icon className="!w-6 !h-6 text-primary" />
+    <section className="landing-section-container bg-background flex flex-col gap-4 rounded-[3rem] shadow-[0_0_10px_rgba(0,0,0,0.2)] px-6 md:px-0">
+      <div className="mx-auto md:px-0 landing-section-top">
+        <h2 className="mb-4">
+          All your notes statistics in one place
+          <br /> <span className="text-primary">Track</span> and{" "}
+          <span className="text-primary">grow</span> your audience smarter
+        </h2>
+        <p className="text-center">
+          A single glance. Not scattered around your notes.
+        </p>
+      </div>
+
+      {/* Desktop */}
+      <div className="hidden lg:grid lg:grid-cols-[3fr_4fr] gap-12 items-center">
+        <LayoutGroup>
+          {/* Left Side - Feature Cards */}
+          <div className="space-y-4">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              const isActive = activeTab === index;
+
+              return (
+                <motion.div
+                  key={feature.id}
+                  layoutId={`card-${feature.id}`}
+                  onClick={() => handleTabChange(index)}
+                  className={cn(
+                    "rounded-xl cursor-pointer transition-all duration-300 border-2 overflow-hidden",
+                    "hover:shadow-lg",
+                    isActive
+                      ? "bg-primary/5 border-primary shadow-md"
+                      : "bg-card border-border shadow-sm hover:border-primary/20 grayscale",
+                  )}
+                  animate={{ scale: isActive ? 1.03 : 0.98 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <motion.div
+                    className={cn(
+                      "flex flex-col items-start gap-2 p-6",
+                      isActive ? "" : "flex-row items-center",
+                    )}
+                    initial={false}
+                  >
+                    <motion.div
+                      className={cn(
+                        "p-3 rounded-lg flex-shrink-0 mb-0",
+                        isActive
+                          ? "bg-primary text-primary-foreground mx-auto mb-2"
+                          : "bg-muted text-gray-400",
+                      )}
+                      animate={{ scale: isActive ? 1.15 : 1 }}
+                    >
+                      <Icon className="w-6 h-6" />
+                    </motion.div>
+
+                    {isActive ? (
+                      <motion.div
+                        className="w-full flex flex-col items-center text-center"
+                        initial={{ y: 40, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 40, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <h3 className="font-semibold text-lg text-primary mb-2">
+                          {feature.title}
+                        </h3>
+                        <p className="text-muted-foreground text-sm leading-relaxed pb-2">
+                          {feature.description}
+                        </p>
+                      </motion.div>
+                    ) : (
+                      <h3 className="flex-1 min-w-0 ml-4 font-semibold text-lg text-gray-400">
+                        {feature.title}
+                      </h3>
+                    )}
+                  </motion.div>
+                </motion.div>
+              );
+            })}
           </div>
-          <h3 className="text-2xl font-bold tracking-tight sm:text-3xl !text-start">
-            {title}
-          </h3>
-        </div>
-        <p
-          className="text-muted-foreground leading-relaxed"
-          dangerouslySetInnerHTML={{
-            __html: description,
-          }}
-        />
+
+          {/* Right Side - Preview */}
+          <div className="lg:sticky lg:top-24">
+            <div className="relative bg-card rounded-xl border shadow-lg overflow-hidden min-h-[500px]">
+              <AnimatePresence initial={false} custom={direction}>
+                <motion.div
+                  key={activeTab}
+                  custom={direction}
+                  variants={{
+                    enter: (direction: number) => ({
+                      x: direction > 0 ? "100%" : "-100%",
+                      opacity: 1,
+                    }),
+                    center: {
+                      x: 0,
+                      opacity: 1,
+                    },
+                    exit: (direction: number) => ({
+                      x: direction > 0 ? "-100%" : "100%",
+                      opacity: 1,
+                    }),
+                  }}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    x: { type: "spring", stiffness: 300, damping: 30 },
+                    opacity: { duration: 0.1 }
+                  }}
+                  className="absolute inset-0"
+                >
+                  <div className="p-8 h-full flex items-center justify-center">
+                    <motion.div
+                      className="w-full max-w-lg bg-background rounded-lg border shadow-sm p-6"
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.1, duration: 0.3 }}
+                    >
+                      <img
+                        src={features[activeTab].preview}
+                        alt={features[activeTab].title}
+                        className="w-full h-full object-contain"
+                        loading="eager"
+                        style={{ 
+                          opacity: imagesLoaded ? 1 : 0,
+                          transition: 'opacity 0.3s ease-in-out'
+                        }}
+                    />
+                      {!imagesLoaded && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        </div>
+                      )}
+                    </motion.div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </LayoutGroup>
       </div>
-      <div ref={mediaRef}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8, y: 100 }}
-          animate={{
-            opacity: isVisible ? 1 : 0,
-            scale: isVisible ? 1 : 0.8,
-            y: isVisible ? 0 : 100,
-          }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className="bg-white rounded-lg w-[330px] h-[200px] md:w-[430px] md:h-[300px] flex justify-center items-center"
-        >
-          {videoUrl ? (
-            <video
-              ref={videoRef}
-              id={`${title}-video`}
-              src={videoUrl}
-              muted
-              loop
-              playsInline
-              className={cn(
-                "rounded-lg w-[330px] h-[200px] md:w-[430px] md:h-[300px] object-fit",
-                {
-                  "!object-cover": objectFit === "cover",
-                },
-              )}
-              style={{ opacity: isVisible ? 1 : 0 }}
-            />
-          ) : imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={title}
-              className={cn(
-                "rounded-lg w-[330px] h-[200px] md:w-[430px] md:h-[300px] object-fit",
-                {
-                  "!object-cover": objectFit === "cover",
-                },
-              )}
-              style={{ opacity: isVisible ? 1 : 0 }}
-            />
-          ) : null}
-        </motion.div>
-      </div>
-    </div>
-  );
-}
 
-function FeaturesSection() {
-  const isMobile = useMediaQuery("(max-width: 768px)");
-
-  return (
-    <section className="landing-section-container bg-muted px-6 md:px-0">
-      <div className="mx-auto relative">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
-            {appName} Helps You Write Better Newsletter Posts,{" "}
-            <span className="text-primary">Faster</span>
-          </h2>
-          <p>
-            An AI-powered, Substack-like text editor that eliminates blank-page
-            syndrome. <br />
-            Plus, it’s ultra personalized to your unique writing style and
-            topics.
-          </p>
-        </div>
-
-        <div className="w-full space-y-12">
-          {features.map((feature, index) => (
-            <FeatureCard
-              key={feature.title}
-              feature={feature}
-              isReversed={index % 2 !== 0}
-              isMobile={isMobile}
-            />
-          ))}
-        </div>
+      {/* Mobile */}
+      <div className="flex flex-col gap-8 lg:hidden">
+        {features.map(feature => {
+          const Icon = feature.icon;
+          return (
+            <div
+              key={feature.id}
+              className="rounded-xl bg-card border border-border shadow-sm p-6 flex flex-col items-center"
+            >
+              <div className="p-3 rounded-lg bg-primary text-primary-foreground mb-2">
+                <Icon className="w-6 h-6" />
+              </div>
+              <h3 className="font-semibold text-lg text-primary mb-2 text-center">
+                {feature.title}
+              </h3>
+              <p className="text-muted-foreground text-sm leading-relaxed pb-2 text-center">
+                {feature.description}
+              </p>
+              <img
+                src={feature.preview}
+                alt={feature.title}
+                className="w-full h-48 object-contain rounded-lg mt-2"
+                loading="eager"
+              />
+            </div>
+          );
+        })}
       </div>
     </section>
   );
 }
-
-export default FeaturesSection;

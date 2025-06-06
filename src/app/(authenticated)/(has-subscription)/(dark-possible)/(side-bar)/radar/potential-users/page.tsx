@@ -100,12 +100,6 @@ const WelcomeDialog = ({
           <br />
           Some of the data is not saved in the database, so analyzing can take
           up to 2 minutes.
-          <br />
-          <br />
-          <span className="text-foreground font-medium">P.S. 2</span>
-          <br />
-          Paging coming soon, so you&apos;ll be able to see more potential
-          users.
         </DialogDescription>
         <DialogFooter>
           <DialogClose asChild>
