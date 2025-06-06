@@ -7,9 +7,8 @@ import { getActiveSubscription } from "@/lib/dal/subscription";
 import slugify from "slugify";
 
 export const RETENTION_COUPON_ID = process.env.RETENTION_COUPON_ID as string;
-export const RETENTION_PROMO_CODE = process.env.RETENTION_PROMO_CODE as string;
-export const RETENTION_PROMO_CODE_YEAR = process.env
-  .RETENTION_PROMO_CODE_YEAR as string;
+export const RETENTION_PROMO_CODE = process.env.RETENTION_PROMO as string;
+export const RETENTION_PROMO_CODE_YEAR = process.env.RETENTION_PROMO_YEAR as string;
 export const RETENTION_PERCENT_OFF = 50;
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME;
