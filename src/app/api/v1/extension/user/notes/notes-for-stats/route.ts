@@ -52,10 +52,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    loggerServer.info("[GETTING-NOTES-FOR-STATS] Getting notes for stats", {
-      authorId,
-      userId,
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
     });
+
+    loggerServer.info(
+      "[GETTING-NOTES-FOR-STATS] Getting notes for stats for user: " +
+        user?.name,
+      {
+        authorId,
+        userId,
+        userName: user?.name,
+      },
+    );
 
     const notes = await prismaArticles.notesComments.findMany({
       where: {
