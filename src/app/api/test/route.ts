@@ -14,10 +14,11 @@ import {
   generateSubstackDownEmail,
   generateWelcomeTemplateTrial,
 } from "@/lib/mail/templates";
-import { prisma } from "@/lib/prisma";
+import { prisma, prismaArticles } from "@/lib/prisma";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { Note, NoteStatus } from "@prisma/client";
 import { getStripeInstance } from "@/lib/stripe";
+import { bigint } from "zod";
 // async function processUser(userId: string) {
 //   try {
 //     const userMetadata = await prisma.userMetadata.findUnique({
@@ -65,21 +66,150 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const stripe = getStripeInstance();
-  const customers = await stripe.customers.list();
-  // const subscriptions = await stripe.subscriptions.list();
-  // const client_reference_ids = subscriptions.data.map(
-  //   subscription => subscription.metadata.client_reference_id,
-  // );
-  const lastFiveCustomers = customers.data.slice(0, 5);
-  for (const customer of lastFiveCustomers) {
-    // set referral = a17b1658-48e0-4315-a60c-0ae7ee2d8621 in metadata
-    await stripe.customers.update(customer.id, {
-      metadata: {
-        referral: "a17b1658-48e0-4315-a60c-0ae7ee2d8621",
+  // const stripe = getStripeInstance();
+  // const customers = await stripe.customers.list();
+  // // const subscriptions = await stripe.subscriptions.list();
+  // // const client_reference_ids = subscriptions.data.map(
+  // //   subscription => subscription.metadata.client_reference_id,
+  // // );
+  // const lastFiveCustomers = customers.data.slice(0, 5);
+  // for (const customer of lastFiveCustomers) {
+  //   // set referral = a17b1658-48e0-4315-a60c-0ae7ee2d8621 in metadata
+  //   await stripe.customers.update(customer.id, {
+  //     metadata: {
+  //       referral: "a17b1658-48e0-4315-a60c-0ae7ee2d8621",
+  //     },
+  //   });
+  // }
+
+  const pubIds = await prisma.publicationMetadata.findMany({
+    where: {
+      idInArticlesDb: 1504485,
+    },
+  });
+
+  const usersOfPubIds = await prisma.userMetadata.findMany({
+    where: {
+      publication: {
+        idInArticlesDb: {
+          in: pubIds.map(pub => pub.idInArticlesDb!).filter(id => id !== null),
+        },
       },
+    },
+    select: {
+      userId: true,
+    },
+  });
+
+  const users = await prisma.user.findMany({
+    where: {
+      id: {
+        in: usersOfPubIds.map(user => user.userId),
+      },
+    },
+    select: {
+      email: true,
+      name: true,
+      id: true,
+    },
+  });
+
+  const subscriptions = await prisma.subscription.findMany({
+    where: {
+      userId: {
+        in: users.map(user => user.id),
+      },
+    },
+  });
+
+  const userPublication = await prisma.userMetadata.findMany({
+    where: {
+      userId: {
+        in: users.map(user => user.id),
+      },
+    },
+    select: {
+      publication: true,
+      userId: true,
+    },
+  });
+
+  const usersWithSubscriptions: any[] = [];
+  for (const user of users) {
+    const subscription = subscriptions.find(
+      subscription => subscription.userId === user.id,
+    );
+    const publication = userPublication.find(
+      userPublication => userPublication.userId === user.id,
+    )?.publication;
+    usersWithSubscriptions.push({
+      ...user,
+      subscription: subscription
+        ? {
+            id: subscription.id,
+            status: subscription.status,
+            plan: subscription.plan,
+            stripeSubId: subscription.stripeSubId,
+          }
+        : null,
+      publication: publication
+        ? {
+            id: publication.idInArticlesDb,
+            name: publication.title,
+            authorId: publication.authorId,
+            url: publication.publicationUrl,
+          }
+        : null,
     });
   }
+
+  const usersWithActiveSubscriptions = usersWithSubscriptions.filter(
+    user => !!user.subscription,
+  );
+  return NextResponse.json({ usersWithActiveSubscriptions });
+
+  // const mailsToCheck = [
+  //   "mistersimard@gmail.com",
+  //   "greg@gregsroche.com",
+  //   "m@carru.de",
+  // ];
+
+  // const users = await prisma.user.findMany({
+  //   where: {
+  //     email: {
+  //       in: mailsToCheck,
+  //     },
+  //   },
+  // });
+
+  // const usersPublications = await prisma.userMetadata.findMany({
+  //   where: {
+  //     userId: {
+  //       in: users.map(user => user.id),
+  //     },
+  //   },
+  //   select: {
+  //     publication: true,
+  //   }
+  // });
+
+  // const publicationIds = usersPublications.map(userPublication => userPublication.publication?.idInArticlesDb).filter(id => id !== null);
+
+  // const publications = await prismaArticles.publication.findMany({
+  //   where: {
+  //     id: {
+  //       in: publicationIds.map(id => BigInt(id!)),
+  //     },
+  //   },
+  // });
+
+  // return NextResponse.json({ publications: publications.map(publication => ({
+  //   id: publication.id.toString(),
+  //   name: publication.name,
+  //   url: publication.customDomain || publication.subdomain,
+  //   description: publication.heroText,
+  //   image: publication.logoUrl,
+  // })) });
 
   // const users = await getUsersFromDate(new Date("2025-05-28T00:00:00.000Z"));
   // debugger;
@@ -467,7 +597,7 @@ export async function GET() {
   //   fullName: "Ayodeji Awosika",
   // });
 
-  return NextResponse.json({ success: true });
+  // return NextResponse.json({ success: true });
   // } catch (error) {
   //   console.error("Error processing users:", error);
   //   return NextResponse.json(

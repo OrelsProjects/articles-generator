@@ -51,7 +51,7 @@ export const getPublicationByUrl = async (
   const publication = publicationById || publicationByUrl;
   let publications = publication ? [publication] : [];
 
-  if (publications.length === 0) {
+  if (publications.length === 0 || publications[0].name === "Unknown") {
     const { image, title, description } = await extractContent(url);
     let OR: any[] = [];
     if (image) {

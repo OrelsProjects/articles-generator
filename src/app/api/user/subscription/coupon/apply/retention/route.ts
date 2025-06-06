@@ -42,7 +42,10 @@ export async function POST(request: NextRequest) {
 
     const stripe = getStripeInstance();
     const coupon = await getRetentionCoupon(stripe, subscription.interval);
-
+    loggerServer.info("Got coupon", {
+      userId: session.user.id,
+      coupon,
+    });
     if (!coupon) {
       loggerServer.error("Coupon not found", {
         userId: session.user.id,
