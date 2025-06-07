@@ -579,3 +579,30 @@ export function generateSubstackDownEmail(userName?: string) {
     subject: "Substack is down — scheduled notes delayed",
   };
 }
+
+// This email lets the user know that a lot of their notes were missed and tells them that:
+// 1. The should make sure their Chrome browser is open
+// 2. They are logged in to Substack on Chrome
+// 3. Make sure the computer doesn't go to sleep
+// If there's any problem, contact me on https://substack.com/@orelzilberman
+export function generateManyNotesMissedEmail(userName?: string) {
+  const content = `
+    <h2>Notes are not being posted</h2>
+    <p>Hi ${userName || "there"},</p>
+    <p>I noticed that many of your scheduled notes were missed.</p>
+    <p>In order to cover the basics, here are some things you should make sure that:</p>
+    <ul>
+      <li>Your Chrome browser is open at the time of the scheduled post</li>
+      <li>Your computer doesn't go to sleep</li>
+      <li>You are logged in to <strong>Substack</strong> on Chrome</li>
+      <li>You are logged in to <strong>WriteStack</strong> on Chrome</li>
+    </ul>
+    <p>If there's any problem, contact me on <a href="https://www.substack.com/@orelzilberman">https://www.substack.com/@orelzilberman</a></p>
+    <p>Warm regards,<br>
+    Orel</p>
+  `;
+  return {
+    body: baseEmailTemplate(content),
+    subject: "Notes are not being posted",
+  };
+}

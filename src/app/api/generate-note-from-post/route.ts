@@ -14,6 +14,7 @@ import TurndownService from "turndown";
 import { z } from "zod";
 import { Note, NoteStatus } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
+import { getSubstackArticleData } from "@/lib/utils/article";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -185,7 +186,7 @@ const getTodaysNotes = async (userId: string) => {
   return notes;
 };
 
-const generatingModel = "anthropic/claude-3.7-sonnet";
+const generatingModel = "anthropic/claude-sonnet-4";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -209,7 +210,15 @@ export async function GET(request: NextRequest) {
       attachments: [],
     }));
 
+    loggerServer.info("[GENERATE-FREE-NOTE-FROM-POST] Getting todays notes", {
+      userId: session.user.id,
+      noteDrafts,
+    });
     const canGenerate = await canGenerateMoreNotes(session.user.id);
+    loggerServer.info("[GENERATE-FREE-NOTE-FROM-POST] Can generate", {
+      userId: session.user.id,
+      canGenerate,
+    });
     let nextGenerateDate = null;
     if (!canGenerate) {
       nextGenerateDate = await getNextGenerateDate(session.user.id);
@@ -234,16 +243,23 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  const body = await request.json();
-  let parsedBody = schema.parse(body);
-  if (!parsedBody) {
-    loggerServer.error("Invalid request", {
+  const text = await request.text();
+  const body = JSON.parse(text);
+  let parse = schema.safeParse(body);
+  if (!parse.success) {
+    const errors = parse.error.issues.map(issue => issue.message).join(", ");
+    loggerServer.error("[GENERATE-FREE-NOTE-FROM-POST] Invalid request", {
       userId: session?.user.id || "unknown",
       body,
+      errors,
     });
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body", errors },
+      { status: 400 },
+    );
   }
   try {
+    const parsedBody = parse.data;
     if (!session) {
       if (parsedBody.authorId) {
         await fetchAllNoteComments(parsedBody.authorId, {
@@ -257,6 +273,10 @@ export async function POST(request: NextRequest) {
           requiresLogin: true,
         });
       }
+      loggerServer.error("[GENERATE-FREE-NOTE-FROM-POST] Unauthorized", {
+        userId: "unknown",
+        body: parsedBody,
+      });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -264,7 +284,7 @@ export async function POST(request: NextRequest) {
     if (!canGenerate) {
       const todaysNotes = await getTodaysNotes(session.user.id);
       loggerServer.warn(
-        "You have reached the maximum number of notes for today",
+        "[GENERATE-FREE-NOTE-FROM-POST] You have reached the maximum number of notes for today",
         {
           userId: session.user.id,
           todaysNotes,
@@ -273,7 +293,8 @@ export async function POST(request: NextRequest) {
       const nextGenerateDate = await getNextGenerateDate(session.user.id);
       return NextResponse.json(
         {
-          error: "You have reached the maximum number of notes for today",
+          error:
+            "[GENERATE-FREE-NOTE-FROM-POST] You have reached the maximum number of notes for today",
           todaysNotes,
           nextGenerateDate,
         },
@@ -300,32 +321,50 @@ export async function POST(request: NextRequest) {
     }
 
     if (!authorId) {
-      loggerServer.error("No author ID found", {
+      loggerServer.error("[GENERATE-FREE-NOTE-FROM-POST] No author ID found", {
         userId: session.user.id,
       });
       return NextResponse.json(
-        { error: "No author ID found" },
+        { error: "[GENERATE-FREE-NOTE-FROM-POST] No author ID found" },
         { status: 401 },
       );
     }
 
     const { postUrl } = parsedBody;
-    loggerServer.info("Generating note from post", {
-      userId: session.user.id,
-      postUrl,
-    });
-    const { content } = await extractPostContent(postUrl);
+    loggerServer.info(
+      "[GENERATE-FREE-NOTE-FROM-POST] Generating note from post",
+      {
+        userId: session.user.id,
+        postUrl,
+      },
+    );
+    const body = await getSubstackArticleData([postUrl]);
+    // const { content } = await extractPostContent(postUrl);
     const turndownService = new TurndownService();
-    const unmarkedData = turndownService.turndown(content);
+    const unmarkedData = turndownService.turndown(body[0].content);
 
     if (!unmarkedData) {
-      return NextResponse.json({ error: "No content found" }, { status: 400 });
+      loggerServer.error("[GENERATE-FREE-NOTE-FROM-POST] No content found", {
+        userId: session.user.id,
+        postUrl,
+      });
+      return NextResponse.json(
+        { error: "[GENERATE-FREE-NOTE-FROM-POST] No content found" },
+        { status: 400 },
+      );
     }
 
     let byline = await getByline(parseInt(authorId.toString()));
 
     if (!byline) {
-      return NextResponse.json({ error: "Byline not found" }, { status: 400 });
+      loggerServer.error("[GENERATE-FREE-NOTE-FROM-POST] Byline not found", {
+        userId: session.user.id,
+        authorId,
+      });
+      return NextResponse.json(
+        { error: "[GENERATE-FREE-NOTE-FROM-POST] Byline not found" },
+        { status: 400 },
+      );
     }
 
     let userNotes = await getUserNotes(session.user.id);
@@ -398,13 +437,21 @@ export async function POST(request: NextRequest) {
       canGenerate,
     });
   } catch (error) {
-    loggerServer.error("Error generating note from post", {
-      error,
-      userId: session?.user.id || "unknown",
-    });
+    loggerServer.error(
+      "[GENERATE-FREE-NOTE-FROM-POST] Error generating note from post",
+      {
+        error,
+        userId: session?.user.id || "unknown",
+      },
+    );
     if (session?.user.id) {
       await undoUsage(session.user.id);
     }
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    return NextResponse.json(
+      {
+        error: "[GENERATE-FREE-NOTE-FROM-POST] Error generating note from post",
+      },
+      { status: 500 },
+    );
   }
 }

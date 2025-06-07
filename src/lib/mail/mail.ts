@@ -22,12 +22,12 @@ export const sendMail = async ({
   isMagicLink = false,
 }: SendEmailOptions) => {
   const env = process.env.NODE_ENV;
-  if (!isMagicLink && env !== "production" && !sendInDevelopment) {
-    console.log(
-      `[MAIL] Not sending mail in development: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,
-    );
-    return;
-  }
+  // if (!isMagicLink && env !== "production" && !sendInDevelopment) {
+  //   console.log(
+  //     `[MAIL] Not sending mail in development: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,
+  //   );
+  //   return;
+  // }
 
   loggerServer.info(
     `Sending mail: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,

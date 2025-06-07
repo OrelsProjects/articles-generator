@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   addSubscriber,
   addTagToEmail,
@@ -9,6 +9,7 @@ import {
   sendMailSafe,
 } from "@/lib/mail/mail";
 import {
+  generateManyNotesMissedEmail,
   generatePublicationAnalysisCompleteEmail,
   generateScheduleNoteMissedEmail,
   generateSubstackDownEmail,
@@ -62,554 +63,136 @@ import { fetchAuthor } from "@/lib/utils/lambda";
 //   return Promise.all(userIds.map(userId => processUser(userId)));
 // }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user || !session.user.meta) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const searchParams = request.nextUrl.searchParams;
 
-  // const stripe = getStripeInstance();
-  // const customers = await stripe.customers.list();
-  // // const subscriptions = await stripe.subscriptions.list();
-  // // const client_reference_ids = subscriptions.data.map(
-  // //   subscription => subscription.metadata.client_reference_id,
-  // // );
-  // const lastFiveCustomers = customers.data.slice(0, 5);
-  // for (const customer of lastFiveCustomers) {
-  //   // set referral = a17b1658-48e0-4315-a60c-0ae7ee2d8621 in metadata
-  //   await stripe.customers.update(customer.id, {
-  //     metadata: {
-  //       referral: "a17b1658-48e0-4315-a60c-0ae7ee2d8621",
-  //     },
-  //   });
-  // }
+  const range = searchParams.get("range") || "2weeks";
+  const customStartDate = searchParams.get("startDate");
+  const customEndDate = searchParams.get("endDate");
 
-  // const pubIds = await prisma.publicationMetadata.findMany({
-  //   where: {
-  //     idInArticlesDb: 1504485,
-  //   },
-  // });
+  // Calculate date range based on preset or custom dates
+  const now = new Date();
+  let startDate: Date;
+  let endDate: Date = now;
 
-  // const usersOfPubIds = await prisma.userMetadata.findMany({
-  //   where: {
-  //     publication: {
-  //       idInArticlesDb: {
-  //         in: pubIds.map(pub => pub.idInArticlesDb!).filter(id => id !== null),
-  //       },
-  //     },
-  //   },
-  //   select: {
-  //     userId: true,
-  //   },
-  // });
+  if (customStartDate && customEndDate) {
+    startDate = new Date(customStartDate);
+    endDate = new Date(customEndDate);
+  } else {
+    switch (range) {
+      case "week":
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "2weeks":
+        startDate = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+        break;
+      case "month":
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case "3months":
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    }
+  }
 
-  // const users = await prisma.user.findMany({
-  //   where: {
-  //     id: {
-  //       in: usersOfPubIds.map(user => user.userId),
-  //     },
-  //   },
-  //   select: {
-  //     email: true,
-  //     name: true,
-  //     id: true,
-  //   },
-  // });
+  // Get all users with their notes and scheduling data within the date range
+  const users = await prisma.user.findMany({
+    include: {
+      userMetadata: true,
+      notes: {
+        where: {
+          scheduledTo: {
+            lte: endDate,
+            gte: startDate,
+            not: null,
+          },
+          isArchived: false,
+        },
+        orderBy: {
+          scheduledTo: "desc",
+        },
+      },
+    },
+  });
 
-  // const subscriptions = await prisma.subscription.findMany({
-  //   where: {
-  //     userId: {
-  //       in: users.map(user => user.id),
-  //     },
-  //   },
-  // });
+  // Calculate hit rates and time series data for each user
+  const userHitRateData = users
+    .filter(user => user.notes.length > 0) // Only users with scheduled notes
+    .map(user => {
+      const totalScheduledNotes = user.notes.length;
+      const sentNotes = user.notes.filter(
+        note => note.sentViaScheduleAt !== null,
+      );
+      const hitRate =
+        totalScheduledNotes > 0
+          ? (sentNotes.length / totalScheduledNotes) * 100
+          : 0;
 
-  // const userPublication = await prisma.userMetadata.findMany({
-  //   where: {
-  //     userId: {
-  //       in: users.map(user => user.id),
-  //     },
-  //   },
-  //   select: {
-  //     publication: true,
-  //     userId: true,
-  //   },
-  // });
+      // Group notes by week for time series data
+      const weeklyData: {
+        [key: string]: { scheduled: number; sent: number };
+      } = {};
 
-  // const usersWithSubscriptions: any[] = [];
-  // for (const user of users) {
-  //   const subscription = subscriptions.find(
-  //     subscription => subscription.userId === user.id,
-  //   );
-  //   const publication = userPublication.find(
-  //     userPublication => userPublication.userId === user.id,
-  //   )?.publication;
-  //   usersWithSubscriptions.push({
-  //     ...user,
-  //     subscription: subscription
-  //       ? {
-  //           id: subscription.id,
-  //           status: subscription.status,
-  //           plan: subscription.plan,
-  //           stripeSubId: subscription.stripeSubId,
-  //         }
-  //       : null,
-  //     publication: publication
-  //       ? {
-  //           id: publication.idInArticlesDb,
-  //           name: publication.title,
-  //           authorId: publication.authorId,
-  //           url: publication.publicationUrl,
-  //         }
-  //       : null,
-  //   });
-  // }
+      user.notes.forEach(note => {
+        if (note.scheduledTo) {
+          const weekStart = new Date(note.scheduledTo);
+          weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Start of week
+          const weekKey = weekStart.toISOString().split("T")[0];
 
-  // const usersWithActiveSubscriptions = usersWithSubscriptions.filter(
-  //   user => !!user.subscription,
-  // );
-  // return NextResponse.json({ usersWithActiveSubscriptions });
+          if (!weeklyData[weekKey]) {
+            weeklyData[weekKey] = { scheduled: 0, sent: 0 };
+          }
 
-  // const byline = await getBylineByUserId(session.user.id);
-  // await fetchAuthor({
-  //   authorId: byline?.id.toString(),
-  // });
+          weeklyData[weekKey].scheduled += 1;
+          if (note.sentViaScheduleAt) {
+            weeklyData[weekKey].sent += 1;
+          }
+        }
+      });
 
-  // const mailsToCheck = [
-  //   "mistersimard@gmail.com",
-  //   "greg@gregsroche.com",
-  //   "m@carru.de",
-  // ];
+      // Convert to array and calculate weekly hit rates
+      const timeSeriesData = Object.entries(weeklyData)
+        .map(([week, data]) => ({
+          week,
+          hitRate: data.scheduled > 0 ? (data.sent / data.scheduled) * 100 : 0,
+          scheduled: data.scheduled,
+          sent: data.sent,
+        }))
+        .sort((a, b) => new Date(a.week).getTime() - new Date(b.week).getTime())
+        .slice(-12); // Last 12 weeks
 
-  // const users = await prisma.user.findMany({
-  //   where: {
-  //     email: {
-  //       in: mailsToCheck,
-  //     },
-  //   },
-  // });
+      return {
+        id: user.id,
+        name: user.name || "Unknown User",
+        email: user.email || "",
+        image: user.image || null,
+        totalScheduledNotes,
+        sentNotes: sentNotes.length,
+        hitRate: Math.round(hitRate * 100) / 100, // Round to 2 decimal places
+        timeSeriesData,
+        lastScheduledAt: user.notes[0]?.scheduledTo || null,
+        plan: user.userMetadata?.[0]?.plan || null,
+      };
+    })
+    .sort((a, b) => b.hitRate - a.hitRate); // Sort by hit rate descending
 
-  // const usersPublications = await prisma.userMetadata.findMany({
-  //   where: {
-  //     userId: {
-  //       in: users.map(user => user.id),
-  //     },
-  //   },
-  //   select: {
-  //     publication: true,
-  //   }
-  // });
+  // Users with more than 20 notes schedules and hit rate less than 50%
+  const usersToNotify = userHitRateData.filter(
+    user => user.hitRate < 50,
+  );
+  return NextResponse.json(usersToNotify);
 
-  // const publicationIds = usersPublications.map(userPublication => userPublication.publication?.idInArticlesDb).filter(id => id !== null);
-
-  // const publications = await prismaArticles.publication.findMany({
-  //   where: {
-  //     id: {
-  //       in: publicationIds.map(id => BigInt(id!)),
-  //     },
-  //   },
-  // });
-
-  // return NextResponse.json({ publications: publications.map(publication => ({
-  //   id: publication.id.toString(),
-  //   name: publication.name,
-  //   url: publication.customDomain || publication.subdomain,
-  //   description: publication.heroText,
-  //   image: publication.logoUrl,
-  // })) });
-
-  // const users = await getUsersFromDate(new Date("2025-05-28T00:00:00.000Z"));
-  // debugger;
-
-  // if (!session.user.meta.isAdmin) {
-  //   return NextResponse.json(
-  //     { error: "Unauthorized - Not an admin" },
-  //     { status: 401 },
-  //   );
-  // }
-  // const allSubstackNotes = await prisma.substackPublishedNote.findMany({
-  //   select: {
-  //     substackNoteId: true,
-  //     noteId: true,
-  //   },
-  // });
-
-  // const noteIdToSubstackNoteId = allSubstackNotes.reduce(
-  //   (acc, substackNote) => {
-  //     acc[substackNote.noteId] = substackNote.substackNoteId;
-  //     return acc;
-  //   },
-  //   {} as Record<string, string>,
-  // );
-
-  // const allNotes = await prisma.note.findMany({});
-  // const notesToUpdate = allNotes.filter(
-  //   note => note.id in noteIdToSubstackNoteId,
-  // );
-
-  // const allNotesWithSubstackNoteId: Note[] = notesToUpdate.map(note => ({
-  //   ...note,
-  //   substackNoteId: noteIdToSubstackNoteId[note.id],
-  // }));
-
-  // try {
-  //   let i = 0;
-  //   for (const note of allNotesWithSubstackNoteId) {
-  //     i++;
-  //     console.log(`Updating note ${i} of ${allNotesWithSubstackNoteId.length}`);
-  //     await prisma.note.update({
-  //       where: { id: note.id },
-  //       data: { substackNoteId: note.substackNoteId },
-  //     });
-  //   }
-  // } catch (error: any) {
-  //   console.error("Error processing users:", error);
-  //   return NextResponse.json({ error: error.message }, { status: 500 });
-  // }
-
-  // const user = await prisma.user.findUnique({
-  //   where: {
-  //     id: session.user.id,
-  //   },
-  // });
-
-  // // delete all draft notes
-  // await prisma.note.updateMany({
-  //   where: {
-  //     userId: user?.id,
-  //     status: NoteStatus.draft,
-  //   },
-  //   data: {
-  //     isArchived: true,
-  //   },
-  // });
-
-  // await prisma.userMetadata.update({
-  //   where: { userId: session.user.id },
-  //   data: {
-  //     notesToGenerateCount: 10,
-  //   },
-  // });
-
-  // const allUsers = await prisma.user.findMany({
-  //   select: {
-  //     subscription: {
-  //       select: {
-  //         status: true,
-  //         stripeSubId: true,
-  //       },
-  //     },
-  //     name: true,
-  //     email: true,
-  //   },
-  // });
-
-  // const allUsersWithSubscription = allUsers
-  //   .filter(user => user.subscription.length > 0)
-  //   .filter(user =>
-  //     user.subscription.some(
-  //       sub => sub.status === "active" || sub.status === "trialing",
-  //     ),
-  //   );
-
-  // console.log(allUsersWithSubscription.length);
-
-  // // 7 march 2025
-  // const date = new Date("2025-05-13T07:50:47.764+00:00");
-  // const allUsersCreatedAfter = await prisma.user.findMany({
-  //   where: {
-  //     createdAt: {
-  //       gte: date,
-  //     },
-  //   },
-  // });
-
-  // let i = 0;
-
-  // const headers = {
-  //   Accept: "application/json",
-  //   "X-Kit-Api-Key": process.env.KIT_API_KEY,
-  // };
-
-  // const allEmailSubscribersResponse = await fetch(
-  //   "https://api.kit.com/v4/subscribers",
-  //   {
-  //     method: "GET",
-  //     headers: headers as any,
-  //   },
-  // );
-
-  // const allEmailSubscribersJson = await allEmailSubscribersResponse.json();
-
-  // const allEmailSubscribers = allEmailSubscribersJson.subscribers as {
-  //   email_address: string;
-  // }[];
-
-  // // await addTagToManyEmails(
-  // //   allEmailSubscribers.map(subscriber => subscriber.email),
-  // //   "writestack",
-  // // );
-  // let i = 0;
-  // for (const subscriber of allEmailSubscribers) {
-  //   i++;
-  //    console.log(`Adding tag to email ${i} of ${allEmailSubscribers.length}`);
-  //   await addTagToEmail(subscriber.email_address, "writestack");
-  // }
-
-  // for (const user of allUsersCreatedAfter) {
-  //   if (user.email && user.name) {
-  //     if (user.name.toLowerCase().includes("orel")) {
-  //       continue;
-  //     }
-  //     await addSubscriber(user.email, {
-  //       fullName: user.name,
-  //     });
-  //     console.log(`Added user ${i} of ${allUsersCreatedAfter.length}`);
-  //   }
-  // }
-
-  // // const email = generateWelcomeTemplateTrial("Orel");
-  // // const result = await sendMailSafe({
-  // //   to: "stefangirard@gmail.com",
-  // //   from: "welcome",
-  // //   subject: email.subject,
-  // //   template: email.body,
-  // // });
-  // // const result1 = await sendMailSafe({
-  // //   to: "sophiafifner@gmail.com",
-  // //   from: "welcome",
-  // //   subject: email.subject,
-  // //   template: email.body,
-  // // });
-  // const email = generateScheduleNoteMissedEmail(
-  //   "Orel",
-  //   "68185c39a3e7733daed4fd0c",
-  //   "This is a test note",
-  //   "This is a test reason",
-  // );
-  // const result = await sendMailSafe({
-  //   to: "orelsmail@gmail.com",
-  //   from: "noreply",
-  //   subject: email.subject,
-  //   template: email.body,
-  // });
-  // console.log(result);
-
-  // if (!result) {
-  //   return NextResponse.json({ error: "Failed to send mail" }, { status: 500 });
-  // }
-  // const email = generatePublicationAnalysisCompleteEmail();
-
+  // const notesNotPostedTemplate = generateManyNotesMissedEmail("Orel");
   // await sendMailSafe({
   //   to: "orelsmail@gmail.com",
-  //   from: "noreply",
-  //   subject: email.subject,
-  //   template: email.body,
-  // });
-
-  // await addTagToEmail("orelsmail@gmail.com", "writestack-new-subscriber");
-
-  // try {
-  //   const deleteTemplates = generateSubscriptionDeletedEmail("Orel", "Pro");
-  //   const freeTrialEndingTemplates = generateFreeSubscriptionEndedEmail("Orel");
-  //   const pausedTemplates = generateSubscriptionPausedEmail("Orel", "Pro");
-  // const welcomeTemplates = welcomeTemplateTrial("Orel");
-  // await sendMail({
-  //   to: "orelsmail@gmail.com",
   //   from: "support",
-  //   subject: welcomeTemplates.subject,
-  //   template: welcomeTemplates.body,
-  //   cc: [],
+  //   subject: notesNotPostedTemplate.subject,
+  //   template: notesNotPostedTemplate.body,
   // });
-
-  // const topNotes = await prismaArticles.notesComments.findMany({
-  //   where: {
-  //     reactionCount: {
-  //       gte: 100,
-  //       lte: 2000,
-  //     },
-  //   },
-  //   orderBy: {
-  //     reactionCount: "desc",
-  //   },
-  //   take: 8000,
-  // });
-
-  // const allBodys = topNotes.map(note => note.body);
-  // const prompt = `
-  // Act as a professional copywriter, with 20 years of experience.
-  // Your job is to analyze the following notes, ordered by their popularity,
-  // and figure out the top 15 templates to write notes.
-
-  // Example for a template:
-  // 'Start with what - Explain what you're going to talk about.
-  // Continue with Why - Explain why this is important.
-  // Then How - A few bullet points on how to do it.'
-
-  // Instructions:
-  // - Ignore news notes.
-  // - Ignore political notes.
-  // - Ignore crypto/stocks/market/money notes.
-  // - Ignore notes that are too short and not informative.
-  // - Ignore notes that are promotional.
-  // - Ignore notes that are looking to connect to other creators.
-  // - Ignore notes that are asking for feedback.
-  // - Ignore notes that are asking for likes.
-  // - Ignore notes that are asking for comments.
-  // - Ignore notes that are asking for shares.
-  // - Ignore notes that are asking for views.
-  // - Ignore notes that are asking for subscribers.
-  // - Ignore notes that are asking for donations.
-
-  // Make sure the templates are as generic as possible and as actionable as possible, so that they can be used in any context.
-
-  // Here are the notes, separated by 2 newlines:
-  // ${allBodys.join("\n\n")}
-  // `;
-
-  // const result = await runPrompt(
-  //   [
-  //     {
-  //       role: "user",
-  //       content: prompt,
-  //     },
-  //   ],
-  //   "google/gemini-2.5-pro-preview-03-25",
-  // );
-  // console.log(result);
-  // // write results to a file
-  // fs.writeFileSync("result.txt", result);
-
-  //   await sendMail({
-  //     to: "orelsmail@gmail.com",
-  //     from: "support",
-  //     subject: freeTrialEndingTemplates.subject,
-  //     template: freeTrialEndingTemplates.body,
-  //     cc: [],
-  //   });
-
-  //   await sendMail({
-  //     to: "orelsmail@gmail.com",
-  //     from: "support",
-  //     subject: pausedTemplates.subject,
-  //     template: pausedTemplates.body,
-  //     cc: [],
-  //   });
-  // const allUserNotes = await prisma.note.findMany();
-  // const updatedNotes: any = [];
-  // // if has scheduleTo, update it to remove seconds
-  // for (const note of allUserNotes) {
-  //   if (note.scheduledTo) {
-  //     note.scheduledTo = new Date(note.scheduledTo);
-  //     note.scheduledTo.setSeconds(0);
-  //     note.scheduledTo.setMilliseconds(0);
-  //     updatedNotes.push(note);
-  //   }
-  // }
-  // let i = 0;
-  // for (const note of updatedNotes) {
-  //   console.log(`Updating note ${i} of ${updatedNotes.length}`);
-  //   await prisma.note.update({
-  //     where: { id: note.id },
-  //     data: { scheduledTo: note.scheduledTo },
-  //   });
-  //   i++;
-  // }
-
-  // Get all users with publications
-  // const usersWithPublications = await prisma.userMetadata.findMany({
-  //   where: {
-  //     publication: {
-  //       isNot: null,
-  //     },
-  //   },
-  //   select: {
-  //     userId: true,
-  //   },
-  // });
-
-  // const userIds = usersWithPublications.map(user => user.userId);
-  // const batchSize = 5;
-  // const batches = [];
-
-  // // Split users into batches of 5
-  // for (let i = 0; i < userIds.length; i += batchSize) {
-  //   batches.push(userIds.slice(i, i + batchSize));
-  // }
-
-  // // Process each batch
-  // for (const batch of batches) {
-  //   console.log(`Processing batch of ${batch.length} users...`);
-  //   await processBatch(batch);
-  //   // Add a small delay between batches to avoid rate limiting
-  //   await new Promise(resolve => setTimeout(resolve, 1000));
-  // }
-
-  // const result = await testEndpoint();
-  // const mailResult = await sendMail({
-  //   to: "orelsmail@gmail.com",
-  //   from: "orel",
-  //   subject: "Test",
-  //   template: welcomeTemplate(),
-  //   cc: ["orelzilberman@gmail.com"],
-  // });
-
-  // const subscription = await getActiveSubscription(session.user.id);
-
-  // if (!subscription) {
-  //   return NextResponse.json(
-  //     { error: "No active subscription found" },
-  //     { status: 400 },
-  //   );
-  // }
-
-  // const mailResult = await sendMail({
-  //   to: "orelsmail@gmail.com",
-  //   from: "Orel from WriteStack",
-  //   subject: "Your Trial is Ending Soon",
-  //   template: generateFailedToSendNoteEmail(
-  //     "67f772a23b037dc651e2e072",
-  //     "67f772a23b037dc651e2e072",
-  //   ),
-  //   cc: ["orelzilberman@gmail.com"],
-  // });
-  // const date = new Date("2025-03-27T01:37:20.962+00:00");
-  // const users = await prisma.user.findMany({
-  //   where: {
-  //     createdAt: {
-  //       gte: date,
-  //     },
-  //   },
-  //   select: {
-  //     email: true,
-  //     name: true,
-  //     createdAt: true,
-  //   },
-  // });
-
-  // const usersToAdd = users.map(user => ({
-  //   email: user.email || "",
-  //   fullName: user.name || "",
-  // }));
-
-  // usersToAdd.pop();
-
-  // for (const user of usersToAdd) {
-  //   const mailResult = await addUserToList(user);
-  //   console.log(mailResult);
-  // }
-
-  // const mailResult2 = await addUserToList({
-  //   email: "ayodejiawosika@gmail.com",
-  //   fullName: "Ayodeji Awosika",
-  // });
-
-  // return NextResponse.json({ success: true });
-  // } catch (error) {
-  //   console.error("Error processing users:", error);
-  //   return NextResponse.json(
-  //     { error: "Failed to process users" },
-  //     { status: 500 },
-  //   );
-  // }
 }

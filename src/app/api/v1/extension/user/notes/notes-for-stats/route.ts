@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
       })),
     );
   } catch (error: any) {
-    loggerServer.error("Error getting notes for stats", {
+    loggerServer.error("[GETTING-NOTES-FOR-STATS] Error getting notes for stats", {
       error: error.message,
       userId: userId || "not logged in",
     });

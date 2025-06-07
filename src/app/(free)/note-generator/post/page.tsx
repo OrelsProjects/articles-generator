@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import useAuth from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 const loadingStates = [
   {
@@ -34,7 +35,6 @@ const loadingStates = [
 
 export default function NoteGeneratorArticlePage() {
   const [postUrl, setPostUrl] = useState("");
-  const { signOut } = useAuth();
   const {
     isLoading,
     hasData,
@@ -52,6 +52,14 @@ export default function NoteGeneratorArticlePage() {
     nextGenerateDate,
     canGenerate,
   } = useNotesGeneratorPost();
+
+  const handleGenerateNote = async () => {
+    try {
+      await generateNote(postUrl);
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -100,13 +108,13 @@ export default function NoteGeneratorArticlePage() {
               onKeyDown={e => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  generateNote(postUrl);
+                  handleGenerateNote();
                 }
               }}
             />
             <Button
               disabled={isLoading || !canGenerate}
-              onClick={() => generateNote(postUrl)}
+              onClick={handleGenerateNote}
             >
               Generate
             </Button>

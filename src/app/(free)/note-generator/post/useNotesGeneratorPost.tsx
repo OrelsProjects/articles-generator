@@ -161,9 +161,9 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
         if (nextGenerateDate) {
           setNextGenerateDate(nextGenerateDate);
         }
-        return;
+        throw new Error("Not enough credits");
       }
-      throw error;
+      throw new Error("Error generating note");
     } finally {
       generatingNote.current = false;
       setIsLoading(false);
