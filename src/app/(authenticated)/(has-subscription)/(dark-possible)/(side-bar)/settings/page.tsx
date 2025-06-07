@@ -62,6 +62,7 @@ export default function SettingsPage() {
     hasPublication,
     shouldShow50PercentOffOnCancel,
     updatePreferredLanguage,
+    updateName,
   } = useSettings();
   const { credits, cancelAt } = useAppSelector(selectSettings);
   const { billingInfo, loading: loadingBilling } = useBilling();
@@ -75,6 +76,9 @@ export default function SettingsPage() {
     user?.meta?.preferredLanguage || "en",
   );
   const [savingLanguage, setSavingLanguage] = useState(false);
+  const [displayName, setDisplayName] = useState(user?.displayName || "");
+  const [savingName, setSavingName] = useState(false);
+  const [nameChanged, setNameChanged] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash) {
@@ -173,6 +177,27 @@ export default function SettingsPage() {
       }
     } finally {
       setSavingLanguage(false);
+    }
+  };
+
+  const handleNameChange = (value: string) => {
+    setDisplayName(value);
+    setNameChanged(value !== (user?.displayName || ""));
+  };
+
+  const handleSaveName = async () => {
+    if (!nameChanged || !displayName.trim()) return;
+
+    setSavingName(true);
+    try {
+      await updateName(displayName.trim());
+      toast.success("Name updated successfully");
+      setNameChanged(false);
+    } catch (error) {
+      Logger.error("Error updating name:", { error });
+      toast.error("Failed to update name. Please try again.");
+    } finally {
+      setSavingName(false);
     }
   };
 
@@ -396,7 +421,42 @@ export default function SettingsPage() {
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
-                  <Input id="name" defaultValue={user?.displayName || ""} />
+                  <Input
+                    id="name"
+                    value={displayName}
+                    onChange={e => handleNameChange(e.target.value)}
+                    disabled={savingName}
+                  />
+                  {nameChanged && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={handleSaveName}
+                        disabled={savingName || !displayName.trim()}
+                        className="flex items-center gap-2"
+                      >
+                        {savingName ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Save Name"
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setDisplayName(user?.displayName || "");
+                          setNameChanged(false);
+                        }}
+                        disabled={savingName}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -417,8 +477,8 @@ export default function SettingsPage() {
                     <SelectTrigger id="language" className="w-full">
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
                       <SelectItem value="es">Español</SelectItem>
                       <SelectItem value="fr">Français</SelectItem>
                       <SelectItem value="de">Deutsch</SelectItem>

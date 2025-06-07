@@ -89,12 +89,22 @@ export const useSettings = () => {
       await axiosInstance.post("/api/v1/user/settings/language", {
         language,
       });
-      // Refresh settings after update
-      await init();
       return true;
     } catch (error: any) {
       Logger.error("Error updating preferred language", { error });
       return false;
+    }
+  };
+
+  const updateName = async (name: string) => {
+    try {
+      await axiosInstance.patch("api/v1/user/settings/name", {
+        name,
+      });
+      return true;
+    } catch (error: any) {
+      Logger.error("Error updating preferred language", { error });
+      throw error;
     }
   };
 
@@ -112,5 +122,6 @@ export const useSettings = () => {
     credits,
     shouldShow50PercentOffOnCancel,
     updatePreferredLanguage,
+    updateName,
   };
 };
