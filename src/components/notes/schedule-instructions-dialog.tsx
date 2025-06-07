@@ -64,11 +64,20 @@ export function ScheduleInstructionsDialog() {
           After scheduling a note, your note will be scheduled via the Chrome
           extension.
           <br />
-          In order for the note to be posted,{" "}
-          <span className="text-foreground font-bold">
-            your Chrome browser must remain open and you have to be logged in to
-            Substack on Chrome.
-          </span>
+          In order for the note to be posted: <br />
+          <ul>
+            <li>
+              <span className="text-foreground font-bold">
+                Your Chrome browser must remain open (Doesn&apos;t matter which
+                tab)
+              </span>
+            </li>
+            <li>
+              <span className="text-foreground font-bold">
+                You have to be logged in to Substack on Chrome
+              </span>
+            </li>
+          </ul>
           <br />
           If in the time of the scheduled post your Chrome is closed or you are
           not logged in to Substack on Chrome, the note will not be posted.
