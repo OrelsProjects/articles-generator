@@ -33,7 +33,9 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const isAllowed = canUseFeature(userMetadata, FeatureFlag.canViewWriters);
+    const isAllowed =
+      canUseFeature(userMetadata, FeatureFlag.canViewWriters) ||
+      params.handle === "me";
 
     if (!isAllowed) {
       loggerServer.error("User is not allowed to use advanced filtering", {
@@ -44,7 +46,7 @@ export async function GET(
     }
 
     let handle = params.handle;
-    
+
     // If handle is "me" or current user indicator, get user's own handle
     if (handle === "me") {
       const { getBylineByUserId } = await import("@/lib/dal/byline");
@@ -53,7 +55,10 @@ export async function GET(
         loggerServer.error("User byline not found", {
           userId: session.user.id,
         });
-        return NextResponse.json({ error: "User profile not found" }, { status: 404 });
+        return NextResponse.json(
+          { error: "User profile not found" },
+          { status: 404 },
+        );
       }
       handle = byline.handle;
     }
@@ -72,7 +77,6 @@ export async function GET(
       writer,
       hasMore,
     });
-
   } catch (error) {
     loggerServer.error("Failed to fetch writer", {
       error,
