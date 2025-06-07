@@ -27,16 +27,16 @@ export const useWriter = (handle?: string) => {
   const fetchWriter = async (page: number = 1) => {
     if (!hasMore) return;
     if (loadingRef.current) return;
-    if (!handle) return;
     loadingRef.current = true;
     if (page !== 1) {
       setIsLoadingMore(true);
     }
     try {
+      const url = handle ? `/api/writer/${handle}?page=${page}` : `/api/writer/me?page=${page}`;
       const response = await axiosInstance.get<{
         writer: WriterWithData;
         hasMore: boolean;
-      }>(`/api/writer/${handle}?page=${page}`);
+      }>(url);
       if (page === 1 || !writer) {
         setWriter(response.data.writer);
       } else {
@@ -119,9 +119,8 @@ export const useWriter = (handle?: string) => {
   };
 
   useEffect(() => {
-    if (handle) {
-      fetchWriter();
-    }
+    // Always fetch, handle null handle for current user
+    fetchWriter();
   }, [handle]);
 
   const fetchNextPage = () => {

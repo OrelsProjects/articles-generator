@@ -4,11 +4,7 @@ import React from "react";
 import { useWriter } from "@/lib/hooks/useWriter";
 import WriterProfile from "@/components/writer-profile";
 
-export default function WriterPage({
-  params,
-}: {
-  params: { handle: string; name?: string };
-}) {
+export default function MyProfilePage() {
   const {
     writer,
     isLoading,
@@ -17,7 +13,7 @@ export default function WriterPage({
     error,
     isLoadingMore,
     fetchAuthorNotes,
-  } = useWriter(params.handle);
+  } = useWriter(undefined); // undefined handle means get current user's data
 
   return (
     <WriterProfile
@@ -28,8 +24,8 @@ export default function WriterPage({
       error={error}
       isLoadingMore={isLoadingMore}
       fetchAuthorNotes={fetchAuthorNotes}
-      showPopulateButton={true}
-      isCurrentUser={false}
+      showPopulateButton={false}
+      isCurrentUser={true}
     />
   );
-}
+} 

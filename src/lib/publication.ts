@@ -172,15 +172,6 @@ export async function getWriter(
       reactionCount: "desc",
     },
   });
-
-  const postBylines = await prismaArticles.postByline.findMany({
-    where: {
-      bylineId: byline.id,
-    },
-    include: {
-      post: true,
-    },
-  });
   loggerServer.timeEnd("Fetching notes from byline");
 
   loggerServer.time("Fetching attachments and posts");
@@ -196,7 +187,7 @@ export async function getWriter(
 
   loggerServer.timeEnd("Fetching attachments and posts");
 
-  const posts = postBylines.map(postByline => postByline.post);
+  const posts = await getWriterPosts(byline.id, page, take);
   const notesWithAttachments = notesFromByline.map(note => ({
     ...note,
     attachments: attachments.filter(

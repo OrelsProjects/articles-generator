@@ -8,6 +8,7 @@ import {
   BarChart,
   Radar,
   Bot,
+  User,
 } from "lucide-react";
 
 export const rootPath = "/queue";
@@ -73,6 +74,13 @@ export const navItems: {
     // adminOnly: true,
   },
   {
+    name: "My Profile",
+    mobileName: "Profile",
+    href: "/me",
+    icon: User,
+    locationInMobile: "sidebar",
+  },
+  {
     name: "Settings",
     mobileName: "Settings",
     href: "/settings",
@@ -87,11 +95,5 @@ export const navItems: {
     locationInMobile: "sidebar",
     featureFlagsRequired: ["canUseRadar"],
   },
-  // {
-  //   name: "Statistics (coming soon)",
-  //   href: "/statistics",
-  //   icon: BarChart, // Need chrome extension to get this data. Navigate to user substack and scrape the hell out of it.
-  //   disabled: true,
-  //   locationInMobile: "sidebar",
-  // },
+
 ];

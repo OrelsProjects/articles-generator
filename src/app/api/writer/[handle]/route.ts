@@ -43,7 +43,20 @@ export async function GET(
       return NextResponse.json({ error: "Not allowed" }, { status: 403 });
     }
 
-    const handle = params.handle;
+    let handle = params.handle;
+    
+    // If handle is "me" or current user indicator, get user's own handle
+    if (handle === "me") {
+      const { getBylineByUserId } = await import("@/lib/dal/byline");
+      const byline = await getBylineByUserId(session.user.id);
+      if (!byline?.handle) {
+        loggerServer.error("User byline not found", {
+          userId: session.user.id,
+        });
+        return NextResponse.json({ error: "User profile not found" }, { status: 404 });
+      }
+      handle = byline.handle;
+    }
 
     loggerServer.info("[WRITER] Fetching writer", {
       handle,
