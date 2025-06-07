@@ -19,6 +19,8 @@ import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { Note, NoteStatus } from "@prisma/client";
 import { getStripeInstance } from "@/lib/stripe";
 import { bigint } from "zod";
+import { getBylineByUserId } from "@/lib/dal/byline";
+import { fetchAuthor } from "@/lib/utils/lambda";
 // async function processUser(userId: string) {
 //   try {
 //     const userMetadata = await prisma.userMetadata.findUnique({
@@ -82,91 +84,96 @@ export async function GET() {
   //   });
   // }
 
-  const pubIds = await prisma.publicationMetadata.findMany({
-    where: {
-      idInArticlesDb: 1504485,
-    },
-  });
+  // const pubIds = await prisma.publicationMetadata.findMany({
+  //   where: {
+  //     idInArticlesDb: 1504485,
+  //   },
+  // });
 
-  const usersOfPubIds = await prisma.userMetadata.findMany({
-    where: {
-      publication: {
-        idInArticlesDb: {
-          in: pubIds.map(pub => pub.idInArticlesDb!).filter(id => id !== null),
-        },
-      },
-    },
-    select: {
-      userId: true,
-    },
-  });
+  // const usersOfPubIds = await prisma.userMetadata.findMany({
+  //   where: {
+  //     publication: {
+  //       idInArticlesDb: {
+  //         in: pubIds.map(pub => pub.idInArticlesDb!).filter(id => id !== null),
+  //       },
+  //     },
+  //   },
+  //   select: {
+  //     userId: true,
+  //   },
+  // });
 
-  const users = await prisma.user.findMany({
-    where: {
-      id: {
-        in: usersOfPubIds.map(user => user.userId),
-      },
-    },
-    select: {
-      email: true,
-      name: true,
-      id: true,
-    },
-  });
+  // const users = await prisma.user.findMany({
+  //   where: {
+  //     id: {
+  //       in: usersOfPubIds.map(user => user.userId),
+  //     },
+  //   },
+  //   select: {
+  //     email: true,
+  //     name: true,
+  //     id: true,
+  //   },
+  // });
 
-  const subscriptions = await prisma.subscription.findMany({
-    where: {
-      userId: {
-        in: users.map(user => user.id),
-      },
-    },
-  });
+  // const subscriptions = await prisma.subscription.findMany({
+  //   where: {
+  //     userId: {
+  //       in: users.map(user => user.id),
+  //     },
+  //   },
+  // });
 
-  const userPublication = await prisma.userMetadata.findMany({
-    where: {
-      userId: {
-        in: users.map(user => user.id),
-      },
-    },
-    select: {
-      publication: true,
-      userId: true,
-    },
-  });
+  // const userPublication = await prisma.userMetadata.findMany({
+  //   where: {
+  //     userId: {
+  //       in: users.map(user => user.id),
+  //     },
+  //   },
+  //   select: {
+  //     publication: true,
+  //     userId: true,
+  //   },
+  // });
 
-  const usersWithSubscriptions: any[] = [];
-  for (const user of users) {
-    const subscription = subscriptions.find(
-      subscription => subscription.userId === user.id,
-    );
-    const publication = userPublication.find(
-      userPublication => userPublication.userId === user.id,
-    )?.publication;
-    usersWithSubscriptions.push({
-      ...user,
-      subscription: subscription
-        ? {
-            id: subscription.id,
-            status: subscription.status,
-            plan: subscription.plan,
-            stripeSubId: subscription.stripeSubId,
-          }
-        : null,
-      publication: publication
-        ? {
-            id: publication.idInArticlesDb,
-            name: publication.title,
-            authorId: publication.authorId,
-            url: publication.publicationUrl,
-          }
-        : null,
-    });
-  }
+  // const usersWithSubscriptions: any[] = [];
+  // for (const user of users) {
+  //   const subscription = subscriptions.find(
+  //     subscription => subscription.userId === user.id,
+  //   );
+  //   const publication = userPublication.find(
+  //     userPublication => userPublication.userId === user.id,
+  //   )?.publication;
+  //   usersWithSubscriptions.push({
+  //     ...user,
+  //     subscription: subscription
+  //       ? {
+  //           id: subscription.id,
+  //           status: subscription.status,
+  //           plan: subscription.plan,
+  //           stripeSubId: subscription.stripeSubId,
+  //         }
+  //       : null,
+  //     publication: publication
+  //       ? {
+  //           id: publication.idInArticlesDb,
+  //           name: publication.title,
+  //           authorId: publication.authorId,
+  //           url: publication.publicationUrl,
+  //         }
+  //       : null,
+  //   });
+  // }
 
-  const usersWithActiveSubscriptions = usersWithSubscriptions.filter(
-    user => !!user.subscription,
-  );
-  return NextResponse.json({ usersWithActiveSubscriptions });
+  // const usersWithActiveSubscriptions = usersWithSubscriptions.filter(
+  //   user => !!user.subscription,
+  // );
+  // return NextResponse.json({ usersWithActiveSubscriptions });
+
+  // const byline = await getBylineByUserId(session.user.id);
+  // await fetchAuthor({
+  //   authorId: byline?.id.toString(),
+  // });
 
   // const mailsToCheck = [
   //   "mistersimard@gmail.com",

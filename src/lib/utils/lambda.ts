@@ -1,5 +1,6 @@
 import loggerServer from "@/loggerServer";
 import { prisma } from "../prisma";
+
 export async function fetchAuthor(options: {
   authorId?: string;
   publicationUrl?: string;
@@ -11,6 +12,15 @@ export async function fetchAuthor(options: {
 }) {
   try {
     const scrapeAllArticlesUrl = process.env.TRIGGER_LAMBDAS_LAMBDA_URL;
+    const body = {
+      url: options.publicationUrl,
+      authorId: options.authorId,
+      publicationId: options.publicationId,
+    };
+    if (options.authorId) {
+      //delete url
+      delete body.url;
+    }
     if (scrapeAllArticlesUrl) {
       // Run the lambda to scrape all articles and forget about it
       void fetch(scrapeAllArticlesUrl, {
