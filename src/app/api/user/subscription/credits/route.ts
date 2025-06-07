@@ -64,12 +64,12 @@ export async function POST(req: Request) {
       },
       success_url:
         env === "development"
-          ? "http://localhost:3000/home"
-          : "https://www.writestack.io/home",
+          ? "http://localhost:3000/api/v1/credits/purchase/success?session_id={CHECKOUT_SESSION_ID}"
+          : "https://www.writestack.io/api/v1/credits/purchase/success?session_id={CHECKOUT_SESSION_ID}",
       cancel_url:
         env === "development"
-          ? "http://localhost:3000/home"
-          : "https://www.writestack.io/home",
+          ? "http://localhost:3000/settings?error=true"
+          : "https://www.writestack.io/settings?error=true",
     });
 
     return NextResponse.json({ sessionId: paymentSession.id }, { status: 200 });

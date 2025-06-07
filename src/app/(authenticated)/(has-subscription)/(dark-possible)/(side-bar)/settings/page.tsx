@@ -48,9 +48,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSearchParams } from "next/navigation";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
 export default function SettingsPage() {
   const { setTheme, resolvedTheme } = useTheme();
+  const searchParams = useSearchParams();
+  const router = useCustomRouter();
   const {
     purchaseCredits,
     loadingCredits,
@@ -79,6 +83,29 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [savingName, setSavingName] = useState(false);
   const [nameChanged, setNameChanged] = useState(false);
+
+  const error = searchParams.get("error");
+  const succeeded = searchParams.get("succeeded");
+
+  useEffect(() => {
+    if (error) {
+      if (succeeded) {
+        toast.error(
+          "Something went wrong. Please contact support at support@writestack.io",
+          {
+            autoClose: 10000,
+          },
+        );
+      } else {
+        toast.error("Something went wrong. You were not charged", {
+          autoClose: 3500,
+        });
+      }
+      router.push("/settings", {
+        paramsToRemove: ["error", "succeeded"],
+      });
+    }
+  }, [error, succeeded]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash) {
