@@ -57,8 +57,8 @@ export function ScheduleInstructionsDialog() {
           <DialogTitle>Schedule Instructions</DialogTitle>
         </DialogHeader>
         <DialogDescription>
-            (You can skip this if it&apos;s not the first time you schedule a
-            note.)
+          (You can skip this if it&apos;s not the first time you schedule a
+          note.)
           <br />
           <br />
           After scheduling a note, your note will be scheduled via the Chrome
@@ -66,11 +66,12 @@ export function ScheduleInstructionsDialog() {
           <br />
           In order for the note to be posted,{" "}
           <span className="text-foreground font-bold">
-            your Chrome browser must remain open.
+            your Chrome browser must remain open and you have to be logged in to
+            Substack on Chrome.
           </span>
           <br />
-          If in the time of the scheduled post your Chrome is closed, the note
-          will not be posted.
+          If in the time of the scheduled post your Chrome is closed or you are
+          not logged in to Substack on Chrome, the note will not be posted.
           <br />
           <br />
           You can also see the schedules from anywhere by clicking the extension
