@@ -43,7 +43,7 @@ export async function GET(req: Request) {
 
   const response = await runPrompt(
     prompt,
-    "anthropic/claude-3.5-sonnet",
+    "anthropic/claude-sonnet-4",
     "PU-" + session.user.name,
   );
 

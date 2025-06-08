@@ -41,7 +41,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
     "openai/gpt-4.1": 2,
     "x-ai/grok-3-beta": 3,
     "openrouter/auto": 2,
-    "deepseek/deepseek-r1": 0.54,
+    "deepseek/deepseek-r1": 0.45,
   };
   const pricePerMillionTokensOutput = {
     "openai/gpt-4o": 10,
@@ -56,7 +56,7 @@ function getPrice(model: Model, tokens: number, outputTokens?: number) {
     "openai/gpt-4.1": 8,
     "x-ai/grok-3-beta": 15,
     "openrouter/auto": 2,
-    "deepseek/deepseek-r1": 2.18,
+    "deepseek/deepseek-r1": 2.15,
   };
   let price = (tokens / 1000000) * pricePerMillionTokensInput[model];
   if (outputTokens) {

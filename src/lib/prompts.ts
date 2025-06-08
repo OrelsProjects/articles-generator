@@ -458,7 +458,7 @@ const improvementPromptSystemPost = (
   },
 ) => {
   const improvementPrompt = improvementPromptTemplates[type];
-  const model = improvementPrompt.model || "anthropic/claude-3.5-sonnet";
+  const model = improvementPrompt.model || "anthropic/claude-3.7-sonnet";
   const { prompt, task } = improvementPrompt;
   const maxLength =
     options?.maxLength || type === "elaborate" ? text.length * 2 : text.length;
@@ -501,7 +501,7 @@ const improvementPromptSystemNote = (
   },
 ) => {
   const improvementPrompt = improvementPromptTemplates[type];
-  const model = improvementPrompt.model || "anthropic/claude-3.5-sonnet";
+  const model = improvementPrompt.model || "anthropic/claude-3.7-sonnet";
   const { prompt, task } = improvementPrompt;
 
   // For notes, we want to be more strict about length constraints
@@ -685,7 +685,7 @@ export const generateTitleSubtitleImprovementPrompt = (
   value: string,
   userTopArticlesTitles: { title: string; subtitle: string }[],
 ): { messages: { role: string; content: string }[]; model: Model } => {
-  const model = "anthropic/claude-3.5-sonnet";
+  const model = "anthropic/claude-sonnet-4";
   const isTitle = menuType === "title";
   const currentReference = isTitle
     ? idea.title
@@ -794,7 +794,7 @@ export const generateImproveNoteTextPrompt = (
 
   return {
     messages,
-    model: humanizePrompt.model || "anthropic/claude-3.5-sonnet",
+    model: humanizePrompt.model || "anthropic/claude-sonnet-4",
   };
 };
 
@@ -1325,7 +1325,7 @@ const improvementPromptTemplates: {
     Keep the same tone and writing style.
     The generated text has to pass the flesch-kincaid test with a score of 70 or higher.
     `,
-    model: "anthropic/claude-3.5-sonnet",
+    model: "anthropic/claude-sonnet-4",
   },
   improve: {
     task: "make it better",
@@ -1341,7 +1341,48 @@ const improvementPromptTemplates: {
   },
   hook: {
     task: "improve user's article with a hook",
-    prompt: `You are a creative copywriter, craft an engaging hook for the user's article that captures attention immediately. The hook should be compelling and relevant to the content that follows. Ensure it reads naturally and authentically, avoiding any formulaic or AI-generated patterns.`,
+    prompt: `# ROLE
+You are “Hook Builder,” an elite copy chief who turns OK lines into knockout openers.
+
+# OBJECTIVE
+Given a raw Substack Note, do ONE of two things:
+1. If a hook already exists in the first 1–2 lines, sharpen it *without changing any other lines*.
+2. If no clear hook exists, create one that fits the Note’s topic and audience, *without changing any other lines*.
+
+# HOOK RULES
+• ≤ 15 words  
+• Must slam reader curiosity, emotion, or tension (hit at least one)  
+• Conversational voice—no corporate fluff, no jargon
+
+# HOW TO SCORE STOP-POWER (1–10)
+Rate the existing first 1–2 lines with this checklist. Each yes = +2 points (max 10).
+
+1. Shock or surprise?  
+2. Clear tension or open loop?  
+3. Specific, vivid detail or number?  
+4. Is the hook cliché? (Less cliché is better)
+5. Directly calls out or implicates the reader?  
+6. Fresh angle or phrasing (not tired clickbait)?
+
+Map total to final score:
+
+0–1 → 1  
+2 → 2  
+3 → 3  
+4 → 4  
+5–6 → 5  
+7–8 → 6  
+9–10 → 7–10 (10 only if every box is a hell-yes)
+
+If score < 7, replace the hook.
+
+# PROCESS
+1. Extract the first 1–2 lines as the “existing hook.”  
+2. Apply the scoring rubric.  
+3. If < 7, craft a new hook obeying Hook Rules.  
+4. If ≥ 7, tighten it (shorten, punch up wording, add specificity) but keep core idea.  
+5. Keep the rest of the Note intact unless a tiny edit is needed for flow.
+`,
   },
   details: {
     task: "improve user's article with more details",
@@ -1438,25 +1479,52 @@ const improvementPromptTemplates: {
     `,
   },
   "better-hook": {
-    task: "Improve the hook of the provided short text to immediately grab attention",
-    prompt: `
-    You're an expert creative copywriter specializing in crafting attention-grabbing hooks for social media posts, especially tweet-style content.
+    task: "improve user's article with a hook",
+    prompt: `# ROLE
+      You are “Hook Builder,” an elite copy chief who turns OK lines into knockout openers.
 
-    Your goal is to revise the user's original text by improving its hook—the first sentence or phrase—to immediately captivate the reader's interest and entice them to read further.
+      # OBJECTIVE
+      Given a raw Substack Note, do ONE of two things:
+      1. If a hook already exists in the first 1–2 lines, sharpen it.
+      2. If no clear hook exists, create one that fits the Note’s topic and audience.
 
-    Guidelines for the hook:
-    1. **Compelling and engaging**: Immediately spark curiosity, intrigue, or emotional resonance.
-    2. **Concise and natural**: Keep it short, tweet-like, conversational, and authentically human-sounding.
-    3. **Contextually relevant**: Closely match the original note’s tone, content, and intent without straying into unrelated ideas.
-    4. **Seamless integration**: Ensure the improved hook naturally flows into the rest of the user's original text. Do not treat it as a separate title or headline.
+      **Either way, the core idea MUST NOT change and the rest of the text must be kept as is. You are not allowed to change any other lines.**
+      The hook MUST support the core idea and the rest of the text.
 
-    Follow these steps explicitly:
-    - First, quickly identify the core idea or most interesting aspect of the user's note.
-    - Then, craft a succinct, impactful hook that highlights this aspect.
-    - Finally, integrate your new hook smoothly with minimal changes to the rest of the original note, preserving its authenticity.
+      # HOOK RULES
+      • ≤ 15 words  
+      • Must slam reader curiosity, emotion, or tension (hit at least one)  
+      • Conversational voice—no corporate fluff, no jargon
 
-    Output the improved note clearly, without additional explanation or commentary.
-  `,
+      # HOW TO SCORE STOP-POWER (1–10)
+      Rate the existing first 1–2 lines with this checklist. Each yes = +2 points (max 10).
+
+      1. Shock or surprise?  
+      2. Clear tension or open loop?  
+      3. Specific, vivid detail or number?  
+      4. Is the hook cliché? (Less cliché is better)
+      5. Directly calls out or implicates the reader?  
+      6. Fresh angle or phrasing (not tired clickbait)?
+
+      Map total to final score:
+
+      0–1 → 1  
+      2 → 2  
+      3 → 3  
+      4 → 4  
+      5–6 → 5  
+      7–8 → 6  
+      9–10 → 7–10 (10 only if every box is a hell-yes)
+
+      If score < 7, replace the hook.
+
+      # PROCESS
+      1. Extract the first 1–2 lines as the “existing hook.”  
+      2. Apply the scoring rubric.  
+      3. If < 7, craft a new hook obeying Hook Rules.  
+      4. If ≥ 7, tighten it (shorten, punch up wording, add specificity) but keep core idea.  
+      5. Keep the rest of the Note intact unless a tiny edit is needed for flow.
+      `,
   },
 };
 

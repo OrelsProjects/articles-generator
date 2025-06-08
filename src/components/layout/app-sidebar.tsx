@@ -14,6 +14,7 @@ import {
   SidebarOpen,
   ExternalLink,
   Menu,
+  Coins,
 } from "lucide-react";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
@@ -39,6 +40,7 @@ import { useUi } from "@/lib/hooks/useUi";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { UserStreak } from "@/components/ui/user-streak";
+import { AffiliateDialog } from "@/components/ui/affiliate-dialog";
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const router = useCustomRouter();
@@ -206,6 +208,24 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               )}
             </ul>
           </nav>
+          {/* Affiliate Section */}
+          {/* <div className="px-4 py-2">
+            <AffiliateDialog>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full flex items-center gap-2 justify-start border-yellow-200 hover:bg-yellow-50 dark:border-yellow-800 dark:hover:bg-yellow-900/20",
+                  sidebarCollapsed && "justify-center px-2",
+                )}
+              >
+                <Coins className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                {!sidebarCollapsed && (
+                  <span className="text-sm">Affiliate WriteStack</span>
+                )}
+              </Button>
+            </AffiliateDialog>
+          </div> */}
+
           {/* User profile */}
           <div className="p-4 border-t border-border flex flex-col gap-2 items-center">
             <UserStreak showText={!sidebarCollapsed} />
@@ -337,6 +357,18 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                 </ul>
               </nav>
             </div>
+            {/* Mobile Affiliate Section */}
+            {/* <div className="px-4 py-2">
+              <AffiliateDialog>
+                <Button
+                  variant="outline"
+                  className="w-full flex items-center gap-2 justify-start border-yellow-200 hover:bg-yellow-50 dark:border-yellow-800 dark:hover:bg-yellow-900/20"
+                >
+                  <Coins className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                  <span className="text-sm">Affiliate WriteStack</span>
+                </Button>
+              </AffiliateDialog>
+            </div> */}
             {/* Mobile User Profile */}
             <div className="mt-auto border-t border-border pt-4">
               <div className="flex items-center gap-3 px-4 mb-4">

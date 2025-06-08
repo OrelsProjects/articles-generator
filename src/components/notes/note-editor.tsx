@@ -95,7 +95,9 @@ export default function NoteEditor({
           <Toggle
             size="sm"
             pressed={editor.isActive("blockquote")}
-            onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
+            onPressedChange={() =>
+              editor.chain().focus().toggleBlockquote().run()
+            }
             className="data-[state=on]:bg-muted"
           >
             <Quote className="h-3 w-3" />
@@ -106,7 +108,7 @@ export default function NoteEditor({
         disabled={disabled}
         editor={editor}
         className={cn(
-          "min-h-[180px] md:min-h-[200px] max-h-[200px] md:max-h-[300px] px-3 prose prose-sm max-w-none focus:outline-none overflow-auto",
+          "min-h-[180px] md:min-h-[200px] max-h-[200px] md:max-h-[300px] max-w-[500px] px-3 prose prose-sm focus:outline-none overflow-auto",
           textEditorClassName,
         )}
         onKeyDown={e => {

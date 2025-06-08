@@ -47,6 +47,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAutoDM } from "@/lib/hooks/useAutoDM";
 import { compareTwoStrings } from "string-similarity";
 import { useUi } from "@/lib/hooks/useUi";
+import { CharacterCountBar } from "@/components/notes/character-count-bar";
 
 export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const { user } = useAppSelector(selectAuth);
@@ -75,6 +76,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
 
   const editor = useEditor(
     notesTextEditorOptions(html => {
+      // Update character count
+      const textContent = editor?.getText() || "";
+      setCharacterCount(textContent.length);
+      
       if (isInspiration) {
         return;
       }
@@ -93,6 +98,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const [uploadingFilesCount, setUploadingFilesCount] = useState(0);
   const [isSendingNote, setIsSendingNote] = useState(false);
   const [showAdvancedSheet, setShowAdvancedSheet] = useState(false);
+  const [characterCount, setCharacterCount] = useState(0);
 
   // State for drag and drop
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -103,6 +109,11 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const updateEditorBody = (body: string) => {
     convertMDToHtml(body).then(html => {
       editor?.commands.setContent(html);
+      // Update character count after setting content
+      setTimeout(() => {
+        const textContent = editor?.getText() || "";
+        setCharacterCount(textContent.length);
+      }, 0);
     });
   };
 
@@ -514,7 +525,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
         <DialogContent
           hideCloseButton
           backgroundBlur={false}
-          className="sm:min-w-[600px] sm:min-h-[290px] p-0 gap-0 border-border bg-background rounded-2xl max-md:max-w-screen"
+          className="sm:min-w-[600px] sm:min-h-[290px] max-w-[600px] p-0 gap-0 border-border bg-background rounded-2xl"
         >
           <div className="relative overflow-visible">
             <div className="w-full h-full absolute bottom-0 z-10">
@@ -563,9 +574,17 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                   <AvatarFallback>{userInitials}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 flex flex-col">
-                  <h3 className="font-medium text-foreground">
-                    {noteAuthorName || userName}
-                  </h3>
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-medium text-foreground">
+                      {noteAuthorName || userName}
+                    </h3>
+                    <div className="max-w-xs">
+                      <CharacterCountBar 
+                        characterCount={characterCount}
+                        className="text-right"
+                      />
+                    </div>
+                  </div>
                   {editor && (
                     <NoteEditor
                       editor={editor}

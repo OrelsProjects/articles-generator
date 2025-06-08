@@ -160,7 +160,7 @@ export async function GET(
             ? "openai/gpt-4o-mini"
             : retryCount === 1
               ? "openai/gpt-4o"
-              : "anthropic/claude-3.5-sonnet";
+              : "anthropic/claude-3.7-sonnet";
 
         const outlineResponse = await parseJson<OutlineLLMResponse>(
           outlinesString,

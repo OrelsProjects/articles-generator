@@ -68,6 +68,56 @@ export async function GET(request: NextRequest) {
   if (!session || !session.user || !session.user.meta) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // const notesWithOver300Likes = await prismaArticles.notesComments.findMany({
+  //   where: {
+  //     reactionCount: {
+  //       gt: 300,
+  //     },
+  //   },
+  //   select: {
+  //     body: true,
+  //   },
+  // });
+
+  // const buckets = {
+  //   total: 0,
+  //   lt_50: 0,
+  //   _50_99: 0,
+  //   _100_149: 0,
+  //   _150_199: 0,
+  //   _200_239: 0,
+  //   _240_279: 0,
+  //   _280_299: 0,
+  //   _300_349: 0,
+  //   _350_399: 0,
+  //   _400_plus: 0,
+  // };
+
+  // for (const note of notesWithOver300Likes) {
+  //   const len = note.body.length;
+  //   buckets.total++;
+
+  //   if (len < 50) buckets.lt_50++;
+  //   else if (len < 100) buckets._50_99++;
+  //   else if (len < 150) buckets._100_149++;
+  //   else if (len < 200) buckets._150_199++;
+  //   else if (len < 240) buckets._200_239++;
+  //   else if (len < 280) buckets._240_279++;
+  //   else if (len < 300) buckets._280_299++;
+  //   else if (len < 350) buckets._300_349++;
+  //   else if (len < 400) buckets._350_399++;
+  //   else buckets._400_plus++;
+  // }
+
+  // console.table(
+  //   Object.entries(buckets).map(([range, count]) => ({
+  //     range,
+  //     count,
+  //     percent: ((count / buckets.total) * 100).toFixed(2) + "%",
+  //   })),
+  // );
+
   // const searchParams = request.nextUrl.searchParams;
 
   // const range = searchParams.get("range") || "2weeks";
