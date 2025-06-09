@@ -54,6 +54,9 @@ import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
 import axiosInstance from "@/lib/axios-instance";
 import { CHUNK_SIZE, MAX_FILE_SIZE } from "@/lib/consts";
 import { NoteWithEngagementStats } from "@/types/notes-stats";
+import { AttachmentType } from "@prisma/client";
+import { OpenGraphResponse } from "@/types/og";
+import { getLinks } from "@/lib/utils/note-editor-utils";
 
 export const MAX_ATTACHMENTS = Math.ceil(MAX_FILE_SIZE / CHUNK_SIZE);
 
@@ -406,6 +409,22 @@ export const useNotes = () => {
         const note = userNotes.find(note => note.id === noteId);
         dispatch(updateNote({ id: noteId, note: { body } }));
         cancelRef.current = null;
+
+        const hasLinkAttachments = note?.attachments?.some(
+          attachment => attachment.type === AttachmentType.link,
+        );
+        debugger;
+        if (!hasLinkAttachments) {
+          const links = getLinks(body);
+          if (links.length > 0) {
+            const link = links[0];
+            debugger;
+            const { og, ...attachment } = await uploadLink(noteId, link);
+
+            dispatch(addAttachmentToNote({ noteId, attachment }));
+          }
+        }
+
         return note
           ? {
               ...note,
@@ -580,6 +599,49 @@ export const useNotes = () => {
     [dispatch],
   );
 
+  const getOgData = async (url: string) => {
+    try {
+      const response = await axiosInstance.post<OpenGraphResponse>(
+        "/api/v1/og",
+        { url },
+      );
+      return response.data;
+    } catch (error: any) {
+      Logger.error("Error getting OG data:", error);
+      throw error;
+    }
+  };
+
+  const uploadLink = async (
+    noteId: string,
+    url: string,
+  ): Promise<NoteDraftImage & { og: OpenGraphResponse }> => {
+    const formData = new FormData();
+    formData.append("url", url);
+    formData.append("type", AttachmentType.link);
+    try {
+      const response = await axiosInstance.post<{
+        og: OpenGraphResponse;
+        attachment: NoteDraftImage;
+      }>(`/api/note/${noteId}/image`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      const { og, attachment } = response.data;
+      dispatch(
+        addAttachmentToNote({
+          noteId,
+          attachment,
+        }),
+      );
+      return { ...attachment, og };
+    } catch (error: any) {
+      Logger.error("Error uploading link:", error);
+      throw error;
+    }
+  };
+
   const uploadFile = async (
     files: File[],
     noteId: string,
@@ -593,10 +655,7 @@ export const useNotes = () => {
       const existingNote = userNotes.find(note => note.id === noteId);
       const currentAttachments = existingNote?.attachments || [];
 
-      if (
-        currentAttachments.length &&
-        currentAttachments.length >= MAX_ATTACHMENTS
-      ) {
+      if (currentAttachments.length >= MAX_ATTACHMENTS) {
         throw new Error(`Only ${MAX_ATTACHMENTS} images allowed`);
       }
 
@@ -678,28 +737,36 @@ export const useNotes = () => {
         if (!note) return;
         // await axiosInstance.get(`/api/user/notes/${noteId}/should-send`);
         Logger.info("Sending note", note);
-        const attachmentUrls: string[] = [];
+
+        const attachments: {
+          url: string;
+          type: AttachmentType;
+        }[] = [];
 
         if (note.attachments?.length) {
           note.attachments.forEach(attachment => {
-            attachmentUrls.push(attachment.url);
+            attachments.push({
+              url: attachment.url,
+              type: attachment.type,
+            });
           });
         }
-        Logger.info("Attachment URLs", attachmentUrls);
-        const body = attachmentUrls
-          ? {
-              message: note.body,
-              moveNoteToPublished: {
-                noteId,
-              },
-              attachmentUrls,
-            }
-          : {
-              message: note.body,
-              moveNoteToPublished: {
-                noteId,
-              },
-            };
+        Logger.info("Attachment URLs", attachments);
+        const body =
+          attachments.length > 0
+            ? {
+                message: note.body,
+                moveNoteToPublished: {
+                  noteId,
+                },
+                attachments,
+              }
+            : {
+                message: note.body,
+                moveNoteToPublished: {
+                  noteId,
+                },
+              };
         Logger.info("Body", body);
 
         const response = await sendNoteExtension(body);
@@ -818,17 +885,23 @@ export const useNotes = () => {
     return user?.meta?.notesToGenerateCount || 3;
   }, [user]);
 
-  const fetchNotesForDate = useCallback(async (date: string): Promise<NoteWithEngagementStats[]> => {
-    try {
-      const response = await axiosInstance.get<NoteWithEngagementStats[]>(
-        `/api/user/notes/stats/engagement/${date}`
-      );
-      return response.data;
-    } catch (error) {
-      Logger.error("Error fetching notes for date:", { error: String(error), date });
-      throw error;
-    }
-  }, []);
+  const fetchNotesForDate = useCallback(
+    async (date: string): Promise<NoteWithEngagementStats[]> => {
+      try {
+        const response = await axiosInstance.get<NoteWithEngagementStats[]>(
+          `/api/user/notes/stats/engagement/${date}`,
+        );
+        return response.data;
+      } catch (error) {
+        Logger.error("Error fetching notes for date:", {
+          error: String(error),
+          date,
+        });
+        throw error;
+      }
+    },
+    [],
+  );
 
   return {
     userNotes,
@@ -865,5 +938,7 @@ export const useNotes = () => {
     loadingCreateNote,
     notesToGenerate,
     fetchNotesForDate,
+    uploadLink,
+    getOgData,
   };
 };

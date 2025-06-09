@@ -1,3 +1,4 @@
+import { AttachmentType } from "@prisma/client";
 import { marked } from "marked";
 import { DateRange } from "react-day-picker";
 
@@ -61,6 +62,7 @@ export interface SubstackImageResponse {
 export interface NoteDraftImage {
   id: string;
   url: string;
+  type: AttachmentType;
 }
 
 export interface NoteDraft {
@@ -208,6 +210,9 @@ export function inspirationNoteToNoteDraft(
   }
 
   const attachment = note.attachments?.pop() || note.attachment;
+  const type = attachment?.includes("s3")
+    ? AttachmentType.image
+    : AttachmentType.link;
   return {
     id: "",
     thumbnail: note.thumbnail || "",
@@ -224,6 +229,7 @@ export function inspirationNoteToNoteDraft(
           {
             id: "",
             url: attachment,
+            type: AttachmentType.image,
           },
         ]
       : [],
@@ -344,4 +350,3 @@ export interface SubstackPostNoteResponse {
     is_personal_mode: boolean;
   };
 }
-

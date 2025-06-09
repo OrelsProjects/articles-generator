@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
             id: true,
             s3Url: true,
             fileName: true,
+            type: true,
           },
         },
       },
@@ -67,6 +68,7 @@ export async function GET(req: NextRequest) {
       attachments: note.S3Attachment.map(attachment => ({
         id: attachment.id,
         url: attachment.s3Url,
+        type: attachment.type,
       })),
     }));
 

@@ -5,6 +5,7 @@ import { AxiosRequestConfig } from "axios";
 import { NoteDraft } from "@/types/note";
 import { AxiosResponse } from "axios";
 import { NoteStats, NoteWithEngagementStats, ReactionInterval } from "@/types/notes-stats";
+import { AttachmentType } from "@prisma/client";
 
 /**
  * Supported browser types
@@ -26,7 +27,10 @@ export interface CreatePostParams {
   moveNoteToPublished?: {
     noteId: string;
   };
-  attachmentUrls?: string[];
+  attachments?: {
+    url: string;
+    type: AttachmentType;
+  }[];
 }
 
 /**

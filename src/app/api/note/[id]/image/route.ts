@@ -6,6 +6,8 @@ import { NoteDraftImage } from "@/types/note";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { MAX_FILE_SIZE } from "@/lib/consts";
+import { AttachmentType } from "@prisma/client";
+import { getOg } from "@/lib/dal/og";
 
 // In-memory store for chunks
 const chunksMap = new Map<
@@ -52,6 +54,32 @@ export async function POST(
     }
 
     const form = await req.formData();
+    const type = form.get("type") as AttachmentType;
+    if (type === AttachmentType.link) {
+      const url = form.get("url") as string;
+      const ogData = await getOg(url);
+      if (!ogData) {
+        loggerServer.error("Failed to get OG data to upload link", {
+          userId: session.user.id,
+          noteId,
+          url,
+        });
+        return NextResponse.json(
+          { error: "Failed to get OG data" },
+          { status: 500 },
+        );
+      }
+      const og = ogData;
+      const attachment = await prisma.s3Attachment.create({
+        data: {
+          noteId,
+          s3Url: url,
+          fileName: url,
+          type,
+        },
+      });
+      return NextResponse.json({ og, attachment }, { status: 200 });
+    }
     const file = form.get("file") as File;
     const fileId = form.get("fileId") as string;
     const chunkIndex = parseInt(form.get("chunkIndex") as string, 10);
@@ -120,6 +148,7 @@ export async function POST(
     const response: NoteDraftImage = {
       id: s3Attachment.id,
       url: s3Attachment.s3Url,
+      type: s3Attachment.type,
     };
     return NextResponse.json(response, { status: 200 });
   } catch (err: any) {

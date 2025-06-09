@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { downloadImage } from "@/lib/files-note";
 import { UploadImageParams } from "@/types/files-notes.type";
 import { NoteDraftImage, SubstackImageResponse } from "@/types/note";
-import { CookieName } from "@prisma/client";
+import { AttachmentType, CookieName } from "@prisma/client";
 
 export class NoteNotFoundError extends Error {
   constructor(message: string) {
@@ -101,6 +101,7 @@ export async function uploadImageSubstack(
   const response: NoteDraftImage = {
     id: substackImage.imageId,
     url: substackImage.imageUrl,
+    type: AttachmentType.image,
   };
 
   return response;

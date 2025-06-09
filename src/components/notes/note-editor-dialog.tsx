@@ -48,6 +48,8 @@ import { useAutoDM } from "@/lib/hooks/useAutoDM";
 import { compareTwoStrings } from "string-similarity";
 import { useUi } from "@/lib/hooks/useUi";
 import { CharacterCountBar } from "@/components/notes/character-count-bar";
+import { getLinks, isPlagiarism } from "@/lib/utils/note-editor-utils";
+import { AttachmentType } from "@prisma/client";
 
 export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const { user } = useAppSelector(selectAuth);
@@ -72,6 +74,8 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     scheduleNote,
     cancelUpdateNoteBody,
     loadingScheduleNote,
+    uploadLink,
+    getOgData,
   } = useNotes();
 
   const editor = useEditor(
@@ -79,7 +83,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
       // Update character count
       const textContent = editor?.getText() || "";
       setCharacterCount(textContent.length);
-      
+
       if (isInspiration) {
         return;
       }
@@ -243,21 +247,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     return name || user?.displayName || "Unknown";
   }, [name]);
 
-  const isPlagiarism = () => {
-    const unformattedBody = unformatText(editor?.getHTML() || "");
-    const unformattedNoteBody = unformatText(selectedNote?.body || "");
-
-    const similarity = compareTwoStrings(unformattedBody, unformattedNoteBody);
-
-    const isSimilarEnough = similarity > 0.85; // tweak this threshold as needed
-
-    return (
-      isSimilarEnough &&
-      selectedNote?.status === "inspiration" &&
-      selectedNote?.handle !== handle
-    );
-  };
-
   const handleSave = async (
     options: {
       schedule?: {
@@ -269,7 +258,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     },
   ): Promise<string | null> => {
     if (!selectedNote) return null;
-    if (isPlagiarism()) {
+    if (isPlagiarism(editor?.getHTML() || "", selectedNote)) {
       setShowAvoidPlagiarismDialog(true);
       return null;
     }
@@ -579,7 +568,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                       {noteAuthorName || userName}
                     </h3>
                     <div className="max-w-xs">
-                      <CharacterCountBar 
+                      <CharacterCountBar
                         characterCount={characterCount}
                         className="text-right"
                       />
@@ -599,6 +588,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                         {selectedNote.attachments.map(attachment => (
                           <NoteImageContainer
                             key={attachment.id || attachment.url}
+                            type={attachment.type}
                             imageUrl={attachment.url}
                             onImageSelect={handleImageSelect}
                             onImageDelete={handleImageDelete}

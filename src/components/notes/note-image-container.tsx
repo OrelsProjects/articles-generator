@@ -2,9 +2,13 @@
 
 import { Pencil, X } from "lucide-react";
 import Image from "next/image";
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { NoteDraftImage } from "@/types/note";
+import { AttachmentType } from "@prisma/client";
+import { OpenGraphResponse } from "@/types/og";
+import { useNotes } from "@/lib/hooks/useNotes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface NoteImageContainerProps {
   imageUrl?: string | null;
@@ -23,11 +27,29 @@ export function NoteImageContainer({
   disabled = false,
   allowDelete = true,
 }: NoteImageContainerProps) {
+  const { getOgData } = useNotes();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageDimensions, setImageDimensions] = useState<{
     width: number;
     height: number;
   } | null>(null);
+
+  const [og, setOg] = useState<OpenGraphResponse | null>(null);
+  const [isLoadingOg, setIsLoadingOg] = useState(false);
+
+  useEffect(() => {
+    if (attachment?.type === AttachmentType.link) {
+      setIsLoadingOg(true);
+      getOgData(attachment.url)
+        .then(setOg)
+        .catch(() => {
+          // do nothing
+        })
+        .finally(() => {
+          setIsLoadingOg(false);
+        });
+    }
+  }, [attachment]);
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,6 +94,77 @@ export function NoteImageContainer({
     [],
   );
 
+  // Handle link type attachments
+  if (attachment?.type === AttachmentType.link) {
+    if (isLoadingOg) {
+      return (
+        <div className="w-full rounded-lg border border-border overflow-hidden">
+          <Skeleton className="w-full h-48" />
+          <div className="p-4 bg-card space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+        </div>
+      );
+    }
+
+    if (og) {
+      return (
+        <div className="w-full rounded-lg border border-border overflow-hidden group relative">
+          {og.ogImage && og.ogImage.length > 0 && (
+            <div className="w-full h-24 relative">
+              <Image
+                src={og.ogImage[0].url}
+                alt={og.ogTitle || "Link preview"}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+          <div className="p-4 bg-card">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {og.favicon && (
+                  <Image
+                    src={og.favicon}
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="rounded-sm"
+                  />
+                )}
+                <span className="text-sm">
+                  {og.publication?.name ||
+                    new URL(attachment?.url || "").hostname}
+                </span>
+              </div>
+              {og.ogTitle && (
+                <h3 className="font-semibold text-base text-foreground line-clamp-2">
+                  {og.ogTitle}
+                </h3>
+              )}
+            </div>
+          </div>
+          {onImageDelete && allowDelete && (
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <TooltipButton
+                tooltipContent="Remove link"
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 bg-background/20 hover:bg-background/40 rounded-lg px-0"
+                onClick={() => attachment && onImageDelete?.(attachment)}
+                disabled={disabled}
+              >
+                <X className="h-6 w-6 text-white" />
+              </TooltipButton>
+            </div>
+          )}
+        </div>
+      );
+    }
+  }
+
+  // Handle image type attachments (existing logic)
   const containerStyle = imageDimensions
     ? {
         width: `${imageDimensions.width}px`,

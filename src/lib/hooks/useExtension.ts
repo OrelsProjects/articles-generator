@@ -385,6 +385,7 @@ export function useExtension(): UseExtension {
         if (!params.message || params.message.trim().length === 0) {
           throw new Error(SubstackError.INVALID_PARAMETERS);
         }
+        debugger;
 
         const adf = await axiosInstance.post("/api/markdown-to-adf", {
           markdown: params.message,
@@ -395,7 +396,7 @@ export function useExtension(): UseExtension {
 
         const messageData = {
           bodyJson: adf.data,
-          attachmentUrls: params.attachmentUrls,
+          attachments: params.attachments,
         };
         // Prepare message for extension
         const message: ExtensionMessage = {
