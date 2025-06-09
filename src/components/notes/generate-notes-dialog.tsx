@@ -356,7 +356,7 @@ export function GenerateNotesDialog({
       <ToastStepper
         loadingStates={ideaLoadingStates}
         loading={isLoadingGenerateNotes}
-        duration={7500}
+        duration={4500}
         loop={false}
         position="bottom-left"
       />

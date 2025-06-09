@@ -16,7 +16,7 @@ export default function LoadingIdeas() {
     <ToastStepper
       loadingStates={ideaLoadingStates}
       loading={loadingNewIdeas}
-      duration={10000}
+      duration={4500}
       loop={false}
       position="bottom-left"
     />
