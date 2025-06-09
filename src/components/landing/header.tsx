@@ -22,6 +22,7 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { rootPath } from "@/types/navbar";
+import useAuth from "@/lib/hooks/useAuth";
 
 const freeTools = [
   {
@@ -53,6 +54,7 @@ const freeTools = [
 
 export default function Header() {
   const { data: session, status } = useSession();
+  const { signOut } = useAuth();
   const [open, setOpen] = useState(false);
 
   const isAdmin = session?.user?.meta?.isAdmin;
@@ -143,38 +145,50 @@ export default function Header() {
 
         <div className="flex items-center gap-4">
           {/* Login/Go to app button - visible on desktop, hidden on mobile */}
-          <Button
-            size="lg"
-            variant="default"
-            className={cn(
-              "bg-primary hover:bg-primary/90 text-primary-foreground hidden md:flex",
-              {
-                "px-0 rounded-full md:px-3": status === "authenticated",
-              },
-            )}
-            asChild
-          >
-            {status === "authenticated" ? (
-              <Link href={rootPath}>
-                <div className="flex items-center gap-2">
-                  <Avatar>
-                    <AvatarImage
-                      src={session?.user?.image || ""}
-                      height={10}
-                      width={10}
-                      className="p-1 rounded-full"
-                    />
-                    <AvatarFallback>
-                      {session?.user?.name?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm">Go to app</span>
-                </div>
-              </Link>
-            ) : (
+          {status === "authenticated" ? (
+            <div className="hidden md:flex items-center gap-2">
+              <Button
+                size="lg"
+                variant="default"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                asChild
+              >
+                <Link href={rootPath}>
+                  <div className="flex items-center gap-2">
+                    <Avatar>
+                      <AvatarImage
+                        src={session?.user?.image || ""}
+                        height={10}
+                        width={10}
+                        className="p-1 rounded-full"
+                      />
+                      <AvatarFallback>
+                        {session?.user?.name?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">Go to app</span>
+                  </div>
+                </Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="hidden md:flex"
+                onClick={() => signOut()}
+              >
+                Sign out
+              </Button>
+            </div>
+          ) : (
+            <Button
+              size="lg"
+              variant="default"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground hidden md:flex"
+              asChild
+            >
               <Link href="/login">Login</Link>
-            )}
-          </Button>
+            </Button>
+          )}
         </div>
         {/* Mobile sidebar */}
         <Sheet open={open} onOpenChange={setOpen}>
@@ -227,39 +241,55 @@ export default function Header() {
 
                 {/* Login/Go to app button in mobile sidebar */}
                 <li className="pt-6">
-                  <Button
-                    size="lg"
-                    variant="default"
-                    className={cn(
-                      "bg-primary hover:bg-primary/90 text-primary-foreground w-full",
-                      {
-                        "rounded-full": status === "authenticated",
-                      },
-                    )}
-                    asChild
-                    onClick={() => setOpen(false)}
-                  >
-                    {status === "authenticated" ? (
-                      <Link href={rootPath}>
-                        <div className="flex items-center gap-2 justify-center">
-                          <Avatar>
-                            <AvatarImage
-                              src={session?.user?.image || ""}
-                              height={10}
-                              width={10}
-                              className="p-1 rounded-full"
-                            />
-                            <AvatarFallback>
-                              {session?.user?.name?.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span>Go to app</span>
-                        </div>
-                      </Link>
-                    ) : (
+                  {status === "authenticated" ? (
+                    <div className="space-y-2">
+                      <Button
+                        size="lg"
+                        variant="default"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground w-full"
+                        asChild
+                        onClick={() => setOpen(false)}
+                      >
+                        <Link href={rootPath}>
+                          <div className="flex items-center gap-2 justify-center">
+                            <Avatar>
+                              <AvatarImage
+                                src={session?.user?.image || ""}
+                                height={10}
+                                width={10}
+                                className="p-1 rounded-full"
+                              />
+                              <AvatarFallback>
+                                {session?.user?.name?.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>Go to app</span>
+                          </div>
+                        </Link>
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          signOut();
+                          setOpen(false);
+                        }}
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="lg"
+                      variant="default"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground w-full"
+                      asChild
+                      onClick={() => setOpen(false)}
+                    >
                       <Link href="/login">Login</Link>
-                    )}
-                  </Button>
+                    </Button>
+                  )}
                 </li>
               </ul>
             </nav>
