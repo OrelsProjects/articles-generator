@@ -12,6 +12,8 @@ export interface AppUserMeta {
   tempAuthorId: string | null;
   notesToGenerateCount: number;
   preferredLanguage: string | null;
+
+  extensionVersion: string | null;
 }
 
 export default interface AppUser {

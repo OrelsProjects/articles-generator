@@ -62,8 +62,13 @@ export const authOptions: AuthOptions = {
             },
           }),
           getActiveSubscription(token.sub as string),
+          prisma.extensionDetails.findUnique({
+            where: {
+              userId: token.sub as string,
+            },
+          }),
         ];
-        const [userMetadata, activeSubscription] = (await Promise.all(
+        const [userMetadata, activeSubscription, extensionDetails] = (await Promise.all(
           promises,
         )) as [
           {
@@ -75,6 +80,9 @@ export const authOptions: AuthOptions = {
             preferredLanguage: string;
           } | null,
           Subscription | null,
+          {
+            versionInstalled: string | null;
+          } | null,
         ];
 
         session.user.meta = {
@@ -91,6 +99,7 @@ export const authOptions: AuthOptions = {
           tempAuthorId: userMetadata?.tempAuthorId || null,
           notesToGenerateCount: userMetadata?.notesToGenerateCount || 3,
           preferredLanguage: userMetadata?.preferredLanguage || "en",
+          extensionVersion: extensionDetails?.versionInstalled || null,
         };
         session.user.publicationId = userMetadata?.publicationId || "";
         return session;
