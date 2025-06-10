@@ -65,11 +65,26 @@ export async function POST(request: NextRequest) {
     }
 
     const { stats } = parsedBody.data;
+    const notesForStats = await prismaArticles.notesComments.findMany({
+      where: {
+        commentId: {
+          in: stats.map(stat => stat.comment_id),
+        },
+      },
+    });
+
+    const statsWithNotePostedAt = stats.map(stat => {
+      const note = notesForStats.find(note => note.commentId === stat.comment_id);
+      return {
+        ...stat,
+        notePostedAt: note?.timestamp,
+      };
+    });
 
     // Process stats in batches of 10
     const batchSize = 10;
-    for (let i = 0; i < stats.length; i += batchSize) {
-      const batch = stats.slice(i, i + batchSize);
+    for (let i = 0; i < statsWithNotePostedAt.length; i += batchSize) {
+      const batch = statsWithNotePostedAt.slice(i, i + batchSize);
 
       try {
         await Promise.all(
@@ -88,6 +103,7 @@ export async function POST(request: NextRequest) {
                 totalFreeSubscriptions: stat.total_free_subscriptions,
                 totalArr: stat.total_arr,
                 totalShareClicks: stat.total_share_clicks,
+                notePostedAt: stat.notePostedAt,
               },
               create: {
                 commentId: stat.comment_id,
@@ -98,6 +114,7 @@ export async function POST(request: NextRequest) {
                 totalFreeSubscriptions: stat.total_free_subscriptions,
                 totalArr: stat.total_arr,
                 totalShareClicks: stat.total_share_clicks,
+                notePostedAt: stat.notePostedAt,
               },
             }),
           ),

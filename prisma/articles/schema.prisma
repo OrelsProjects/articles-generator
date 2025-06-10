@@ -231,21 +231,23 @@ model BylineData {
 }
 
 model NotesCommentsStats {
-  id                     String @id @default(dbgenerated("gen_random_uuid()"))
-  commentId              String @map("comment_id")
-  authorId               Int    @map("author_id")
+  id        String @id @default(dbgenerated("gen_random_uuid()"))
+  commentId String @map("comment_id")
+  authorId  Int    @map("author_id")
 
-  totalClicks             Int    @default(0) @map("total_clicks")
-  totalFollows           Int    @default(0) @map("total_follows")
-  totalPaidSubscriptions Int    @default(0) @map("total_paid_subscriptions")
-  totalFreeSubscriptions Int    @default(0) @map("total_free_subscriptions")
-  totalArr               Int    @default(0) @map("total_arr")
-  totalShareClicks       Int    @default(0) @map("total_share_clicks")
+  totalClicks            Int @default(0) @map("total_clicks")
+  totalFollows           Int @default(0) @map("total_follows")
+  totalPaidSubscriptions Int @default(0) @map("total_paid_subscriptions")
+  totalFreeSubscriptions Int @default(0) @map("total_free_subscriptions")
+  totalArr               Int @default(0) @map("total_arr")
+  totalShareClicks       Int @default(0) @map("total_share_clicks")
 
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @default(now()) @updatedAt @map("updated_at")
-  
-  comment   NotesComments @relation(fields: [commentId, authorId], references: [commentId, authorId])
+  notePostedAt DateTime? @map("note_posted_at") @db.Timestamp(6)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  comment NotesComments @relation(fields: [commentId, authorId], references: [commentId, authorId])
 
   @@unique([commentId, authorId])
   @@map("notes_comments_stats")
