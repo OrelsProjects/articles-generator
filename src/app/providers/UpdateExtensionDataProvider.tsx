@@ -8,10 +8,12 @@ import { useEffect, useRef, useState } from "react";
 
 export const UpdateDataProvider = () => {
   const dispatch = useAppDispatch();
-  const { updateNotesStatistics, verifyExtensionKey } = useExtension();
+  const { updateNotesStatistics, verifyExtensionKey, updateExtensionData } =
+    useExtension();
   const [isExtensionKeyValid, setIsExtensionKeyValid] = useState(false);
   const loadingVerify = useRef(false);
   const loadingUpdate = useRef(false);
+  const loadingUpdateExtensionData = useRef(false);
 
   useEffect(() => {
     if (loadingVerify.current) return;
@@ -20,8 +22,23 @@ export const UpdateDataProvider = () => {
       .then(result => {
         setIsExtensionKeyValid(result);
       })
+      .catch(() => {
+        // do nothing
+      })
       .finally(() => {
         loadingVerify.current = false;
+      });
+  }, []);
+
+  useEffect(() => {
+    if (loadingUpdateExtensionData.current) return;
+    loadingUpdateExtensionData.current = true;
+    updateExtensionData()
+      .catch(() => {
+        // do nothing
+      })
+      .finally(() => {
+        loadingUpdateExtensionData.current = false;
       });
   }, []);
 
@@ -31,7 +48,7 @@ export const UpdateDataProvider = () => {
     }
     if (loadingUpdate.current) return;
     loadingUpdate.current = true;
-    debugger;
+
     dispatch(setIsFetchingNotesStats(true));
     updateNotesStatistics()
       .then(() => {

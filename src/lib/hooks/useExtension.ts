@@ -16,7 +16,7 @@ import { AxiosRequestConfig, AxiosResponse } from "axios";
 import { CreatePostResponse } from "@/types/createPostResponse";
 import { Logger } from "@/logger";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
-import { FeatureFlag } from "@prisma/client";
+import { AttachmentType, FeatureFlag } from "@prisma/client";
 import { NoteDraft } from "@/types/note";
 import {
   extensionApiRequest,
@@ -385,7 +385,6 @@ export function useExtension(): UseExtension {
         if (!params.message || params.message.trim().length === 0) {
           throw new Error(SubstackError.INVALID_PARAMETERS);
         }
-        debugger;
 
         const adf = await axiosInstance.post("/api/markdown-to-adf", {
           markdown: params.message,
@@ -394,7 +393,18 @@ export function useExtension(): UseExtension {
           data: JSON.stringify(adf.data),
         });
 
+        /**
+         * @extension-v1.9.97
+         * Add attachmentUrls to the message for backward compatibility with extension v1.3.97
+         */
+        const nonLinkAttachments = params.attachments?.filter(
+          attachment => attachment.type !== AttachmentType.link,
+        );
+        const attachmentUrls = nonLinkAttachments?.map(
+          attachment => attachment.url,
+        );
         const messageData = {
+          attachmentUrls, // Backward compatibility extension v1.3.97
           bodyJson: adf.data,
           attachments: params.attachments,
         };
@@ -462,9 +472,9 @@ export function useExtension(): UseExtension {
       noteId: string;
       timestamp: number;
     }): Promise<Schedule | null> => {
-      if (!canScheduleNotes) {
-        return null;
-      }
+      // if (!canScheduleNotes) {
+      //   return null;
+      // }
       const { scheduleId, userId, noteId, timestamp } = schedule;
       Logger.info("ADDING-SCHEDULE: createSchedule", {
         scheduleId,
@@ -522,9 +532,9 @@ export function useExtension(): UseExtension {
    */
   const deleteSchedule = useCallback(
     async (scheduleId: string): Promise<boolean> => {
-      if (!canScheduleNotes) {
-        return true;
-      }
+      // if (!canScheduleNotes) {
+      //   return true;
+      // }
       try {
         const message: ExtensionMessage = {
           type: "API_REQUEST",
@@ -604,9 +614,41 @@ export function useExtension(): UseExtension {
   };
 
   const verifyExtensionKey = useCallback(async () => {
+    let key: string | null = null;
+    let authorId: number | null = null;
+
+    const retry = async () => {
+      Logger.warn("Error verifying extension key, retrying...");
+      // try generate and verify key
+      const keyResponse = await axiosInstance.post(
+        "/api/v1/extension/key/generate",
+      );
+      key = keyResponse.data.key;
+      authorId = keyResponse.data.authorId;
+      // send to extension, if exists, "verifyKey"
+      const message: ExtensionMessage = {
+        type: "API_REQUEST",
+        action: "verifyKey",
+        params: [key, authorId],
+      };
+      const responseExtensionSecondTry = await sendExtensionMessage<boolean>(
+        message,
+        {
+          showDialog: false,
+          throwIfNoExtension: false,
+        },
+      );
+      if (!responseExtensionSecondTry.success) {
+        Logger.error("Error verifying extension key", {
+          error: responseExtensionSecondTry.error,
+        });
+        return false;
+      } else {
+        localStorage.setItem("extensionKey", key || "");
+        return true;
+      }
+    };
     try {
-      let key: string | null = null;
-      let authorId: number | null = null;
       const response = await axiosInstance.get("/api/v1/extension/key");
       if (!response.data.key) {
         // generate key
@@ -635,15 +677,35 @@ export function useExtension(): UseExtension {
         throwIfNoExtension: false,
       });
       if (!responseExtension.success) {
-        Logger.error("Error verifying extension key", {
-          error: responseExtension.error,
-        });
-        return false;
+        await retry();
       }
+      // save key to local storage
+      localStorage.setItem("extensionKey", key || "");
       return true;
     } catch (error) {
       Logger.error("Error verifying extension key", { error });
+      await retry();
       return false;
+    }
+  }, []);
+
+  // call updateExtensionDataInDB from extension
+  const updateExtensionData = useCallback(async () => {
+    const message: ExtensionMessage = {
+      type: "API_REQUEST",
+      action: "updateExtensionDataInDB",
+    };
+    const response = await sendExtensionMessage<boolean>(message, {
+      showDialog: false,
+      throwIfNoExtension: false,
+    });
+    if (!response.success) {
+      Logger.error("Error updating extension data", {
+        error: response.error,
+      });
+      return false;
+    } else {
+      return true;
     }
   }, []);
 
@@ -666,5 +728,6 @@ export function useExtension(): UseExtension {
     getNotesStatistics,
     getNotesWithStatsForDate,
     verifyExtensionKey,
+    updateExtensionData,
   };
 }

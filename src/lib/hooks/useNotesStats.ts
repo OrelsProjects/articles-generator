@@ -55,6 +55,7 @@ export function useNotesStats() {
       dispatch(setFetchingStreak(true));
       // Only fetch if we don't already have data
       loadingRef.current = true;
+      
       const response = await axiosInstance.get<Streak[]>(
         "/api/user/notes/stats/streak",
       );

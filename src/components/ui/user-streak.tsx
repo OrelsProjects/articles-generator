@@ -24,7 +24,7 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
   const lottieRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!streakCount) {
+    if (!streakCount && streakCount !== 0) {
       fetchStreakData();
     }
   }, [streakCount, fetchStreakData]);

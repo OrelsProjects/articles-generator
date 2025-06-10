@@ -3,10 +3,9 @@ import {
   createSchedule,
   deleteLatestScheduleByNoteId,
 } from "@/lib/dal/schedules";
-import { MIN_SCHEDULE_MINUTES } from "@/lib/utils/date/schedule";
+import { isValidScheduleTime, MIN_SCHEDULE_MINUTES } from "@/lib/utils/date/schedule";
 import { Logger } from "@/logger";
 import loggerServer from "@/loggerServer";
-import { isAfter, isBefore } from "date-fns";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -44,9 +43,7 @@ export async function POST(request: NextRequest) {
     const { noteId, scheduledTo, deleteIfExists } = parsedBody.data;
     const now = new Date();
     // add MIN_SCHEDULE_MINUTES to now
-    const minScheduledTo = new Date(
-      now.getTime() + MIN_SCHEDULE_MINUTES * 60000,
-    );
+    const isValidTime = isValidScheduleTime(new Date(scheduledTo));
     const scheduledToDate = new Date(scheduledTo);
     loggerServer.info(
       "[SCHEDULE-V1] Scheduled to date: " + scheduledToDate + "Now: " + now,
@@ -54,7 +51,7 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
       },
     );
-    if (isBefore(scheduledToDate, minScheduledTo)) {
+    if (!isValidTime) {
       loggerServer.error(
         "[SCHEDULE-V1] Schedule has to be at least " +
           MIN_SCHEDULE_MINUTES +

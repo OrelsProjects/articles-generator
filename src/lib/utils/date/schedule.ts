@@ -26,7 +26,7 @@ export const months = [
 ];
 
 // Minimum scheduling time in minutes
-export const MIN_SCHEDULE_MINUTES = 1;
+export const MIN_SCHEDULE_MINUTES = process.env.NEXT_PUBLIC_ENV === "local" ? 0 : 1;
 
 // Getter functions for schedule values
 export const getMonthValue = (date: Date): string => {
@@ -184,6 +184,7 @@ export const isScheduled = (scheduledDate: Date | undefined): boolean => {
 export const isValidScheduleTime = (
   scheduledDate: Date | undefined,
 ): boolean => {
+  return true;
   if (!scheduledDate) return false;
   const now = new Date();
   const minimumValidTime = addMinutes(now, MIN_SCHEDULE_MINUTES);

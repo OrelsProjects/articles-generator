@@ -418,7 +418,7 @@ export default function NoteComponent({
       )}
     >
       <div className="h-full flex flex-col justify-between gap-4 transition-opacity duration-200">
-        <div className="w-full flex-col items-start gap-4 transition-opacity duration-200">
+        <div className="h-full w-full flex-col items-start gap-4 transition-opacity duration-200">
           <div
             className={cn(
               "w-full flex justify-between items-center border-b border-border/60 p-2 relative",
@@ -451,7 +451,7 @@ export default function NoteComponent({
             )}
           </div>
           <div
-            className={cn("w-full flex-1", {
+            className={cn("h-full w-full flex-1 flex flex-col justify-between pb-16", {
               "opacity-60": feedback === "dislike",
             })}
           >
@@ -580,17 +580,17 @@ export default function NoteComponent({
                           );
                         }}
                       >
-                      <NoteImageContainer
-                        key={index}
-                        imageUrl={
-                          typeof attachment === "string"
-                            ? attachment
-                            : attachment.url
-                        }
-                        attachment={
-                          typeof attachment === "object"
-                            ? attachment
-                            : undefined
+                        <NoteImageContainer
+                          key={index}
+                          imageUrl={
+                            typeof attachment === "string"
+                              ? attachment
+                              : attachment.url
+                          }
+                          attachment={
+                            typeof attachment === "object"
+                              ? attachment
+                              : undefined
                           }
                         />
                       </div>

@@ -112,12 +112,12 @@ export function NoteImageContainer({
       return (
         <div className="w-full rounded-lg border border-border overflow-hidden group relative">
           {og.ogImage && og.ogImage.length > 0 && (
-            <div className="w-full h-24 relative">
+            <div className="w-full h-32 relative">
               <Image
                 src={og.ogImage[0].url}
                 alt={og.ogTitle || "Link preview"}
                 fill
-                className="object-cover"
+                className="object-cover object-top"
               />
             </div>
           )}
@@ -133,13 +133,13 @@ export function NoteImageContainer({
                     className="rounded-sm"
                   />
                 )}
-                <span className="text-sm">
+                <span className="text-xs">
                   {og.publication?.name ||
                     new URL(attachment?.url || "").hostname}
                 </span>
               </div>
               {og.ogTitle && (
-                <h3 className="font-semibold text-base text-foreground line-clamp-2">
+                <h3 className="font-semibold text-sm text-foreground line-clamp-2">
                   {og.ogTitle}
                 </h3>
               )}

@@ -45,11 +45,9 @@ import { EventTracker } from "@/eventTracker";
 import NoteEditorAdvancedSheet from "@/components/notes/note-editor-advanced-sheet";
 import { Switch } from "@/components/ui/switch";
 import { useAutoDM } from "@/lib/hooks/useAutoDM";
-import { compareTwoStrings } from "string-similarity";
 import { useUi } from "@/lib/hooks/useUi";
 import { CharacterCountBar } from "@/components/notes/character-count-bar";
-import { getLinks, isPlagiarism } from "@/lib/utils/note-editor-utils";
-import { AttachmentType } from "@prisma/client";
+import { isPlagiarism } from "@/lib/utils/note-editor-utils";
 
 export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const { user } = useAppSelector(selectAuth);
@@ -74,8 +72,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     scheduleNote,
     cancelUpdateNoteBody,
     loadingScheduleNote,
-    uploadLink,
-    getOgData,
   } = useNotes();
 
   const editor = useEditor(
@@ -588,7 +584,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                         {selectedNote.attachments.map(attachment => (
                           <NoteImageContainer
                             key={attachment.id || attachment.url}
-                            type={attachment.type}
                             imageUrl={attachment.url}
                             onImageSelect={handleImageSelect}
                             onImageDelete={handleImageDelete}

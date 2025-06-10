@@ -78,7 +78,12 @@ export async function POST(
           type,
         },
       });
-      return NextResponse.json({ og, attachment }, { status: 200 });
+      const attachmentResponse: NoteDraftImage = {
+        id: attachment.id,
+        url: attachment.s3Url,
+        type: attachment.type,
+      };
+      return NextResponse.json({ og, attachment: attachmentResponse }, { status: 200 });
     }
     const file = form.get("file") as File;
     const fileId = form.get("fileId") as string;

@@ -22,6 +22,7 @@ export const isPlagiarism = (html: string, selectedNote: NoteDraft) => {
 export const getLinks = (body: string): string[] => {
   const links: string[] = [];
 
+  debugger;
   const regex = /\((https?:\/\/[^\s)]+)\)/g;
   let match;
 

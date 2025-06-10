@@ -413,14 +413,14 @@ export const useNotes = () => {
         const hasLinkAttachments = note?.attachments?.some(
           attachment => attachment.type === AttachmentType.link,
         );
-        debugger;
+
         if (!hasLinkAttachments) {
           const links = getLinks(body);
           if (links.length > 0) {
             const link = links[0];
-            debugger;
-            const { og, ...attachment } = await uploadLink(noteId, link);
 
+            const { og, ...attachment } = await uploadLink(noteId, link);
+            debugger;
             dispatch(addAttachmentToNote({ noteId, attachment }));
           }
         }
@@ -629,12 +629,6 @@ export const useNotes = () => {
         },
       });
       const { og, attachment } = response.data;
-      dispatch(
-        addAttachmentToNote({
-          noteId,
-          attachment,
-        }),
-      );
       return { ...attachment, og };
     } catch (error: any) {
       Logger.error("Error uploading link:", error);

@@ -97,7 +97,8 @@ export interface ExtensionMessage {
     | "setNotesStats"
     | "getNotesStats"
     | "getNotesWithStatsForDate"
-    | "verifyKey";
+    | "verifyKey"
+    | "updateExtensionDataInDB";
   params?: any[];
 }
 
@@ -155,4 +156,5 @@ export interface UseExtension {
     date: string,
   ) => Promise<NoteWithEngagementStats[]>;
   verifyExtensionKey: () => Promise<boolean>;
+  updateExtensionData: () => Promise<boolean>;
 }
