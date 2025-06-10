@@ -85,3 +85,24 @@ export const hasExtension = async (): Promise<
     }
   });
 };
+
+/**
+ * Compare two versions
+ * @param version1 - The first version to compare
+ * @param version2 - The second version to compare
+ * @returns "biggerThen" | "smallerThen" | "equal". biggerThan if version1 is greater than version2, smallerThan if version1 is smaller than version2, equal if they are equal
+ */
+export const compareVersions = (
+  version1?: string,
+  version2?: string,
+): "biggerThen" | "smallerThen" | "equal" => {
+  if (!version1 || !version2) return "equal";
+  const v1 = version1.split(".");
+  const v2 = version2.split(".");
+  for (let i = 0; i < v1.length && i < v2.length; i++) {
+    const diff = parseInt(v1[i]) - parseInt(v2[i]);
+    if (diff !== 0) return diff > 0 ? "biggerThen" : "smallerThen";
+  }
+
+  return "equal";
+};

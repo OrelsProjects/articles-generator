@@ -31,7 +31,6 @@ export const UpdateDataProvider = () => {
   }, []);
 
   useEffect(() => {
-    console.log("updateExtensionData", loadingUpdateExtensionData.current);
     if (loadingUpdateExtensionData.current) return;
     loadingUpdateExtensionData.current = true;
     updateExtensionData()

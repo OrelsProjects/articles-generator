@@ -52,11 +52,16 @@ import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { setNotePostedData } from "@/lib/features/ui/uiSlice";
 import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
 import axiosInstance from "@/lib/axios-instance";
-import { CHUNK_SIZE, MAX_FILE_SIZE } from "@/lib/consts";
+import {
+  CHUNK_SIZE,
+  MAX_FILE_SIZE,
+  MIN_EXTENSION_TO_UPLOAD_LINK,
+} from "@/lib/consts";
 import { NoteWithEngagementStats } from "@/types/notes-stats";
 import { AttachmentType } from "@prisma/client";
 import { OpenGraphResponse } from "@/types/og";
 import { getLinks } from "@/lib/utils/note-editor-utils";
+import { compareVersions } from "@/lib/utils/extension";
 
 export const MAX_ATTACHMENTS = Math.ceil(MAX_FILE_SIZE / CHUNK_SIZE);
 
@@ -415,13 +420,22 @@ export const useNotes = () => {
         );
 
         if (!hasLinkAttachments) {
-          const links = getLinks(body);
-          if (links.length > 0) {
-            const link = links[0];
+          const extensionVersion = user?.meta?.extensionVersion;
+          const extensionVersionCompare = compareVersions(
+            extensionVersion || "",
+            MIN_EXTENSION_TO_UPLOAD_LINK,
+          );
+          if (
+            extensionVersionCompare === "biggerThen" ||
+            extensionVersionCompare === "equal"
+          ) {
+            const links = getLinks(body);
+            if (links.length > 0) {
+              const link = links[0];
 
-            const { og, ...attachment } = await uploadLink(noteId, link);
-            debugger;
-            dispatch(addAttachmentToNote({ noteId, attachment }));
+              const { og, ...attachment } = await uploadLink(noteId, link);
+              dispatch(addAttachmentToNote({ noteId, attachment }));
+            }
           }
         }
 

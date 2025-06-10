@@ -15,3 +15,5 @@ export const NOTES_FETCHING_INTERVAL = ONE_HOUR_IN_MS * 12; // 12 hours
 export const NOTES_STATS_FETCHING_EARLIEST_DATE = new Date(
   Date.now() - 14 * ONE_DAY_IN_MS,
 );
+
+export const MIN_EXTENSION_TO_UPLOAD_LINK = "1.3.98"
