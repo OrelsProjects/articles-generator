@@ -51,6 +51,14 @@ export default function QueueDiscrepancyProvider() {
       return;
     }
     if (schedulesDiscrepancies.length > 0) {
+      const missed = schedulesDiscrepancies.filter(
+        discrepancy => discrepancy.type === "missed",
+      );
+      if (missed.length === schedulesDiscrepancies.length) {
+        // Don't show the discrepancy bar if all notes were missed
+        setShowDiscrepancyBar(false);
+        return;
+      }
       setShowDiscrepancyBar(true);
       Logger.info("SCHEDULE DISCREPANCIES FOR USER", {
         schedulesDiscrepancies,
@@ -113,6 +121,16 @@ export default function QueueDiscrepancyProvider() {
       if (!note.scheduledTo) return;
 
       const noteTimestamp = new Date(note.scheduledTo).getTime();
+
+      // If note is in the past, add a missed note
+      if (noteTimestamp < Date.now()) {
+        newDiscrepancies.push({
+          type: "missed",
+          noteId: note.id,
+          details: `Note "${note.body?.substring(0, 30)}..." was scheduled for ${new Date(note.scheduledTo).toLocaleString()} but was missed`,
+          note,
+        });
+      }
 
       // Find schedule that matches this note's timestamp
       const matchingScheduleEntry = currentSchedules.schedules.find(
@@ -371,7 +389,7 @@ export default function QueueDiscrepancyProvider() {
   return (
     <Dialog open={showDialog} onOpenChange={handleCloseDialog}>
       {/* Render the discrepancy bar above the dialog when both should be visible */}
-      {showDiscrepancyBar  && (
+      {showDiscrepancyBar && (
         <div
           className="fixed top-0 left-0 right-0 bg-amber-300 dark:bg-amber-600 text-foreground z-50 shadow-md animate-in fade-in slide-in-from-top duration-300"
           style={{ backdropFilter: "blur(8px)" }}

@@ -11,7 +11,7 @@ export type CreateUserSchedule = Omit<UserSchedule, "id">;
 
 // Define discrepancy types
 export interface Discrepancy {
-  type: "missing_schedule" | "missing_alarm" | "time_mismatch" | "missing_note";
+  type: "missing_schedule" | "missing_alarm" | "time_mismatch" | "missing_note" | "missed";
   noteId?: string;
   scheduleId?: string;
   details: string;
