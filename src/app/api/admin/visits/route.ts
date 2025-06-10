@@ -33,17 +33,40 @@ export async function GET() {
       },
     });
 
+    const userExtensionDetails = await prisma.extensionDetails.findMany({
+      where: {
+        userId: {
+          in: visits.map(visit => visit.userId),
+        },
+      },
+    });
+
+    const users = await prisma.user.findMany({
+      where: {
+        id: {
+          in: visits.map(visit => visit.userId),
+        },
+      },
+    });
+
     // Group visits by userId
     const groupedVisits = visits.reduce(
       (acc, visit) => {
         if (!acc[visit.userId]) {
-          const user = userCredits.find(user => user.userId === visit.userId);
+          const userCredit = userCredits.find(
+            user => user.userId === visit.userId,
+          );
+          const user = users.find(user => user.id === visit.userId);
+          const extensionDetails = userExtensionDetails.find(
+            extension => extension.userId === visit.userId,
+          );
           acc[visit.userId] = {
             userId: visit.userId,
-            name: visit.name,
+            name: visit.name || user?.email || "Unknown",
             visits: [],
-            creditsPerPeriod: user?.creditsPerPeriod || 0,
-            creditsRemaining: user?.creditsRemaining || 0,
+            creditsPerPeriod: userCredit?.creditsPerPeriod || 0,
+            creditsRemaining: userCredit?.creditsRemaining || 0,
+            extensionVersion: extensionDetails?.versionInstalled || null,
           };
         }
         acc[visit.userId].visits.push(visit);
@@ -57,6 +80,7 @@ export async function GET() {
           visits: typeof visits;
           creditsPerPeriod: number;
           creditsRemaining: number;
+          extensionVersion: string | null;
         }
       >,
     );
@@ -70,6 +94,7 @@ export async function GET() {
         totalVisits: group.visits.length,
         creditsPerPeriod: group.creditsPerPeriod,
         creditsRemaining: group.creditsRemaining,
+        extensionVersion: group.extensionVersion,
       }))
       .sort((a, b) => b.lastVisit.getTime() - a.lastVisit.getTime());
 

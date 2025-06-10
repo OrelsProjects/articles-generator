@@ -11,6 +11,7 @@ interface Visit {
   totalVisits: number;
   creditsPerPeriod: number;
   creditsRemaining: number;
+  extensionVersion: string | null;
 }
 
 export default function AdminVisitsPage() {
@@ -75,6 +76,9 @@ export default function AdminVisitsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Credits Remaining
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Extension Version
+                </th>
               </tr>
             </thead>
             <tbody className="bg-card divide-y divide-border">
@@ -106,6 +110,11 @@ export default function AdminVisitsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-foreground">
                       {visit.creditsRemaining}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-foreground">
+                      {visit.extensionVersion}
                     </div>
                   </td>
                 </tr>
