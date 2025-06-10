@@ -124,6 +124,7 @@ export default function QueueDiscrepancyProvider() {
 
       // If note is in the past, add a missed note
       if (noteTimestamp < Date.now()) {
+        debugger;
         newDiscrepancies.push({
           type: "missed",
           noteId: note.id,

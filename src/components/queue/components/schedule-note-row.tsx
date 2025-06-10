@@ -24,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AttachmentType } from "@prisma/client";
 
 interface ScheduleNoteRowProps {
   note: NoteDraft;
@@ -36,7 +37,13 @@ interface ScheduleNoteRowProps {
 
 // Helper functions
 const hasImage = (note: NoteDraft) => {
-  return note.attachments && note.attachments.length > 0;
+  return (
+    note.attachments &&
+    note.attachments.length > 0 &&
+    note.attachments.some(
+      attachment => attachment.type === AttachmentType.image,
+    )
+  );
 };
 
 const getImageUrl = (note: NoteDraft) => {
