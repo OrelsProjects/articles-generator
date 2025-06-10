@@ -7,5 +7,5 @@ export async function getOg(url: string): Promise<OpenGraphResponse | null> {
   if (response.error) {
     return null;
   }
-  return response.result;
+  return response.result as unknown as OpenGraphResponse;
 }

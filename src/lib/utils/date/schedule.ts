@@ -184,7 +184,6 @@ export const isScheduled = (scheduledDate: Date | undefined): boolean => {
 export const isValidScheduleTime = (
   scheduledDate: Date | undefined,
 ): boolean => {
-  return true;
   if (!scheduledDate) return false;
   const now = new Date();
   const minimumValidTime = addMinutes(now, MIN_SCHEDULE_MINUTES);

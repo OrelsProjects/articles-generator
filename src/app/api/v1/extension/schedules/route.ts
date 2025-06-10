@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
         attachments: note.S3Attachment.map(attachment => ({
           id: attachment.id,
           url: attachment.s3Url,
+          type: attachment.type,
         })),
         handle: note.handle || undefined,
         scheduleId: scheduledId,
