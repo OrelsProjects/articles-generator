@@ -228,7 +228,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
           {/* User profile */}
           <div className="p-4 border-t border-border flex flex-col gap-2 items-center">
-            <UserStreak showText={!sidebarCollapsed} />
+            {/* <UserStreak showText={!sidebarCollapsed} /> */}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -389,7 +389,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                     <p className="truncate text-xs text-muted-foreground">
                       {user?.email}
                     </p>
-                    <UserStreak />
+                    {/* <UserStreak /> */}
                   </div>
                 </div>
               </div>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { BarChart, Users } from "lucide-react";
+import { BarChart, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const features = [
   {
@@ -9,7 +10,7 @@ const features = [
     title: "Notes Statistics - All in one place",
     description: "See all your scattered notes statistics in one glance",
     icon: BarChart,
-    preview: "/landing/features/stats-notes.png",
+    preview:[ "/landing/features/stats-notes.png", "/landing/features/stats-notes-2.png"],
   },
   {
     id: "fan-statistics",
@@ -32,15 +33,90 @@ export default function FeaturesSection() {
   const [activeTab, setActiveTab] = useState(0);
   const [direction, setDirection] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
+  const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
+  const [imageDirection, setImageDirection] = useState<{ [key: number]: number }>({});
+
+  // Get current preview images for a feature
+  const getCurrentPreview = (featureIndex: number) => {
+    const feature = features[featureIndex];
+    const previews = Array.isArray(feature.preview) ? feature.preview : [feature.preview];
+    const currentIndex = currentImageIndex[featureIndex] || 0;
+    return previews[currentIndex];
+  };
+
+  // Get all preview images for a feature
+  const getAllPreviews = (featureIndex: number) => {
+    const feature = features[featureIndex];
+    return Array.isArray(feature.preview) ? feature.preview : [feature.preview];
+  };
+
+  // Auto-rotate images every 3 seconds (pause on hover)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex(prev => {
+        const newState = { ...prev };
+        features.forEach((feature, index) => {
+          // Don't auto-rotate if this feature is being hovered
+          if (Array.isArray(feature.preview) && feature.preview.length > 1 && hoveredFeature !== index) {
+            const currentIndex = prev[index] || 0;
+            newState[index] = (currentIndex + 1) % feature.preview.length;
+            // Set direction for animation
+            setImageDirection(prevDir => ({ ...prevDir, [index]: 1 }));
+          }
+        });
+        return newState;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [hoveredFeature]);
+
+  // Navigate to specific image
+  const navigateToImage = (featureIndex: number, imageIndex: number) => {
+    const currentIndex = currentImageIndex[featureIndex] || 0;
+    const direction = imageIndex > currentIndex ? 1 : -1;
+    
+    setImageDirection(prev => ({ ...prev, [featureIndex]: direction }));
+    setCurrentImageIndex(prev => ({
+      ...prev,
+      [featureIndex]: imageIndex
+    }));
+  };
+
+  // Navigate to next/previous image
+  const navigateImage = (featureIndex: number, direction: 'next' | 'prev') => {
+    const previews = getAllPreviews(featureIndex);
+    if (previews.length <= 1) return;
+
+    const directionValue = direction === 'next' ? 1 : -1;
+    setImageDirection(prev => ({ ...prev, [featureIndex]: directionValue }));
+
+    setCurrentImageIndex(prev => {
+      const currentIndex = prev[featureIndex] || 0;
+      const newIndex = direction === 'next' 
+        ? (currentIndex + 1) % previews.length
+        : (currentIndex - 1 + previews.length) % previews.length;
+      
+      return {
+        ...prev,
+        [featureIndex]: newIndex
+      };
+    });
+  };
 
   // Preload all images
   useEffect(() => {
-    const imagePromises = features.map((feature) => {
+    const allImages = features.flatMap(feature => 
+      Array.isArray(feature.preview) ? feature.preview : [feature.preview]
+    );
+    
+    const imagePromises = allImages.map((imageSrc) => {
       return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = resolve;
         img.onerror = reject;
-        img.src = feature.preview;
+        img.src = imageSrc;
       });
     });
 
@@ -163,27 +239,127 @@ export default function FeaturesSection() {
                   exit="exit"
                   transition={{
                     x: { type: "spring", stiffness: 200, damping: 35, mass: 1 },
-                    opacity: { duration: 0.4, ease: "easeInOut" }
+                    opacity: { duration: 0.4, ease: "easeInOut" },
                   }}
                   className="absolute inset-0"
                 >
-                  <div className="p-8 h-full flex items-center justify-center">
+                  <div className="p-8 h-full flex items-center justify-center  overflow-visible">
                     <motion.div
-                      className="w-full max-w-lg bg-background rounded-lg border shadow-sm p-6"
+                      className="w-full max-w-lg bg-background rounded-lg border shadow-sm p-6 relative overflow-visible"
                       initial={{ scale: 0.9, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 0.1, duration: 0.3 }}
                     >
-                      <img
-                        src={features[activeTab].preview}
-                        alt={features[activeTab].title}
-                        className="w-full h-full object-contain"
-                        loading="eager"
-                        style={{ 
-                          opacity: imagesLoaded ? 1 : 0,
-                          transition: 'opacity 0.3s ease-in-out'
-                        }}
-                    />
+                      <div
+                        className="relative overflow-visible rounded-lg"
+                        onMouseEnter={() => setHoveredFeature(activeTab)}
+                        onMouseLeave={() => setHoveredFeature(null)}
+                      >
+                        <AnimatePresence
+                          initial={false}
+                          custom={imageDirection[activeTab] || 1}
+                          mode="popLayout"
+                        >
+                          <motion.img
+                            key={`${activeTab}-${currentImageIndex[activeTab] || 0}`}
+                            src={getCurrentPreview(activeTab)}
+                            alt={features[activeTab].title}
+                            className="w-full h-full object-contain"
+                            loading="eager"
+                            custom={imageDirection[activeTab] || 1}
+                            variants={{
+                              enter: (direction: number) => ({
+                                x: direction > 0 ? "100%" : "-100%",
+                                opacity: 0,
+                                scale: 1,
+                              }),
+                              center: {
+                                x: 0,
+                                opacity: imagesLoaded ? 1 : 0,
+                                scale: hoveredFeature === activeTab ? 1.2 : 1,
+                              },
+                              exit: (direction: number) => ({
+                                x: direction > 0 ? "-100%" : "100%",
+                                opacity: 0,
+                                scale: 1,
+                              }),
+                            }}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{
+                              x: {
+                                type: "spring",
+                                stiffness: 300,
+                                damping: 30,
+                              },
+                              opacity: { duration: 0.3 },
+                              scale: { duration: 0.3, ease: "easeOut" },
+                            }}
+                            style={{
+                              transition: "transform 0.3s ease-out",
+                            }}
+                          />
+                        </AnimatePresence>
+
+                        {/* Navigation arrows - only show if multiple images */}
+                        {getAllPreviews(activeTab).length > 1 && (
+                          <>
+                            <Button
+                              onClick={() => navigateImage(activeTab, "prev")}
+                              className={cn(
+                                "absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 border rounded-full p-2 shadow-md transition-all duration-200 hover:scale-110",
+                                hoveredFeature === activeTab
+                                  ? "opacity-85 hover:opacity-100"
+                                  : "opacity-70",
+                              )}
+                            >
+                              <ChevronLeft className="w-4 h-4 text-foreground" />
+                            </Button>
+                            <Button
+                              onClick={() => navigateImage(activeTab, "next")}
+                              className={cn(
+                                "absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 border rounded-full p-2 shadow-md transition-all duration-200 hover:scale-110",
+                                hoveredFeature === activeTab
+                                  ? "opacity-85 hover:opacity-100"
+                                  : "opacity-70",
+                              )}
+                            >
+                              <ChevronRight className="w-4 h-4 text-foreground" />
+                            </Button>
+                          </>
+                        )}
+
+                        {/* Dots indicator - only show if multiple images */}
+                        {getAllPreviews(activeTab).length > 1 && (
+                          <div
+                            className={cn(
+                              "absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 transition-all duration-200",
+                              hoveredFeature === activeTab
+                                ? "opacity-80"
+                                : "opacity-60",
+                            )}
+                          >
+                            {getAllPreviews(activeTab).map((_, index) => (
+                              <Button
+                                key={index}
+                                onClick={() =>
+                                  navigateToImage(activeTab, index)
+                                }
+                                className={cn(
+                                  "w-2 h-2 rounded-full transition-all duration-200 hover:scale-150 p-0",
+                                  (currentImageIndex[activeTab] || 0) === index
+                                    ? "bg-primary scale-125"
+                                    : "bg-muted-foreground/50 hover:bg-muted-foreground/80",
+                                )}
+                              >
+                                <div className="w-2 h-2 rounded-full transition-all duration-200 hover:scale-150" />
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
                       {!imagesLoaded && (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -200,8 +376,9 @@ export default function FeaturesSection() {
 
       {/* Mobile */}
       <div className="flex flex-col gap-8 lg:hidden">
-        {features.map(feature => {
+        {features.map((feature, featureIndex) => {
           const Icon = feature.icon;
+          const previews = getAllPreviews(featureIndex);
           return (
             <div
               key={feature.id}
@@ -216,12 +393,103 @@ export default function FeaturesSection() {
               <p className="text-muted-foreground text-sm leading-relaxed pb-2 text-center">
                 {feature.description}
               </p>
-              <img
-                src={feature.preview}
-                alt={feature.title}
-                className="w-full h-48 object-contain rounded-lg mt-2"
-                loading="eager"
-              />
+              <div
+                className="relative w-full overflow-hidden rounded-lg"
+                onMouseEnter={() => setHoveredFeature(featureIndex)}
+                onMouseLeave={() => setHoveredFeature(null)}
+              >
+                <AnimatePresence
+                  initial={false}
+                  custom={imageDirection[featureIndex] || 1}
+                >
+                  <motion.img
+                    key={`${featureIndex}-${currentImageIndex[featureIndex] || 0}`}
+                    src={getCurrentPreview(featureIndex)}
+                    alt={feature.title}
+                    className="w-full h-48 object-contain rounded-lg mt-2"
+                    loading="eager"
+                    custom={imageDirection[featureIndex] || 1}
+                    variants={{
+                      enter: (direction: number) => ({
+                        x: direction > 0 ? "100%" : "-100%",
+                        opacity: 0,
+                        scale: 1,
+                      }),
+                      center: {
+                        x: 0,
+                        opacity: 1,
+                        scale: hoveredFeature === featureIndex ? 1.2 : 1,
+                      },
+                      exit: (direction: number) => ({
+                        x: direction > 0 ? "-100%" : "100%",
+                        opacity: 0,
+                        scale: 1,
+                      }),
+                    }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{
+                      x: { type: "spring", stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.3 },
+                      scale: { duration: 0.3, ease: "easeOut" },
+                    }}
+                  />
+                </AnimatePresence>
+
+                {/* Navigation arrows - only show if multiple images */}
+                {previews.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => navigateImage(featureIndex, "prev")}
+                      className={cn(
+                        "absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 border rounded-full p-2 shadow-md transition-all duration-200 hover:scale-110",
+                        hoveredFeature === featureIndex
+                          ? "opacity-60 hover:opacity-100"
+                          : "opacity-0",
+                      )}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => navigateImage(featureIndex, "next")}
+                      className={cn(
+                        "absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 border rounded-full p-2 shadow-md transition-all duration-200 hover:scale-110",
+                        hoveredFeature === featureIndex
+                          ? "opacity-60 hover:opacity-100"
+                          : "opacity-0",
+                      )}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+
+                {/* Dots indicator - only show if multiple images */}
+                {previews.length > 1 && (
+                  <div
+                    className={cn(
+                      "absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 transition-all duration-200",
+                      hoveredFeature === featureIndex
+                        ? "opacity-80"
+                        : "opacity-0",
+                    )}
+                  >
+                    {previews.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => navigateToImage(featureIndex, index)}
+                        className={cn(
+                          "w-2 h-2 rounded-full transition-all duration-200 hover:scale-150",
+                          (currentImageIndex[featureIndex] || 0) === index
+                            ? "bg-primary scale-125"
+                            : "bg-muted-foreground/50 hover:bg-muted-foreground/80",
+                        )}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}

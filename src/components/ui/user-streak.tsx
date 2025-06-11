@@ -24,6 +24,7 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
   const lottieRef = useRef<any>(null);
 
   useEffect(() => {
+    debugger;
     if (!streakCount && streakCount !== 0) {
       fetchStreakData();
     }
@@ -112,7 +113,7 @@ export function UserStreak({ className, showText = true }: UserStreakProps) {
                   })}
                 >
                   {" "}
-                  notes streak
+                  Notes Streak
                 </span>
               )}
             </span>
