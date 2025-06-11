@@ -171,6 +171,7 @@ export default function NoteComponent({
   }, [note]);
 
   const attachments = useMemo(() => {
+    debugger;
     if ("attachments" in note) {
       return note.attachments;
     }
@@ -189,13 +190,15 @@ export default function NoteComponent({
   }, [attachments]);
 
   const attachmentImages = useMemo(() => {
+    debugger;
     if (!attachments) {
       return [];
     }
     return attachments.filter(
       attachment =>
-        typeof attachment === "object" &&
-        attachment.type === AttachmentType.image,
+        typeof attachment === "string" ||
+        (typeof attachment === "object" &&
+          attachment.type === AttachmentType.image),
     );
   }, [attachments]);
 
@@ -265,7 +268,7 @@ export default function NoteComponent({
     noteReactions && (
       <Link
         className="flex justify-between items-center pl-2"
-        href={`https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`}
+        href={`https://substack.com/@${handle}/note/${entityKey}`}
         target="_blank"
       >
         <div className="flex space-x-3">
@@ -451,9 +454,12 @@ export default function NoteComponent({
             )}
           </div>
           <div
-            className={cn("h-full w-full flex-1 flex flex-col justify-between pb-16", {
-              "opacity-60": feedback === "dislike",
-            })}
+            className={cn(
+              "h-full w-full flex-1 flex flex-col justify-between pb-16",
+              {
+                "opacity-60": feedback === "dislike",
+              },
+            )}
           >
             <div className="w-full relative z-20">
               {/* Content */}
@@ -626,7 +632,7 @@ export default function NoteComponent({
               <Button
                 onClick={() =>
                   window.open(
-                    `https://substack.com/@${handle}/note/${entityKey}?utm_source=writeroom`,
+                    `https://substack.com/@${handle}/note/${entityKey}`,
                     "_blank",
                   )
                 }
