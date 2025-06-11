@@ -3,6 +3,7 @@ import { getNoteAttachments, getNoteByScheduleId } from "@/lib/dal/note";
 import { deleteScheduleById } from "@/lib/dal/schedules";
 import { markdownToADF } from "@/lib/utils/adf";
 import { Logger } from "@/logger";
+import { NoteDraftImage } from "@/types/note";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,12 +20,21 @@ export async function GET(
 
     const adf = await markdownToADF(note.body);
     const attachments = await getNoteAttachments(note.id);
+    const attachmentsForResponse: NoteDraftImage[] = attachments.map(
+      attachment => ({
+        id: attachment.id,
+        url: attachment.s3Url,
+        type: attachment.type,
+      }),
+    );
     const response: {
       jsonBody: any;
       attachmentUrls: string[];
+      attachments: NoteDraftImage[];
     } = {
       jsonBody: adf,
       attachmentUrls: attachments.map(attachment => attachment.s3Url),
+      attachments: attachmentsForResponse,
     };
 
     return NextResponse.json(response, { status: 200 });
