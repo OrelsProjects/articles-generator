@@ -146,7 +146,11 @@ export default function Pricing({
         await goToCheckout(billingCycle, plan, appliedCoupon || undefined);
       } else {
         if (!user) {
-          router.push(`/login?plan=${plan}&interval=${billingCycle}`);
+          let url = `/login?plan=${plan}&interval=${billingCycle}`;
+          if (appliedCoupon) {
+            url += `&coupon=${appliedCoupon}`;
+          }
+          router.push(url);
         } else {
           await updateSubscription(plan, billingCycle);
           toast.success("Subscription updated successfully!");
@@ -400,7 +404,7 @@ export default function Pricing({
                   {(plan as any).couponDiscount && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
                       <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
-                        {appliedCoupon === "FLASH30" ? (
+                        {appliedCoupon?.includes("FLASH") ? (
                           billingCycle === "month" ? (
                             "30% OFF for 1 month"
                           ) : (

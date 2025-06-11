@@ -54,6 +54,14 @@ export async function POST(
     );
   }
 
-  const newPrices = await getNewPrice(code, plans);
+  let newPrices = await getNewPrice(code, plans);
+  if (code.includes("FLASH")) {
+    newPrices =
+      newPrices?.map(plan => (
+        {
+        ...plan,
+        newPrice: plan.priceBeforeDiscount * 0.7,
+      })) || [];
+  }
   return NextResponse.json({ newPrices }, { status: 200 });
 }

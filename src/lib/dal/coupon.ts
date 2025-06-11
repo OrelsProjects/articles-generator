@@ -82,6 +82,7 @@ export async function getNewPrice(
       discountDuration: number;
       interval: "month" | "year";
       discountForAnnualPlan?: number;
+      priceBeforeDiscount: number;
     }[]
   | null
 > {
@@ -106,6 +107,7 @@ export async function getNewPrice(
         discountDuration: 0,
         newPrice: price,
         interval,
+        priceBeforeDiscount: price,
       };
     }
     if (interval === "month") {
@@ -115,6 +117,7 @@ export async function getNewPrice(
         discountDuration: discountMonths,
         newPrice: price * (1 - discountPercent / 100),
         interval,
+        priceBeforeDiscount: price,
       };
     }
 
@@ -136,6 +139,7 @@ export async function getNewPrice(
       discountForAnnualPlan: effectivePct,
       discountDuration: discountMonths,
       interval,
+      priceBeforeDiscount: price,
     };
   });
 
