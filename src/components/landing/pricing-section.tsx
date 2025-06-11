@@ -404,7 +404,7 @@ export default function Pricing({
                           billingCycle === "month" ? (
                             "30% OFF for 1 month"
                           ) : (
-                            "30% OFF for 1 year"
+                            "30% OFF for 12 months"
                           )
                         ) : (
                           <>
