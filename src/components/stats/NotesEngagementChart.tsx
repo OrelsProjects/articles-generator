@@ -165,8 +165,10 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
   const [normalizeData, setNormalizeData] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
 
   const refreshDataIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
 
   // Combine all the data into a single array for the chart
   const { chartData, originalData } = useMemo(() => {
@@ -318,6 +320,17 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
     }
   };
 
+  const handleMouseMove = (event: React.MouseEvent) => {
+    // Track mouse position for potential popover positioning
+    if (chartContainerRef.current) {
+      const rect = chartContainerRef.current.getBoundingClientRect();
+      setClickPosition({
+        x: event.clientX,
+        y: event.clientY
+      });
+    }
+  };
+
   const renderChart = (
     dataKey: string,
     title: string,
@@ -338,7 +351,11 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
           <CardTitle className="text-sm font-medium">{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[200px] w-full">
+          <div 
+            ref={chartContainerRef}
+            className="h-[200px] w-full"
+            onMouseMove={handleMouseMove}
+          >
             {loadingReactions || isLoading ? (
               <div className="h-full flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -641,11 +658,23 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
       {/* Notes Popover */}
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
         <PopoverTrigger asChild>
-          <div style={{ display: "none" }} />
+          <div 
+            style={{ 
+              position: "fixed",
+              left: clickPosition?.x || 0,
+              top: clickPosition?.y || 0,
+              width: 1,
+              height: 1,
+              pointerEvents: "none",
+              opacity: 0
+            }} 
+          />
         </PopoverTrigger>
         <PopoverContent
           className="w-96 max-h-[500px] overflow-y-auto"
-          side="right"
+          side="top"
+          align="center"
+          sideOffset={10}
         >
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -668,7 +697,7 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
                 {notesForDate?.map(note => (
                   <CompactNoteComponent
                     loading={loadingNotesForDate}
-                    key={note.commentId}
+                    key={note.id}
                     note={note}
                   />
                 ))}
@@ -689,52 +718,52 @@ type DailyStat = {
   freeSubscriptions: number;
 };
 
-function generateMessyGrowingStats(
-  startDateStr: string,
-  days: number,
-  totalFreeSubs: number,
-): DailyStat[] {
-  const startDate = new Date(startDateStr);
-  const raw: number[] = [];
+// function generateMessyGrowingStats(
+//   startDateStr: string,
+//   days: number,
+//   totalFreeSubs: number,
+// ): DailyStat[] {
+//   const startDate = new Date(startDateStr);
+//   const raw: number[] = [];
 
-  // Create a base curve with exponential-ish growth and noise
-  for (let i = 0; i < days; i++) {
-    const progress = i / (days - 1);
-    const base = Math.pow(progress, 1.7); // starts slow, grows hard
-    const chaos = Math.sin(i * 0.9 + Math.random() * 2) * 0.3; // chaotic but smoothish
-    const noise = 1 + chaos + (Math.random() - 0.5) * 0.4; // more noise
-    raw.push(Math.max(0, base * noise)); // avoid negatives
-  }
+//   // Create a base curve with exponential-ish growth and noise
+//   for (let i = 0; i < days; i++) {
+//     const progress = i / (days - 1);
+//     const base = Math.pow(progress, 1.7); // starts slow, grows hard
+//     const chaos = Math.sin(i * 0.9 + Math.random() * 2) * 0.3; // chaotic but smoothish
+//     const noise = 1 + chaos + (Math.random() - 0.5) * 0.4; // more noise
+//     raw.push(Math.max(0, base * noise)); // avoid negatives
+//   }
 
-  // Normalize to totalFreeSubs
-  const totalRaw = raw.reduce((sum, n) => sum + n, 0);
-  const scaled = raw.map(n => (n / totalRaw) * totalFreeSubs);
-  const rounded = scaled.map(n => Math.round(n));
+//   // Normalize to totalFreeSubs
+//   const totalRaw = raw.reduce((sum, n) => sum + n, 0);
+//   const scaled = raw.map(n => (n / totalRaw) * totalFreeSubs);
+//   const rounded = scaled.map(n => Math.round(n));
 
-  // Fix rounding errors
-  let diff = totalFreeSubs - rounded.reduce((sum, val) => sum + val, 0);
-  while (diff !== 0) {
-    const i = Math.floor(Math.random() * days);
-    if (diff > 0) {
-      rounded[i]++;
-      diff--;
-    } else if (rounded[i] > 0) {
-      rounded[i]--;
-      diff++;
-    }
-  }
+//   // Fix rounding errors
+//   let diff = totalFreeSubs - rounded.reduce((sum, val) => sum + val, 0);
+//   while (diff !== 0) {
+//     const i = Math.floor(Math.random() * days);
+//     if (diff > 0) {
+//       rounded[i]++;
+//       diff--;
+//     } else if (rounded[i] > 0) {
+//       rounded[i]--;
+//       diff++;
+//     }
+//   }
 
-  const stats: DailyStat[] = Array.from({ length: days }, (_, i) => {
-    const date = new Date(startDate);
-    date.setDate(date.getDate() + i);
-    return {
-      period: date.toISOString().split("T")[0],
-      clicks: 8,
-      follows: 0,
-      paidSubscriptions: 0,
-      freeSubscriptions: rounded[i],
-    };
-  });
+//   const stats: DailyStat[] = Array.from({ length: days }, (_, i) => {
+//     const date = new Date(startDate);
+//     date.setDate(date.getDate() + i);
+//     return {
+//       period: date.toISOString().split("T")[0],
+//       clicks: 8,
+//       follows: 0,
+//       paidSubscriptions: 0,
+//       freeSubscriptions: rounded[i],
+//     };
+//   });
 
-  return stats;
-}
+//   return stats;
+// }

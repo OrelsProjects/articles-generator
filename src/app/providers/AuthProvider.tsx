@@ -64,6 +64,7 @@ export default function AuthProvider({
           tempAuthorId: session?.user?.meta?.tempAuthorId || null,
           notesToGenerateCount: session?.user?.meta?.notesToGenerateCount || 3,
           preferredLanguage: session?.user?.meta?.preferredLanguage || null,
+          authorId: session?.user?.meta?.authorId || null,
           extensionVersion: session?.user?.meta?.extensionVersion || null,
         },
       };

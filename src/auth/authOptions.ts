@@ -60,6 +60,13 @@ export const authOptions: AuthOptions = {
             where: {
               userId: token.sub as string,
             },
+            include: {
+              publication: {
+                select: {
+                  authorId: true,
+                }
+              }
+            }
           }),
           getActiveSubscription(token.sub as string),
           prisma.extensionDetails.findUnique({
@@ -78,6 +85,7 @@ export const authOptions: AuthOptions = {
             tempAuthorId: string | null;
             notesToGenerateCount: number;
             preferredLanguage: string;
+            authorId: number | null;
           } | null,
           Subscription | null,
           {
@@ -100,6 +108,7 @@ export const authOptions: AuthOptions = {
           notesToGenerateCount: userMetadata?.notesToGenerateCount || 3,
           preferredLanguage: userMetadata?.preferredLanguage || "en",
           extensionVersion: extensionDetails?.versionInstalled || null,
+          authorId: userMetadata?.authorId || null,
         };
         session.user.publicationId = userMetadata?.publicationId || "";
         return session;

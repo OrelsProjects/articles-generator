@@ -19,6 +19,7 @@ export default function WriterPage({
     fetchAuthorNotes,
   } = useWriter(params.handle);
 
+
   return (
     <WriterProfile
       writer={writer}

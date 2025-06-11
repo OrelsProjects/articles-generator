@@ -154,6 +154,12 @@ export interface UseExtension {
   getNotesStatistics: (interval: ReactionInterval) => Promise<NoteStats | null>;
   getNotesWithStatsForDate: (
     date: string,
+    options?: {
+      orderBy?: string;
+      orderDirection?: "asc" | "desc";
+      page?: number;
+      limit?: number;
+    }
   ) => Promise<NoteWithEngagementStats[]>;
   verifyExtensionKey: () => Promise<boolean>;
   updateExtensionData: () => Promise<boolean>;

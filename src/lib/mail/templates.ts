@@ -209,7 +209,7 @@ export function generateSubscriptionDeletedEmail(
     <p>Everyone's writing needs are unique, and I'd genuinely value hearing about your experience. What could we have done differently to better support your creative process?</p>
     <p>As a thank you for your feedback, I'd be happy to offer you a special discount if you decide to return in the future. Your insights help make WriteStack better for writers everywhere.</p>
     <div class="center-button-container">
-      <a href="mailto:feedback@writestack.io?subject=My%20WriteRoom%20Experience" class="button">Share Your Feedback</a>
+      <a href="mailto:feedback@writestack.io?subject=My%WriteStack%20Experience" class="button">Share Your Feedback</a>
     </div>
     <p style="margin-top: 20px;">Your WriteStack account remains active, and we've saved all your previous work should you ever wish to return.</p>
   `;

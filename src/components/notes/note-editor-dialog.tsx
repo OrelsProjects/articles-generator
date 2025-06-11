@@ -254,7 +254,13 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     },
   ): Promise<string | null> => {
     if (!selectedNote) return null;
-    if (isPlagiarism(editor?.getHTML() || "", selectedNote)) {
+    if (
+      isPlagiarism(
+        editor?.getHTML() || "",
+        selectedNote,
+        user?.meta?.authorId || null,
+      )
+    ) {
       setShowAvoidPlagiarismDialog(true);
       return null;
     }

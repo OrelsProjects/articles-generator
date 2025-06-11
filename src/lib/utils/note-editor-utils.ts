@@ -2,27 +2,29 @@ import { unformatText } from "@/lib/utils/text-editor";
 import { NoteDraft } from "@/types/note";
 import { compareTwoStrings } from "string-similarity";
 
-export const isPlagiarism = (html: string, selectedNote: NoteDraft) => {
-  const { body, handle } = selectedNote;
+export const isPlagiarism = (
+  html: string,
+  selectedNote: NoteDraft,
+  authorId: number | null,
+) => {
+  if (authorId !== null && authorId === selectedNote.authorId) {
+    return false; // don't check plagiarism for your own notes
+  }
+  const { body } = selectedNote;
   const unformattedBody = unformatText(html);
   const unformattedNoteBody = unformatText(body);
 
   const similarity = compareTwoStrings(unformattedBody, unformattedNoteBody);
 
-  const isSimilarEnough = similarity > 0.85; // tweak this threshold as needed
+  const isSimilar = similarity > 0.85; // tweak this threshold as needed
 
-  return (
-    isSimilarEnough &&
-    selectedNote?.status === "inspiration" &&
-    selectedNote?.handle !== handle
-  );
+  return isSimilar && selectedNote?.status === "inspiration";
 };
 
 // Link might also appear as (...link...)[...text...], so need to remove the brackets
 export const getLinks = (body: string): string[] => {
   const links: string[] = [];
 
-  debugger;
   const regex = /\((https?:\/\/[^\s)]+)\)/g;
   let match;
 

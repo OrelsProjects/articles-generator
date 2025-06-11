@@ -69,9 +69,9 @@ export async function GET(request: NextRequest) {
   //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // }
 
-  const userId = "6822f9d5d029b4c9c504c185";
-  const apply = await shouldApplyRetentionCoupon(userId);
-  return NextResponse.json({ apply });
+  // const userId = "6822f9d5d029b4c9c504c185";
+  // const apply = await shouldApplyRetentionCoupon(userId);
+  // return NextResponse.json({ apply });
 
   // const allNotesStats = await prismaArticles.notesCommentsStats.findMany({
   //   where: {

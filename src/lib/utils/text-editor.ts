@@ -428,6 +428,7 @@ export const notesTextEditorOptions = (
   options: {
     disabled?: boolean;
     disabledClass?: string;
+    onClick?: () => void;
   } = {},
 ): UseEditorOptions => ({
   onUpdate: ({ editor }) => {
@@ -481,6 +482,10 @@ export const notesTextEditorOptions = (
             : "opacity-50 cursor-not-allowed"
           : "",
       ),
+    },
+    handleClick: (view, event) => {
+      options?.onClick?.();
+      return true; // prevent default behavior
     },
     handlePaste(view, event) {
       const items = event.clipboardData?.items;

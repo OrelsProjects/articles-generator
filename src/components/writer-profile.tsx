@@ -91,6 +91,7 @@ export default function WriterProfile({
   if (isLoading || (!writer && !error)) {
     return <LoadingNotes />;
   }
+  console.log("writer notes", writer?.topNotes);
 
   if (error) {
     return (
@@ -107,7 +108,10 @@ export default function WriterProfile({
   const noteCards = writer.topNotes.map(note => ({
     id: note.id,
     content: (
-      <NoteComponent note={note} options={{ allowAuthorClick: !isCurrentUser }} />
+      <NoteComponent
+        note={note}
+        options={{ allowAuthorClick: !isCurrentUser }}
+      />
     ),
   }));
 
@@ -142,7 +146,9 @@ export default function WriterProfile({
               <div className="flex items-center gap-2">
                 <h1 className="text-lg md:text-xl font-bold text-foreground">
                   {writer.name}
-                  {isCurrentUser && <span className="text-muted-foreground ml-2">(You)</span>}
+                  {isCurrentUser && (
+                    <span className="text-muted-foreground ml-2">(You)</span>
+                  )}
                 </h1>
                 {writer.handle && !isCurrentUser && (
                   <TooltipButton
@@ -191,7 +197,9 @@ export default function WriterProfile({
           defaultValue="notes"
           className="w-fit"
           onValueChange={value => {
-            EventTracker.track(`${isCurrentUser ? 'my_profile' : 'writer'}_tab_change_${value}`);
+            EventTracker.track(
+              `${isCurrentUser ? "my_profile" : "writer"}_tab_change_${value}`,
+            );
           }}
         >
           <TabsList className="grid w-full grid-cols-2">
@@ -240,4 +248,4 @@ export default function WriterProfile({
       </div>
     </div>
   );
-} 
+}

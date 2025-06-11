@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { NoteWithEngagementStats } from "@/types/notes-stats";
 import {
   Heart,
@@ -14,16 +14,54 @@ import {
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { convertMDToHtml, NoteDraft } from "@/types/note";
+import { EditorContent, useEditor } from "@tiptap/react";
+import { loadContent, notesTextEditorOptions } from "@/lib/utils/text-editor";
 
 interface CompactNoteComponentProps {
   note: NoteWithEngagementStats;
   loading: boolean;
+  onNoteClick: (noteDraft: Omit<NoteDraft, "authorId">) => void;
 }
 
 export function CompactNoteComponent({
   note,
   loading,
+  onNoteClick,
 }: CompactNoteComponentProps) {
+  const [showMore, setShowMore] = useState(false);
+  const [htmlContent, setHtmlContent] = useState<string | null>(null);
+
+  const editor = useEditor(
+    notesTextEditorOptions(
+      html => {
+        setHtmlContent(html);
+      },
+      {
+        disabled: true,
+        disabledClass: "opacity-100 text-foreground cursor-pointer",
+        onClick: () => {
+          onNoteClick({
+            id: note.id,
+            body: note.body,
+            createdAt: note.date,
+            authorName: note.name,
+            wasSentViaSchedule: false,
+            attachments: note.attachments,
+            status: "inspiration",
+          });
+        },
+      },
+    ),
+  );
+
+  useEffect(() => {
+    if (!editor) return;
+    convertMDToHtml(note.body).then(html => {
+      loadContent(html, editor);
+    });
+  }, [note.body, editor]);
+
   const formatNumber = (num: number) => {
     if (num >= 1000) {
       return `${(num / 1000).toFixed(1)}k`;
@@ -31,10 +69,16 @@ export function CompactNoteComponent({
     return num.toString();
   };
 
-  const truncateText = (text: string, maxLength: number = 120) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + "...";
-  };
+  // const truncateText = (text: string, maxLength: number = 120) => {
+  //   if (showMore) return htmlContent;
+  // if (text.length <= maxLength) return htmlContent;
+  //   return htmlContent?.substring(0, maxLength * 1.5) + "...";
+  // };
+
+  const hasShowMore = useMemo(
+    () => htmlContent && htmlContent.length > 120,
+    [htmlContent, showMore],
+  );
 
   return (
     <div
@@ -78,9 +122,21 @@ export function CompactNoteComponent({
 
       {/* Content */}
       <div className="mb-3">
-        <p className="text-sm text-foreground leading-relaxed">
-          {truncateText(note.body)}
-        </p>
+        <div className="text-sm text-foreground leading-relaxed">
+          <EditorContent disabled editor={editor} />
+        </div>
+        {hasShowMore && (
+          <div className="w-full flex justify-end">
+            <Button
+              variant="link"
+              size="sm"
+              className="text-xs hover:text-foreground p-0 h-auto text-primary"
+              onClick={() => setShowMore(!showMore)}
+            >
+              {showMore ? "Show less" : "Show more"}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Stats */}
@@ -140,9 +196,9 @@ export function CompactNoteComponent({
       <div className="flex justify-end mt-2">
         <Button
           onClick={() => {
-            const commentIdWithCDash = `c-${note.commentId.replace("c-", "")}`;
+            const commentIdWithCDash = `c-${note.id.replace("c-", "")}`;
             window.open(
-              `https://substack.com/@${note.handle}/note/${commentIdWithCDash}?utm_source=writeroom`,
+              `https://substack.com/@${note.handle}/note/${commentIdWithCDash}`,
               "_blank",
             );
           }}

@@ -68,6 +68,7 @@ const authSlice = createSlice({
           notesToGenerateCount: state.user.meta?.notesToGenerateCount || 3,
           preferredLanguage: state.user.meta?.preferredLanguage || "en",
           extensionVersion: state.user.meta?.extensionVersion || null,
+          authorId: state.user.meta?.authorId || null,
         };
       }
     },

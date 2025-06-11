@@ -12,7 +12,7 @@ export interface AppUserMeta {
   tempAuthorId: string | null;
   notesToGenerateCount: number;
   preferredLanguage: string | null;
-
+  authorId: number | null;
   extensionVersion: string | null;
 }
 

@@ -171,7 +171,6 @@ export default function NoteComponent({
   }, [note]);
 
   const attachments = useMemo(() => {
-    debugger;
     if ("attachments" in note) {
       return note.attachments;
     }
@@ -183,22 +182,16 @@ export default function NoteComponent({
       return [];
     }
     return attachments.filter(
-      attachment =>
-        typeof attachment === "object" &&
-        attachment.type === AttachmentType.link,
+      attachment => attachment.type === AttachmentType.link,
     );
   }, [attachments]);
 
   const attachmentImages = useMemo(() => {
-    debugger;
     if (!attachments) {
       return [];
     }
     return attachments.filter(
-      attachment =>
-        typeof attachment === "string" ||
-        (typeof attachment === "object" &&
-          attachment.type === AttachmentType.image),
+      attachment => attachment.type === AttachmentType.image,
     );
   }, [attachments]);
 
@@ -516,51 +509,32 @@ export default function NoteComponent({
                         className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
                         onClick={() =>
                           selectImage({
-                            url:
-                              typeof attachment === "string"
-                                ? attachment
-                                : attachment.url,
+                            url: attachment.url,
                             alt: "Note attachment",
                           })
                         }
                       >
                         <NoteImageContainer
-                          key={
-                            typeof attachment === "object"
-                              ? attachment.id
-                              : index
-                          }
-                          imageUrl={
-                            typeof attachment === "string"
-                              ? attachment
-                              : attachment.url
-                          }
-                          attachment={
-                            typeof attachment === "string"
-                              ? {
-                                  id: `attachment-${index}`,
-                                  url: attachment,
-                                  type: AttachmentType.image,
-                                }
-                              : attachment
-                          }
+                          key={attachment.id}
+                          imageUrl={attachment.url}
+                          attachment={attachment}
                         />
                       </div>
                     ) : (
-                      typeof attachment === "string" &&
-                      !attachment.includes("heic") && (
+                      attachment.type === AttachmentType.image &&
+                      !attachment.url.includes("heic") && (
                         <div
                           key={index}
                           className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
                           onClick={() =>
                             selectImage({
-                              url: attachment,
+                              url: attachment.url,
                               alt: "Note attachment",
                             })
                           }
                         >
                           <Image
-                            src={attachment}
+                            src={attachment.url}
                             alt="Attachment"
                             width={200}
                             height={150}

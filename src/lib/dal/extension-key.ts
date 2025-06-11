@@ -36,9 +36,9 @@ export async function generateExtensionKey(userId: string, authorId: number) {
   return key;
 }
 
-export async function getExtensionKey(userId: string) {
+export async function getExtensionKey(userId: string, verified?: boolean) {
   const result = await prisma.extensionKeys.findFirst({
-    where: { userId, isActive: true },
+    where: { userId, isActive: true, isVerified: verified },
     select: { key: true },
   });
   if (!result) {
@@ -57,4 +57,11 @@ export function verifyKey(key: string, userId: string, authorId: number) {
     return false;
   }
   return true;
+}
+
+export async function setKeyVerified(key: string) {
+  await prisma.extensionKeys.update({
+    where: { key },
+    data: { isVerified: true },
+  });
 }

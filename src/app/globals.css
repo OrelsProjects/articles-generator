@@ -581,3 +581,60 @@ p:empty::after {
     max-width: 1200px;
   }
 }
+
+.sort-pill {
+  @apply relative overflow-hidden;
+}
+
+.sort-pill::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent;
+  @apply translate-x-[-100%] transition-transform duration-500;
+}
+
+.sort-pill:hover::before {
+  @apply translate-x-[100%];
+}
+
+/* Modern Sort Controls */
+.sort-controls {
+  @apply flex items-center gap-2 p-3 bg-card/60 backdrop-blur-sm rounded-xl border border-border/40;
+  @apply shadow-sm hover:shadow-md transition-all duration-300;
+}
+
+.sort-metric-pill {
+  @apply px-3 py-1.5 text-sm font-medium rounded-lg border border-border/50;
+  @apply bg-background/80 hover:bg-primary/5 hover:border-primary/20;
+  @apply transition-all duration-200 cursor-pointer select-none;
+  @apply flex items-center gap-2;
+}
+
+.sort-metric-pill.active {
+  @apply bg-primary/10 border-primary/30 text-primary shadow-sm;
+}
+
+.sort-metric-pill:hover:not(.active) {
+  @apply border-border/80 bg-accent/50;
+}
+
+.sort-direction-btn {
+  @apply p-2 rounded-lg border border-border/50 bg-background/80;
+  @apply hover:bg-primary/5 hover:border-primary/20 transition-all duration-200;
+  @apply flex items-center justify-center min-w-[40px];
+}
+
+.sort-direction-btn.active {
+  @apply bg-primary/10 border-primary/30 text-primary;
+}
+
+.sort-direction-btn svg {
+  @apply transition-transform duration-200;
+}
+
+.sort-direction-btn.desc svg {
+  @apply rotate-180;
+}
+
+.sort-loading-spinner {
+  @apply animate-spin text-primary;
+}

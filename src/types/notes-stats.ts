@@ -1,5 +1,4 @@
-import { NotesComments } from "../../prisma/generated/articles";
-import { Note } from "@/types/note";
+import { Note, NoteDraftImage } from "@/types/note";
 
 export interface HourlyStats {
   userId: number;
@@ -45,7 +44,7 @@ export interface NoteStats {
 }
 
 export interface NoteWithEngagementStats {
-  commentId: string;
+  id: string;
   body: string;
   date: Date;
   handle: string;
@@ -61,4 +60,22 @@ export interface NoteWithEngagementStats {
   totalFreeSubscriptions: number;
   totalArr: number;
   totalShareClicks: number;
+
+  attachments: NoteDraftImage[];
+}
+
+export type OrderByNotesEngagement =
+  | "totalFreeSubscriptions"
+  | "totalPaidSubscriptions"
+  | "totalClicks"
+  | "reactionCount"
+  | "commentsCount"
+  | "restacks";
+export enum OrderByNotesEngagementEnum {
+  totalFreeSubscriptions = "totalFreeSubscriptions",
+  totalPaidSubscriptions = "totalPaidSubscriptions",
+  totalClicks = "totalClicks",
+  reactionCount = "reactionCount",
+  commentsCount = "commentsCount",
+  restacks = "restacks",
 }

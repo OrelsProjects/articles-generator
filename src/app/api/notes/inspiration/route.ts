@@ -12,6 +12,7 @@ import { generateVectorSearchOptimizedDescriptionPrompt } from "@/lib/prompts";
 import { runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
 import { setUserNotesDescription } from "@/lib/dal/analysis";
+import { AttachmentType } from "@prisma/client";
 
 export const maxDuration = 300;
 
@@ -305,9 +306,7 @@ export async function POST(req: NextRequest) {
     const timeToSearchSeconds = (end.getTime() - now.getTime()) / 1000;
 
     loggerServer.info(
-      "[INSPIRATIONS] Found inspirations in" +
-        timeToSearchSeconds +
-        "seconds",
+      "[INSPIRATIONS] Found inspirations in" + timeToSearchSeconds + "seconds",
       {
         userId: session.user.id,
         query,
@@ -369,10 +368,17 @@ export async function POST(req: NextRequest) {
     });
 
     const filteredNotesWithAttachments = paginatedNonExplicitNotes.map(note => {
-      const attachment = attachments.find(
-        attachment => attachment.noteId === parseInt(note.commentId),
-      );
-      return { ...note, attachment: attachment?.imageUrl };
+      const noteAttachments = attachments
+        .filter(attachment => attachment.noteId === parseInt(note.commentId))
+        .filter(
+          attachment =>
+            attachment.type === AttachmentType.image ||
+            attachment.type === AttachmentType.link,
+        );
+      return {
+        ...note,
+        attachments: noteAttachments,
+      };
     });
 
     const maxScore = filteredNotesWithAttachments.length;
@@ -391,7 +397,11 @@ export async function POST(req: NextRequest) {
         entityKey: note.entityKey,
         commentsCount: note.commentsCount || 0,
         restacks: note.restacks,
-        attachment: note.attachment || undefined,
+        attachments: note.attachments.map(attachment => ({
+          id: attachment.id,
+          type: attachment.type as AttachmentType,
+          url: attachment.imageUrl || "",
+        })),
         score: maxScore - index,
       }),
     );

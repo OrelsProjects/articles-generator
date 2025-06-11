@@ -100,8 +100,11 @@ export interface Note {
   reactionCount: number;
   commentsCount: number;
   restacks: number;
-  attachments?: string[];
-  attachment?: string;
+  attachments?: {
+    id: string;
+    type: AttachmentType;
+    url: string;
+  }[];
   scheduledTo?: Date | null;
   sentViaScheduleAt?: boolean;
 }
@@ -209,10 +212,6 @@ export function inspirationNoteToNoteDraft(
     return null;
   }
 
-  const attachment = note.attachments?.pop() || note.attachment;
-  const type = attachment?.includes("s3")
-    ? AttachmentType.image
-    : AttachmentType.link;
   return {
     id: "",
     thumbnail: note.thumbnail || "",
@@ -224,15 +223,7 @@ export function inspirationNoteToNoteDraft(
     scheduledTo: note.scheduledTo,
     wasSentViaSchedule: !!note.sentViaScheduleAt,
     handle: note.handle,
-    attachments: attachment
-      ? [
-          {
-            id: "",
-            url: attachment,
-            type: AttachmentType.image,
-          },
-        ]
-      : [],
+    attachments: note.attachments,
   };
 }
 

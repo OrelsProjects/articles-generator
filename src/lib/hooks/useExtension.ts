@@ -349,12 +349,26 @@ export function useExtension(): UseExtension {
   );
 
   const getNotesWithStatsForDate = useCallback(
-    async (date: string) => {
+    async (
+      date: string,
+      options?: {
+        orderBy?: string;
+        orderDirection?: "asc" | "desc";
+        page?: number;
+        limit?: number;
+      },
+    ) => {
+      const optionsParams: Record<string, string> = {
+        orderBy: options?.orderBy || "createdAt",
+        orderDirection: options?.orderDirection || "desc",
+        page: options?.page?.toString() || "1",
+        limit: options?.limit?.toString() || "10",
+      };
       const response = await sendExtensionMessage<NoteWithEngagementStats[]>(
         {
           type: "API_REQUEST",
           action: "getNotesWithStatsForDate",
-          params: [date],
+          params: [date, optionsParams],
         },
         {
           showDialog: false,
@@ -644,6 +658,7 @@ export function useExtension(): UseExtension {
         });
         return false;
       } else {
+        await axiosInstance.post("/api/v1/extension/key/verify", { key });
         localStorage.setItem("extensionKey", key || "");
         return true;
       }
@@ -672,6 +687,7 @@ export function useExtension(): UseExtension {
         action: "verifyKey",
         params: [key, authorId],
       };
+      ;
       const responseExtension = await sendExtensionMessage<boolean>(message, {
         showDialog: false,
         throwIfNoExtension: false,
@@ -680,6 +696,7 @@ export function useExtension(): UseExtension {
         await retry();
       }
       // save key to local storage
+      await axiosInstance.post("/api/v1/extension/key/verify", { key });
       localStorage.setItem("extensionKey", key || "");
       return true;
     } catch (error) {

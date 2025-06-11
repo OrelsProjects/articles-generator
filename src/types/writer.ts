@@ -5,6 +5,8 @@ import {
   NotesComments,
   Post,
 } from "../../prisma/generated/articles";
+import { NoteWithEngagementStats } from "@/types/notes-stats";
+import { AttachmentType } from "@prisma/client";
 
 export interface Writer {
   bio: string;
@@ -17,6 +19,10 @@ export interface Writer {
 export interface WriterWithData extends Writer {
   topNotes: Note[];
   topArticles: Article[];
+}
+
+export interface UserWriterWithData extends Writer {
+  topNotes: NoteWithEngagementStats[];
 }
 
 export interface WriterSearchResult extends Writer {
@@ -39,7 +45,11 @@ export const DBNotesToNotes = (
     reactionCount: note.reactionCount,
     commentsCount: note.commentsCount || 0,
     restacks: note.restacks,
-    attachments: note.attachments?.map(att => att.imageUrl || "") || [],
+    attachments: note.attachments?.map(att => ({
+      id: att.id.toString(),
+      type: att.type as AttachmentType,
+      url: att.imageUrl || "",
+    })) || [],
   }));
 
   return notes;
