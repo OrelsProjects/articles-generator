@@ -400,9 +400,19 @@ export default function Pricing({
                   {(plan as any).couponDiscount && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
                       <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
-                        {(plan as any).couponDiscount}% OFF for{" "}
-                        {(plan as any).discountDuration || 1} month
-                        {(plan as any).discountDuration > 1 ? "s" : ""}
+                        {appliedCoupon === "FLASH30" ? (
+                          billingCycle === "month" ? (
+                            "30% OFF for 1 month"
+                          ) : (
+                            "30% OFF for 1 year"
+                          )
+                        ) : (
+                          <>
+                            {(plan as any).couponDiscount}% OFF for{" "}
+                            {(plan as any).discountDuration || 1} month
+                            {(plan as any).discountDuration > 1 ? "s" : ""}
+                          </>
+                        )}
                       </div>
                     </div>
                   )}

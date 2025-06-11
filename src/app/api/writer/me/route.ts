@@ -180,26 +180,15 @@ export async function GET(request: NextRequest) {
         noteId: {
           in: orderNotesStats.map(note => Number(note.commentId)),
         },
-        // not empty/null imageUrl
-        AND: [
-          {
-            imageUrl: {
-              not: null,
-            },
-          },
-          {
-            imageUrl: {
-              not: "",
-            },
-          },
-        ],
       },
     });
 
     const notesWithAttachments = orderNotesStats.map(note => ({
       ...note,
       attachments: notesAttachments.filter(
-        attachment => attachment.noteId === Number(note.commentId),
+        attachment =>
+          attachment.noteId === Number(note.commentId) &&
+          attachment.imageUrl !== "",
       ),
     }));
 
