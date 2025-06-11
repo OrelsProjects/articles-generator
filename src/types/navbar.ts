@@ -75,9 +75,9 @@ export const navItems: {
     // adminOnly: true,
   },
   {
-    name: "My Profile",
-    mobileName: "Profile",
-    href: "/me",
+    name: "Notes Stats",
+    mobileName: "Notes Stats",
+    href: "/notes-stats",
     icon: FileChartColumnIncreasing,
     locationInMobile: "sidebar",
   },
