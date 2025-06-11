@@ -24,33 +24,33 @@ const schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  loggerServer.info("[SAVING-NOTES-STATS] Saving notes stats", {
+    userId: "not logged in",
+  });
   const key = request.headers.get("x-extension-key");
   if (!key) {
-    loggerServer.warn(
-      "[GETTING-NOTES-FOR-STATS] Unauthorized, no extension key",
-      {
-        userId: "not logged in",
-      },
-    );
+    loggerServer.warn("[SAVING-NOTES-STATS] Unauthorized, no extension key", {
+      userId: "not logged in",
+    });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const decoded = decodeKey(key);
   const userId = decoded.userId;
   if (!userId) {
-    loggerServer.warn(
-      "[GETTING-NOTES-FOR-STATS] Unauthorized, no userId in key",
-      {
-        userId: "not logged in",
-      },
-    );
+    loggerServer.warn("[SAVING-NOTES-STATS] Unauthorized, no userId in key", {
+      userId: "not logged in",
+    });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const secret = request.headers.get("x-api-key");
   if (secret !== process.env.EXTENSION_API_KEY) {
-    loggerServer.warn("Unauthorized, bad secret in save notes stats", {
-      userId,
-    });
+    loggerServer.warn(
+      "[SAVING-NOTES-STATS] Unauthorized, bad secret in save notes stats",
+      {
+        userId,
+      },
+    );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -58,6 +58,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsedBody = schema.safeParse(body);
     if (!parsedBody.success) {
+      loggerServer.warn("[SAVING-NOTES-STATS] Invalid body", {
+        userId,
+        body,
+      });
       return NextResponse.json(
         { error: parsedBody.error.message },
         { status: 400 },
@@ -65,6 +69,11 @@ export async function POST(request: NextRequest) {
     }
 
     const { stats } = parsedBody.data;
+    loggerServer.info("[SAVING-NOTES-STATS] Stats", {
+      userId,
+      statsLength: stats.length,
+      stats: stats.slice(0, 10),
+    });
     const notesForStats = await prismaArticles.notesComments.findMany({
       where: {
         commentId: {
@@ -74,7 +83,9 @@ export async function POST(request: NextRequest) {
     });
 
     const statsWithNotePostedAt = stats.map(stat => {
-      const note = notesForStats.find(note => note.commentId === stat.comment_id);
+      const note = notesForStats.find(
+        note => note.commentId === stat.comment_id,
+      );
       return {
         ...stat,
         notePostedAt: note?.timestamp,
@@ -120,16 +131,24 @@ export async function POST(request: NextRequest) {
           ),
         );
       } catch (error: any) {
+        loggerServer.error("[SAVING-NOTES-STATS] Error saving notes stats", {
+          error: error.message,
+          userId,
+          batch,
+        });
         await prisma.notesStatsFailed.create({
           data: {
             userId,
             notesJsonString: JSON.stringify(batch),
           },
         });
-        loggerServer.error("Error saving notes stats", {
-          error: error.message,
-          userId,
-        });
+        loggerServer.error(
+          "[SAVING-NOTES-STATS] Error saving notes stats in batch",
+          {
+            error: error.message,
+            userId,
+          },
+        );
       }
     }
 
@@ -148,10 +167,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ message: "Stats saved" });
   } catch (error: any) {
-    loggerServer.error("Error saving notes stats", {
-      error: error.message,
-      userId,
-    });
+    loggerServer.error(
+      "[SAVING-NOTES-STATS] General error saving notes stats",
+      {
+        error: error.message,
+        userId,
+      },
+    );
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

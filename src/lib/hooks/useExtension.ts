@@ -230,15 +230,26 @@ export function useExtension(): UseExtension {
             },
           );
         }
+        if (message.action === "getNotesStats") {
+          Logger.info(
+            "GETTING-NOTES-STATS: sendExtensionMessage: canUseExtension",
+            {
+              canUseExtension,
+            },
+          );
+        }
         if (!canUseExtension) {
           dispatch(setShowExtensionDisabledDialog(true));
           reject(new Error(SubstackError.EXTENSION_DISABLED));
           return;
         }
-        const timeoutId = setTimeout(
-          () => reject(new Error(SubstackError.NETWORK_ERROR)),
-          options.timeout || 30000,
-        );
+        const timeoutId = setTimeout(() => {
+          Logger.warn("Extension timeout for" + message.action, {
+            message,
+            options,
+          });
+          reject(new Error(SubstackError.NETWORK_ERROR));
+        }, options.timeout || 30000);
         const runtime = chrome.runtime;
         if (!runtime) {
           Logger.error("[CRITICAL]EXTENSION MESSAGE ERROR: ", {
@@ -265,6 +276,15 @@ export function useExtension(): UseExtension {
                 response,
               });
             }
+            if (message.action === "getNotesStats") {
+              Logger.info(
+                "GETTING-NOTES-STATS: sendExtensionMessage: response",
+                {
+                  response,
+                },
+              );
+            }
+
             clearTimeout(timeoutId);
             if (response?.success) {
               const { result, message, action } = response.data;
@@ -307,7 +327,10 @@ export function useExtension(): UseExtension {
   };
 
   const updateNotesStatistics = useCallback(async () => {
-    const timeoutTenMinutes = 600000;
+    const timeoutSixtyMinutes = 60 * 60 * 1000;
+    Logger.info("Updating notes statistics", {
+      timeout: timeoutSixtyMinutes,
+    });
     const response = await sendExtensionMessage<any>(
       {
         type: "API_REQUEST",
@@ -316,7 +339,7 @@ export function useExtension(): UseExtension {
       {
         showDialog: false,
         throwIfNoExtension: false,
-        timeout: timeoutTenMinutes,
+        timeout: timeoutSixtyMinutes,
       },
     );
     if (response.success) {
@@ -687,7 +710,6 @@ export function useExtension(): UseExtension {
         action: "verifyKey",
         params: [key, authorId],
       };
-      ;
       const responseExtension = await sendExtensionMessage<boolean>(message, {
         showDialog: false,
         throwIfNoExtension: false,

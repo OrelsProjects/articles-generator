@@ -1,15 +1,16 @@
 import { FeatureFlag } from "@prisma/client";
-import {
-  KanbanSquare,
-  PenTool,
-  Settings,
-  Lightbulb,
-  Calendar,
-  BarChart,
-  Radar,
-  Bot,
-  User,
-} from "lucide-react";
+  import {
+    KanbanSquare,
+    PenTool,
+    Settings,
+    Lightbulb,
+    Calendar,
+    BarChart,
+    Radar,
+    Bot,
+    User,
+    FileChartColumnIncreasing,
+  } from "lucide-react";
 
 export const rootPath = "/queue";
 
@@ -77,7 +78,7 @@ export const navItems: {
     name: "My Profile",
     mobileName: "Profile",
     href: "/me",
-    icon: User,
+    icon: FileChartColumnIncreasing,
     locationInMobile: "sidebar",
   },
   {
@@ -95,5 +96,4 @@ export const navItems: {
     locationInMobile: "sidebar",
     featureFlagsRequired: ["canUseRadar"],
   },
-
 ];
