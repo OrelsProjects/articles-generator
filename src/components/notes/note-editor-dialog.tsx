@@ -217,10 +217,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   ): Promise<NoteDraft | null> {
     const newBody = unformatText(html);
     if (selectedNote) {
-      const selectedNoteBody = selectedNote.body;
-      if (selectedNoteBody === newBody) {
-        return null;
-      }
       if (options?.immediate) {
         const note = await editNoteBody(selectedNote.id, newBody);
         return note;
@@ -294,7 +290,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
               const files = await Promise.all(
                 attachments.map(attachment => urlToFile(attachment.url)),
               );
-              await uploadFile(files, note.id);
+              const validFiles = files.filter(file => !!file);
+              if (validFiles.length > 0) {
+                await uploadFile(validFiles, note.id);
+              }
               toast.dismiss(toastId);
             }
           }
@@ -526,12 +525,11 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
               />
             </div>
             <div
-              className="flex flex-col w-full relative z-20 bg-background rounded-2xl h-[99%]
-            "
+              className="flex flex-col w-full relative z-20 bg-background rounded-2xl h-[99%]"
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
             >
-              {canAutoDM && (
+              {/* {canAutoDM && (
                 <Switch
                   checked={!!noteAutoDM}
                   loading={loadingAutoDM}
@@ -547,7 +545,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                   }}
                   className="absolute top-2 right-2"
                 />
-              )}
+              )} */}
               <ImageDropOverlay
                 isVisible={isDraggingOver}
                 onFileDrop={handleFileDrop}

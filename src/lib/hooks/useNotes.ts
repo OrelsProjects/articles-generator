@@ -359,7 +359,6 @@ export const useNotes = () => {
 
     const canUpdate =
       selectedNote?.id === noteId && !loadingCreateNoteRef.current;
-
     if (!canUpdate) {
       return null;
     }
@@ -374,7 +373,8 @@ export const useNotes = () => {
 
     try {
       const isEmpty = isEmptyNote(selectedNote);
-      if (isEmpty) {
+      const isInspiration = selectedNote?.status === "inspiration";
+      if (isEmpty || isInspiration) {
         loadingCreateNoteRef.current = true;
         // It's a note from the inspiration apge, we need to create a user note first.
         try {

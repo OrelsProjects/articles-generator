@@ -37,6 +37,3 @@ export default function MyProfilePage() {
     />
   );
 }
-
-
-FIX PLAGIARISM BUG WHERE AUTHOR ID IS NULL AND READY TO SHIP.

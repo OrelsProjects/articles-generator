@@ -116,6 +116,7 @@ export function CompactNoteComponent({
           {new Date(note.date).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
+            year: "numeric",
           })}
         </div>
       </div>

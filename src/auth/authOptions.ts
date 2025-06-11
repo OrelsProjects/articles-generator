@@ -22,7 +22,7 @@ export const authOptions: AuthOptions = {
       clientId: process.env.GOOGLE_AUTH_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET as string,
       httpOptions: {
-        timeout:  process.env.NODE_ENV === "development" ? 15000 : 3500,
+        timeout: process.env.NODE_ENV === "development" ? 15000 : 3500,
       },
     }),
     EmailProvider({
@@ -64,9 +64,9 @@ export const authOptions: AuthOptions = {
               publication: {
                 select: {
                   authorId: true,
-                }
-              }
-            }
+                },
+              },
+            },
           }),
           getActiveSubscription(token.sub as string),
           prisma.extensionDetails.findUnique({
@@ -75,23 +75,24 @@ export const authOptions: AuthOptions = {
             },
           }),
         ];
-        const [userMetadata, activeSubscription, extensionDetails] = (await Promise.all(
-          promises,
-        )) as [
-          {
-            publicationId: string | null;
-            featureFlags: FeatureFlag[];
-            isAdmin: boolean;
-            tempAuthorId: string | null;
-            notesToGenerateCount: number;
-            preferredLanguage: string;
-            authorId: number | null;
-          } | null,
-          Subscription | null,
-          {
-            versionInstalled: string | null;
-          } | null,
-        ];
+        const [userMetadata, activeSubscription, extensionDetails] =
+          (await Promise.all(promises)) as [
+            {
+              publicationId: string | null;
+              featureFlags: FeatureFlag[];
+              isAdmin: boolean;
+              tempAuthorId: string | null;
+              notesToGenerateCount: number;
+              preferredLanguage: string;
+              publication: {
+                authorId: number | null;
+              } | null;
+            } | null,
+            Subscription | null,
+            {
+              versionInstalled: string | null;
+            } | null,
+          ];
 
         session.user.meta = {
           plan: activeSubscription?.plan
@@ -108,7 +109,7 @@ export const authOptions: AuthOptions = {
           notesToGenerateCount: userMetadata?.notesToGenerateCount || 3,
           preferredLanguage: userMetadata?.preferredLanguage || "en",
           extensionVersion: extensionDetails?.versionInstalled || null,
-          authorId: userMetadata?.authorId || null,
+          authorId: userMetadata?.publication?.authorId || null,
         };
         session.user.publicationId = userMetadata?.publicationId || "";
         return session;

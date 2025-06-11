@@ -10,6 +10,7 @@ import { UserWriterWithData } from "@/types/writer";
 import { getBylineByUserId } from "@/lib/dal/byline";
 import { NotesComments } from "../../../../../prisma/generated/articles";
 import _ from "lodash";
+import { AttachmentType } from "@prisma/client";
 
 const orderParamsForNotesComments = [
   "reactionCount",
@@ -179,6 +180,19 @@ export async function GET(request: NextRequest) {
         noteId: {
           in: orderNotesStats.map(note => Number(note.commentId)),
         },
+        // not empty/null imageUrl
+        AND: [
+          {
+            imageUrl: {
+              not: null,
+            },
+          },
+          {
+            imageUrl: {
+              not: "",
+            },
+          },
+        ],
       },
     });
 
@@ -196,24 +210,33 @@ export async function GET(request: NextRequest) {
       photoUrl: byline?.photoUrl || "",
       authorId: byline?.id?.toString() || "",
       topNotes: notesWithAttachments.map(
-        ({ comment: note, attachments, ...stats }) => ({
-          id: note.commentId,
-          body: note.body,
-          date: new Date(note.date),
-          handle: note.handle || "",
-          name: note.name || "",
-          photoUrl: note.photoUrl || "",
-          attachments: attachments || [],
-          reactionCount: note.reactionCount || 0,
-          commentsCount: note.commentsCount || 0,
-          restacks: note.restacks || 0,
-          totalClicks: stats.totalClicks || 0,
-          totalFollows: stats.totalFollows || 0,
-          totalPaidSubscriptions: stats.totalPaidSubscriptions || 0,
-          totalFreeSubscriptions: stats.totalFreeSubscriptions || 0,
-          totalArr: stats.totalArr || 0,
-          totalShareClicks: stats.totalShareClicks || 0,
-        }),
+        ({ comment: note, attachments, ...stats }) => {
+          const attachmentsWithUrl = attachments
+            .filter(attachment => !!attachment.imageUrl)
+            .map(attachment => ({
+              id: attachment.id,
+              url: attachment.imageUrl || "",
+              type: attachment.type as AttachmentType,
+            }));
+          return {
+            id: note.commentId,
+            body: note.body,
+            date: new Date(note.date),
+            handle: note.handle || "",
+            name: note.name || "",
+            photoUrl: note.photoUrl || "",
+            attachments: attachmentsWithUrl || [],
+            reactionCount: note.reactionCount || 0,
+            commentsCount: note.commentsCount || 0,
+            restacks: note.restacks || 0,
+            totalClicks: stats.totalClicks || 0,
+            totalFollows: stats.totalFollows || 0,
+            totalPaidSubscriptions: stats.totalPaidSubscriptions || 0,
+            totalFreeSubscriptions: stats.totalFreeSubscriptions || 0,
+            totalArr: stats.totalArr || 0,
+            totalShareClicks: stats.totalShareClicks || 0,
+          };
+        },
       ),
     };
 

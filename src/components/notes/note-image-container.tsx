@@ -38,7 +38,7 @@ export function NoteImageContainer({
   const [isLoadingOg, setIsLoadingOg] = useState(false);
 
   useEffect(() => {
-    if (attachment?.type === AttachmentType.link) {
+    if (attachment?.type === AttachmentType.link && attachment.url) {
       setIsLoadingOg(true);
       getOgData(attachment.url)
         .then(setOg)
@@ -93,6 +93,11 @@ export function NoteImageContainer({
     },
     [],
   );
+
+  if (!attachment?.url) {
+    // A div that tells the user there's a link but no image
+    return null;
+  }
 
   // Handle link type attachments
   if (attachment?.type === AttachmentType.link) {
