@@ -21,7 +21,7 @@ import { loadContent, notesTextEditorOptions } from "@/lib/utils/text-editor";
 interface CompactNoteComponentProps {
   note: NoteWithEngagementStats;
   loading: boolean;
-  onNoteClick: (noteDraft: Omit<NoteDraft, "authorId">) => void;
+  onNoteClick?: (noteDraft: Omit<NoteDraft, "authorId">) => void;
 }
 
 export function CompactNoteComponent({
@@ -41,7 +41,7 @@ export function CompactNoteComponent({
         disabled: true,
         disabledClass: "opacity-100 text-foreground cursor-pointer",
         onClick: () => {
-          onNoteClick({
+          onNoteClick?.({
             id: note.id,
             body: note.body,
             createdAt: note.date,

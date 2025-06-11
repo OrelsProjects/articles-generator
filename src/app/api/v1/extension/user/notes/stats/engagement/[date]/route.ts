@@ -111,6 +111,8 @@ export async function GET(
       totalFreeSubscriptions: note.stats?.totalFreeSubscriptions || 0,
       totalArr: note.stats?.totalArr || 0,
       totalShareClicks: note.stats?.totalShareClicks || 0,
+      id: note.id,
+      attachments: [],
     }));
 
     return NextResponse.json(response);

@@ -17,7 +17,7 @@ interface TopNotesTabsProps {
 export function TopNotesTabs({ isLoading }: TopNotesTabsProps) {
   const { noteStats, loadingNotesForDate } = useNotesStats();
 
-  const { fetchUserWriterData, writer} = useWriter();
+  const { fetchUserWriterData, writer } = useWriter();
 
   // TODO: Need to improve slice of statistics and fetch writers data with engagement and notes stats
 
@@ -74,7 +74,7 @@ export function TopNotesTabs({ isLoading }: TopNotesTabsProps) {
       .sort((a, b) => (b.reactionCount || 0) - (a.reactionCount || 0))
       .slice(0, 10)
       .map(note => ({
-        commentId: note.id,
+        id: note.id,
         body: note.body,
         date: note.createdAt,
         handle: note.handle,
@@ -92,6 +92,7 @@ export function TopNotesTabs({ isLoading }: TopNotesTabsProps) {
         totalArr: 0,
         totalShareClicks: 0,
         initials: getInitials(note.authorName),
+        attachments: note.attachments || [],
       }));
 
     // Sort notes by clicks (most engaged)
@@ -103,7 +104,7 @@ export function TopNotesTabs({ isLoading }: TopNotesTabsProps) {
       })
       .slice(0, 10)
       .map(note => ({
-        commentId: note.id,
+        id: note.id,
         body: note.body,
         date: note.createdAt,
         handle: note.handle,
@@ -121,6 +122,7 @@ export function TopNotesTabs({ isLoading }: TopNotesTabsProps) {
         totalArr: 0,
         totalShareClicks: 0,
         initials: getInitials(note.authorName),
+        attachments: note.attachments || [],
       }));
 
     return { bestNotes, mostEngagedNotes };
@@ -165,7 +167,7 @@ export function TopNotesTabs({ isLoading }: TopNotesTabsProps) {
                   </p>
                 ) : (
                   bestNotes.map(note => (
-                    <div key={note.commentId} className="space-y-2">
+                    <div key={note.id} className="space-y-2">
                       <CompactNoteComponent note={note} loading={false} />
                     </div>
                   ))
@@ -180,7 +182,7 @@ export function TopNotesTabs({ isLoading }: TopNotesTabsProps) {
                   </p>
                 ) : (
                   mostEngagedNotes.map(note => (
-                    <div key={note.commentId} className="space-y-2">
+                    <div key={note.id} className="space-y-2">
                       <CompactNoteComponent note={note} loading={false} />
                     </div>
                   ))

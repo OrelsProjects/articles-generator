@@ -40,7 +40,7 @@ export interface NoteStats {
     paidSubscriptions: number;
     freeSubscriptions: number;
   };
-  notes: (Note & { reactionCount?: number })[];
+  notes: (Note & { reactionCount?: number; attachments?: NoteDraftImage[] })[];
 }
 
 export interface NoteWithEngagementStats {
