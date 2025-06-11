@@ -7,8 +7,11 @@ import { getActiveSubscription } from "@/lib/dal/subscription";
 import slugify from "slugify";
 
 export const RETENTION_COUPON_ID = process.env.RETENTION_COUPON_ID as string;
+export const RETENTION_COUPON_ID_YEAR = process.env
+  .RETENTION_COUPON_ID_YEAR as string;
 export const RETENTION_PROMO_CODE = process.env.RETENTION_PROMO as string;
-export const RETENTION_PROMO_CODE_YEAR = process.env.RETENTION_PROMO_YEAR as string;
+export const RETENTION_PROMO_CODE_YEAR = process.env
+  .RETENTION_PROMO_YEAR as string;
 export const RETENTION_PERCENT_OFF = 50;
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME;
@@ -245,12 +248,14 @@ export const getStripeSubscription = async (subscriptionId: string) => {
   return subscription;
 };
 
-export const getStripeSubscriptionAppliedCoupon = async (
+export const getStripeSubscriptionAppliedCoupons = async (
   subscriptionId: string,
 ) => {
   const stripe = getStripeInstance();
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-  return subscription.discount?.coupon;
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+    expand: ["discounts"],
+  });
+  return subscription.discounts?.map(discount => discount as Stripe.Discount);
 };
 
 /**
@@ -275,8 +280,13 @@ export const shouldApplyRetentionCoupon = async (
 
     // Check if the user already has the retention coupon applied
     const stripeSubscriptionCoupon =
-      await getStripeSubscriptionAppliedCoupon(subscriptionId);
-    if (stripeSubscriptionCoupon?.id === RETENTION_COUPON_ID) {
+      await getStripeSubscriptionAppliedCoupons(subscriptionId);
+    const hasRetentionCoupon = stripeSubscriptionCoupon.some(
+      discount =>
+        discount.coupon?.id === RETENTION_COUPON_ID ||
+        discount.coupon?.id === RETENTION_COUPON_ID_YEAR,
+    );
+    if (hasRetentionCoupon) {
       return false;
     }
 

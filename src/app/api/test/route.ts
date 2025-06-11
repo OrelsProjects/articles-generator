@@ -18,7 +18,7 @@ import {
 import { prisma, prismaArticles } from "@/lib/prisma";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { Note, NoteStatus } from "@prisma/client";
-import { getStripeInstance } from "@/lib/stripe";
+import { getStripeInstance, shouldApplyRetentionCoupon } from "@/lib/stripe";
 import { bigint } from "zod";
 import { getBylineByUserId } from "@/lib/dal/byline";
 import { fetchAuthor } from "@/lib/utils/lambda";
@@ -65,9 +65,55 @@ import { fetchAuthor } from "@/lib/utils/lambda";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user || !session.user.meta) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // if (!session || !session.user || !session.user.meta) {
+  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // }
+
+  const userId = "6822f9d5d029b4c9c504c185";
+  const apply = await shouldApplyRetentionCoupon(userId);
+  return NextResponse.json({ apply });
+
+  // const allNotesStats = await prismaArticles.notesCommentsStats.findMany({
+  //   where: {
+  //     notePostedAt: null,
+  //   },
+  // });
+  // const notesForStats = await prismaArticles.notesComments.findMany({
+  //   where: {
+  //     commentId: {
+  //       in: allNotesStats.map(stat => stat.commentId),
+  //     },
+  //   },
+  // });
+
+  // // add notePostedAt to allNotesStats
+  // const allNotesStatsWithNotePostedAt = allNotesStats.map(stat => {
+  //   const note = notesForStats.find(note => note.commentId === stat.commentId);
+  //   return {
+  //     ...stat,
+  //     notePostedAt: note?.timestamp,
+  //   };
+  // });
+
+  // // update allNotesStats with notePostedAt
+  // // update in batches of 100
+  // let index = 0;
+  // const batchSize = 30;
+  // for (let i = 0; i < allNotesStatsWithNotePostedAt.length; i += batchSize) {
+  //   console.log(
+  //     `Updating batch ${index} of ${allNotesStatsWithNotePostedAt.length}`,
+  //   );
+  //   const batch = allNotesStatsWithNotePostedAt.slice(i, i + batchSize);
+  //   await Promise.all(
+  //     batch.map(stat =>
+  //       prismaArticles.notesCommentsStats.update({
+  //         where: { id: stat.id },
+  //         data: { notePostedAt: stat.notePostedAt },
+  //       }),
+  //     ),
+  //   );
+  //   index += batchSize;
+  // }
 
   // const notesWithOver300Likes = await prismaArticles.notesComments.findMany({
   //   where: {
