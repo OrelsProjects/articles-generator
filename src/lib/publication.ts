@@ -229,13 +229,6 @@ export async function getWriterPosts(
       id: authorId,
     },
   });
-
-  const publication = await prisma.publicationMetadata.findFirst({
-    where: {
-      authorId: authorId,
-    },
-  });
-
   if (!byline) {
     throw new Error("Byline not found");
   }
@@ -250,7 +243,7 @@ export async function getWriterPosts(
     where: {
       OR: [
         { id: { in: postBylines.map(byline => byline.postId.toString()) } },
-        { publicationId: publication?.idInArticlesDb?.toString() },
+        // { publicationId: publication?.idInArticlesDb?.toString() },
       ],
     },
     take,
