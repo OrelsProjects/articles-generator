@@ -15,6 +15,7 @@ export const getPublicationByUrl = async (
 ): Promise<Publication[]> => {
   const { validUrl } = getUrlComponents(url, { withoutWWW: true });
   const endpointToValidate = getArticleEndpoint(validUrl, 0, 1);
+
   const response = await fetch(endpointToValidate);
   if (!response.ok) {
     throw new Error("URL is not valid");

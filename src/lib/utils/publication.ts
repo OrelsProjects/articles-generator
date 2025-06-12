@@ -14,7 +14,11 @@ export const getArticleEndpoint = (
   offset: number,
   limit: number,
 ) => {
-  return `${url}/api/v1/archive?sort=new&search=&offset=${offset}&limit=${limit}`;
+  let baseUrl = url;
+  if (!url.includes("substack") && !url.includes("www")) {
+    baseUrl = baseUrl.replace("https://", "https://www.");
+  }
+  return `${baseUrl}/api/v1/archive?sort=top&search=&offset=${offset}&limit=${limit}`;
 };
 
 interface SubstackPublication {
