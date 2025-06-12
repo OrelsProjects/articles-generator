@@ -467,7 +467,6 @@
   border-left: 4px solid hsl(var(--primary));
   padding-left: 1rem;
   margin: 1.5rem 0;
-  font-style: italic;
   color: hsl(var(--foreground));
 }
 
@@ -587,7 +586,7 @@ p:empty::after {
 }
 
 .sort-pill::before {
-  content: '';
+  content: "";
   @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent;
   @apply translate-x-[-100%] transition-transform duration-500;
 }
