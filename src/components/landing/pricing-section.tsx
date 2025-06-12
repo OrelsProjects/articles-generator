@@ -403,7 +403,18 @@ export default function Pricing({
                   {/* Coupon Discount Badge */}
                   {(plan as any).couponDiscount && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
-                      <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                      <div
+                        className={cn(
+                          "px-3 py-1 rounded-full text-xs font-semibold",
+                          appliedCoupon?.includes("FLASH") &&
+                            billingCycle === "year"
+                            ? "bg-background border-2 border-primary text-primary transition-shadow shadow-lg"
+                            : appliedCoupon?.includes("FLASH") &&
+                                billingCycle === "month"
+                              ? "bg-background border border-foreground/60 text-muted-foreground"
+                              : "bg-green-500 text-white shadow-lg",
+                        )}
+                      >
                         {appliedCoupon?.includes("FLASH") ? (
                           billingCycle === "month" ? (
                             "30% OFF for 1 month"
