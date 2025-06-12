@@ -247,7 +247,7 @@ export default function FeatureSection() {
               "/landing/features/queue-edit.png",
             ]}
             title="<span class='highlight-feature-text'>Schedule your notes</span>"
-            description="Schedule your notes to publish at the best time for your audience."
+            description="Schedule your notes to publish at the best time for your audience (Requires Chrome extension)."
             direction="ltr"
           />
           <FeatureSectionCard
