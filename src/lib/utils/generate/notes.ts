@@ -330,10 +330,10 @@ export async function generateNotes({
         language: userMetadata.preferredLanguage || undefined,
       },
     };
-    const generateNotesMessages =
-      userMetadata.notesPromptVersion === 1
-        ? generateNotesPrompt_v1(promptBody)
-        : generateNotesPrompt_v2(promptBody);
+    const generateNotesMessages = generateNotesPrompt_v2(promptBody);
+    // userMetadata.notesPromptVersion === 1
+    //   ? generateNotesPrompt_v1(promptBody)
+    //   : generateNotesPrompt_v2(promptBody);
 
     const promptResponse = await runPrompt(
       generateNotesMessages,
@@ -365,9 +365,10 @@ export async function generateNotes({
         language: userMetadata.preferredLanguage || undefined,
       };
       const improveNotesMessages =
-        userMetadata.notesPromptVersion === 1
-          ? generateNotesWritingStylePrompt_v1(improveNoteBody)
-          : generateNotesWritingStylePrompt_v2(improveNoteBody);
+        generateNotesWritingStylePrompt_v2(improveNoteBody);
+      //   userMetadata.notesPromptVersion === 1
+      //     ? generateNotesWritingStylePrompt_v1(improveNoteBody)
+      //     : generateNotesWritingStylePrompt_v2(improveNoteBody);
       const improvedNotesResponse = await runPrompt(
         improveNotesMessages,
         model === "openai/gpt-4.5-preview"
