@@ -415,7 +415,6 @@ const testimonials = [
     title: "Writer of How to Write for a Living<br/>",
     url: "https://substack.com/@thedavidmcilroy",
   },
-
   {
     quote: `${appName} allowed me to finally find my voice on Substack Notes, one that I'm satisfied with and I feel like. 
       <br/><br/> It resonates with readers.
@@ -457,6 +456,19 @@ const testimonials = [
     image: "/testimonials/karo.png",
     title: "Author of Product with Attitude",
     url: "https://substack.com/@karozieminski",
+  },
+  {
+    author: "Tech Tornado",
+    quote: `WriteStack has been a game changer for me.
+    <br/><br/>
+    As a financial content creator, consistency is everything — and WriteStack helps me show up every day with clarity and structure.
+    <br/><br/>
+    I finally have a system to publish consistently without burning out.
+    <br/><br/>
+    — Felix, Founder of The Nasdaq Playbook`,
+    image: "/testimonials/tech-tornado.webp",
+    title: "Author of The Nasdaq Playbook",
+    url: "https://substack.com/@techtornado",
   },
   {
     quote: `I found ${appName} right when my workflow was hitting a wall—too bogged down by my daily work, with too little time to post my content.
