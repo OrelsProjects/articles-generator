@@ -22,6 +22,11 @@ import ProductHighlightSection from "@/components/landing/product-highlight-sect
 import FeaturesSection from "@/components/landing/features-section";
 import WhyNotesSection from "@/components/landing/why-notes-section";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
+import {
+  BestSeller100,
+  BestSeller1000,
+  BestSeller10000,
+} from "@/components/ui/best-seller-badge";
 import { useEffect } from "react";
 
 const DividerPrimary = ({
@@ -221,11 +226,22 @@ function App() {
                         className="w-10 h-10 rounded-full"
                       />
                       <div>
-                        <div className="font-semibold hover:underline hover:cursor-pointer">
-                          <Link href={testimonial.url} target="_blank">
-                            {testimonial.author}
-                          </Link>
+                        <div className="flex flex-row items-center gap-1">
+                          <div className="font-semibold hover:underline hover:cursor-pointer">
+                            <Link href={testimonial.url} target="_blank">
+                              {testimonial.author}
+                            </Link>
+                          </div>
+                          {testimonial.bestSeller &&
+                            (testimonial.bestSeller === "100" ? (
+                              <BestSeller100 height={16} width={16} />
+                            ) : testimonial.bestSeller === "1000" ? (
+                              <BestSeller1000 height={16} width={16} />
+                            ) : (
+                              <BestSeller10000 height={16} width={16} />
+                            ))}
                         </div>
+
                         <div
                           className="text-sm text-muted-foreground"
                           dangerouslySetInnerHTML={{
@@ -357,6 +373,7 @@ const testimonials = [
     <br/><br/>
     Effortless to get started. I recommend you start with the "queue" page
     `,
+    bestSeller: "100",
     author: "Tim Denning",
     image: "/tim-denning.jpg",
     title: "Author of Unfiltered by Tim Denning",
@@ -378,6 +395,7 @@ const testimonials = [
     Orel has really helpful and always looking to improve WriteStack.
 `,
     author: "Philip Hofmacher",
+    bestSeller: "100",
     image:
       "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdc125fa8-cfe4-438f-9b30-375d783f944b_865x865.jpeg",
     title: "Author of Write Build Scale<br/>",
@@ -392,6 +410,7 @@ const testimonials = [
    <strong>Highly recommended!</strong>
 `,
     author: "David McIlroy",
+    bestSeller: "100",
     image: "/testimonials/david-mcilroy.jpg",
     title: "Writer of How to Write for a Living<br/>",
     url: "https://substack.com/@thedavidmcilroy",
