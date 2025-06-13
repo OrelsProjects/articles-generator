@@ -43,7 +43,6 @@ import { Logger } from "@/logger";
 import { MAX_FILE_SIZE } from "@/lib/consts";
 import { EventTracker } from "@/eventTracker";
 import NoteEditorAdvancedSheet from "@/components/notes/note-editor-advanced-sheet";
-import { Switch } from "@/components/ui/switch";
 import { useAutoDM } from "@/lib/hooks/useAutoDM";
 import { useUi } from "@/lib/hooks/useUi";
 import { CharacterCountBar } from "@/components/notes/character-count-bar";

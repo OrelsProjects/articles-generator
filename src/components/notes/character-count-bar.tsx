@@ -76,10 +76,10 @@ export function CharacterCountBar({
     if (characterCount < 150) {
       return "bg-gray-400";
     }
-    if (characterCount <= 300) {
+    if (characterCount <= 330) {
       return "bg-emerald-500"; // Extended peak range 281-300
     }
-    return "bg-red-500"; // Over 300
+    return "bg-emerald-400"; // Over 300
   };
 
   const getTextColor = () => {
@@ -89,10 +89,10 @@ export function CharacterCountBar({
     if (characterCount < 150) {
       return "text-gray-600 dark:text-gray-400";
     }
-    if (characterCount <= 300) {
+    if (characterCount <= 330) {
       return "text-emerald-700 dark:text-emerald-300"; // Extended peak range 281-300
     }
-    return "text-red-600 dark:text-red-400"; // Over 300
+    return "text-emerald-600 dark:text-emerald-400"; // Over 300
   };
 
   const getFeedbackText = () => {
@@ -102,10 +102,11 @@ export function CharacterCountBar({
     if (characterCount < 150) {
       return "Too short.";
     }
-    if (characterCount <= 300) {
+    if (characterCount <= 330) {
       return "Perfect"; // Extended peak range 281-300
     }
-    return "Too long.";
+    // A text that doesn't tell the user that they're wrong, but doesn't give them a false sense of security
+    return ""
   };
 
   const getScore = () => {
@@ -115,10 +116,10 @@ export function CharacterCountBar({
     if (characterCount < 150) {
       return Math.max(1, Math.floor((characterCount / 150) * 5));
     }
-    if (characterCount <= 300) {
+    if (characterCount <= 330) {
       return 10; // Extended peak range 281-300
     }
-    return Math.max(1, 10 - Math.floor((characterCount - 300) / 10));
+    return Math.max(1, 10 - Math.floor((characterCount - 330) / 10));
   };
 
   return (
