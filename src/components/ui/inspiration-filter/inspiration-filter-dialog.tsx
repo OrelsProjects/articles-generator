@@ -182,11 +182,8 @@ export function InspirationFilterDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          variant={hasFilters ? "outline-primary" : "outline"}
-          className="gap-2"
-        >
-          Filter
+        <Button variant={"neumorphic-primary"} className="gap-2">
+          Advanced Search
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px] p-10 gap-1" hideCloseButton>

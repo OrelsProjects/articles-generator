@@ -42,6 +42,10 @@ const premiumFeatures = [
   "<span class='text-primary'>Same price forever</span>",
 ];
 
+const basicFeaturesBottom = [
+  "World-class customer support (Via Substack DM or Email)",
+];
+
 export default function Pricing({
   className,
   onboarding,
@@ -70,7 +74,11 @@ export default function Pricing({
           "The essentials to start building your Substack business today.",
         monthlyPrice: 12.99,
         yearlyPlanPrice: 9.99,
-        features: [...basicFeatures(50, billingCycle), ...hobbyistFeatures],
+        features: [
+          ...basicFeatures(50, billingCycle),
+          ...hobbyistFeatures,
+          ...basicFeaturesBottom,
+        ],
         annualSavings: 35.98,
         popular: false,
       },
@@ -80,7 +88,11 @@ export default function Pricing({
           "Scale your Substack presence and business.<br/>Ideal for accounts looking to grow.",
         monthlyPrice: 29.99,
         yearlyPlanPrice: 23.99,
-        features: [...basicFeatures(200, billingCycle), ...advancedFeatures],
+        features: [
+          ...basicFeatures(200, billingCycle),
+          ...advancedFeatures,
+          ...basicFeaturesBottom,
+        ],
         annualSavings: 71.98,
         popular: true,
       },
@@ -94,6 +106,7 @@ export default function Pricing({
           ...basicFeatures(350, billingCycle),
           ...advancedFeatures,
           ...premiumFeatures,
+          ...basicFeaturesBottom,
         ],
         annualSavings: 119.98,
         popular: false,
