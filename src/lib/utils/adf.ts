@@ -1,7 +1,42 @@
 import { MarkdownTransformer } from "@atlaskit/editor-markdown-transformer";
 
+function formatBlockquotes(markdown: string): string {
+  const lines = markdown.split("\n");
+  let inBlockquote = false;
+  const result: string[] = [];
+
+  for (let line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith(":::blockquote")) {
+      inBlockquote = true;
+      const contentAfterTag = trimmed.replace(":::blockquote", "").trim();
+      if (contentAfterTag) result.push(`> ${contentAfterTag}`);
+      continue;
+    }
+
+    // If we're inside a blockquote and this line has ::: anywhere, cut it
+    if (inBlockquote && trimmed.includes(":::")) {
+      const beforeEnd = line.split(":::")[0].trim();
+      if (beforeEnd) {
+        result.push(`> ${beforeEnd}`);
+      }
+      inBlockquote = false;
+      continue;
+    }
+
+    if (inBlockquote) {
+      result.push(`> ${line}`);
+    } else {
+      result.push(line);
+    }
+  }
+
+  return result.join("\n");
+}
+
 export async function markdownToADF(markdown: string) {
-  const formattedMarkdown = markdown.replace(/^:::blockquote(.*?):::/g, "> $1");
+  const formattedMarkdown = formatBlockquotes(markdown);
   const transformer = new MarkdownTransformer();
   const rawADF = transformer.parse(formattedMarkdown);
 
