@@ -31,6 +31,8 @@ import {
 import { NoteImageContainer } from "@/components/notes/note-image-container";
 import { Logger } from "@/logger";
 import { AttachmentType } from "@prisma/client";
+import { EditorContent, useEditor } from "@tiptap/react";
+import { loadContent, notesTextEditorOptions } from "@/lib/utils/text-editor";
 
 export type NoteProps = {
   note: Note | NoteDraft;
@@ -155,6 +157,25 @@ export default function NoteComponent({
   const [loadingArchive, setLoadingArchive] = useState(false);
   const [isDislikePopoverOpen, setIsDislikePopoverOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const editor = useEditor(
+    notesTextEditorOptions(
+      html => {
+        setHtmlContent(html);
+      },
+      {
+        disabled: true,
+        disabledClass: "opacity-100 text-foreground cursor-pointer",
+      },
+    ),
+  );
+
+    useEffect(() => {
+      if (!editor) return;
+      convertMDToHtml(note.body).then(html => {
+        loadContent(html, editor);
+      });
+    }, [note.body, editor]);
 
   const isUserNote = useMemo(() => {
     if ("reactionCount" in note) {
@@ -473,12 +494,9 @@ export default function NoteComponent({
                 />
                 {/* )} */}
 
-                <div
-                  className="prose prose-sm max-w-none note-component-content relative z-10"
-                  dangerouslySetInnerHTML={{
-                    __html: htmlContent,
-                  }}
-                />
+                <div className="text-sm text-foreground leading-relaxed">
+                  <EditorContent disabled editor={editor} />
+                </div>
               </div>
               {/* Expand Button */}
               {showExpandButton && (

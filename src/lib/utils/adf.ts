@@ -11,7 +11,10 @@ function formatBlockquotes(markdown: string): string {
     if (trimmed.startsWith(":::blockquote")) {
       inBlockquote = true;
       const contentAfterTag = trimmed.replace(":::blockquote", "").trim();
-      if (contentAfterTag) result.push(`> ${contentAfterTag}`);
+      if (contentAfterTag) {
+        result.push(`> ${contentAfterTag}`);
+        result.push(">");
+      }
       continue;
     }
 
@@ -27,6 +30,7 @@ function formatBlockquotes(markdown: string): string {
 
     if (inBlockquote) {
       result.push(`> ${line}`);
+      result.push(">"); // Two trailing spaces = markdown hard break
     } else {
       result.push(line);
     }

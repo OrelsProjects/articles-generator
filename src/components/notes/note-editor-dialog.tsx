@@ -108,7 +108,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
 
   const updateEditorBody = (body: string) => {
     convertMDToHtml(body).then(html => {
-      editor?.commands.setContent(html);
+      loadContent(html, editor);
       // Update character count after setting content
       setTimeout(() => {
         const textContent = editor?.getText() || "";
@@ -130,6 +130,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
       cancelUpdateNoteBody(selectedNote?.id || "");
     } else {
       cancelUpdateNoteBody(selectedNote?.id || "", false);
+      loadContent(selectedNote?.body || "", editor);
     }
   };
 

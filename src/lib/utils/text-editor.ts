@@ -71,6 +71,7 @@ export const formatText = (text: string): string => {
     breaks: false,
   });
   text = text.replace(/\\n\\n/g, "\n\n");
+  text = text.replace(/<br\s*\/?>/g, "</p><p>");
   // Handle custom image dimensions before passing to marked
   text = text.replace(
     /!\[(.*?)\]\((.*?)\){width=(\d+)}/g,
