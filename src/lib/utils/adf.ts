@@ -1,10 +1,7 @@
 import { MarkdownTransformer } from "@atlaskit/editor-markdown-transformer";
 
 export async function markdownToADF(markdown: string) {
-  const formattedMarkdown = markdown.replace(
-    /^:::blockquote([\s\S]*?):::/g,
-    "> $1",
-  );
+  const formattedMarkdown = markdown.replace(/^:::blockquote(.*?):::/g, "> $1");
   const transformer = new MarkdownTransformer();
   const rawADF = transformer.parse(formattedMarkdown);
 
@@ -62,7 +59,6 @@ function transformContent(content: any[]): any[] {
     return newNode;
   });
 }
-
 
 export interface ADFNode {
   type: string;
