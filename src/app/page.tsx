@@ -460,6 +460,14 @@ const testimonials = [
     url: "https://substack.com/@stfgirard",
   },
   {
+    noteImage: "/testimonials/alan-testimonial.png",
+    noteUrl: "https://substack.com/@legendofalan/note/c-125360659",
+    author: "Alan",
+    image: "/testimonials/alan.jpg",
+    title: "Author of the White Flag",
+    url: "https://whiteflag1.substack.com/",
+  },
+  {
     quote: `I love ${appName}.
     <br/><br/>
     I've been using it to get inspiration for my Substack Notes and it saves me so much time coming up with new ideas.
