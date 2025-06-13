@@ -234,7 +234,15 @@ function App() {
                         />
                       </div>
                     </div>
-                    {testimonial.noteImage ? (
+                    {testimonial.quote && (
+                      <p
+                        className="text-foreground mb-4"
+                        dangerouslySetInnerHTML={{
+                          __html: testimonial.quote,
+                        }}
+                      />
+                    )}
+                    {testimonial.noteImage && (
                       <motion.img
                         whileHover={{
                           scale: 1.6,
@@ -255,13 +263,6 @@ function App() {
                             "cursor-pointer": !!testimonial.noteUrl,
                           },
                         )}
-                      />
-                    ) : (
-                      <p
-                        className="text-foreground mb-4"
-                        dangerouslySetInnerHTML={{
-                          __html: testimonial.quote || "",
-                        }}
                       />
                     )}
                   </div>
@@ -460,6 +461,15 @@ const testimonials = [
     url: "https://substack.com/@stfgirard",
   },
   {
+    quote: `Writestack is not only the tool I was looking for to improve my presence on Substack, but it has also given me the opportunity to help members of my community grow theirs too.
+        <br/><br/>
+        Orel is doing an outstanding job democratizing growth on Substack. It's another step forward in giving creators more chances to share our message with the world.`,
+    author: "David Domínguez",
+    image: "/testimonials/david-dominguez.jpg",
+    title: "Author of Crecer en Substack",
+    url: "https://substack.com/@daviddominguez",
+  },
+  {
     noteImage: "/testimonials/alan-testimonial.png",
     noteUrl: "https://substack.com/@legendofalan/note/c-125360659",
     author: "Alan",
@@ -492,13 +502,18 @@ const testimonials = [
     url: "https://substack.com/@infolosophy",
   },
   {
-    quote: `Writestack is not only the tool I was looking for to improve my presence on Substack, but it has also given me the opportunity to help members of my community grow theirs too.
-        <br/><br/>
-        Orel is doing an outstanding job democratizing growth on Substack. It's another step forward in giving creators more chances to share our message with the world.`,
-    author: "David Domínguez",
-    image: "/testimonials/david-dominguez.jpg",
-    title: "Author of Crecer en Substack",
-    url: "https://substack.com/@daviddominguez",
+    quote: `I’m loving the experience of reading and writing science fiction and connecting with a growing audience for my work on Substack.
+    <br/><br/>
+    WriteStack already helped me a lot in achieving that, even though I’ve only been using the tool for a few weeks.
+    <br/><br/>
+    It helped me organise, refine and publish my notes,  to find who might be interested in my work and equally to find authors whose work I’m interested in reading too!
+    <br/><br/>
+    For the metric lovers, here’s the before and after of my followship on Substack. I’m new to the platform but as you can see my audience is getting larger very quickly now.`,
+    noteImage: "/testimonials/bruno-testimonial.png",
+    author: "Bruno Martins",
+    image: "/testimonials/bruno.webp",
+    title: "Author of Dark Matter",
+    url: "https://substack.com/@brunorothgiesser",
   },
   {
     quote: `Writing a newsletter outline used to take me hours. Now I do it in minutes.

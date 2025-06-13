@@ -51,11 +51,13 @@ export const MasonryGrid = ({
       >
         {columnsArray.map((column, columnIndex) => (
           <div key={columnIndex} className="flex flex-col space-y-4">
-            {column.map(card => (
+            {column.map((card, cardIndex) => (
               <div
                 key={card.id}
                 className={cn(
                   "relative bg-background/90 text-foreground rounded-xl shadow-md overflow-visible",
+                  // z index in reverse order
+                  `z-[${50 + columnIndex - cardIndex}]`,
                   card.className,
                 )}
               >
