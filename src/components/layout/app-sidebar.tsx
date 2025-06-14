@@ -41,6 +41,7 @@ import { selectUi } from "@/lib/features/ui/uiSlice";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { UserStreak } from "@/components/ui/user-streak";
 import { AffiliateDialog } from "@/components/ui/affiliate-dialog";
+import { useOnboarding } from "@/lib/hooks/useOnboarding";
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const router = useCustomRouter();
@@ -50,6 +51,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user } = useAppSelector(selectAuth);
   const { signOut } = useAuth();
+  const { reset: resetOnboarding } = useOnboarding();
 
   const validNavItems = useMemo(() => {
     const itemsWithoutFeatureFlags = navItems.filter(
@@ -355,6 +357,22 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                     ),
                   )}
                 </ul>
+                
+                {/* Help Section */}
+                <div className="mt-8 pt-4 border-t border-border">
+                  <h3 className="px-3 mb-2 text-sm font-medium text-muted-foreground">Help</h3>
+                  <ul className="space-y-2">
+                    <li>
+                      <button
+                        onClick={resetOnboarding}
+                        className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-foreground hover:bg-muted w-full text-left"
+                      >
+                        <ExternalLink size={20} />
+                        <span>Restart Onboarding</span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </nav>
             </div>
             {/* Mobile Affiliate Section */}
