@@ -471,6 +471,17 @@ const testimonials = [
     url: "https://substack.com/@techtornado",
   },
   {
+    quote: `I love ${appName}.
+    <br/><br/>
+    I've been using it to get inspiration for my Substack Notes and it saves me so much time coming up with new ideas.
+    <br/><br/>
+     I <strong>highly recommend</strong> it to anyone writing daily on Substack.`,
+    author: "Mark Willis",
+    image: "/testimonials/mark-willis.png",
+    title: "Author of Creator's Playbook",
+    url: "https://substack.com/@markwils",
+  },
+  {
     quote: `I found ${appName} right when my workflow was hitting a wall—too bogged down by my daily work, with too little time to post my content.
     <br/><br/>
     ${appName} instantly streamlined my process.
@@ -509,15 +520,23 @@ const testimonials = [
     url: "https://whiteflag1.substack.com/",
   },
   {
-    quote: `I love ${appName}.
+    quote: `My problem isn’t a lack of ideas—it’s too many.
     <br/><br/>
-    I've been using it to get inspiration for my Substack Notes and it saves me so much time coming up with new ideas.
+    Without Writestack, I’d be a hyperactive bunny, constantly posting random thoughts online.
     <br/><br/>
-     I <strong>highly recommend</strong> it to anyone writing daily on Substack.`,
-    author: "Mark Willis",
-    image: "/testimonials/mark-willis.png",
-    title: "Author of Creator's Playbook",
-    url: "https://substack.com/@markwils",
+    But it helps me slow down, organize my ideas, and think before I hit publish. 
+    <br/><br/>
+    I can schedule posts, improve them, delete the ones that don’t hold up, or revisit them later with fresh eyes. 
+    <br/><br/>
+    So I get two major wins: a reliable place to save ideas and space to refine my writing before it goes live.
+    <br/><br/>
+    Bonus: I'm starting to enjoy the analytics Orel built. I love seeing which notes brought in subscribers—it’s helping me understand what tone, style, and approach work. Loving it so far!
+    <br/><br/>
+    Writestack is pretty intuitive, and Orel is always there to answer any questions.`,
+    author: "Parth Shah",
+    image: "/testimonials/parth-shah.png",
+    title: "Author of Karam's Legacy",
+    url: "https://substack.com/@parthshahseo",
   },
   {
     quote: `I had been looking for something to help me more consistent with posting Substack Notes as I recognized the importance for helping grow my brand.
