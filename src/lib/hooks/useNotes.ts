@@ -382,7 +382,8 @@ export const useNotes = () => {
             {
               body,
               status:
-                selectedNote?.status === "inspiration"
+                selectedNote?.status === "inspiration" ||
+                selectedNote?.status === "chat-generated"
                   ? "draft"
                   : selectedNote?.status,
             },

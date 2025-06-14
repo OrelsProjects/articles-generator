@@ -50,15 +50,8 @@ import { isPlagiarism } from "@/lib/utils/note-editor-utils";
 
 export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const { user } = useAppSelector(selectAuth);
-  const { selectedNote, thumbnail, handle } = useAppSelector(selectNotes);
+  const { selectedNote, thumbnail } = useAppSelector(selectNotes);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { canAutoDM } = useUi();
-  const {
-    autoDMs,
-    createAutoDM,
-    deleteAutoDM,
-    loading: loadingAutoDM,
-  } = useAutoDM();
   const {
     updateNoteBody,
     editNoteBody,
@@ -103,6 +96,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const isInspiration = selectedNote?.status === "inspiration";
+  const isAiGenerated = selectedNote?.status === "chat-generated";
   const isEmpty = isEmptyNote(selectedNote);
 
   const updateEditorBody = (body: string) => {
@@ -254,7 +248,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
       isPlagiarism(
         editor?.getHTML() || "",
         selectedNote,
-        user?.meta?.authorId || null,
+        user?.meta?.author?.id || null,
       )
     ) {
       setShowAvoidPlagiarismDialog(true);
@@ -501,13 +495,11 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
       !loadingEditNote &&
       !loadingScheduleNote &&
       !isSendingNote &&
-      !isInspiration
+      !isInspiration &&
+      !isAiGenerated
     );
-  }, [loadingEditNote, loadingScheduleNote, isSendingNote, isInspiration]);
+  }, [loadingEditNote, loadingScheduleNote, isSendingNote, isInspiration, isAiGenerated]);
 
-  const noteAutoDM = useMemo(() => {
-    return autoDMs.find(autoDM => autoDM.noteId === selectedNote?.id);
-  }, [autoDMs, selectedNote?.id]);
 
   return (
     <>
@@ -740,6 +732,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                       }
                       saving={loadingEditNote}
                       isInspiration={isInspiration}
+                      isAiGenerated={isAiGenerated}
                       isFree={free}
                     />
                   }

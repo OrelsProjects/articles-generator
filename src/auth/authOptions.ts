@@ -11,6 +11,7 @@ import {
   generatePrivateNewUserSignedUpEmail,
 } from "@/lib/mail/templates";
 import { addSubscriber, addTagToEmail, sendMailSafe } from "@/lib/mail/mail";
+import { getBylineByUserId } from "@/lib/dal/byline";
 
 const prisma = new PrismaClient();
 
@@ -75,6 +76,7 @@ export const authOptions: AuthOptions = {
             },
           }),
         ];
+        const byline = await getBylineByUserId(token.sub as string);
         const [userMetadata, activeSubscription, extensionDetails] =
           (await Promise.all(promises)) as [
             {
@@ -109,7 +111,12 @@ export const authOptions: AuthOptions = {
           notesToGenerateCount: userMetadata?.notesToGenerateCount || 3,
           preferredLanguage: userMetadata?.preferredLanguage || "en",
           extensionVersion: extensionDetails?.versionInstalled || null,
-          authorId: userMetadata?.publication?.authorId || null,
+          author: {
+            id: byline?.id || userMetadata?.publication?.authorId || 0,
+            handle: byline?.handle || "",
+            name: byline?.name || "",
+            photoUrl: byline?.photoUrl || token.picture || "",
+          },
         };
         session.user.publicationId = userMetadata?.publicationId || "";
         return session;

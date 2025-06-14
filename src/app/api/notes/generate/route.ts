@@ -49,7 +49,6 @@ export async function POST(
     ? parseInt(parsedBody.data.count.toString())
     : undefined;
   const requestedModel = parsedBody.data.model;
-  const useTopTypes = !!parsedBody.data.useTopTypes;
   const topic = parsedBody.data.topic;
   const preSelectedPostIds = parsedBody.data.preSelectedPostIds;
   const featureFlags = session.user.meta?.featureFlags || [];
@@ -58,7 +57,6 @@ export async function POST(
   const response = await generateNotes({
     notesCount,
     requestedModel,
-    useTopTypes,
     topic,
     preSelectedPostIds,
   });

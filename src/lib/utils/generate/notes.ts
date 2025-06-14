@@ -13,7 +13,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { Post } from "@/../prisma/generated/articles";
 import { Model, runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
-import { FeatureFlag, Note, NoteStatus } from "@prisma/client";
+import {
+  FeatureFlag,
+  Note,
+  NoteStatus,
+  PublicationMetadata,
+  UserMetadata,
+} from "@prisma/client";
 import { NoteDraft } from "@/types/note";
 import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
@@ -39,50 +45,23 @@ const modelsRequireImprovement = [
   "x-ai/grok-3-beta",
 ];
 
-export async function generateNotes({
+export async function generateNotesPrompt({
   notesCount,
   requestedModel,
-  useTopTypes,
   topic,
   preSelectedPostIds,
+  userMetadata,
 }: {
+  userMetadata: UserMetadata & { publication: PublicationMetadata };
   notesCount?: number;
   requestedModel?: string;
-  useTopTypes?: boolean;
   topic?: string;
   preSelectedPostIds?: string[];
-}): Promise<{
-  success: boolean;
-  errorMessage?: string;
-  status: number;
-  data?: AIUsageResponse<NoteDraft[]>;
-}> {
-  console.time("generate notes");
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    throw new Error("Unauthorized");
-  }
+}) {
+  const userId = userMetadata.userId;
+  const featureFlags = userMetadata.featureFlags || [];
+  const count = notesCount || userMetadata.notesToGenerateCount || 3;
 
-  const userMetadata = await prisma.userMetadata.findUnique({
-    where: {
-      userId: session.user.id,
-    },
-    select: {
-      notesToGenerateCount: true,
-      notesPromptVersion: true,
-    },
-  });
-
-  if (!userMetadata) {
-    return {
-      success: false,
-      errorMessage: "User metadata not found",
-      status: 404,
-    };
-  }
-
-  const featureFlags = session.user.meta?.featureFlags || [];
-  const notesToGenerate = userMetadata.notesToGenerateCount || 3;
   let initialGeneratingModel: Model = "anthropic/claude-3.7-sonnet";
   let model: Model = "openrouter/auto";
 
@@ -126,217 +105,256 @@ export async function generateNotes({
     }
   }
 
-  const count = notesToGenerate ? notesToGenerate : notesCount || 3;
+  const publicationId = userMetadata?.publication?.idInArticlesDb;
+
+  if (!publicationId || !userMetadata.publication) {
+    loggerServer.error("Publication not found", {
+      userId,
+      publicationId,
+      userMetadata,
+    });
+    return {
+      success: false,
+      errorMessage: "Publication not found",
+      status: 404,
+    };
+  }
+
+  console.log(
+    "About to generate notes for userMetadata: ",
+    JSON.stringify(userMetadata.publication.authorId),
+    "For topic: ",
+    topic,
+  );
+  const canUseAIResult = await canUseAI(userId, "notesGeneration", count);
+
+  if (!canUseAIResult.result) {
+    loggerServer.error("User tried to generate notes but not enough credits", {
+      userId,
+    });
+    return {
+      success: false,
+      errorMessage: "Not enough credits",
+      status: canUseAIResult.status,
+    };
+  }
+
+  const authorId = userMetadata.publication.authorId;
+
+  console.log("Author ID: ", authorId);
+
+  const query = `${userMetadata.publication.preferredTopics || ""}, ${userMetadata.noteTopics}.`;
+
+  const randomMinReaction = Math.floor(Math.random() * 400);
+  const randomMaxReaction =
+    randomMinReaction + Math.floor(Math.random() * 60000);
+  const randomMaxComment = Math.floor(Math.random() * 30);
+
+  console.log("randomMinReaction", randomMinReaction);
+  console.log("randomMaxReaction", randomMaxReaction);
+  console.log("randomMaxComment", randomMaxComment);
+
+  const filters: Filter[] = [
+    {
+      leftSideValue: "reaction_count",
+      rightSideValue: randomMinReaction.toString(),
+      operator: ">=",
+    },
+    {
+      leftSideValue: "reaction_count",
+      rightSideValue: randomMaxReaction.toString(),
+      operator: "<=",
+    },
+  ];
+
+  console.log("About to run promises");
+  console.time("promises");
+  const [
+    userNotes,
+    notesUserDisliked,
+    notesUserLiked,
+    notesFromAuthor,
+    inspirations,
+  ] = await Promise.all([
+    prisma.note.findMany({
+      where: {
+        userId,
+        isArchived: false,
+        OR: [{ status: "published" }, { status: "scheduled" }],
+      },
+      take: 15,
+      orderBy: { updatedAt: "desc" },
+    }),
+    prisma.note.findMany({
+      where: {
+        AND: [
+          { userId },
+          {
+            OR: [{ feedback: "dislike" }, { isArchived: true }],
+          },
+        ],
+      },
+      take: 25,
+      orderBy: { updatedAt: "desc" },
+    }),
+    prisma.note.findMany({
+      where: { userId, feedback: "like" },
+      take: 15,
+      orderBy: { updatedAt: "desc" },
+    }),
+    prismaArticles.notesComments.findMany({
+      where: {
+        authorId: parseInt(authorId.toString()),
+        noteIsRestacked: false,
+      },
+      orderBy: {
+        reactionCount: "desc",
+      },
+      select: {
+        handle: true,
+        name: true,
+        photoUrl: true,
+        body: true,
+      },
+      take: 15,
+    }),
+    searchSimilarNotes({
+      query,
+      limit: 20,
+      filters,
+      maxMatch: 0.5,
+    }),
+  ]);
+  console.timeEnd("promises");
+  const uniqueInspirations = inspirations
+    .filter(
+      (note, index, self) =>
+        index === self.findIndex(t => t.body === note.body),
+    )
+    .filter(
+      note =>
+        !notesUserDisliked.some(dislike => dislike.body === note.body) &&
+        !notesUserLiked.some(like => like.body === note.body),
+    )
+    .slice(0, 15);
+
+  // remove all userNotes that are in uniqueInspirations and in like and dislike
+  const userNotesNoDuplicates = userNotes.filter(
+    note =>
+      !uniqueInspirations.some(inspiration => inspiration.body === note.body) &&
+      !notesUserDisliked.some(dislike => dislike.body === note.body) &&
+      !notesUserLiked.some(like => like.body === note.body),
+  );
+
+  let preSelectedArticles: Post[] = [];
+  if (preSelectedPostIds && preSelectedPostIds.length > 0) {
+    preSelectedArticles = await getPublicationByIds(preSelectedPostIds);
+  }
+  const promptBody = {
+    userMetadata,
+    publication: userMetadata.publication,
+    inspirationNotes: [],
+    userPastNotes: notesFromAuthor.map(note => note.body),
+    userNotes: userNotesNoDuplicates,
+    notesUserDisliked,
+    notesUserLiked,
+    options: {
+      noteCount: count,
+      maxLength: 280,
+      topic,
+      preSelectedArticles,
+      language: userMetadata.preferredLanguage || undefined,
+    },
+  };
+  const generateNotesMessages = generateNotesPrompt_v2(promptBody);
+  return {
+    messages: generateNotesMessages,
+    model,
+    initialGeneratingModel,
+    notesFromAuthor,
+  };
+}
+
+export async function generateNotes({
+  notesCount,
+  requestedModel,
+  topic,
+  preSelectedPostIds,
+  takeCreditPerNote = true,
+}: {
+  notesCount?: number;
+  requestedModel?: string;
+  topic?: string;
+  preSelectedPostIds?: string[];
+  takeCreditPerNote?: boolean;
+}): Promise<{
+  success: boolean;
+  errorMessage?: string;
+  status: number;
+  data?: AIUsageResponse<NoteDraft[]>;
+}> {
   let didConsumeCredits = false;
+  let userId: string = "unknown";
+  const cost = takeCreditPerNote ? notesCount || 3 : 1;
   try {
+    console.time("generate notes");
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    userId = session.user.id;
+
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
-        userId: session.user.id,
+        userId,
       },
-      include: {
+      select: {
+        preferredLanguage: true,
+        featureFlags: true,
+        notesToGenerateCount: true,
+        notesPromptVersion: true,
         publication: true,
       },
     });
 
-    const publicationId = userMetadata?.publication?.idInArticlesDb;
-
-    if (!publicationId || !userMetadata.publication) {
-      loggerServer.error("Publication not found", {
-        userId: session.user.id,
-        publicationId,
-        userMetadata,
-      });
+    if (!userMetadata || !userMetadata.publication) {
       return {
         success: false,
-        errorMessage: "Publication not found",
+        errorMessage: "User metadata or publication not found",
         status: 404,
       };
     }
 
-    console.log(
-      "About to generate notes for userMetadata: ",
-      JSON.stringify(userMetadata.publication.authorId),
-      "For topic: ",
-      topic,
-    );
-    const canUseAIResult = await canUseAI(
-      session.user.id,
-      "notesGeneration",
-      notesToGenerate,
-    );
-
-    if (!canUseAIResult.result) {
-      loggerServer.error(
-        "User tried to generate notes but not enough credits",
-        {
-          userId: session.user.id,
-        },
-      );
-      return {
-        success: false,
-        errorMessage: "Not enough credits",
-        status: canUseAIResult.status,
-      };
-    }
+    const authorId = userMetadata.publication.authorId;
 
     const { creditsUsed, creditsRemaining } = await useCredits(
-      session.user.id,
+      userId,
       "notesGeneration",
-      notesToGenerate,
+      cost,
     );
     didConsumeCredits = true;
 
-    const authorId = userMetadata.publication.authorId;
-
-    console.log("Author ID: ", authorId);
-
-    const query = `${userMetadata.publication.preferredTopics || ""}, ${userMetadata.noteTopics}.`;
-
-    const randomMinReaction = Math.floor(Math.random() * 400);
-    const randomMaxReaction =
-      randomMinReaction + Math.floor(Math.random() * 60000);
-    const randomMaxComment = Math.floor(Math.random() * 30);
-
-    console.log("randomMinReaction", randomMinReaction);
-    console.log("randomMaxReaction", randomMaxReaction);
-    console.log("randomMaxComment", randomMaxComment);
-
-    const filters: Filter[] = [
-      {
-        leftSideValue: "reaction_count",
-        rightSideValue: randomMinReaction.toString(),
-        operator: ">=",
-      },
-      {
-        leftSideValue: "reaction_count",
-        rightSideValue: randomMaxReaction.toString(),
-        operator: "<=",
-      },
-    ];
-
-    console.log("About to run promises");
-    console.time("promises");
-    const [
-      userNotes,
-      notesUserDisliked,
-      notesUserLiked,
-      notesFromAuthor,
-      byline,
-      inspirations,
-    ] = await Promise.all([
-      prisma.note.findMany({
-        where: {
-          userId: session.user.id,
-          isArchived: false,
-          OR: [{ status: "published" }, { status: "scheduled" }],
-        },
-        take: 15,
-        orderBy: { updatedAt: "desc" },
-      }),
-      prisma.note.findMany({
-        where: {
-          AND: [
-            { userId: session.user.id },
-            {
-              OR: [{ feedback: "dislike" }, { isArchived: true }],
-            },
-          ],
-        },
-        take: 25,
-        orderBy: { updatedAt: "desc" },
-      }),
-      prisma.note.findMany({
-        where: { userId: session.user.id, feedback: "like" },
-        take: 15,
-        orderBy: { updatedAt: "desc" },
-      }),
-      prismaArticles.notesComments.findMany({
-        where: {
-          authorId: parseInt(authorId.toString()),
-          noteIsRestacked: false,
-        },
-        orderBy: {
-          reactionCount: "desc",
-        },
-        select: {
-          handle: true,
-          name: true,
-          photoUrl: true,
-          body: true,
-        },
-        take: 15,
-      }),
-      getByline(parseInt(authorId.toString())),
-      searchSimilarNotes({
-        query,
-        limit: 20,
-        filters,
-        maxMatch: 0.5,
-      }),
-    ]);
-    console.timeEnd("promises");
-    const uniqueInspirations = inspirations
-      .filter(
-        (note, index, self) =>
-          index === self.findIndex(t => t.body === note.body),
-      )
-      .filter(
-        note =>
-          !notesUserDisliked.some(dislike => dislike.body === note.body) &&
-          !notesUserLiked.some(like => like.body === note.body),
-      )
-      .slice(0, 15);
-
-    // remove all userNotes that are in uniqueInspirations and in like and dislike
-    const userNotesNoDuplicates = userNotes.filter(
-      note =>
-        !uniqueInspirations.some(
-          inspiration => inspiration.body === note.body,
-        ) &&
-        !notesUserDisliked.some(dislike => dislike.body === note.body) &&
-        !notesUserLiked.some(like => like.body === note.body),
-    );
-
-    // const userNotesComments = await prismaArticles.notesComments.findMany({
-    //   where: {
-    //     commentId: {
-    //       in: userNotes.filter(note => note.substackNoteId).map(note => note.substackNoteId!),
-    //     },
-    //   },
-    //   orderBy: { date: "desc" },
-    // });
-
-    let preSelectedArticles: Post[] = [];
-    if (preSelectedPostIds && preSelectedPostIds.length > 0) {
-      preSelectedArticles = await getPublicationByIds(preSelectedPostIds);
-    }
-    const promptBody = {
-      userMetadata,
-      publication: userMetadata.publication,
-      // inspirationNotes: uniqueInspirations.map(
-      //   (note: NotesComments) => note.body,
-      // ),
-      inspirationNotes: [],
-      userPastNotes: notesFromAuthor.map(note => note.body),
-      userNotes: userNotesNoDuplicates,
-      notesUserDisliked,
-      notesUserLiked,
-      options: {
-        noteCount: count,
-        maxLength: 280,
-        // noteTemplates: useTopTypes ? noteTemplates : [],
+    const { messages, model, initialGeneratingModel, notesFromAuthor } =
+      await generateNotesPrompt({
+        notesCount,
+        requestedModel,
         topic,
-        preSelectedArticles,
-        language: userMetadata.preferredLanguage || undefined,
-      },
-    };
-    const generateNotesMessages = generateNotesPrompt_v2(promptBody);
-    // userMetadata.notesPromptVersion === 1
-    //   ? generateNotesPrompt_v1(promptBody)
-    //   : generateNotesPrompt_v2(promptBody);
+        preSelectedPostIds,
+        userMetadata: userMetadata as UserMetadata & {
+          publication: PublicationMetadata;
+        },
+      });
 
+    if (!messages) {
+      return {
+        success: false,
+        errorMessage: "Failed to generate notes",
+        status: 500,
+      };
+    }
     const promptResponse = await runPrompt(
-      generateNotesMessages,
+      messages,
       initialGeneratingModel,
       "N-GEN-" + session.user.name,
     );
@@ -359,16 +377,15 @@ export async function generateNotes({
       modelsRequireImprovement.includes(model);
     if (shouldImprove) {
       const improveNoteBody = {
-        userMetadata,
+        userMetadata: userMetadata as UserMetadata & {
+          publication: PublicationMetadata;
+        },
         publication: userMetadata.publication,
         notesToImprove: newNotesWithIds,
         language: userMetadata.preferredLanguage || undefined,
       };
       const improveNotesMessages =
         generateNotesWritingStylePrompt_v2(improveNoteBody);
-      //   userMetadata.notesPromptVersion === 1
-      //     ? generateNotesWritingStylePrompt_v1(improveNoteBody)
-      //     : generateNotesWritingStylePrompt_v2(improveNoteBody);
       const improvedNotesResponse = await runPrompt(
         improveNotesMessages,
         model === "openai/gpt-4.5-preview"
@@ -384,6 +401,8 @@ export async function generateNotes({
         return improvedNote ? { ...note, body: improvedNote.body } : note;
       })
       .map(formatNote);
+
+    const byline = await getByline(parseInt(authorId.toString()));
 
     const handle = byline?.handle || notesFromAuthor[0]?.handle;
     const name = byline?.name || notesFromAuthor[0]?.name;
@@ -440,13 +459,13 @@ export async function generateNotes({
     };
   } catch (error: any) {
     if (didConsumeCredits) {
-      await undoUseCredits(session.user.id, "notesGeneration", notesToGenerate);
+      await undoUseCredits(userId, "notesGeneration", cost);
     }
     const code = error.code || "unknown";
     if (code === 429 || error instanceof Model429Error) {
       loggerServer.error("Rate limit exceeded", {
         error,
-        userId: session?.user.id,
+        userId,
       });
       return {
         success: false,
@@ -456,7 +475,7 @@ export async function generateNotes({
     }
     loggerServer.error("Failed to generate notes", {
       error,
-      userId: session?.user.id,
+      userId,
     });
     return {
       success: false,

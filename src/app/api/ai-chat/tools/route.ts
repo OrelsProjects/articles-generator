@@ -92,7 +92,6 @@ export async function POST(request: NextRequest) {
           const result = await generateNotes({
             notesCount: count || 3,
             requestedModel: "auto",
-            useTopTypes: false,
             topic: topic || "",
             preSelectedPostIds: [],
           });

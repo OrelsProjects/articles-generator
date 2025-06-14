@@ -26,6 +26,7 @@ interface SaveDropdownProps {
   confirmedSchedule?: boolean;
   saving?: boolean;
   isInspiration?: boolean;
+  isAiGenerated?: boolean;
   isFree?: boolean;
 }
 
@@ -37,6 +38,7 @@ export function SaveDropdown({
   disabled = false,
   saving = false,
   isInspiration = false,
+  isAiGenerated = false,
   isFree = false,
 }: SaveDropdownProps) {
   const { getNextAvailableSchedule, loading: queueLoading } = useQueue();
@@ -88,7 +90,7 @@ export function SaveDropdown({
     }
   };
 
-  if (isInspiration || isFree) {
+  if (isInspiration || isFree || isAiGenerated) {
     return (
       <Button
         variant="default"

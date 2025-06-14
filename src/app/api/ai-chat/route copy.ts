@@ -4,15 +4,14 @@ import { prisma, prismaArticles } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { runPrompt, runPromptStream } from "@/lib/open-router";
 import { z } from "zod";
+import { IdeaStatus, PublicationMetadata, UserMetadata } from "@prisma/client";
 import { getAuthorId } from "@/lib/dal/publication";
 import { getPreProcessorPrompt } from "@/lib/utils/chat/prompts";
 import { parseJson } from "@/lib/utils/json";
 import loggerServer from "@/loggerServer";
-import { generateNotes } from "@/lib/utils/generate/notes";
+import { generateNotes, generateNotesPrompt } from "@/lib/utils/generate/notes";
 import { generateIdeas } from "@/lib/utils/ideas";
-import { getUserArticlesByUserId } from "@/lib/dal/articles";
-import { Note } from "@prisma/client";
-import { getNotesPromptNoteMeta } from "@/lib/prompts";
+import { getUserArticles, getUserArticlesByUserId } from "@/lib/dal/articles";
 
 const createChatSchema = z.object({
   message: z.string().min(1).max(10000),
@@ -296,36 +295,12 @@ async function executeTool(
 }
 
 // Helper function to build system prompt
-async function buildSystemPrompt(
-  userContext: {
-    writingStyle: string;
-    topics: string;
-    personality: string;
-    description: string;
-    recentNotes: { preview: string }[];
-  },
-  userId: string,
-) {
-  const userNotes = await prisma.note.findMany({
-    where: {
-      userId,
-      isArchived: false,
-      OR: [{ status: "published" }, { status: "scheduled" }],
-    },
-    take: 15,
-    orderBy: { updatedAt: "desc" },
-  });
-
+function buildSystemPrompt(userContext: any) {
   const recentNotesSection =
     userContext.recentNotes?.length > 0
       ? `Recent Notes Preview:
 ${userContext.recentNotes.map((note: any) => `- ${note.preview}`).join("\n")}`
       : "";
-
-  const { lenFloor, lenCeil, emojiRatio } = getNotesPromptNoteMeta(
-    userNotes,
-    280,
-  );
 
   return `You are WriteStack MCP – a deeply integrated AI writing companion built into the user's editor. You operate with full access to the user's context, tone, and writing style. You are their second brain – focused, efficient, and never preachy.
 
@@ -345,27 +320,10 @@ Your outputs must always:
 - Use clear formatting (headings, bullet points, spacing)
 - Stream responses smoothly
 
-When generating notes:
-
-1. wrap each note content with \`\`\`note markers:
+When generating notes, wrap each note content with \`\`\`note markers:
 \`\`\`note
 Your note content here...
 \`\`\`
-
-2. Use the following length range:
-- Minimum length: ${lenFloor} characters
-- Maximum length: ${lenCeil} characters
-3. YOU MUST USE MD format for the note content.
-4. NO hashtags, colons in hooks, or em dashes.
-5. If ${emojiRatio} ≤ 0.20, do not use emojis. Otherwise, match user ratio.
-6. Use "\\n\\n" for **every** line break. Never output a single newline.
-7. Twist every borrowed idea ≥ 40 % so it’s fresh.
-
-⚠️ IMPORTANT – HARD LIMIT  
-Any note > ${lenCeil} chars (spaces *included*) is invalid.  
-Regenerate it until it fits.
-
-
 
 When generating articles, add the appropriate marker:
 - For articles: Start with "[Generated Article]" or "## Article:"
@@ -448,10 +406,7 @@ export async function POST(request: NextRequest) {
         session.user.id,
         includeRecentNotes,
       );
-      const systemPrompt = await buildSystemPrompt(
-        userContext,
-        session.user.id,
-      );
+      const systemPrompt = buildSystemPrompt(userContext);
 
       // Build messages array for the LLM
       let messages = [
@@ -539,6 +494,42 @@ export async function POST(request: NextRequest) {
               fullResponse += statusMessage + "\n\n";
             }
 
+            const includeRecentNotes =
+              preProcessorDecision.nextStep !== "useTool";
+            let systemPrompt = "";
+            let userMessage = "";
+
+            if (preProcessorDecision.tool === "generateNotes") {
+              const userMetadata = await prisma.userMetadata.findUnique({
+                where: { userId: session.user.id },
+                include: { publication: true },
+              });
+              const { messages } = await generateNotesPrompt({
+                notesCount: preProcessorDecision.amount || 3,
+                requestedModel: "claude-3.7-sonnet",
+                preSelectedPostIds: [],
+                userMetadata: userMetadata as UserMetadata & {
+                  publication: PublicationMetadata;
+                },
+              });
+              if (messages) {
+                systemPrompt = messages[0].content;
+                userMessage = messages[1].content;
+              } else {
+                const userContext = await getUserContext(
+                  session.user.id,
+                  includeRecentNotes,
+                );
+                systemPrompt = buildSystemPrompt(userContext);
+              }
+            }
+
+            messages = [
+              { role: "system", content: systemPrompt },
+              { role: "assistant", content: validatedData.message },
+              { role: "user", content: userMessage },
+            ];
+
             for await (const chunk of runPromptStream(
               messages,
               "anthropic/claude-3.7-sonnet",
@@ -605,25 +596,21 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Determine if we need to include recent notes in user context
-      // Only include them if the pre-processor doesn't suggest using a tool (to avoid redundant data)
       const includeRecentNotes = preProcessorDecision.nextStep !== "useTool";
-
-      // Get user context
       const userContext = await getUserContext(
         session.user.id,
         includeRecentNotes,
       );
-      const systemPrompt = await buildSystemPrompt(
-        userContext,
-        session.user.id,
-      );
+      const systemPrompt = buildSystemPrompt(userContext);
 
       // Build messages array
       let messages = [
         { role: "system", content: systemPrompt },
-        { role: "user", content: validatedData.message },
+        { role: "assistant", content: validatedData.message },
       ];
+
+      // Determine if we need to include recent notes in user context
+      // Only include them if the pre-processor doesn't suggest using a tool (to avoid redundant data)
 
       // If pre-processor suggests using a tool, execute it first
       if (
@@ -666,6 +653,7 @@ export async function POST(request: NextRequest) {
 
       // Stream response
       const encoder = new TextEncoder();
+
       const stream = new ReadableStream({
         async start(controller) {
           let fullResponse = "";

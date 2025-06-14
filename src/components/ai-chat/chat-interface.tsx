@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { MessageBubble } from "./message-bubble";
 import { ChatInput } from "./chat-input";
 import { LoadingBubble } from "./loading-bubble";
+import { StreamingNote } from "./streaming-note";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, MessageSquare, ArrowDown, Menu } from "lucide-react";
@@ -24,6 +25,9 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState("");
+  const [streamingNotes, setStreamingNotes] = useState<string[]>([]);
+  const [isStreamingNote, setIsStreamingNote] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -152,13 +156,44 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
     setCurrentChatId(null);
     setMessages([]);
     setStreamingMessage("");
+    setStreamingNotes([]);
+    setIsStreamingNote(false);
     setIsUserScrolling(false);
     setShowScrollButton(false);
     // Close sidebar on mobile after creating new chat
     setIsSidebarOpen(false);
   };
 
+  const cancelStream = () => {
+    // Save any partial content before cancelling
+    if (streamingMessage.trim()) {
+      const partialMessage: AIMessage = {
+        id: "partial-" + Date.now(),
+        chatId: currentChatId || "",
+        role: "assistant",
+        content: streamingMessage,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      setMessages(prev => [...prev, partialMessage]);
+    }
+
+    if (abortController) {
+      abortController.abort();
+      setAbortController(null);
+    }
+    setIsStreaming(false);
+    setStreamingMessage("");
+    setStreamingNotes([]);
+    setIsStreamingNote(false);
+  };
+
   const sendMessage = async (message: string) => {
+    let accumulatedMessage = "";
+    let chatId = currentChatId;
+    let currentStreamingNotes: string[] = [];
+    let isCurrentlyStreamingNote = false;
+
     try {
       setIsStreaming(true);
       setIsUserScrolling(false); // Reset user scrolling when sending new message
@@ -178,6 +213,10 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
       };
       setMessages(prev => [...prev, tempUserMessage]);
 
+      // Create abort controller for cancellation
+      const controller = new AbortController();
+      setAbortController(controller);
+
       // Prepare request body
       const body = currentChatId
         ? { chatId: currentChatId, message }
@@ -188,6 +227,7 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        signal: controller.signal,
       });
 
       if (!response.ok) throw new Error("Failed to send message");
@@ -195,8 +235,6 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
       // Handle streaming response
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-      let accumulatedMessage = "";
-      let chatId = currentChatId;
 
       while (reader) {
         const { done, value } = await reader.read();
@@ -226,6 +264,29 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
 
               if (data.token) {
                 accumulatedMessage += data.token;
+                
+                // Check if we're streaming a note
+                const noteMatches = accumulatedMessage.match(/```note\n([\s\S]*?)(?:\n```|$)/g);
+                if (noteMatches) {
+                  const noteContents = noteMatches.map(match => {
+                    const content = match.match(/```note\n([\s\S]*?)(?:\n```|$)/);
+                    return content ? content[1] : '';
+                  });
+                  currentStreamingNotes = noteContents;
+                  setStreamingNotes(currentStreamingNotes);
+                  setIsStreamingNote(true);
+                  isCurrentlyStreamingNote = true;
+                } else if (isCurrentlyStreamingNote) {
+                  // Continue updating streaming notes even without complete blocks
+                  const partialNoteMatch = accumulatedMessage.match(/```note\n([\s\S]*)$/);
+                  if (partialNoteMatch) {
+                    const partialContent = partialNoteMatch[1];
+                    const updatedNotes = [...currentStreamingNotes];
+                    updatedNotes[updatedNotes.length - 1] = partialContent;
+                    setStreamingNotes(updatedNotes);
+                  }
+                }
+                
                 setStreamingMessage(accumulatedMessage);
               }
 
@@ -242,6 +303,8 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
 
                 setMessages(prev => [...prev, assistantMessage]);
                 setStreamingMessage("");
+                setStreamingNotes([]);
+                setIsStreamingNote(false);
 
                 // Only refresh chat list if this is a new chat, and do it without affecting scroll
                 if (!currentChatId && chatId) {
@@ -250,43 +313,82 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
                     fetchChatHistory();
                   }, 1000);
                 }
+                return; // Exit successfully
               }
 
               if (data.error) {
                 console.error("Streaming error:", data.error);
-                // Show error in chat
+                // If we have partial content, save it before showing error
+                if (accumulatedMessage.trim()) {
+                  const partialMessage: AIMessage = {
+                    id: "partial-" + Date.now(),
+                    chatId: chatId || currentChatId || "",
+                    role: "assistant",
+                    content: accumulatedMessage,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                  };
+                  setMessages(prev => [...prev, partialMessage]);
+                }
+                
+                // Show error as separate message
                 const errorMessage: AIMessage = {
                   id: "error-" + Date.now(),
-                  chatId: chatId || "",
+                  chatId: chatId || currentChatId || "",
                   role: "assistant",
                   content: `Error: ${data.error}`,
                   createdAt: new Date(),
                   updatedAt: new Date(),
                 };
                 setMessages(prev => [...prev, errorMessage]);
-                setStreamingMessage("");
+                return; // Exit after handling error
               }
             } catch (e) {
               console.error("Failed to parse SSE data:", e);
+              // Continue processing other lines
             }
           }
         }
       }
     } catch (error) {
       console.error("Failed to send message:", error);
-      // Show error in chat
-      const errorMessage: AIMessage = {
-        id: "error-" + Date.now(),
-        chatId: currentChatId || "",
-        role: "assistant",
-        content: "Sorry, I encountered an error. Please try again.",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      
+      // Check if it's an abort error (user cancellation)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log("Request was cancelled by user");
+        // Don't show error message for user cancellation
+      } else {
+        // For other errors, save partial content if any, then show error
+        if (accumulatedMessage.trim()) {
+          const partialMessage: AIMessage = {
+            id: "partial-" + Date.now(),
+            chatId: chatId || currentChatId || "",
+            role: "assistant",
+            content: accumulatedMessage,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          setMessages(prev => [...prev, partialMessage]);
+        }
+        
+        // Show error as separate message
+        const errorMessage: AIMessage = {
+          id: "error-" + Date.now(),
+          chatId: chatId || currentChatId || "",
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please try again.",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      }
     } finally {
+      // Clear streaming states
       setIsStreaming(false);
       setStreamingMessage("");
+      setStreamingNotes([]);
+      setIsStreamingNote(false);
+      setAbortController(null);
     }
   };
 
@@ -393,7 +495,16 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
                     />
                   ))}
 
-                  {streamingMessage && (
+                  {/* Render streaming notes */}
+                  {streamingNotes.map((noteContent, index) => (
+                    <StreamingNote
+                      key={`streaming-note-${index}`}
+                      content={noteContent}
+                    />
+                  ))}
+
+                  {/* Render regular streaming message if not a note */}
+                  {streamingMessage && !isStreamingNote && (
                     <MessageBubble
                       role="assistant"
                       content={streamingMessage}
@@ -402,7 +513,7 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
                     />
                   )}
 
-                  {isStreaming && !streamingMessage && <LoadingBubble />}
+                  {isStreaming && !streamingMessage && !isStreamingNote && <LoadingBubble />}
                 </>
               )}
               <div ref={messagesEndRef} />
@@ -423,7 +534,9 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
           <ChatInput
             className="mb-12"
             onSendMessage={sendMessage}
-            isLoading={isStreaming}
+            onCancelStream={cancelStream}
+            isLoading={false}
+            isStreaming={isStreaming}
           />
         </div>
       </div>

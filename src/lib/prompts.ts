@@ -803,6 +803,31 @@ export const generateImproveNoteTextPrompt = (
   };
 };
 
+export const getNotesPromptNoteMeta = (userNotes: Note[], maxLength: number) => {
+  const userPastNotes = userNotes.map(n => n.body);
+  const avgLen = userPastNotes.length
+    ? Math.round(
+        userPastNotes.reduce((s, n) => s + n.length, 0) / userPastNotes.length,
+      )
+    : 160;
+
+  // ±20 % band but never under 30 chars.
+  const lenFloor = Math.max(20, Math.round(avgLen * 0.2));
+  const lenCeil = Math.min(maxLength, Math.round(avgLen * 1.4));
+  const emojiRegex = /(\p{Extended_Pictographic}|\p{Emoji_Component})/gu;
+
+  const emojiHits = userPastNotes.reduce(
+    (c, n) => c + (emojiRegex.test(n) ? 1 : 0),
+    0,
+  );
+  const emojiRatio = emojiHits / Math.max(1, userPastNotes.length);
+
+  return {
+    lenFloor,
+    lenCeil,
+    emojiRatio,
+  };
+};
 // generateNotesPrompt_v2 – spaced‑note upgrade
 // -----------------------------------------------------------------------------
 // Ensures the model produces visually scannable notes:
@@ -868,15 +893,7 @@ export const generateNotesPrompt_v2 = ({
     : 160;
 
   // ±20 % band but never under 30 chars.
-  const lenFloor = Math.max(20, Math.round(avgLen * 0.2));
-  const lenCeil = Math.min(maxLength, Math.round(avgLen * 1.4));
-  const emojiRegex = /(\p{Extended_Pictographic}|\p{Emoji_Component})/gu;
-
-  const emojiHits = userPastNotes.reduce(
-    (c, n) => c + (emojiRegex.test(n) ? 1 : 0),
-    0,
-  );
-  const emojiRatio = emojiHits / Math.max(1, userPastNotes.length);
+  const { lenFloor, lenCeil, emojiRatio } = getNotesPromptNoteMeta(userNotes, maxLength);
 
   const rareTopics = Object.entries(topicsCount)
     .sort(([, a], [, b]) => a - b)

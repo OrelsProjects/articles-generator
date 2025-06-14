@@ -18,6 +18,7 @@ Based on the user's request, return ONE of these response formats:
 If the user wants to generate notes, return:
 {
   "tool": "generateNotes",
+  "notesCount": <number of notes to generate (1-50, default 3)>,
   "nextStep": "ready"
 }
 
@@ -27,7 +28,7 @@ If the user wants to generate article ideas or outlines, return:
   "nextStep": "ready"
 }
 
-### For requests that need data fetching:
+### For requests that need data fetching (Like generating notes/ideas, to get a sense of what the user usually writes about):
 If you can't determine the exact intent but know they need data, return:
 {
   "tool": "unknown",

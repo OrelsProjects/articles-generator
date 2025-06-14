@@ -73,7 +73,7 @@ export interface NoteDraft {
   authorId: number | null;
   name?: string;
   handle?: string;
-  status: NoteStatus | "inspiration";
+  status: NoteStatus | "inspiration" | "chat-generated";
   feedback?: NoteFeedback;
   feedbackComment?: string;
   authorName: string;
