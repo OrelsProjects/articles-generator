@@ -34,6 +34,7 @@ import {
 } from "@/types/notes-stats";
 import { toast } from "react-toastify";
 import { useNotes } from "@/lib/hooks/useNotes";
+import useMediaQuery from "@/lib/hooks/useMediaQuery";
 
 interface UserWriterProfileProps {
   writer?: UserWriterWithData | null;
@@ -91,6 +92,7 @@ export default function UserWriterProfile({
   isLoadingOrderBy,
   isLoadingOrderDirection,
 }: UserWriterProfileProps) {
+  const isMobileOrTablet = useMediaQuery("(max-width: 1024px)");
   const { selectNote } = useNotes();
 
   useEffect(() => {
@@ -98,6 +100,19 @@ export default function UserWriterProfile({
       toast.error(`Error loading writer ${error.message}`);
     }
   }, [error]);
+
+  if (isMobileOrTablet) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-center text-foreground px-4">
+        This feature is not available on mobile or tablet. Try it on your
+        desktop 😊.
+      </div>
+    );
+  }
+
+  if (isLoading || (!writer && !error)) {
+    return <LoadingNotes />;
+  }
 
   if (!writer) {
     return <div className="text-center text-destructive">Writer not found</div>;
@@ -118,10 +133,6 @@ export default function UserWriterProfile({
       />
     ),
   }));
-
-  if (isLoading || (!writer && !error)) {
-    return <LoadingNotes />;
-  }
 
   return (
     <div className="h-screen bg-background">
