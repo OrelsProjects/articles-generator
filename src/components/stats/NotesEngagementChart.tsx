@@ -523,7 +523,7 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-4"
+      className="space-y-4 hidden lg:block"
     >
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

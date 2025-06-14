@@ -88,7 +88,7 @@ export default function StatisticsPage() {
       <div>
         <div className="flex flex-col gap-4 mb-8">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col lg:flex-row gap-4 lg:gap-0 items-start lg:items-center justify-between">
               <h2 className="text-2xl font-bold">Notes Statistics</h2>
               <motion.div
                 initial={{ opacity: 0, y: -10 }}

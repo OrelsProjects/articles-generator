@@ -23,6 +23,7 @@ import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
+import useMediaQuery from "@/lib/hooks/useMediaQuery";
 
 const intervalLabels: Record<ReactionInterval, string> = {
   day: "Daily",
@@ -155,12 +156,10 @@ interface NotesReactionsChartProps {
 }
 
 export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
-  const {
-    noteStats,
-    loadingReactions,
-    errorReactions,
-    reactionsInterval,
-  } = useNotesStats();
+  const { noteStats, loadingReactions, errorReactions, reactionsInterval } =
+    useNotesStats();
+
+  const isMobileOrTablet = useMediaQuery("(max-width: 1024px)");
 
   const [hoveredMetric, setHoveredMetric] = useState<MetricType>(null);
   const [visibleMetrics, setVisibleMetrics] = useState<Set<string>>(
@@ -329,7 +328,7 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
     >
       <Card className="w-full">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-0 items-start lg:items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               Notes Statistics
             </CardTitle>
@@ -360,7 +359,7 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
                 <span>Outliers normalized</span>
               </div>
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-x-auto">
               <Badge
                 variant="outline"
                 className={cn(
@@ -417,8 +416,8 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
           </div>
         </CardHeader>
 
-        <CardContent>
-          {(loadingReactions || isLoading) ? (
+        <CardContent className={cn("p-6", isMobileOrTablet && "p-2 px-0")}>
+          {loadingReactions || isLoading ? (
             <div className="h-[300px] flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
@@ -434,17 +433,26 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
               </div>
             </div>
           ) : (
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className={cn(
+              "h-[300px] w-full", 
+              isMobileOrTablet ? "overflow-x-auto -mx-2" : "overflow-x-auto"
+            )}>
+              <ResponsiveContainer 
+                width="100%" 
+                height="100%" 
+                minWidth={isMobileOrTablet ? 320 : undefined}
+              >
                 <AreaChart
                   data={chartData}
                   margin={{
                     top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: reactionsInterval === "week" ? 60 : 5,
+                    right: isMobileOrTablet ? 5 : 30,
+                    left: isMobileOrTablet ? 5 : 20,
+                    bottom: isMobileOrTablet
+                      ? (reactionsInterval === "week" ? 40 : 5)
+                      : (reactionsInterval === "week" ? 60 : 5),
                   }}
-                  className="h-full"
+                  className="h-full w-full"
                 >
                   <defs>
                     <linearGradient
@@ -496,7 +504,7 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    className="opacity-30 h-full"
+                    className="opacity-20 h-full"
                     stroke="hsl(var(--muted-foreground))"
                   />
                   <XAxis
@@ -536,6 +544,7 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
                   {/* Reactions Area */}
                   {isMetricVisible("reactions") && (
                     <Area
+                      className="w-full"
                       type={reactionsInterval === "day" ? "basis" : "monotone"}
                       dataKey="reactions"
                       stroke="hsl(var(--primary))"
