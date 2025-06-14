@@ -8,6 +8,8 @@ import { NoteDraft } from "@/types/note";
 import { selectNotes } from "@/lib/features/notes/notesSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
+import { Editor, EditorContent, useEditor } from "@tiptap/react";
+import { loadContent, notesTextEditorOptions } from "@/lib/utils/text-editor";
 
 interface StreamingNoteProps {
   content: string;
@@ -26,6 +28,14 @@ export function StreamingNote({
 
   const [displayedContent, setDisplayedContent] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+
+  const editor = useEditor(notesTextEditorOptions());
+
+  useEffect(() => {
+    if (editor) {
+      loadContent(content, editor);
+    }
+  }, [editor, content]);
 
   // Animate content appearance
   useEffect(() => {
@@ -130,7 +140,11 @@ export function StreamingNote({
                   displayedContent ? "opacity-100" : "opacity-50",
                 )}
               >
-                {noteContent || "Generating your note..."}
+                {editor && noteContent ? (
+                  <EditorContent editor={editor} />
+                ) : (
+                  noteContent || "Generating your note..."
+                )}
               </div>
 
               {/* Typing cursor */}

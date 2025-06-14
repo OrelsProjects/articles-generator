@@ -40,11 +40,21 @@ interface PreProcessorResponse {
   otherLLM?: boolean;
 }
 
+interface UserContext {
+  writingStyle: string;
+  topics: string;
+  personality: string;
+  recentNotes: { preview: string }[];
+  generatedDescription: string;
+  notesDescription: string;
+  specialEvents: string;
+}
+
 // Helper function to get user context
 async function getUserContext(
   userId: string,
   includeRecentNotes: boolean = false,
-) {
+): Promise<UserContext> {
   const userMetadata = await prisma.userMetadata.findUnique({
     where: { userId },
     include: {
@@ -84,15 +94,14 @@ async function getUserContext(
       userMetadata?.noteTopics ||
       userMetadata?.publication?.topics ||
       "general topics",
+    notesDescription: userMetadata?.notesDescription || "",
+    generatedDescription: userMetadata?.publication?.generatedDescription || "",
+    specialEvents: userMetadata?.publication?.specialEvents || "",
     personality:
       userMetadata?.publication?.personality || "helpful and focused",
-    description:
-      userMetadata?.notesDescription ||
-      userMetadata?.publication?.generatedDescription ||
-      "",
     recentNotes: includeRecentNotes
       ? recentNotes.map(note => ({
-          preview: note.body.substring(0, 200) + "...",
+          preview: note.body,
         }))
       : [],
   };
@@ -296,16 +305,7 @@ async function executeTool(
 }
 
 // Helper function to build system prompt
-async function buildSystemPrompt(
-  userContext: {
-    writingStyle: string;
-    topics: string;
-    personality: string;
-    description: string;
-    recentNotes: { preview: string }[];
-  },
-  userId: string,
-) {
+async function buildSystemPrompt(userContext: UserContext, userId: string) {
   const userNotes = await prisma.note.findMany({
     where: {
       userId,
@@ -335,7 +335,8 @@ User's Writing Context:
 - Writing Style: ${userContext.writingStyle}
 - Common Topics: ${userContext.topics}
 - Personality: ${userContext.personality}
-- About: ${userContext.description}
+- About: ${userContext.generatedDescription}
+- Special Events: ${userContext.specialEvents}
 
 ${recentNotesSection}
 
