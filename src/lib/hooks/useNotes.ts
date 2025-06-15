@@ -374,9 +374,10 @@ export const useNotes = () => {
     try {
       const isEmpty = isEmptyNote(selectedNote);
       const isInspiration = selectedNote?.status === "inspiration";
-      if (isEmpty || isInspiration) {
-        loadingCreateNoteRef.current = true;
+      const isAiGenerated = selectedNote?.status === "chat-generated";
+      if (isEmpty || isInspiration || isAiGenerated) {
         // It's a note from the inspiration apge, we need to create a user note first.
+        loadingCreateNoteRef.current = true;
         try {
           const data = await createNoteDraft(
             {
@@ -405,6 +406,7 @@ export const useNotes = () => {
           loadingCreateNoteRef.current = false;
         }
       } else {
+        // It's a draft note from the user. We need to update the note body.
         if (!noteId) {
           throw new Error("Note ID is null");
         }
