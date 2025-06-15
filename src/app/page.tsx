@@ -65,7 +65,7 @@ const AnimatedHighlight = ({ children }: { children: React.ReactNode }) => {
 const faq = [
   {
     question: `Do I need to leave my computer running to schedule notes?`,
-    answer: `Yes. Just leave the ${appName}'s window in the background and it will automatically publish your notes at anytime you choose!`,
+    answer: `Yes. Just leave the chrome running in the background (No matter which website) and it will automatically publish your notes at anytime you choose!`,
   },
   {
     question: `Do you use my draft notes?`,
@@ -73,11 +73,11 @@ const faq = [
   },
   {
     question: "Do you use my paid articles?",
-    answer: `No. We do not show, use or give access to your paid articles to anyone but you.`,
+    answer: `No. We do not show, use or give access to your paid articles to anyone.`,
   },
   {
     question: `Can I schedule if I have Firefox or Safari?`,
-    answer: `The extension is only available for Chrome. 
+    answer: `The extension is only available for Chrome, Brave, Opera and Edge. 
     <br/><br/>
     But you can schedule through Chrome and just minimize it and use your favorite browser.`,
   },
