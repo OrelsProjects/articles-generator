@@ -6,10 +6,9 @@ import { getUrlComponents } from "@/lib/utils/url";
 import loggerServer from "@/loggerServer";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
+  const { url } = await request.json();
   try {
-    const url = request.nextUrl.searchParams.get("q");
-
     loggerServer.info("[INFO-URL] Validating publication: " + url);
 
     if (!url) {
@@ -17,7 +16,7 @@ export async function GET(request: NextRequest) {
       throw new Error("URL is required");
     }
 
-    const { validUrl } = getUrlComponents(url, { withoutWWW: true });
+    const { validUrl } = getUrlComponents(url);
 
     const responseBody: {
       valid: boolean;

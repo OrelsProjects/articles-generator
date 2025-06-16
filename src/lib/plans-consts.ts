@@ -112,3 +112,14 @@ export const pricePerTokens = [
     price: 59.99,
   },
 ];
+
+export const getPlanName = (plan: Plan) => {
+  switch (plan) {
+    case Plan.hobbyist:
+      return "Hobbyist";
+    case Plan.standard:
+      return "Standard";
+    case Plan.premium:
+      return "Premium";
+  }
+};

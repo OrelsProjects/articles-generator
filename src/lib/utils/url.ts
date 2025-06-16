@@ -192,7 +192,7 @@ export const getUrlComponents = (
   options: {
     withoutWWW?: boolean;
   } = {
-    withoutWWW: true,
+    withoutWWW: false,
   },
 ): UrlComponents => {
   if (!url) {
@@ -221,21 +221,22 @@ export const getUrlComponents = (
 
     if (!startsWithHttpsAndWWW) {
       if (startsWithWWW) {
-        const urlWithoutWWW = validUrl.slice(4, validUrl.length);
         validUrl = `https://${validUrl}`;
         // remove www. from the url
-        mainComponentInUrl = urlWithoutWWW.split(".")[0];
+        mainComponentInUrl = validUrl.split(".")[1];
       } else if (startsWithHttps) {
         // if has 3 components, for example read.abc.com, no need www.
         if (validUrl.split(".").length >= 3) {
           // the main is the second one
           mainComponentInUrl = validUrl.split(".")[1];
+          validUrl = validUrl.replace("https://", "").replace("www.", "");
+          validUrl = `https://${validUrl}`;
         } else {
           validUrl =
             validUrl.slice(0, 8) + "www." + validUrl.slice(8, validUrl.length);
           // remove https://www. from the url
-          const urlWithoutWWW = validUrl.slice(12, validUrl.length);
-          mainComponentInUrl = urlWithoutWWW.split(".")[0];
+          console.log("validUrl", validUrl);
+          mainComponentInUrl = validUrl.split(".")[1];
         }
       } else {
         // Doesn't start with https://www.
@@ -248,13 +249,11 @@ export const getUrlComponents = (
         }
       }
     } else {
-      console.log("validUrl", validUrl);
       // Starts with https://www.. It's a vlaid url, just remove everything after the first '/' after the last occurence of '.'
       // const urlNoSubstack = validUrl.slice(0, validUrl.indexOf("substack.com"));
       // remove https://www.
       const urlWithoutHttpsWWW = validUrl.slice(12, validUrl.length);
       mainComponentInUrl = urlWithoutHttpsWWW.split(".")[0];
-      console.log("mainComponentInUrl", mainComponentInUrl);
     }
   } else {
     const urlNoSubstack = validUrl.slice(0, validUrl.indexOf("substack.com"));
@@ -264,11 +263,6 @@ export const getUrlComponents = (
       : urlNoSubstack;
     mainComponentInUrl = urlWithoutHttps.split(".")[0];
   }
-
-  console.log("Done. startingUrl: ", url, "values: ", {
-    validUrl,
-    mainComponentInUrl,
-  });
 
   // remove everything after the first '/' after the last occurence of '.'
   const lastDotIndex = validUrl.lastIndexOf(".");

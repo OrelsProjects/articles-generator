@@ -63,7 +63,13 @@ export async function GET(request: NextRequest) {
         userId: "not logged in",
       },
     );
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      {
+        error:
+          "Make sure you are connected to the same account on WriteStack and on Substack",
+      },
+      { status: 403 },
+    );
   }
   const decoded = decodeKey(key);
   const userId = decoded.userId;

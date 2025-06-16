@@ -72,6 +72,13 @@ const faq = [
     answer: `No. We never use your draft notes. We respect what you create and your drafts are private.`,
   },
   {
+    question: `Will anybody be able to see my private statistics?`,
+    answer: `No. The private statistics are fetched via the Chrome extension, to ensure the statistics belong to the logged in user on Substack.
+    <br/><br/>
+    So unless someone has your credentials, they will not be able to see your private statistics.
+    `,
+  },
+  {
     question: "Do you use my paid articles?",
     answer: `No. We do not show, use or give access to your paid articles to anyone.`,
   },

@@ -37,7 +37,7 @@ export async function getBylinesByUrl(
   url: string,
   options: { createIfNotExists: boolean } = { createIfNotExists: false },
 ) {
-  const { validUrl } = getUrlComponents(url, { withoutWWW: true });
+  const { validUrl } = getUrlComponents(url, { withoutWWW: false });
   if (!validUrl) {
     throw new Error("Invalid URL");
   }
@@ -52,8 +52,6 @@ export async function getBylinesByUrl(
     if (validatedPosts.length === 0) {
       throw new Error("No posts found");
     }
-
-    const publicationId = validatedPosts[0].publication_id;
 
     const bylines = validatedPosts
       .flatMap(post => post.publishedBylines)

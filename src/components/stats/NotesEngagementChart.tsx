@@ -12,21 +12,10 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useNotesStats } from "@/lib/hooks/useNotesStats";
 import { ReactionInterval } from "@/types/notes-stats";
-import {
-  BarChart3,
-  PuzzleIcon,
-  Users,
-  UserPlus,
-  CreditCard,
-  CoinsIcon,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { PuzzleIcon, Users, UserPlus, CoinsIcon } from "lucide-react";
 import { motion } from "framer-motion";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -35,6 +24,9 @@ import {
 import { CompactNoteComponent } from "@/components/stats/CompactNoteComponent";
 import { useExtension } from "@/lib/hooks/useExtension";
 import { useAppSelector } from "@/lib/hooks/redux";
+import PremiumFeatureSoonOverlay from "@/components/ui/premium-feature-soon-overlay";
+import { Plan } from "@prisma/client";
+import { cn } from "@/lib/utils";
 
 type MetricType =
   | "clicks"
@@ -101,10 +93,12 @@ const formatPeriod = (period: string, interval: ReactionInterval) => {
 const CustomTooltip = ({
   active,
   payload,
+  dataKeyLabel,
   label,
   interval,
   isNormalized,
   originalData,
+  isAdvancedStats,
 }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -123,7 +117,15 @@ const CustomTooltip = ({
           return (
             <div key={index} className="text-sm" style={{ color: entry.color }}>
               <span className="font-semibold">{entry.value}</span>{" "}
-              {entry.dataKey}
+              {dataKeyLabel}
+              {isAdvancedStats ? <br /> : ""}
+              {isAdvancedStats ? (
+                <span className="text-xs text-muted-foreground ml-1">
+                  (Click to see details)
+                </span>
+              ) : (
+                ""
+              )}
               {originalValue && originalValue !== entry.value && (
                 <span className="text-xs text-muted-foreground ml-1">
                   (was {originalValue})
@@ -165,7 +167,10 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
   const [normalizeData, setNormalizeData] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
+  const [clickPosition, setClickPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   const refreshDataIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
@@ -326,32 +331,43 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
       const rect = chartContainerRef.current.getBoundingClientRect();
       setClickPosition({
         x: event.clientX,
-        y: event.clientY
+        y: event.clientY,
       });
     }
   };
 
-  const renderChart = (
-    dataKey: string,
-    title: string,
-    color: string,
-    gradientId: string,
-    className?: string,
+  const renderChart = ({
+    dataKey,
+    title,
+    dataKeyLabel,
+    color,
+    gradientId,
+    className,
+    isAdvancedStats,
+    dummyData,
+  }: {
+    dataKey: string;
+    title: string;
+    dataKeyLabel: string;
+    color: string;
+    gradientId: string;
+    className?: string;
+    isAdvancedStats?: boolean;
     dummyData?: {
       period: string;
       clicks: number;
       follows: number;
       paidSubscriptions: number;
       freeSubscriptions: number;
-    }[],
-  ) => {
+    }[];
+  }) => {
     return (
       <Card className={className}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div 
+          <div
             ref={chartContainerRef}
             className="h-[200px] w-full"
             onMouseMove={handleMouseMove}
@@ -414,6 +430,8 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
                         interval={reactionsInterval}
                         isNormalized={normalizeData}
                         originalData={originalData}
+                        isAdvancedStats={isAdvancedStats}
+                        dataKeyLabel={dataKeyLabel}
                       />
                     }
                   />
@@ -523,7 +541,7 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-4 hidden lg:block"
+      className="w-full space-y-4 hidden lg:block"
     >
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -603,13 +621,15 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
       ) : (
         <div className="space-y-4">
           {/* Full width subscription charts */}
-          {renderChart(
-            "freeSubscriptions",
-            "Free Subscriptions Over Time",
-            "#a855f7",
-            "freeSubscriptionsGradient",
-            "w-full",
-          )}
+          {renderChart({
+            dataKey: "freeSubscriptions",
+            title: "Free Subscriptions",
+            dataKeyLabel: "Free Subscriptions",
+            color: "#a855f7",
+            gradientId: "freeSubscriptionsGradient",
+            className: "w-full",
+            isAdvancedStats: true,
+          })}
 
           {/* Dummy free subscriptions data starting from Feb 11, 2024 */}
           {/* {renderChart(
@@ -629,28 +649,34 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
             generateMessyGrowingStats("2024-02-11", 30, 371),
           )} */}
 
-          {renderChart(
-            "paidSubscriptions",
-            "Paid Subscriptions Over Time",
-            "#3b82f6",
-            "paidSubscriptionsGradient",
-            "w-full",
-          )}
+          {renderChart({
+            dataKey: "paidSubscriptions",
+            title: "Paid Subscriptions",
+            dataKeyLabel: "Paid Subscriptions",
+            color: "#3b82f6",
+            gradientId: "paidSubscriptionsGradient",
+            className: "w-full",
+            isAdvancedStats: true,
+          })}
 
           {/* Side by side engagement charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {renderChart(
-              "clicks",
-              "Note Clicks Over Time",
-              "hsl(var(--primary))",
-              "clicksGradient",
-            )}
-            {renderChart(
-              "follows",
-              "Follows Over Time",
-              "#22c55e",
-              "followsGradient",
-            )}
+            {renderChart({
+              dataKey: "clicks",
+              title: "Note Clicks",
+              dataKeyLabel: "Note Clicks",
+              color: "hsl(var(--primary))",
+              gradientId: "clicksGradient",
+              isAdvancedStats: true,
+            })}
+            {renderChart({
+              dataKey: "follows",
+              title: "Follows",
+              dataKeyLabel: "Follows",
+              color: "#22c55e",
+              gradientId: "followsGradient",
+              isAdvancedStats: true,
+            })}
           </div>
         </div>
       )}
@@ -658,65 +684,74 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
       {/* Notes Popover */}
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
         <PopoverTrigger asChild>
-          <div 
-            style={{ 
+          <div
+            style={{
               position: "fixed",
               left: clickPosition?.x || 0,
               top: clickPosition?.y || 0,
               width: 1,
               height: 1,
               pointerEvents: "none",
-              opacity: 0
-            }} 
+              opacity: 0,
+            }}
           />
         </PopoverTrigger>
         <PopoverContent
-          className="w-96 max-h-[500px] overflow-y-auto"
+          className={cn("w-96 max-h-[500px] overflow-y-auto", {
+            "h-64": notesForDate?.length === 0 && !loadingNotesForDate,
+          })}
           side="top"
           align="center"
           sideOffset={10}
         >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-sm">
-                Notes for{" "}
-                {selectedDate && formatPeriod(selectedDate, reactionsInterval)}
-              </h3>
-            </div>
-            <div className="w-full flex items-center justify-center">
-              {loadingNotesForDate && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+          <PremiumFeatureSoonOverlay
+            planRequired={Plan.standard}
+            className="w-full"
+            overlayClassName="justify-start pt-4"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-sm">
+                  Notes for{" "}
+                  {selectedDate &&
+                    formatPeriod(selectedDate, reactionsInterval)}
+                </h3>
+              </div>
+              <div className="w-full flex items-center justify-center">
+                {loadingNotesForDate && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                )}
+              </div>
+              {notesForDate?.length === 0 && !loadingNotesForDate ? (
+                <p className="text-sm text-muted-foreground">
+                  No notes found for this date.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {notesForDate?.map(note => (
+                    <CompactNoteComponent
+                      loading={loadingNotesForDate}
+                      key={note.id}
+                      note={note}
+                    />
+                  ))}
+                </div>
               )}
             </div>
-            {notesForDate?.length === 0 && !loadingNotesForDate ? (
-              <p className="text-sm text-muted-foreground">
-                No notes found for this date.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {notesForDate?.map(note => (
-                  <CompactNoteComponent
-                    loading={loadingNotesForDate}
-                    key={note.id}
-                    note={note}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          </PremiumFeatureSoonOverlay>
         </PopoverContent>
       </Popover>
     </motion.div>
   );
 }
 
-type DailyStat = {
-  period: string;
-  clicks: number;
-  follows: number;
-  paidSubscriptions: number;
-  freeSubscriptions: number;
-};
+// type DailyStat = {
+//   period: string;
+//   clicks: number;
+//   follows: number;
+//   paidSubscriptions: number;
+//   freeSubscriptions: number;
+// };
 
 // function generateMessyGrowingStats(
 //   startDateStr: string,

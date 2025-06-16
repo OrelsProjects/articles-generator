@@ -13,7 +13,7 @@ export const getPublicationByUrl = async (
     createIfNotFound: false,
   },
 ): Promise<Publication[]> => {
-  const { validUrl } = getUrlComponents(url, { withoutWWW: true });
+  const { validUrl } = getUrlComponents(url);
   const endpointToValidate = getArticleEndpoint(validUrl, 0, 1);
 
   const response = await fetch(endpointToValidate);
@@ -178,7 +178,7 @@ export const getHandleDetails = async (
 };
 
 export async function createPublication(url: string): Promise<number | null> {
-  const { validUrl } = getUrlComponents(url, { withoutWWW: true });
+  const { validUrl } = getUrlComponents(url);
   const endpoint = `${validUrl}/api/v1/homepage_data`;
   const response = await fetch(endpoint);
   const data = (await response.json()) as PublicationDataResponse;

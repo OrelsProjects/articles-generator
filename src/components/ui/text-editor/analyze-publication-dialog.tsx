@@ -117,6 +117,7 @@ export function AnalyzePublicationDialog({
     if (loading) return;
     try {
       setLoadingBylines(true);
+      setError(null);
       const { valid, validUrl } = await validatePublication(url);
       if (!valid) {
         setError(ERRORS.INVALID_SUBSTACK_URL);
@@ -129,6 +130,7 @@ export function AnalyzePublicationDialog({
         url: validUrl || url,
       });
       const data = response.data;
+      debugger;
       setBylines(data || []);
       setOpenAuthorSelectionDialog(true);
     } catch (error) {

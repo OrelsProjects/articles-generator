@@ -7,18 +7,14 @@ import {
   getUserArticles as getUserPosts,
   getUserArticlesBody,
 } from "@/lib/dal/articles";
-import { toValidUrl } from "@/lib/utils/url";
+import { getUrlComponents, toValidUrl } from "@/lib/utils/url";
 
 export const getArticleEndpoint = (
   url: string,
   offset: number,
   limit: number,
 ) => {
-  let baseUrl = url;
-  if (!url.includes("substack") && !url.includes("www")) {
-    baseUrl = baseUrl.replace("https://", "https://www.");
-  }
-  return `${baseUrl}/api/v1/archive?sort=top&search=&offset=${offset}&limit=${limit}`;
+  return `${url}/api/v1/archive?sort=top&search=&offset=${offset}&limit=${limit}`;
 };
 
 interface SubstackPublication {

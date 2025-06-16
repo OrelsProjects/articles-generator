@@ -19,26 +19,30 @@ import PlanComparisonDialog from "./plan-comparison-dialog";
 import { Input } from "@/components/ui/input";
 
 const basicFeatures = (credits: number, interval: "month" | "year") => [
-  `${interval === "month" ? credits : credits * 12} WriteStack AI Credits/${interval}`,
+  credits === -1
+    ? `<span class='text-primary'>Unlimited*</span> WriteStack AI Credits`
+    : `${interval === "month" ? credits : credits * 12} WriteStack AI Credits/${interval}`,
   `One-click note posting`,
-  "Specialized AI-Powered Substack editor",
+  "Generate personalized notes using WriteStack AI",
   "Growing Notes Inspirations",
 ];
 
 const hobbyistFeatures = [
-  `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time <span class='text-primary'>(Requires Chrome Extension)</span>`,
+  `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time`,
+  `Basic notes statistics`,
 ];
 
 const advancedFeatures = [
   "Choose your preferred LLM (Includes GPT-4.5)",
   // "Access to The Best Notes Templates",
-  "Notes scheduling, <span class='text-primary'>unlimited (Requires Chrome)</span>  ",
+  "Notes scheduling, <span class='text-primary'>unlimited</span>  ",
+  "Advanced notes statistics",
+  "Personalized chat (Coming soon)",
   "Find potential clients <span class='text-primary'>with Radar</span>",
 ];
 
 const premiumFeatures = [
-  "<span class='text-primary'>Advanced Notes Research Tools</span>",
-  "<span class='text-primary'>Can ask for a feature that will be implemented</span>",
+  "<span class='text-primary'>Advanced notes research tools</span>",
   "<span class='text-primary'>Same price forever</span>",
 ];
 
@@ -103,7 +107,7 @@ export default function Pricing({
         monthlyPrice: 49.99,
         yearlyPlanPrice: 39.99,
         features: [
-          ...basicFeatures(350, billingCycle),
+          ...basicFeatures(-1, billingCycle),
           ...advancedFeatures,
           ...premiumFeatures,
           ...basicFeaturesBottom,
@@ -532,6 +536,23 @@ export default function Pricing({
               </motion.div>
             ))}
           </div>
+          
+          {/* Fair usage restrictions badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.8 + (onboarding ? 0.6 : 0.1),
+              duration: 0.6,
+            }}
+            className="flex justify-center mt-6"
+          >
+            <div className="px-3 py-1 rounded-full bg-muted/50 border border-border/30">
+              <span className="text-xs text-muted-foreground">
+                * Fair usage restrictions apply
+              </span>
+            </div>
+          </motion.div>
         </div>
       </div>
 

@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
     let publicationMetadata = userMetadata?.publication;
 
     loggerServer.info("Getting publication by url", { url, userId });
-    console.time("Getting publication by url");
+    loggerServer.time("Getting publication by url");
     let publications = await getPublicationByUrl(url, {
       createIfNotFound: true,
     });
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
         generatingDescription: true,
       },
     });
-    console.timeEnd("Getting publication by url");
+    loggerServer.timeEnd("Getting publication by url");
 
     loggerServer.info("Scraping posts", { url, userId });
     loggerServer.time("Scraping posts");

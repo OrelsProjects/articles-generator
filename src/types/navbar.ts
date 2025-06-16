@@ -1,16 +1,16 @@
 import { FeatureFlag } from "@prisma/client";
-  import {
-    KanbanSquare,
-    PenTool,
-    Settings,
-    Lightbulb,
-    Calendar,
-    BarChart,
-    Radar,
-    Bot,
-    User,
-    FileChartColumnIncreasing,
-  } from "lucide-react";
+import {
+  KanbanSquare,
+  PenTool,
+  Settings,
+  Lightbulb,
+  Calendar,
+  BarChart,
+  Radar,
+  Bot,
+  User,
+  FileChartColumnIncreasing,
+} from "lucide-react";
 
 export const rootPath = "/queue";
 
@@ -25,6 +25,7 @@ export const navItems: {
   featureFlagsRequired?: FeatureFlag[];
   disabled?: boolean;
   adminOnly?: boolean;
+  position: number;
 }[] = [
   {
     name: "Inspiration",
@@ -34,6 +35,7 @@ export const navItems: {
     icon: Lightbulb,
     locationInMobile: "bottom",
     disabled: false,
+    position: 1,
   },
   {
     name: "Queue",
@@ -42,6 +44,7 @@ export const navItems: {
     icon: Calendar,
     adminOnly: false,
     locationInMobile: "bottom",
+    position: 2,
   },
   {
     name: "My drafts",
@@ -49,6 +52,7 @@ export const navItems: {
     href: "/status-board",
     icon: KanbanSquare,
     locationInMobile: "bottom",
+    position: 3,
   },
   {
     name: "WriteStack AI",
@@ -57,6 +61,7 @@ export const navItems: {
     icon: Bot,
     locationInMobile: "sidebar",
     featureFlagsRequired: ["chat"],
+    position: 4,
   },
   {
     name: "Editor",
@@ -65,6 +70,7 @@ export const navItems: {
     newTab: true,
     icon: PenTool,
     locationInMobile: "sidebar",
+    position: 5,
   },
   {
     name: "Statistics",
@@ -73,6 +79,7 @@ export const navItems: {
     icon: BarChart,
     locationInMobile: "sidebar",
     // adminOnly: true,
+    position: 6,
   },
   {
     name: "Notes Stats",
@@ -80,13 +87,7 @@ export const navItems: {
     href: "/notes-stats",
     icon: FileChartColumnIncreasing,
     locationInMobile: "sidebar",
-  },
-  {
-    name: "Settings",
-    mobileName: "Settings",
-    href: "/settings",
-    icon: Settings,
-    locationInMobile: "sidebar",
+    position: 7,
   },
   {
     name: "Radar",
@@ -95,5 +96,14 @@ export const navItems: {
     icon: Radar,
     locationInMobile: "sidebar",
     featureFlagsRequired: ["canUseRadar"],
+    position: 8,
+  },
+  {
+    name: "Settings",
+    mobileName: "Settings",
+    href: "/settings",
+    icon: Settings,
+    locationInMobile: "sidebar",
+    position: 9,
   },
 ];

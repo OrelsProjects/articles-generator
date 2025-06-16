@@ -7,6 +7,7 @@ import {
   OrderByNotesEngagement,
   OrderByNotesEngagementEnum,
 } from "@/types/notes-stats";
+import { AxiosError } from "axios";
 
 export const useMePage = () => {
   const [data, setData] = useState<UserWriterWithData | null>(null);
@@ -72,6 +73,16 @@ export const useMePage = () => {
 
       setHasMore(response.data.hasMore);
     } catch (err) {
+      if (err instanceof AxiosError) {
+        if (err.response?.status === 403) {
+          setError(
+            new Error(
+              "Make sure you are connected to the same account on WriteStack and on Substack",
+            ),
+          );
+          return;
+        }
+      }
       Logger.error(String(err));
       setError(err as Error);
     } finally {

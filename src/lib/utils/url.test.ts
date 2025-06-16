@@ -29,7 +29,7 @@ describe("getUrlComponents", () => {
     const url = "https://remoteground.co/";
     const result = getUrlComponents(url);
     expect(result).toEqual({
-      validUrl: "https://remoteground.co",
+      validUrl: "https://www.remoteground.co",
       mainComponentInUrl: "remoteground",
     });
   });
@@ -47,7 +47,7 @@ describe("getUrlComponents", () => {
     const url = "remoteground.co/";
     const result = getUrlComponents(url);
     expect(result).toEqual({
-      validUrl: "https://remoteground.co",
+      validUrl: "https://www.remoteground.co",
       mainComponentInUrl: "remoteground",
     });
   });
@@ -56,7 +56,7 @@ describe("getUrlComponents", () => {
     const url = "www.example.com";
     const result = getUrlComponents(url);
     expect(result).toEqual({
-      validUrl: "https://example.com",
+      validUrl: "https://www.example.com",
       mainComponentInUrl: "example",
     });
   });
@@ -66,7 +66,7 @@ describe("getUrlComponents", () => {
     const url = "https://example.com";
     const result = getUrlComponents(url);
     expect(result).toEqual({
-      validUrl: "https://example.com",
+      validUrl: "https://www.example.com",
       mainComponentInUrl: "example",
     });
   });
@@ -78,7 +78,7 @@ describe("getUrlComponents", () => {
     // Based on implementation, we know this won't extract mainComponentInUrl
     // for URLs with both https and www prefix
     expect(result).toEqual({
-      validUrl: "https://example.com",
+      validUrl: "https://www.example.com",
       mainComponentInUrl: "example",
     });
   });
@@ -105,7 +105,7 @@ describe("getUrlComponents", () => {
     const url = "example.com/";
     const result = getUrlComponents(url);
     expect(result).toEqual({
-      validUrl: "https://example.com",
+      validUrl: "https://www.example.com",
       mainComponentInUrl: "example",
     });
   });
@@ -115,7 +115,7 @@ describe("getUrlComponents", () => {
     const url = "example.net";
     const result = getUrlComponents(url);
     expect(result).toEqual({
-      validUrl: "https://example.net",
+      validUrl: "https://www.example.net",
       mainComponentInUrl: "example",
     });
   });
@@ -134,7 +134,7 @@ describe("getUrlComponents", () => {
     const url2 = "example.com?param=value";
     const result2 = getUrlComponents(url2);
     expect(result2).toEqual({
-      validUrl: "https://example.com",
+      validUrl: "https://www.example.com",
       mainComponentInUrl: "example",
     });
   });
@@ -190,6 +190,17 @@ describe("getUrlComponents with http://", () => {
     expect(result).toEqual({
       validUrl: "https://theindiepreneur.substack.com",
       mainComponentInUrl: "theindiepreneur",
+    });
+  });
+});
+
+describe("masteryden.com", () => {
+  test("handles masteryden.com correctly", () => {
+    const url = "https://masteryden.com";
+    const result = getUrlComponents(url);
+    expect(result).toEqual({
+      validUrl: "https://www.masteryden.com",
+      mainComponentInUrl: "masteryden",
     });
   });
 });

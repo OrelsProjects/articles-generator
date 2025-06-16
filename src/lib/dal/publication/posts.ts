@@ -19,7 +19,7 @@ export const getPublicationPosts = async (values: {
 }) => {
   let publicationId = values.publicationId;
   if (!publicationId) {
-    const { validUrl } = getUrlComponents(values.url, { withoutWWW: true });
+    const { validUrl } = getUrlComponents(values.url);
     const endpoint = `${validUrl}/api/v1/homepage_data`;
     const response = await fetch(endpoint);
     const data = (await response.json()) as PublicationDataResponse;

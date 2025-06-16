@@ -97,7 +97,7 @@ export default function UserWriterProfile({
 
   useEffect(() => {
     if (error) {
-      toast.error(`Error loading writer ${error.message}`);
+      toast.error(error.message);
     }
   }, [error]);
 
@@ -115,7 +115,11 @@ export default function UserWriterProfile({
   }
 
   if (!writer) {
-    return <div className="text-center text-destructive">Writer not found</div>;
+    return (
+      <div className="text-center text-destructive">
+        {error?.message || "Writer not found"}
+      </div>
+    );
   }
 
   const noteCards = writer.topNotes.map(note => ({

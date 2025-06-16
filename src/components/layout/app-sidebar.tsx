@@ -106,11 +106,15 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     updateSideBarState(state);
   };
 
+  const sortedNavItems = useMemo(() => {
+    return validNavItems.sort((a, b) => a.position - b.position);
+  }, [validNavItems]);
+
   // Filter nav items by location
-  const bottomNavItems = validNavItems.filter(
+  const bottomNavItems = sortedNavItems.filter(
     item => item.locationInMobile === "bottom",
   );
-  const sidebarNavItems = validNavItems.filter(
+  const sidebarNavItems = sortedNavItems.filter(
     item => item.locationInMobile === "sidebar" || !item.locationInMobile,
   );
 
@@ -170,7 +174,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
           <nav className="flex-1 py-4 overflow-y-auto">
             <ul className="space-y-2 px-2">
-              {validNavItems.map(item =>
+              {sortedNavItems.map(item =>
                 item.adminOnly && !user?.meta?.isAdmin ? null : (
                   <li key={item.name}>
                     <TooltipProvider delayDuration={0}>
@@ -209,7 +213,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             </ul>
           </nav>
           {/* Affiliate Section */}
-          {/* <div className="px-4 py-2">
+          <div className="px-4 py-2">
             <AffiliateDialog>
               <Button
                 variant="outline"
@@ -224,7 +228,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                 )}
               </Button>
             </AffiliateDialog>
-          </div> */}
+          </div>
 
           {/* User profile */}
           <div className="p-4 border-t border-border flex flex-col gap-2 items-center">
@@ -317,58 +321,63 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             side="left"
             className="w-72 pt-6 flex flex-col justify-between h-screen"
           >
-            <div>
-              <Logo withText className="mb-4" />
-              <nav className="py-4">
-                <ul className="space-y-2">
-                  {sidebarNavItems.map(item =>
-                    item.adminOnly && !user?.meta?.isAdmin ? null : (
-                      <TooltipProvider key={item.name} delayDuration={0}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <li>
-                              <Link
-                                href={item.disabled ? "" : item.href}
-                                target={item.newTab ? "_blank" : "_self"}
-                                className={cn(
-                                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                                  isActive(item.href)
-                                    ? "text-primary"
-                                    : "text-foreground hover:bg-muted",
-                                  item.disabled &&
-                                    "cursor-not-allowed opacity-50",
-                                )}
-                              >
-                                <item.icon size={20} />
-                                <span>{item.mobileName}</span>
-                                {item.newTab && (
-                                  <ExternalLink size={12} className="ml-auto" />
-                                )}
-                              </Link>
-                            </li>
-                          </TooltipTrigger>
-                          <TooltipContent side="right">
-                            {item.toolTip || item.name}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    ),
-                  )}
-                </ul>
-              </nav>
+            <div className="h-full flex flex-col justify-between gap-4">
+              <div>
+                <Logo withText className="mb-4" />
+                <nav className="py-4">
+                  <ul className="space-y-2">
+                    {sidebarNavItems.map(item =>
+                      item.adminOnly && !user?.meta?.isAdmin ? null : (
+                        <TooltipProvider key={item.name} delayDuration={0}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <li>
+                                <Link
+                                  href={item.disabled ? "" : item.href}
+                                  target={item.newTab ? "_blank" : "_self"}
+                                  className={cn(
+                                    "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                                    isActive(item.href)
+                                      ? "text-primary"
+                                      : "text-foreground hover:bg-muted",
+                                    item.disabled &&
+                                      "cursor-not-allowed opacity-50",
+                                  )}
+                                >
+                                  <item.icon size={20} />
+                                  <span>{item.mobileName}</span>
+                                  {item.newTab && (
+                                    <ExternalLink
+                                      size={12}
+                                      className="ml-auto"
+                                    />
+                                  )}
+                                </Link>
+                              </li>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                              {item.toolTip || item.name}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ),
+                    )}
+                  </ul>
+                </nav>
+              </div>
+              {/* Mobile Affiliate Section */}
+              <div className="px-4 py-2">
+                <AffiliateDialog>
+                  <Button
+                    variant="outline"
+                    className="w-full flex items-center gap-2 justify-start border-yellow-200 hover:bg-yellow-50 dark:border-yellow-800 dark:hover:bg-yellow-900/20"
+                  >
+                    <Coins className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                    <span className="text-sm">Affiliate WriteStack</span>
+                  </Button>
+                </AffiliateDialog>
+              </div>
             </div>
-            {/* Mobile Affiliate Section */}
-            {/* <div className="px-4 py-2">
-              <AffiliateDialog>
-                <Button
-                  variant="outline"
-                  className="w-full flex items-center gap-2 justify-start border-yellow-200 hover:bg-yellow-50 dark:border-yellow-800 dark:hover:bg-yellow-900/20"
-                >
-                  <Coins className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                  <span className="text-sm">Affiliate WriteStack</span>
-                </Button>
-              </AffiliateDialog>
-            </div> */}
             {/* Mobile User Profile */}
             <div className="mt-auto border-t border-border pt-4">
               <div className="flex items-center gap-3 px-4 mb-4">

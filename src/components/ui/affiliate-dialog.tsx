@@ -10,19 +10,42 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Coins, ExternalLink } from "lucide-react";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { useTheme } from "next-themes";
 
 interface AffiliateDialogProps {
   children: React.ReactNode;
 }
 
 export function AffiliateDialog({ children }: AffiliateDialogProps) {
+  const { resolvedTheme } = useTheme();
+
   const handleAffiliateClick = () => {
     window.open("https://writestack-app.getrewardful.com", "_blank");
   };
 
   return (
     <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>
+        <div className="relative h-full rounded-lg">
+          <GlowingEffect
+            spread={40}
+            glow={true}
+            disabled={false}
+            proximity={64}
+            inactiveZone={0.01}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full flex items-center gap-2 hover:border-input dark:hover:border-input border-yellow-500 dark:border-yellow-700  shadow-md
+             transition-all duration-300 hover:bg-transparent"
+          >
+            <Coins className="h-4 w-4 text-yellow-500" />
+            <span className="text-sm">Affiliate WriteStack</span>
+          </Button>
+        </div>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -52,6 +75,7 @@ export function AffiliateDialog({ children }: AffiliateDialogProps) {
         </DialogHeader>
         <div className="flex justify-end space-x-2 pt-4">
           <Button
+            variant={"neumorphic-primary"}
             onClick={handleAffiliateClick}
             className="flex items-center gap-2"
           >

@@ -51,30 +51,34 @@ export const MasonryGrid = ({
       >
         {columnsArray.map((column, columnIndex) => (
           <div key={columnIndex} className="flex flex-col space-y-4">
-            {column.map((card, cardIndex) => (
-              <div
-                key={card.id}
-                className={cn(
-                  "relative bg-background/90 text-foreground rounded-xl shadow-md overflow-visible",
-                  // z index in reverse order
-                  `z-[${50 + columnIndex - cardIndex}]`,
-                  card.className,
-                )}
-              >
-                {card.thumbnail && (
-                  <div className="w-full h-48 overflow-hidden">
-                    <Image
-                      src={card.thumbnail}
-                      alt="Card thumbnail"
-                      width={500}
-                      height={300}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                <div className="relative">{card.content}</div>
-              </div>
-            ))}
+            {column.map((card, cardIndex) => {
+              const zIndex = Math.min(40, 10 + columnIndex - cardIndex);
+              // const zIndex = 30;
+              return (
+                <div
+                  key={card.id}
+                  className={cn(
+                    "relative bg-background/90 text-foreground rounded-xl shadow-md overflow-visible",
+                    // z index in reverse order
+                    `z-[${zIndex}]`,
+                    card.className,
+                  )}
+                >
+                  {card.thumbnail && (
+                    <div className="w-full h-48 overflow-hidden">
+                      <Image
+                        src={card.thumbnail}
+                        alt="Card thumbnail"
+                        width={500}
+                        height={300}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="relative">{card.content}</div>
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>

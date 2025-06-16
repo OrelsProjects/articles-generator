@@ -24,7 +24,7 @@ export const initialState: UiState = {
   showGenerateNotesSidebar: false,
   showAnalyzePublicationDialog: false,
   showGenerateIdeasDialog: false,
-  sideBarState: "collapsed",
+  sideBarState: "expanded",
   didShowSaveTooltip: false,
   showScheduleModal: false,
   showExtensionDialog: false,
