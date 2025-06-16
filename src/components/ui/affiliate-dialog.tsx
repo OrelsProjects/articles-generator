@@ -16,11 +16,8 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { cn } from "@/lib/utils";
 
-interface AffiliateDialogProps {
-  children: React.ReactNode;
-}
-
-export function AffiliateDialog({ children }: AffiliateDialogProps) {
+export function AffiliateDialog() {
+  const { resolvedTheme } = useTheme();
   const { sideBarState } = useAppSelector(selectUi);
 
   const handleAffiliateClick = () => {
@@ -37,6 +34,7 @@ export function AffiliateDialog({ children }: AffiliateDialogProps) {
             disabled={false}
             proximity={64}
             inactiveZone={0.01}
+            variant={resolvedTheme === "dark" ? "default" : "light"}
           />
           <Button
             variant="outline"
