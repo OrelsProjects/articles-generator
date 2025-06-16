@@ -12,13 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Coins, ExternalLink } from "lucide-react";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { useTheme } from "next-themes";
+import { useAppSelector } from "@/lib/hooks/redux";
+import { selectUi } from "@/lib/features/ui/uiSlice";
+import { cn } from "@/lib/utils";
 
 interface AffiliateDialogProps {
   children: React.ReactNode;
 }
 
 export function AffiliateDialog({ children }: AffiliateDialogProps) {
-  const { resolvedTheme } = useTheme();
+  const { sideBarState } = useAppSelector(selectUi);
 
   const handleAffiliateClick = () => {
     window.open("https://writestack-app.getrewardful.com", "_blank");
@@ -38,11 +41,22 @@ export function AffiliateDialog({ children }: AffiliateDialogProps) {
           <Button
             variant="outline"
             size="sm"
-            className="w-full flex items-center gap-2 hover:border-input dark:hover:border-input border-yellow-500 dark:border-yellow-700  shadow-md
-             transition-all duration-300 hover:bg-transparent"
+            className={cn(
+              "w-full flex items-center gap-2 hover:border-input dark:hover:border-input border-yellow-500 dark:border-yellow-700  shadow-md",
+              "transition-all duration-300 hover:bg-transparent",
+              {
+                "p-0": sideBarState === "collapsed",
+              },
+            )}
           >
             <Coins className="h-4 w-4 text-yellow-500" />
-            <span className="text-sm">Affiliate WriteStack</span>
+            <span
+              className={cn("text-sm", {
+                hidden: sideBarState === "collapsed",
+              })}
+            >
+              Affiliate WriteStack
+            </span>
           </Button>
         </div>
       </DialogTrigger>
