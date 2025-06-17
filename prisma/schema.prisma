@@ -111,6 +111,10 @@ enum AttachmentType {
   link
 }
 
+enum MailType {
+  registrationNotCompletedDiscount
+}
+
 model User {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
@@ -138,6 +142,7 @@ model User {
   notes          Note[]
   aiChats        AIChat[]
   extensionKeys  ExtensionKeys[]
+  mailsSent      MailsSent[]
 
   @@map("users")
 }
@@ -830,7 +835,7 @@ model ExtensionKeys {
   userId String @db.ObjectId
   key    String @unique
 
-  isActive Boolean @default(true)
+  isActive   Boolean @default(true)
   isVerified Boolean @default(false)
 
   createdAt DateTime @default(now())
@@ -854,7 +859,7 @@ model NotesStatsFailed {
 model ExtensionDetails {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId String @db.ObjectId @unique
+  userId String @unique @db.ObjectId
 
   versionInstalled String
 
@@ -862,4 +867,19 @@ model ExtensionDetails {
   updatedAt DateTime @updatedAt
 
   @@map("extensionDetails")
+}
+
+model MailsSent {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String   @db.ObjectId
+  type   MailType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("mailsSent")
 }

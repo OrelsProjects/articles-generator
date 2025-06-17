@@ -11,8 +11,9 @@ import loggerServer from "@/loggerServer";
 import { generateNotes } from "@/lib/utils/generate/notes";
 import { generateIdeas } from "@/lib/utils/ideas";
 import { getUserArticlesByUserId } from "@/lib/dal/articles";
-import { Note } from "@prisma/client";
 import { getNotesPromptNoteMeta } from "@/lib/prompts";
+
+export const maxDuration = 180; // This function can run for a maximum of 10 minutes
 
 const createChatSchema = z.object({
   message: z.string().min(1).max(10000),

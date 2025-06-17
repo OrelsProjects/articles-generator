@@ -11,6 +11,7 @@ import {
 import {
   generateManyNotesMissedEmail,
   generatePublicationAnalysisCompleteEmail,
+  generateRegistrationNotCompletedDiscountEmail,
   generateScheduleNoteMissedEmail,
   generateSubstackDownEmail,
   generateWelcomeTemplateTrial,
@@ -68,34 +69,34 @@ export async function GET(request: NextRequest) {
   // if (!session || !session.user || !session.user.meta) {
   //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // }
-  const batchSize = 100000;
-  let deletedRows = 0;
-  let totalDeletedRows = 0;
-  let now = new Date();
-  do {
-    deletedRows = await prismaArticles.$executeRawUnsafe(`
-    WITH ranked AS (
-      SELECT 
-        id,
-        ROW_NUMBER() OVER (
-          PARTITION BY post_id, byline_id
-          ORDER BY id
-        ) AS rn
-      FROM post_bylines
-    )
-    DELETE FROM post_bylines
-    WHERE id IN (
-      SELECT id FROM ranked WHERE rn > 1 LIMIT ${batchSize}
-    );
-  `);
+  // const batchSize = 100000;
+  // let deletedRows = 0;
+  // let totalDeletedRows = 0;
+  // let now = new Date();
+  // do {
+  //   deletedRows = await prismaArticles.$executeRawUnsafe(`
+  //   WITH ranked AS (
+  //     SELECT
+  //       id,
+  //       ROW_NUMBER() OVER (
+  //         PARTITION BY post_id, byline_id
+  //         ORDER BY id
+  //       ) AS rn
+  //     FROM post_bylines
+  //   )
+  //   DELETE FROM post_bylines
+  //   WHERE id IN (
+  //     SELECT id FROM ranked WHERE rn > 1 LIMIT ${batchSize}
+  //   );
+  // `);
 
-    console.log(`Deleted ${deletedRows} duplicate rows...`);
-    totalDeletedRows += deletedRows;
-    console.log(`Total deleted rows: ${totalDeletedRows}`);
-    const timeToDelete = new Date().getTime() - now.getTime();
-    console.log(`Time to delete: ${timeToDelete}ms`);
-    now = new Date();
-  } while (deletedRows > 0);
+  //   console.log(`Deleted ${deletedRows} duplicate rows...`);
+  //   totalDeletedRows += deletedRows;
+  //   console.log(`Total deleted rows: ${totalDeletedRows}`);
+  //   const timeToDelete = new Date().getTime() - now.getTime();
+  //   console.log(`Time to delete: ${timeToDelete}ms`);
+  //   now = new Date();
+  // } while (deletedRows > 0);
   // const userId = "6822f9d5d029b4c9c504c185";
   // const apply = await shouldApplyRetentionCoupon(userId);
   // return NextResponse.json({ apply });

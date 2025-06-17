@@ -8,7 +8,7 @@ interface LogPayload {
   data?: string;
   timestamp: string;
   source: string;
-  level: "info" | "error";
+  level: "info" | "error" | "warn";
 }
 
 export async function POST(request: NextRequest) {
@@ -42,36 +42,19 @@ export async function POST(request: NextRequest) {
           headers,
         })
       : "";
+    const payloadLog = {
+      message,
+      data: data ? JSON.stringify(data) : "",
+      headers,
+      userId: session?.user.id || "extension",
+    };
+
     if (level === "error") {
-      if (data) {
-        loggerServer.error(`${logPrefix} ERROR: ${dataString}`, {
-          message,
-          data,
-          headers,
-          userId: session?.user.id || "extension",
-        });
-      } else {
-        loggerServer.error(`${logPrefix} ERROR: ${dataString}`, {
-          message,
-          headers,
-          userId: session?.user.id || "extension",
-        });
-      }
+      loggerServer.error(`${logPrefix} ERROR: ${dataString}`, payloadLog);
+    } else if (level === "warn") {
+      loggerServer.warn(`${logPrefix} WARN: ${dataString}`, payloadLog);
     } else {
-      if (data) {
-        loggerServer.info(`${logPrefix}: ${dataString}`, {
-          message,
-          data,
-          headers,
-          userId: session?.user.id || "extension",
-        });
-      } else {
-        loggerServer.info(`${logPrefix}: ${dataString}`, {
-          message,
-          headers,
-          userId: session?.user.id || "extension",
-        });
-      }
+      loggerServer.info(`${logPrefix}: ${dataString}`, payloadLog);
     }
 
     // Return success response

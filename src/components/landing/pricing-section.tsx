@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { cn } from "@/lib/utils";
@@ -53,9 +53,11 @@ const basicFeaturesBottom = [
 export default function Pricing({
   className,
   onboarding,
+  code,
 }: {
   className?: string;
   onboarding?: boolean;
+  code?: string | null;
 }) {
   const [billingCycle, setBillingCycle] = useState<"month" | "year">("year");
   const router = useCustomRouter();
@@ -69,6 +71,8 @@ export default function Pricing({
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [couponDiscounts, setCouponDiscounts] = useState<any[]>([]);
   const [loadingCoupon, setLoadingCoupon] = useState(false);
+
+  const loadingCouponApply = useRef(false);
 
   const pricingPlans = useMemo(
     () => [
@@ -139,6 +143,17 @@ export default function Pricing({
     return plan;
   });
 
+  useEffect(() => {
+    if (code && !loadingCouponApply.current) {
+      loadingCouponApply.current = true;
+      setShowCouponInput(true);
+      setCoupon(code);
+      applyCoupon(code).finally(() => {
+        loadingCouponApply.current = false;
+      });
+    }
+  }, [code]);
+
   const handleGetStarted = async (plan: string) => {
     // If user is not authenticated or onboarding, proceed without showing dialog
     if (onboarding || !user) {
@@ -190,8 +205,8 @@ export default function Pricing({
 
   const hadSubscription = user?.meta?.hadSubscription;
 
-  const applyCoupon = async () => {
-    if (!coupon.trim()) return;
+  const applyCoupon = async (code: string) => {
+    if (!code.trim()) return;
 
     setLoadingCoupon(true);
     try {
@@ -209,9 +224,13 @@ export default function Pricing({
         },
       ]);
 
-      const discounts = await validateCoupon(coupon, allPlans);
-      setCouponDiscounts(discounts);
-      setAppliedCoupon(coupon.toUpperCase());
+      const discounts = await validateCoupon(code, allPlans);
+      const nonNullDiscounts = discounts.filter(
+        (discount: any) => discount !== null,
+      );
+
+      setCouponDiscounts(nonNullDiscounts);
+      setAppliedCoupon(code.toUpperCase());
       toast.success("Coupon applied successfully!");
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Invalid coupon code");
@@ -221,6 +240,20 @@ export default function Pricing({
       setLoadingCoupon(false);
     }
   };
+
+  const specialCouponDiscountText = useMemo(() => {
+    if (appliedCoupon?.includes("FLASH")) {
+      return billingCycle === "month"
+        ? "30% OFF for 1 month"
+        : "30% OFF for 12 months";
+    }
+    if (appliedCoupon?.includes("JOIN")) {
+      return billingCycle === "month"
+        ? "50% OFF for 1 month"
+        : "30% OFF for 12 months";
+    }
+    return null;
+  }, [appliedCoupon, billingCycle]);
 
   return (
     <motion.section
@@ -342,10 +375,10 @@ export default function Pricing({
                       onChange={e => setCoupon(e.target.value)}
                       className="w-48 uppercase"
                       disabled={!!appliedCoupon}
-                      onKeyDown={e => e.key === "Enter" && applyCoupon()}
+                      onKeyDown={e => e.key === "Enter" && applyCoupon(coupon)}
                     />
                     <Button
-                      onClick={applyCoupon}
+                      onClick={() => applyCoupon(coupon)}
                       disabled={loadingCoupon || !coupon.trim()}
                       size="sm"
                     >
@@ -423,21 +456,19 @@ export default function Pricing({
                       <div
                         className={cn(
                           "px-3 py-1 rounded-full text-xs font-semibold",
-                          appliedCoupon?.includes("FLASH") &&
+                          (appliedCoupon?.includes("FLASH") ||
+                            appliedCoupon?.includes("JOIN")) &&
                             billingCycle === "year"
                             ? "bg-background border-2 border-primary text-primary transition-shadow shadow-lg"
-                            : appliedCoupon?.includes("FLASH") &&
+                            : (appliedCoupon?.includes("FLASH") ||
+                                appliedCoupon?.includes("JOIN")) &&
                                 billingCycle === "month"
                               ? "bg-background border border-foreground/60 text-muted-foreground"
                               : "bg-green-500 text-white shadow-lg",
                         )}
                       >
-                        {appliedCoupon?.includes("FLASH") ? (
-                          billingCycle === "month" ? (
-                            "30% OFF for 1 month"
-                          ) : (
-                            "30% OFF for 12 months"
-                          )
+                        {specialCouponDiscountText ? (
+                          specialCouponDiscountText
                         ) : (
                           <>
                             {(plan as any).couponDiscount}% OFF for{" "}
@@ -536,7 +567,7 @@ export default function Pricing({
               </motion.div>
             ))}
           </div>
-          
+
           {/* Fair usage restrictions badge */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}

@@ -4,7 +4,7 @@ export type Tag = "writestack-new-subscriber" | "writestack" | "writestack-subsc
 export interface SendEmailOptions {
   to: string | string[];
   subject: string;
-  from: "support" | "noreply" | "welcome";
+  from: "support" | "noreply" | "welcome" | "team";
   template: string;
   cc?: string | string[];
   sendInDevelopment?: boolean;

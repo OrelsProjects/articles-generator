@@ -44,6 +44,7 @@ export function baseEmailTemplate(content: string) {
           padding: 20px;
         }
         .center-button-container {
+          width: 100%;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -604,5 +605,33 @@ export function generateManyNotesMissedEmail(userName?: string) {
   return {
     body: baseEmailTemplate(content),
     subject: "Notes are not being posted",
+  };
+}
+
+export function generateRegistrationNotCompletedDiscountEmail(
+  code: string,
+): EmailTemplate {
+  const content = `
+    <h2>Hey there,</h2>
+    <p>You almost signed up for a free trial with WriteStack but didn't finish.</p>
+    <p>We thought this might help change your mind:</p>
+    <p><strong>👉 A 50% discount on your first month (or 30% for annual plans).</strong></p>
+    <p>Finish your sign up and use this code before starting your free trial, and you'll enjoy your first month at half the price.</p>
+    <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+      <p style="margin: 0; font-size: 18px; font-weight: bold; color: #ff661a;">
+        Code: ${code}
+      </p>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 20px;">
+      <div class="center-button-container">
+        <a href="https://writestack.io/pricing?code=${code}" class="button" target="_blank">Claim Your Discount</a>
+      </div>
+      <p>This offer is valid for 48 hours.</p>
+    </div>
+  `;
+
+  return {
+    body: baseEmailTemplate(content),
+    subject: "50% off your first month with WriteStack",
   };
 }

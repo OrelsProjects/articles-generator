@@ -86,7 +86,13 @@ export async function getNewPrice(
     }[]
   | null
 > {
+  const annualCouponCode = couponCode + "YEAR";
   const coupon = await getCoupon(getStripeInstance(), couponCode);
+  const annualCoupon = await getCoupon(
+    getStripeInstance(),
+    annualCouponCode,
+    "year",
+  );
 
   if (!coupon) {
     return [];
@@ -123,12 +129,12 @@ export async function getNewPrice(
 
     // Yearly math
     const monthly = price / 12;
-    const discounted = monthly * (1 - discountPercent / 100);
-    const yearCost = +(
-      discounted * discountMonths +
-      monthly * (12 - discountMonths)
-    ).toFixed(2);
+    const annualDiscountPercent = annualCoupon?.percent_off || discountPercent;
 
+    let yearCost = price * (1 - annualDiscountPercent / 100);
+    if (!couponCode.includes("FLASH") && !couponCode.includes("JOIN")) {
+      yearCost = price * (1 - discountPercent / 100);
+    }
     // What % of the whole year did we really shave off?
     const effectivePct = +(((price - yearCost) / price) * 100).toFixed(2);
 
@@ -136,8 +142,8 @@ export async function getNewPrice(
       name: plan.name,
       newPrice: yearCost,
       discount: discountPercent,
-      discountForAnnualPlan: effectivePct,
-      discountDuration: discountMonths,
+      discountForAnnualPlan: annualCoupon?.percent_off || effectivePct,
+      discountDuration: annualCoupon?.duration_in_months || discountMonths,
       interval,
       priceBeforeDiscount: price,
     };

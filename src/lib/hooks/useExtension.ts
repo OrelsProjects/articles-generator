@@ -186,7 +186,7 @@ export function useExtension(): UseExtension {
     [verifyExtension],
   );
 
-  // get substack cookies ("getSubstackCookies") from the extension. The name of the function is getSubstackCookies
+  //  substack cookies ("getSubstackCookies") from the extension. The name of the function is getSubstackCookies
   const setUserSubstackCookies = useCallback(async (): Promise<void> => {
     const response = await sendExtensionMessage<GetSubstackCookiesResponse>(
       {

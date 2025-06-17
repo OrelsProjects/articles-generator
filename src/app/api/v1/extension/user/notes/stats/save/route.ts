@@ -21,6 +21,7 @@ const schema = z.object({
       total_share_clicks: z.number(),
     }),
   ),
+  isLastBatch: z.boolean().optional().default(true),
 });
 
 export async function POST(request: NextRequest) {
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { stats } = parsedBody.data;
+    const { stats, isLastBatch } = parsedBody.data;
     loggerServer.info("[SAVING-NOTES-STATS] Stats", {
       userId,
       statsLength: stats.length,
@@ -151,20 +152,20 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-
-    await prisma.dataFetchedMetadata.upsert({
-      where: {
-        userId,
-      },
-      update: {
-        lastFetchedNotesAt: new Date(),
-      },
-      create: {
-        userId,
-        lastFetchedNotesAt: new Date(),
-      },
-    });
-
+    if (isLastBatch) {
+      await prisma.dataFetchedMetadata.upsert({
+        where: {
+          userId,
+        },
+        update: {
+          lastFetchedNotesAt: new Date(),
+        },
+        create: {
+          userId,
+          lastFetchedNotesAt: new Date(),
+        },
+      });
+    }
     return NextResponse.json({ message: "Stats saved" });
   } catch (error: any) {
     loggerServer.error(

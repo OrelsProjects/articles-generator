@@ -8,10 +8,13 @@ import usePayments from "@/lib/hooks/usePayments";
 import { rootPath } from "@/types/navbar";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 export default function PricingPage() {
   const router = useCustomRouter();
   const { verifySubscription } = usePayments();
+  const searchParams = useSearchParams();
+  const code = searchParams.get("code");
 
   useEffect(() => {
     verifySubscription()
@@ -38,7 +41,7 @@ export default function PricingPage() {
           </div>
         </div>
       </header>
-      <Pricing onboarding />
+      <Pricing onboarding code={code} />
     </div>
   );
 }

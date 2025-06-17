@@ -10,24 +10,58 @@ import { prisma } from "@/lib/prisma";
 import { runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
 import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
+import { decodeKey } from "@/lib/dal/extension-key";
 
 const schema = z.object({
   url: z.string().url(),
 });
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    loggerServer.error("Unauthorized get seo", {
-      userId: "unknown",
-      url: "unknown",
+  const key = request.headers.get("x-extension-key");
+  if (!key) {
+    loggerServer.warn("[SAVING-NOTES-STATS] Unauthorized, no extension key", {
+      userId: "not logged in",
     });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const decoded = decodeKey(key);
+  const userId = decoded.userId;
+  if (!userId) {
+    loggerServer.warn("[SAVING-NOTES-STATS] Unauthorized, no userId in key", {
+      userId: "not logged in",
+    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!user) {
+    loggerServer.warn("[SAVING-NOTES-STATS] Unauthorized, no user found", {
+      userId,
+    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const secret = request.headers.get("x-api-key");
+  if (secret !== process.env.EXTENSION_API_KEY) {
+    loggerServer.warn(
+      "[SAVING-NOTES-STATS] Unauthorized, bad secret in save notes stats",
+      {
+        userId,
+      },
+    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let url = "";
 
   try {
-    const canUse = await canUseAI(session.user.id, "seo");
+    const canUse = await canUseAI(userId, "seo");
 
     if (!canUse.result) {
       return NextResponse.json(
@@ -52,17 +86,17 @@ export async function POST(request: NextRequest) {
 
     if (!unmarkedData) {
       loggerServer.error("No content found", {
-        userId: session.user.id,
+        userId,
         url,
       });
       return NextResponse.json({ error: "No content found" }, { status: 400 });
     }
 
-    await useCredits(session.user.id, "seo");
+    await useCredits(userId, "seo");
 
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
-        userId: session.user.id,
+        userId,
       },
       include: {
         publication: true,
@@ -78,7 +112,7 @@ export async function POST(request: NextRequest) {
     const response = await runPrompt(
       messages,
       "openrouter/auto",
-      session.user.name || session.user.email || session.user.id || "unknown",
+      user.name || user.email || user.id || "unknown",
     );
 
     const data = await parseJson<{
@@ -90,10 +124,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error: any) {
     loggerServer.error(error, {
-      userId: session.user.id,
+      userId,
       url,
     });
-    await undoUseCredits(session.user.id, "seo");
+    await undoUseCredits(userId, "seo");
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },
