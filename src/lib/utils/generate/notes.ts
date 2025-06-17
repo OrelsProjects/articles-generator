@@ -266,7 +266,10 @@ export async function generateNotesPrompt({
       language: userMetadata.preferredLanguage || undefined,
     },
   };
-  const generateNotesMessages = generateNotesPrompt_v2(promptBody);
+  const generateNotesMessages =
+    userMetadata.notesPromptVersion === 1
+      ? generateNotesPrompt_v1(promptBody)
+      : generateNotesPrompt_v2(promptBody);
   return {
     messages: generateNotesMessages,
     model,
