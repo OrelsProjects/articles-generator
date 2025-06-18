@@ -100,10 +100,10 @@ export function CharacterCountBar({
       return currentRange.text;
     }
     if (characterCount < 150) {
-      return "Too short.";
+      return "Short and punchy.";
     }
     if (characterCount <= 330) {
-      return "Perfect"; // Extended peak range 281-300
+      return "Perfect."; // Extended peak range 281-300
     }
     // A text that doesn't tell the user that they're wrong, but doesn't give them a false sense of security
     return ""
@@ -111,7 +111,7 @@ export function CharacterCountBar({
 
   const getScore = () => {
     if (currentRange) {
-      return currentRange.score;
+    return currentRange.score;
     }
     if (characterCount < 150) {
       return Math.max(1, Math.floor((characterCount / 150) * 5));

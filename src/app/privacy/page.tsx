@@ -9,6 +9,7 @@ const PrivacyPolicy: React.FC = () => {
     <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md">
       <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
 
+      {/* General Privacy Statement */}
       <section className="mb-6">
         <p className="text-gray-700">
           Your privacy is important to us. It is {COMPANY_NAME}&apos;s policy to
@@ -21,6 +22,7 @@ const PrivacyPolicy: React.FC = () => {
         </p>
       </section>
 
+      {/* Data Collection Principles */}
       <section className="mb-6">
         <p className="text-gray-700">
           We only ask for personal information when we truly need it to provide
@@ -30,6 +32,7 @@ const PrivacyPolicy: React.FC = () => {
         </p>
       </section>
 
+      {/* Data Retention and Protection */}
       <section className="mb-6">
         <p className="text-gray-700">
           We only retain collected information for as long as necessary to
@@ -40,6 +43,7 @@ const PrivacyPolicy: React.FC = () => {
         </p>
       </section>
 
+      {/* Non-Disclosure */}
       <section className="mb-6">
         <p className="text-gray-700">
           We don&apos;t share any personally identifying information publicly or
@@ -47,6 +51,7 @@ const PrivacyPolicy: React.FC = () => {
         </p>
       </section>
 
+      {/* Data Controller & Processor Statement */}
       <section className="mb-6">
         <p className="text-gray-700">
           We act in the capacity of a data controller and a data processor with
@@ -56,15 +61,35 @@ const PrivacyPolicy: React.FC = () => {
         </p>
       </section>
 
+      {/* Extension-Specific Collection Notice */}
+      <section className="mb-6">
+        <p className="text-gray-700">
+          In connection with any official browser extension provided by{" "}
+          {COMPANY_NAME} (the &quot;Extension&quot;), we automatically collect,
+          store, and process all notes, articles, and usage statistics generated
+          or accessed through the Extension (collectively, &quot;Extension
+          Data&quot;), irrespective of user-selected privacy settings. Extension
+          Data may be utilised for internal operational purposes, including
+          analytics, service optimisation, and product development.
+          Notwithstanding the foregoing, the Extension will not access,
+          transmit, or otherwise process any content that is paywalled,
+          subscriber‑only, or similarly designated as paid (&quot;Paid
+          Content&quot;). Paid Content remains resident on your device and is
+          never transmitted to or stored by {COMPANY_NAME}.
+        </p>
+      </section>
+
+      {/* External Links Disclaimer */}
       <section className="mb-6">
         <p className="text-gray-700">
           Our website may link to external sites that are not operated by us.
           Please be aware that we have no control over the content and practices
-          of these sites, and cannot accept responsibility or liability for
-          their respective privacy policies.
+          of these sites and cannot accept responsibility or liability for their
+          respective privacy policies.
         </p>
       </section>
 
+      {/* User Choice */}
       <section className="mb-6">
         <p className="text-gray-700">
           You are free to refuse our request for your personal information, with
@@ -73,6 +98,7 @@ const PrivacyPolicy: React.FC = () => {
         </p>
       </section>
 
+      {/* Acceptance */}
       <section className="mb-6">
         <p className="text-gray-700">
           Your continued use of our website will be regarded as acceptance of
