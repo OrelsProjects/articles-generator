@@ -14,6 +14,7 @@ import { PlusJakartaSans } from "@/lib/utils/fonts";
 import Script from "next/script";
 import AffiliateProvider from "@/app/providers/AffiliateProvider";
 import { Analytics } from "@vercel/analytics/react";
+import { FeedbackProvider } from "@/app/providers/FeedbackProvider";
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME as string;
 const APP_DEFAULT_TITLE = process.env.NEXT_PUBLIC_APP_DEFAULT_TITLE as string;
@@ -105,6 +106,7 @@ export default function RootLayout({
               <Analytics />
               <AnimationProvider className="max-h-screen">
                 {children}
+                <FeedbackProvider />
               </AnimationProvider>
               <ClientTrackersProvider />
             </SessionWrapper>

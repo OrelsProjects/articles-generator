@@ -72,6 +72,17 @@ const faq = [
     answer: `No. We never use your draft notes. We respect what you create and your drafts are private.`,
   },
   {
+    question: `Can I choose the language for my notes?`,
+    answer: `Yes! You can choose the language for your notes in the settings.
+    <br/><br/>
+    Go to Settings->Account Information->Preferred Language.
+    <br/><br/>
+    You can choose: English, Español, Français, Deutsch, Italiano, Português, Русский, 中文, 日本語, 한국어.
+    <br/><br/>
+    Feel free to request more languages.
+    `,
+  },
+  {
     question: `Will anybody be able to see my private statistics?`,
     answer: `No. The private statistics are fetched via the Chrome extension, to ensure the statistics belong to the logged in user on Substack.
     <br/><br/>
