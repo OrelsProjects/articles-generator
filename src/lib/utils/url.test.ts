@@ -204,3 +204,14 @@ describe("masteryden.com", () => {
     });
   });
 });
+
+describe("https://blockbuster.thoughtleader.school", () => {
+  test("handles https://blockbuster.thoughtleader.school correctly", () => {
+    const url = "https://blockbuster.thoughtleader.school";
+    const result = getUrlComponents(url);
+    expect(result).toEqual({
+      validUrl: "https://blockbuster.thoughtleader.school",
+      mainComponentInUrl: "thoughtleader",
+    });
+  });
+});
