@@ -74,7 +74,7 @@ const NotesActions = ({
 }) =>
   isUserNote && (
     <div className={cn("w-full flex items-center justify-between")}>
-      <div
+      {/* <div
         className={cn("w-full flex items-center gap-0", {
           hidden: isFree,
         })}
@@ -104,7 +104,7 @@ const NotesActions = ({
           isLoading={loadingFeedback === "dislike"}
           feedback={feedback}
         />
-      </div>
+      </div> */}
       <TooltipButton
         tooltipContent={
           "Delete note" + (extraFeedbackText ? ` (${extraFeedbackText})` : "")
