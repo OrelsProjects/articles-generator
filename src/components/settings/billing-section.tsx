@@ -58,9 +58,13 @@ export function BillingSection() {
   const { billingInfo, loading: loadingBilling } = useBilling();
   const { cancelSubscription, applyRetentionDiscount } = usePayments();
   const { shouldShow50PercentOffOnCancel } = useSettings();
-  const [billingHistory, setBillingHistory] = useState<BillingHistoryItem[]>([]);
+  const [billingHistory, setBillingHistory] = useState<BillingHistoryItem[]>(
+    [],
+  );
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
+  const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(
+    null,
+  );
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showDiscountDialog, setShowDiscountDialog] = useState(false);
   const [loadingCancel, setLoadingCancel] = useState(false);
@@ -74,7 +78,9 @@ export function BillingSection() {
   const fetchBillingHistory = async () => {
     try {
       setLoadingHistory(true);
-      const response = await axiosInstance.get<BillingHistoryItem[]>("/api/user/billing/history");
+      const response = await axiosInstance.get<BillingHistoryItem[]>(
+        "/api/user/billing/history",
+      );
       setBillingHistory(response.data);
     } catch (error) {
       Logger.error("Error fetching billing history:", { error });
@@ -87,27 +93,30 @@ export function BillingSection() {
   const downloadInvoice = async (invoiceId: string) => {
     try {
       setDownloadingInvoice(invoiceId);
-      const response = await axiosInstance.get(`/api/user/billing/invoice/${invoiceId}/download`, {
-        responseType: 'blob'
-      });
-      
+      const response = await axiosInstance.get(
+        `/api/user/billing/invoice/${invoiceId}/download`,
+        {
+          responseType: "blob",
+        },
+      );
+
       // Create blob link to download
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      
+
       // Extract filename from response headers or use default
-      const contentDisposition = response.headers['content-disposition'];
-      const filename = contentDisposition 
-        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+      const contentDisposition = response.headers["content-disposition"];
+      const filename = contentDisposition
+        ? contentDisposition.split("filename=")[1]?.replace(/"/g, "")
         : `invoice-${invoiceId}.pdf`;
-      
-      link.setAttribute('download', filename);
+
+      link.setAttribute("download", filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      
+
       toast.success("Invoice downloaded successfully");
     } catch (error) {
       Logger.error("Error downloading invoice:", { error });
@@ -118,22 +127,22 @@ export function BillingSection() {
   };
 
   const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount / 100);
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid':
-        return 'bg-green-600';
-      case 'pending':
-        return 'bg-yellow-600';
-      case 'failed':
-        return 'bg-red-600';
+      case "paid":
+        return "bg-green-600";
+      case "pending":
+        return "bg-yellow-600";
+      case "failed":
+        return "bg-red-600";
       default:
-        return 'bg-gray-600';
+        return "bg-gray-600";
     }
   };
 
@@ -194,7 +203,6 @@ export function BillingSection() {
 
   return (
     <div className="space-y-6">
-
       {/* Current Subscription */}
       <Card>
         <CardHeader>
@@ -221,39 +229,30 @@ export function BillingSection() {
                   {billingInfo?.interval && (
                     <span className="text-sm text-muted-foreground">
                       (Billed{" "}
-                      {billingInfo.interval === "month"
-                        ? "monthly"
-                        : "yearly"}
-                      )
+                      {billingInfo.interval === "month" ? "monthly" : "yearly"})
                     </span>
                   )}
                 </div>
 
                 {billingInfo?.nextBillingDate && (
                   <div>
-                    <span className="font-medium">
-                      Next Billing Date:
-                    </span>{" "}
+                    <span className="font-medium">Next Billing Date:</span>{" "}
                     <span>
-                      {billingInfo.nextBillingDate.toLocaleDateString(
-                        "en-US",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        },
-                      )}
+                      {billingInfo.nextBillingDate.toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
                     </span>
                   </div>
                 )}
 
                 {billingInfo?.nextPaymentAmount && (
                   <div>
-                    <span className="font-medium">
-                      Next Payment Amount:
-                    </span>{" "}
+                    <span className="font-medium">Next Payment Amount:</span>{" "}
                     <div className="flex flex-wrap items-center gap-2 mt-1">
-                      {billingInfo.coupon?.isValid && billingInfo.originalAmount ? (
+                      {billingInfo.coupon?.isValid &&
+                      billingInfo.originalAmount ? (
                         <>
                           <span className="text-muted-foreground line-through text-sm sm:text-base">
                             {formatAmount(billingInfo.originalAmount)}
@@ -266,7 +265,7 @@ export function BillingSection() {
                           </span>
                         </>
                       ) : (
-                        <span className="text-lg sm:text-xl font-semibold text-primary">
+                        <span className="text-lg sm:text-xl font-semibold text-foreground">
                           {formatAmount(billingInfo.nextPaymentAmount)}
                         </span>
                       )}
@@ -280,9 +279,7 @@ export function BillingSection() {
                       <span className="font-medium">Applied Coupon:</span>
                       <Badge
                         variant={
-                          billingInfo.coupon.isValid
-                            ? "default"
-                            : "outline"
+                          billingInfo.coupon.isValid ? "default" : "outline"
                         }
                         className={
                           billingInfo.coupon.isValid
@@ -290,14 +287,11 @@ export function BillingSection() {
                             : "text-muted-foreground"
                         }
                       >
-                        {billingInfo.coupon.emoji}{" "}
-                        {billingInfo.coupon.name}
+                        {billingInfo.coupon.emoji} {billingInfo.coupon.name}
                       </Badge>
                     </div>
                     <div className="mt-1 flex items-center">
-                      <span>
-                        {billingInfo.coupon.percentOff}% discount
-                      </span>
+                      <span>{billingInfo.coupon.percentOff}% discount</span>
                       {/* <TooltipProvider delayDuration={20}>
                         <Tooltip>
                           <TooltipTrigger className="pt-1 ml-1">
@@ -316,8 +310,7 @@ export function BillingSection() {
                     </div>
                     {!billingInfo.coupon.isValid && (
                       <p className="text-sm text-muted-foreground mt-1">
-                        This coupon is no longer active on your
-                        subscription.
+                        This coupon is no longer active on your subscription.
                       </p>
                     )}
                   </div>
@@ -369,7 +362,9 @@ export function BillingSection() {
           ) : billingHistory.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <p>No billing history found</p>
-              <p className="text-sm mt-1">Your invoices will appear here once you have a paid subscription</p>
+              <p className="text-sm mt-1">
+                Your invoices will appear here once you have a paid subscription
+              </p>
             </div>
           ) : (
             <Table>
@@ -383,7 +378,7 @@ export function BillingSection() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {billingHistory.map((item) => (
+                {billingHistory.map(item => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">
                       {new Date(item.date).toLocaleDateString()}
@@ -391,15 +386,15 @@ export function BillingSection() {
                     <TableCell>{item.description}</TableCell>
                     <TableCell>{formatAmount(item.amount)}</TableCell>
                     <TableCell>
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={`${getStatusColor(item.status)} text-white`}
                       >
                         {item.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {item.invoiceUrl && item.status === 'paid' ? (
+                      {item.invoiceUrl && item.status === "paid" ? (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -407,11 +402,13 @@ export function BillingSection() {
                           disabled={downloadingInvoice === item.id}
                         >
                           <Download className="h-4 w-4" />
-                          {downloadingInvoice === item.id ? "Downloading..." : "Download"}
+                          {downloadingInvoice === item.id
+                            ? "Downloading..."
+                            : "Download"}
                         </Button>
                       ) : (
                         <span className="text-muted-foreground text-sm">
-                          {item.status === 'pending' ? 'Pending' : 'N/A'}
+                          {item.status === "pending" ? "Pending" : "N/A"}
                         </span>
                       )}
                     </TableCell>
@@ -434,8 +431,8 @@ export function BillingSection() {
 
           <div className="bg-muted/50 border border-border rounded-md p-4 my-4">
             <p className="text-muted-foreground">
-              Is there something we can do to change your mind? I&apos;d love
-              to hear from you. <br /> Please{" "}
+              Is there something we can do to change your mind? I&apos;d love to
+              hear from you. <br /> Please{" "}
               <Link
                 href="mailto:oreslam@gmail.com"
                 className="text-primary hover:underline"
@@ -531,8 +528,8 @@ export function BillingSection() {
                 50% OFF Your Subscription
               </h3>
               <p className="text-center">
-                We&apos;d hate to see you go! Stay with us and get 50% off
-                your current plan for the next month (30% for annual plans).
+                We&apos;d hate to see you go! Stay with us and get 50% off your
+                current plan for the next month (30% for annual plans).
               </p>
             </div>
 
@@ -584,4 +581,4 @@ export function BillingSection() {
       </Dialog>
     </div>
   );
-} 
+}
