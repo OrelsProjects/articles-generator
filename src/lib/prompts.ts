@@ -938,7 +938,7 @@ Rules:
 6. Twist every borrowed idea ≥ 40 % so it’s fresh.
 7. Output a JSON array only, following the schema below.
 ${language ? `8. The notes must be in ${language} language.` : ""}
-$${lockToArticles ? "All notes MUST draw inspiration **only** from the provided articles." : lockToTopic ? `All notes MUST revolve around the topic **${topic}**.` : ""}
+$${lockToArticles ? `All notes MUST draw inspiration **only** from the provided articles. You should generate a note for each article. If there are less than ${noteCount} articles, keep generating while picking articles randomly from the list.` : lockToTopic ? `All notes MUST revolve around the topic **${topic}**.` : ""}
 
 ⚠️ IMPORTANT – HARD LIMIT  
 Any note > ${lenCeil} chars (spaces *included*) is invalid.  
