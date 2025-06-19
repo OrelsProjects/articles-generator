@@ -696,7 +696,7 @@ export default function SettingsPage() {
                 </h3>
                 <p className="text-center">
                   We&apos;d hate to see you go! Stay with us and get 50% off
-                  your current plan for the next month (20% for annual plans).
+                  your current plan for the next month (30% for annual plans).
                 </p>
               </div>
 
