@@ -803,7 +803,10 @@ export const generateImproveNoteTextPrompt = (
   };
 };
 
-export const getNotesPromptNoteMeta = (userNotes: Note[], maxLength: number) => {
+export const getNotesPromptNoteMeta = (
+  userNotes: Note[],
+  maxLength: number,
+) => {
   const userPastNotes = userNotes.map(n => n.body);
   const avgLen = userPastNotes.length
     ? Math.round(
@@ -893,7 +896,10 @@ export const generateNotesPrompt_v2 = ({
     : 160;
 
   // ±20 % band but never under 30 chars.
-  const { lenFloor, lenCeil, emojiRatio } = getNotesPromptNoteMeta(userNotes, maxLength);
+  const { lenFloor, lenCeil, emojiRatio } = getNotesPromptNoteMeta(
+    userNotes,
+    maxLength,
+  );
 
   const rareTopics = Object.entries(topicsCount)
     .sort(([, a], [, b]) => a - b)
@@ -938,8 +944,16 @@ Rules:
 6. Twist every borrowed idea ≥ 40 % so it’s fresh.
 7. Output a JSON array only, following the schema below.
 ${language ? `8. The notes must be in ${language} language.` : ""}
-$${lockToArticles ? `All notes MUST draw inspiration **only** from the provided articles. You should generate a note for each article. If there are less than ${noteCount} articles, keep generating while picking articles randomly from the list.` : lockToTopic ? `All notes MUST revolve around the topic **${topic}**.` : ""}
-
+${
+  lockToArticles
+    ? `
+You must generate exactly ${noteCount} notes, all based strictly on the provided articles.
+If there are fewer than ${noteCount} unique articles, continue generating by randomly selecting from the article list again (duplicates allowed).`
+    : lockToTopic
+      ? `
+You must generate ${noteCount} notes, all focused entirely on the topic: **${topic}**.`
+      : ""
+}
 ⚠️ IMPORTANT – HARD LIMIT  
 Any note > ${lenCeil} chars (spaces *included*) is invalid.  
 Regenerate it until it fits.

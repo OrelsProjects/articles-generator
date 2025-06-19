@@ -114,7 +114,13 @@ export function ArticleSelectionDialog({
 
         {articles.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full">
-            <p className="text-muted-foreground">No articles found</p>
+            <p
+              className={cn("text-muted-foreground", {
+                hidden: isLoading,
+              })}
+            >
+              No articles found
+            </p>
             <Button variant="outline" onClick={reloadArticles}>
               {isLoading ? (
                 <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />

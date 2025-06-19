@@ -235,7 +235,7 @@ export function BillingSection() {
                 </div>
 
                 {billingInfo?.nextBillingDate && (
-                  <div>
+                  <div className="flex flex-col gap-2">
                     <span className="font-medium">Next Billing Date:</span>{" "}
                     <span>
                       {billingInfo.nextBillingDate.toLocaleDateString("en-US", {
@@ -265,7 +265,7 @@ export function BillingSection() {
                           </span>
                         </>
                       ) : (
-                        <span className="text-lg sm:text-xl font-semibold text-foreground">
+                        <span className="text-lg sm:text-xl text-foreground">
                           {formatAmount(billingInfo.nextPaymentAmount)}
                         </span>
                       )}
