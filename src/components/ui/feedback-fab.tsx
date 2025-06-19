@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { toast } from "react-toastify";
 
 interface FeedbackFabProps {
   onClick: () => void;
@@ -22,6 +23,9 @@ export function FeedbackFab({ onClick }: FeedbackFabProps) {
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
     setHideFab(true);
+    toast.success(
+      "Feedback button hidden. You can show it again in the settings.",
+    );
   };
 
   return (
@@ -41,7 +45,7 @@ export function FeedbackFab({ onClick }: FeedbackFabProps) {
           className={cn(
             "h-14 w-14 rounded-full shadow-lg transition-all duration-200",
             "bg-primary hover:bg-primary/90",
-            "hover:scale-105 hover:shadow-xl"
+            "hover:scale-105 hover:shadow-xl",
           )}
         >
           <MessageCircle className="h-6 w-6" />
@@ -72,4 +76,4 @@ export function FeedbackFab({ onClick }: FeedbackFabProps) {
       </div>
     </motion.div>
   );
-} 
+}
