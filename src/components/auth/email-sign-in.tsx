@@ -39,7 +39,7 @@ export function EmailSignIn() {
       const result = await signIn("email", {
         email: values.email,
         redirect: true,
-        callbackUrl: redirect || rootPath,
+        callbackUrl: redirect || "/onboarding",
       });
 
       if (result?.error) {
