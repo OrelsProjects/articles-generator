@@ -10,6 +10,9 @@ interface BillingInfo {
   plan: Plan | null;
   nextBillingDate: Date | null;
   interval: "month" | "year" | null;
+  nextPaymentAmount: number | null; // Final amount after discount (in cents)
+  originalAmount: number | null; // Original price before discount (in cents)
+  discountedAmount: number | null; // Amount after discount applied (in cents)
   coupon: (Coupon & { isValid: boolean }) | null;
 }
 

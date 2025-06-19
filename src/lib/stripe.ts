@@ -311,6 +311,6 @@ export const getRetentionCoupon = async (
 ) => {
   const promoCode =
     interval === "year" ? RETENTION_PROMO_CODE_YEAR : RETENTION_PROMO_CODE;
-  const coupon = await getCoupon(stripe, promoCode, interval);
+  const coupon =  await getCoupon(stripe, promoCode, interval);
   return coupon;
 };

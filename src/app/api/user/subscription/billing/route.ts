@@ -27,8 +27,11 @@ export async function GET() {
       return NextResponse.json({
         plan: null,
         nextBillingDate: null,
-        coupon: null,
-        interval: null
+        interval: null,
+        nextPaymentAmount: null,
+        originalAmount: null,
+        discountedAmount: null,
+        coupon: null
       });
     }
 
@@ -57,12 +60,40 @@ export async function GET() {
       ? isCouponStillValid(stripeCoupon, stripeSubscription) 
       : false;
 
+    // Get pricing information
+    let nextPaymentAmount = null;
+    let originalAmount = null;
+    let discountedAmount = null;
+    
+    if (stripeSubscription && stripeSubscription.items.data.length > 0) {
+      const price = stripeSubscription.items.data[0].price;
+      originalAmount = price?.unit_amount || null;
+      
+      // Calculate discounted amount if coupon is applied and valid
+      if (stripeCoupon && couponIsValid && originalAmount) {
+        if (stripeCoupon.percent_off) {
+          // Percentage discount
+          const discountMultiplier = (100 - stripeCoupon.percent_off) / 100;
+          discountedAmount = Math.round(originalAmount * discountMultiplier);
+        } else if (stripeCoupon.amount_off) {
+          // Fixed amount discount
+          discountedAmount = Math.max(0, originalAmount - stripeCoupon.amount_off);
+        }
+        nextPaymentAmount = discountedAmount;
+      } else {
+        nextPaymentAmount = originalAmount;
+      }
+    }
+
     return NextResponse.json({
       plan: subscription.plan,
       nextBillingDate: stripeSubscription?.current_period_end 
         ? new Date(stripeSubscription.current_period_end * 1000) 
         : null,
       interval: subscription.interval,
+      nextPaymentAmount, // Final amount after discount (in cents)
+      originalAmount, // Original price before discount (in cents)
+      discountedAmount, // Amount after discount applied (in cents)
       coupon: stripeCoupon ? {
         ...stripeCouponToCoupon(stripeCoupon),
         isValid: couponIsValid

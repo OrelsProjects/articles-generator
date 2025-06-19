@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getActiveSubscription } from "@/lib/dal/subscription";
+import { getActiveSubscription, getActiveSubscriptionByStripeSubId } from "@/lib/dal/subscription";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addTagToEmail, removeTagFromEmail, sendMail } from "@/lib/mail/mail";
 import {
@@ -202,7 +202,7 @@ export async function handleSubscriptionUpdated(event: any) {
     throw new Error("No plan found for subscription");
   }
 
-  const currentSubscription = await getActiveSubscription(user.id);
+  const currentSubscription = await getActiveSubscriptionByStripeSubId(subscriptionId);
 
   if (!currentSubscription) {
     loggerServer.error("No subscription found for user", {
