@@ -114,8 +114,11 @@ export default function UrlAnalysisInput({
 
   const validatePublication = async (url: string) => {
     try {
-      const res = await axiosInstance.get(
-        `/api/user/analyze/validate?q=${url}`,
+      const res = await axiosInstance.post(
+        `/api/user/analyze/validate`,
+        {
+          url,
+        },
       );
       return res.data;
     } catch (error) {
