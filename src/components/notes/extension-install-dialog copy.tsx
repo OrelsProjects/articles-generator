@@ -81,7 +81,7 @@ export function ExtensionInstallDialog({
             onClick={handleInstall}
             disabled={loading}
           >
-            Let&apos;s go!
+            Install the extension
           </Button>
         </DialogFooter>
       </DialogContent>
