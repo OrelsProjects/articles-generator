@@ -54,3 +54,44 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const parsedBody = blockWriterSchema.safeParse(await request.json());
+
+  if (!parsedBody.success) {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
+  }
+
+  const { authorId } = parsedBody.data;
+
+  try {
+    await prisma.blockedWriters.delete({
+      where: {
+        userId_authorId: {
+          userId: session.user.id,
+          authorId,
+        },
+      },
+    });
+
+    return NextResponse.json({}, { status: 200 });
+  } catch (error) {
+    loggerServer.error("[WRITER-UNBLOCK] Error unblocking writer", {
+      error,
+      authorId,
+      userId: session.user.id,
+    });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}

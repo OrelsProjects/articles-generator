@@ -34,6 +34,8 @@ export function useInspiration() {
     currentPage,
     hasMore,
   } = useAppSelector(state => state.inspiration);
+  const [originalInspirationNotes, setOriginalInspirationNotes] =
+    useState<InspirationNote[]>(inspirationNotes);
   const [construction] = useState(false);
   const cancelRef = useRef<AbortController | null>(null);
 
@@ -227,9 +229,10 @@ export function useInspiration() {
     async (authorId: string) => {
       try {
         await axiosInstance.post("/api/v1/writer/block", { authorId });
+        setOriginalInspirationNotes(inspirationNotes);
         dispatch(
           setInspirationNotes(
-            inspirationNotes.filter(
+            originalInspirationNotes.filter(
               note => note.authorId.toString() !== authorId,
             ),
           ),
@@ -241,6 +244,18 @@ export function useInspiration() {
     },
     [inspirationNotes],
   );
+
+  const unblockWriter = useCallback(async (authorId: string) => {
+    try {
+      await axiosInstance.delete("/api/v1/writer/block", {
+        data: { authorId },
+      });
+      dispatch(setInspirationNotes(originalInspirationNotes));
+    } catch (error: any) {
+      Logger.error("Error unblocking writer:", error);
+      throw error;
+    }
+  }, []);
 
   return {
     notes: inspirationNotes,
@@ -256,5 +271,6 @@ export function useInspiration() {
     hasMore,
     construction,
     blockWriter,
+    unblockWriter,
   };
 }

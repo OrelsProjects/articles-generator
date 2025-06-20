@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useInspiration } from "@/lib/hooks/useInspiration";
+import { Undo2 } from "lucide-react";
 
 export type NoteProps = {
   note: Note | NoteDraft;
@@ -46,7 +47,7 @@ export default function InspirationNoteComponent({
   },
 }: NoteProps) {
   const { selectImage, selectNote, selectedNote } = useNotes();
-  const { blockWriter } = useInspiration();
+  const { blockWriter, unblockWriter } = useInspiration();
   const [isExpanded, setIsExpanded] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [showExpandButton, setShowExpandButton] = useState(false);
@@ -185,9 +186,41 @@ export default function InspirationNoteComponent({
   const Author = () => {
     const handleBlockWriter = () => {
       if (note.authorId) {
-        blockWriter(note.authorId.toString())
+        const authorId = note.authorId.toString();
+        const authorName = note.authorName;
+        
+        blockWriter(authorId)
           .then(() => {
-            toast.info("Okay, we won't show notes from this creator anymore.");
+            // Store toast ID so we can dismiss it later
+            const toastId = toast.info(
+              <div className="flex items-center justify-between w-full">
+                <span>
+                  {authorName ? `${authorName}'s` : "Creator's"} notes hidden
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    unblockWriter(authorId)
+                      .then(() => {
+                        toast.dismiss(toastId);
+                        toast.success("Writer unblocked successfully");
+                      })
+                      .catch(() => {
+                        toast.error("Failed to undo. Please try again.");
+                      });
+                  }}
+                  className="ml-2 h-auto p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                >
+                  <Undo2 className="h-4 w-4 mr-1" />
+                  Undo
+                </Button>
+              </div>,
+              {
+                autoClose: 8000,
+                closeButton: false,
+              }
+            );
           })
           .catch(() => {
             toast.error("Failed to block writer. Please try again.");
