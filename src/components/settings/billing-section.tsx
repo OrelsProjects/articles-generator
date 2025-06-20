@@ -251,7 +251,7 @@ export function BillingSection() {
                   )}
                 </div>
 
-                {billingInfo?.nextBillingDate && (
+                {billingInfo?.nextBillingDate && !cancelAt && (
                   <div className="flex flex-col gap-2">
                     <span className="font-medium">Next Billing Date:</span>{" "}
                     <span>
@@ -264,7 +264,7 @@ export function BillingSection() {
                   </div>
                 )}
 
-                {billingInfo?.nextPaymentAmount && (
+                {billingInfo?.nextPaymentAmount && !cancelAt && (
                   <div>
                     <span className="font-medium">Next Payment Amount:</span>{" "}
                     <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -347,7 +347,7 @@ export function BillingSection() {
                         })}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        You'll continue to have access until this date.
+                        You&apos;ll continue to have access until this date.
                       </p>
                     </div>
                     <Button

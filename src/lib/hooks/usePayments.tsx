@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { setProducts } from "@/lib/features/products/productsSlice";
 import { useRef, useState } from "react";
 import { selectAuth, updateUserPlan } from "@/lib/features/auth/authSlice";
+import { setCancelAt } from "@/lib/features/settings/settingsSlice";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { Plan } from "@prisma/client";
 
@@ -92,23 +93,6 @@ export default function usePayments() {
       }
     } catch (error: any) {
       Logger.error("Error starting checkout", { error });
-      throw error;
-    }
-  };
-
-  /**
-   * Cancel user subscription in your backend
-   */
-  const cancelSubscription = async () => {
-    if (!user) {
-      return;
-    }
-    try {
-      await axiosInstance.post("/api/user/subscription/cancel");
-      Logger.info("Subscription canceled successfully");
-      window.location.reload();
-    } catch (error: any) {
-      Logger.error("Failed to cancel subscription", { error });
       throw error;
     }
   };
@@ -200,9 +184,33 @@ export default function usePayments() {
     try {
       await axiosInstance.post("/api/user/subscription/uncancel");
       Logger.info("Subscription uncanceled successfully");
-      window.location.reload();
+      
+      // Update Redux state to remove the cancellation date
+      dispatch(setCancelAt(undefined));
     } catch (error: any) {
       Logger.error("Failed to uncancel subscription", { error });
+      throw error;
+    }
+  };
+
+  /**
+   * Cancel user subscription in your backend
+   */
+  const cancelSubscription = async () => {
+    if (!user) {
+      return;
+    }
+    try {
+      const response = await axiosInstance.post<{
+        success: boolean;
+        endsAt: string;
+      }>("/api/user/subscription/cancel");
+      Logger.info("Subscription canceled successfully");
+      
+      // Update Redux state with the cancellation date
+      dispatch(setCancelAt(new Date(response.data.endsAt)));
+    } catch (error: any) {
+      Logger.error("Failed to cancel subscription", { error });
       throw error;
     }
   };
