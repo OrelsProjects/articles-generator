@@ -16,6 +16,7 @@ export interface UiState {
   showNoSubstackCookiesDialog: boolean;
   showCreateScheduleDialog: boolean;
   notePostedData: CreatePostResponse | null;
+  hideFeedbackFab: boolean;
 }
 
 export const initialState: UiState = {
@@ -32,6 +33,7 @@ export const initialState: UiState = {
   showNoSubstackCookiesDialog: false,
   showCreateScheduleDialog: false,
   notePostedData: null,
+  hideFeedbackFab: false,
 };
 
 const uiSlice = createSlice({
@@ -77,6 +79,9 @@ const uiSlice = createSlice({
     setNotePostedData: (state, action) => {
       state.notePostedData = action.payload;
     },
+    setHideFeedbackFab: (state, action) => {
+      state.hideFeedbackFab = action.payload;
+    },
   },
 });
 
@@ -94,6 +99,7 @@ export const {
   setShowNoSubstackCookiesDialog,
   setShowCreateScheduleDialog,
   setNotePostedData,
+  setHideFeedbackFab,
 } = uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;

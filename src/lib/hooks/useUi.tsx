@@ -52,6 +52,10 @@ export function useUi() {
     FeatureFlag.populateNotes,
   );
 
+  const hasViewWriter = user?.meta?.featureFlags.includes(
+    FeatureFlag.canViewWriters,
+  );
+
   const didShowSaveTooltip = useAppSelector(selectUi).didShowSaveTooltip;
 
   const showScheduleModal = useAppSelector(selectUi).showScheduleModal;
@@ -87,5 +91,6 @@ export function useUi() {
     canScheduleNotes,
     canAutoDM,
     canUseChat,
+    hasViewWriter,
   };
 }

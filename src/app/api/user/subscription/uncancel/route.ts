@@ -25,38 +25,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 2. Check if subscription is actually scheduled for cancellation
+    if (!subscription.cancelAtPeriodEnd) {
+      return NextResponse.json(
+        { error: "Subscription is not scheduled for cancellation" },
+        { status: 400 },
+      );
+    }
+
     const stripe = getStripeInstance();
 
-    // 2. Get current subscription from Stripe to get the period end
-    const stripeSubscription = await stripe.subscriptions.retrieve(
-      subscription.stripeSubId,
-    );
-
-    // 3. Cancel subscription in Stripe but keep it active until period end
+    // 3. Uncancel subscription in Stripe
     await stripe.subscriptions.update(subscription.stripeSubId, {
-      cancel_at_period_end: true,
+      cancel_at_period_end: false,
     });
 
-    // 4. Update local DB record - keep status active but mark as canceling at period end
+    // 4. Update local DB record - remove the cancellation
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
-        cancelAtPeriodEnd: true,
-        currentPeriodEnd: new Date(
-          stripeSubscription.current_period_end * 1000,
-        ),
+        cancelAtPeriodEnd: false,
       },
     });
 
     return NextResponse.json(
       {
         success: true,
-        endsAt: new Date(stripeSubscription.current_period_end * 1000),
+        message: "Subscription reactivated successfully",
       },
       { status: 200 },
     );
   } catch (error: any) {
-    loggerServer.error("Cancel subscription failed", {
+    loggerServer.error("Uncancel subscription failed", {
       error,
       userId: session.user.id,
     });
@@ -65,4 +65,4 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
-}
+} 

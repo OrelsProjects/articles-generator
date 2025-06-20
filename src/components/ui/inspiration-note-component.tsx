@@ -1,31 +1,32 @@
 import { Button } from "@/components/ui/button";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
-import {
-  convertMDToHtml,
-  Note,
-  NoteDraft,
-  NoteStatus,
-} from "@/types/note";
+import { convertMDToHtml, Note, NoteDraft, NoteStatus } from "@/types/note";
 import {
   Heart,
   MessageCircle,
   RefreshCw,
   ExternalLink,
-  Trash,
+  ChevronDown,
+  Ban,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { TooltipButton } from "@/components/ui/tooltip-button";
-import { InstantPostButton } from "@/components/notes/instant-post-button";
 import StatusBadgeDropdown from "@/components/notes/status-badge-dropdown";
 import slugify from "slugify";
 import { NoteImageContainer } from "@/components/notes/note-image-container";
 import { AttachmentType } from "@prisma/client";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { loadContent, notesTextEditorOptions } from "@/lib/utils/text-editor";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useInspiration } from "@/lib/hooks/useInspiration";
 
 export type NoteProps = {
   note: Note | NoteDraft;
@@ -37,71 +38,18 @@ export type NoteProps = {
   };
 };
 
-const NotesActions = ({
-  isUserNote,
-  loadingArchive,
-  handleArchive,
-  note,
-  extraFeedbackText,
-  isFree,
-}: {
-  isUserNote: boolean;
-  loadingArchive: boolean;
-  extraFeedbackText: string;
-  handleArchive: () => void;
-  note: Note | NoteDraft;
-  isFree: boolean;
-}) =>
-  isUserNote && (
-    <div className={cn("w-full flex items-center justify-between")}>
-      <TooltipButton
-        tooltipContent={
-          "Delete note" + (extraFeedbackText ? ` (${extraFeedbackText})` : "")
-        }
-        variant="ghost"
-        size="sm"
-        className="hover:text-red-500"
-        disabled={loadingArchive}
-        onClick={handleArchive}
-      >
-        {loadingArchive ? (
-          <RefreshCw className="h-4 w-4 animate-spin" />
-        ) : (
-          <Trash className="h-4 w-4" />
-        )}
-      </TooltipButton>
-
-      {/* Replace the Substack posting button with the new component */}
-      {!isFree && (
-        <InstantPostButton
-          noteId={note.id}
-          size="sm"
-          variant="ghost"
-          source="note_component"
-        />
-      )}
-    </div>
-  );
-
-export default function NoteComponent({
+export default function InspirationNoteComponent({
   note,
   onAuthorClick,
   options = {
     allowAuthorClick: true,
   },
-  isFree = false,
-  onNoteArchived,
 }: NoteProps) {
-  const {
-    selectImage,
-    updateNoteStatus,
-    selectNote,
-    selectedNote,
-  } = useNotes();
+  const { selectImage, selectNote, selectedNote } = useNotes();
+  const { blockWriter } = useInspiration();
   const [isExpanded, setIsExpanded] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [showExpandButton, setShowExpandButton] = useState(false);
-  const [loadingArchive, setLoadingArchive] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const editor = useEditor(
@@ -122,13 +70,6 @@ export default function NoteComponent({
       loadContent(html, editor);
     });
   }, [note.body, editor]);
-
-  const isUserNote = useMemo(() => {
-    if ("reactionCount" in note) {
-      return false;
-    }
-    return true;
-  }, [note]);
 
   const handle = useMemo(() => {
     if ("handle" in note) {
@@ -169,13 +110,6 @@ export default function NoteComponent({
     return null;
   }, [note]);
 
-  const feedback = useMemo(() => {
-    if ("feedback" in note) {
-      return note.feedback;
-    }
-    return null;
-  }, [note]);
-
   const thumbnail = useMemo(() => {
     if ("thumbnail" in note) {
       if (
@@ -212,7 +146,7 @@ export default function NoteComponent({
     if (!options.allowAuthorClick) return;
     if (onAuthorClick) {
       onAuthorClick(handle);
-    } else if (handle && !isUserNote) {
+    } else if (handle) {
       let baseUrl = `/writer/${handle}`;
       if (note.authorName) {
         baseUrl += `/${slugify(note.authorName, {
@@ -248,72 +182,79 @@ export default function NoteComponent({
       </Link>
     );
 
-  const Author = () => (
-    <div
-      onClick={() => {
-        if (handle && !isUserNote) {
-          handleAuthorClick(handle);
-        }
-      }}
-      className={cn(
-        "flex items-center gap-2",
-        {
-          "cursor-pointer": handle && !isUserNote && options.allowAuthorClick,
-        },
-        {
-          "cursor-default": !options.allowAuthorClick,
-        },
-      )}
-    >
-      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0 overflow-hidden">
-        {thumbnail ? (
-          <Image
-            src={thumbnail}
-            alt={note.authorName || "Author"}
-            width={32}
-            height={32}
-            className="object-cover w-full h-full hover:opacity-90 transition-opacity"
-          />
-        ) : (
-          <span className="text-sm">{note.authorName?.charAt(0) || "A"}</span>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="flex flex-col gap-0.5">
-          {isUserNote ? (
-            <p className="font-medium text-sm">{note.authorName}</p>
-          ) : (
-            <p className="font-medium text-sm">{note.authorName}</p>
-          )}
-          {handle && <p className="text-xs text-muted-foreground">@{handle}</p>}
-        </div>
-      </div>
-    </div>
-  );
-
-  const extraFeedbackText =
-    isUserNote && feedback !== null
-      ? " Your feedback will still be saved."
-      : "";
-
-  const handleArchive = async () => {
-    setLoadingArchive(true);
-    try {
-      await updateNoteStatus(note.id, "archived");
-      if (onNoteArchived) {
-        onNoteArchived();
+  const Author = () => {
+    const handleBlockWriter = () => {
+      if (note.authorId) {
+        blockWriter(note.authorId.toString())
+          .then(() => {
+            toast.info("Okay, we won't show notes from this creator anymore.");
+          })
+          .catch(() => {
+            toast.error("Failed to block writer. Please try again.");
+          });
       }
-    } catch (error) {
-      toast.error("Failed to delete note");
-    } finally {
-      setLoadingArchive(false);
-    }
+    };
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 rounded-md p-1 -m-1 transition-colors">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0 overflow-hidden">
+              {thumbnail ? (
+                <Image
+                  src={thumbnail}
+                  alt={note.authorName || "Author"}
+                  width={32}
+                  height={32}
+                  className="object-cover w-full h-full hover:opacity-90 transition-opacity"
+                />
+              ) : (
+                <span className="text-sm">
+                  {note.authorName?.charAt(0) || "A"}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-0.5">
+                <p className="font-medium text-sm">{note.authorName}</p>
+                {handle && (
+                  <p className="text-xs text-muted-foreground">@{handle}</p>
+                )}
+              </div>
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            </div>
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuItem
+            onClick={() => {
+              if (handle && options.allowAuthorClick) {
+                handleAuthorClick(handle);
+              }
+            }}
+            className={cn("cursor-pointer flex flex-row gap-1.5", {
+              hidden: !options.allowAuthorClick,
+            })}
+          >
+            <ExternalLink className="w-4 h-4" />
+            WriteStack profile
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={handleBlockWriter}
+            className="cursor-pointer flex flex-row gap-1.5"
+          >
+            <Ban className="w-4 h-4" />
+            Hide creator&apos;s notes
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
   };
 
   const handleSelectNote = () => {
     selectNote(note, {
       forceShowEditor: true,
-      isFromInspiration: !isUserNote,
+      isFromInspiration: true,
     });
   };
 
@@ -348,9 +289,6 @@ export default function NoteComponent({
           <div
             className={cn(
               "w-full flex justify-between items-center border-b border-border/60 p-2 relative",
-              {
-                "opacity-60": feedback === "dislike",
-              },
             )}
           >
             <Author />
@@ -363,13 +301,21 @@ export default function NoteComponent({
                 />
               )}
             </div>
+            {/* <div className="flex items-center gap-2" /> */}
+
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">
+                {new Date(note.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
           </div>
           <div
             className={cn(
               "h-full w-full flex-1 flex flex-col justify-between pb-16",
-              {
-                "opacity-60": feedback === "dislike",
-              },
             )}
           >
             <div className="w-full relative z-20">
@@ -379,17 +325,13 @@ export default function NoteComponent({
                 className={cn(
                   "w-full relative text-base text-foreground overflow-hidden transition-all duration-200 p-4 pt-0 z-10 min-h-[180px] md:min-h-[200px]",
                   isExpanded ? "max-h-none" : "max-h-[260px]",
-                  isUserNote && "cursor-pointer",
                 )}
               >
-                {/* Transparent overlay for click handling */}
-                {/* {!isFree && ( */}
                 <div
                   className="absolute inset-0 z-20 cursor-pointer"
                   onClick={handleSelectNote}
                   aria-hidden="true"
                 />
-                {/* )} */}
 
                 <div className="text-sm text-foreground leading-relaxed">
                   <EditorContent disabled editor={editor} />
@@ -417,25 +359,8 @@ export default function NoteComponent({
             {attachments && attachments.length > 0 && (
               <div className="flex flex-col gap-2">
                 <div className="mt-2 px-4 grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {attachmentImages.map((attachment, index) =>
-                    isUserNote ? (
-                      <div
-                        key={index}
-                        className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity duration-200"
-                        onClick={() =>
-                          selectImage({
-                            url: attachment.url,
-                            alt: "Note attachment",
-                          })
-                        }
-                      >
-                        <NoteImageContainer
-                          key={attachment.id}
-                          imageUrl={attachment.url}
-                          attachment={attachment}
-                        />
-                      </div>
-                    ) : (
+                  {attachmentImages.map(
+                    (attachment, index) =>
                       attachment.type === AttachmentType.image &&
                       !attachment.url.includes("heic") && (
                         <div
@@ -456,8 +381,7 @@ export default function NoteComponent({
                             className="rounded-lg hover:opacity-90 transition-opacity"
                           />
                         </div>
-                      )
-                    ),
+                      ),
                   )}
                 </div>
                 {attachmentLinks.length > 0 && (
@@ -501,18 +425,8 @@ export default function NoteComponent({
           <div className="w-full flex items-center justify-between gap-2">
             <Reactions />
             <div
-              className={cn("flex items-center justify-between gap-2 px-2", {
-                "w-full pr-4": isUserNote,
-              })}
+              className={cn("flex items-center justify-between gap-2 px-2", {})}
             >
-              <NotesActions
-                isUserNote={isUserNote}
-                loadingArchive={loadingArchive}
-                handleArchive={handleArchive}
-                note={note}
-                extraFeedbackText={extraFeedbackText}
-                isFree={isFree}
-              />
               <Button
                 onClick={() =>
                   window.open(
@@ -524,9 +438,6 @@ export default function NoteComponent({
                 size="sm"
                 className={cn(
                   "text-xs text-muted-foreground hover:text-foreground",
-                  {
-                    hidden: isUserNote,
-                  },
                 )}
               >
                 View on Substack <ExternalLink className="w-4 h-4 ml-2" />

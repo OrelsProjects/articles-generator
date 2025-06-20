@@ -223,6 +223,25 @@ export function useInspiration() {
     }
   }, [construction]);
 
+  const blockWriter = useCallback(
+    async (authorId: string) => {
+      try {
+        await axiosInstance.post("/api/v1/writer/block", { authorId });
+        dispatch(
+          setInspirationNotes(
+            inspirationNotes.filter(
+              note => note.authorId.toString() !== authorId,
+            ),
+          ),
+        );
+      } catch (error: any) {
+        Logger.error("Error blocking writer:", error);
+        throw error;
+      }
+    },
+    [inspirationNotes],
+  );
+
   return {
     notes: inspirationNotes,
     loading: loadingInspiration,
@@ -236,5 +255,6 @@ export function useInspiration() {
     updateSort,
     hasMore,
     construction,
+    blockWriter,
   };
 }

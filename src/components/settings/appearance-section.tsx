@@ -11,11 +11,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { setHideFeedbackFab } from "@/lib/features/ui/uiSlice";
+import { useDispatch } from "react-redux";
 
 export function AppearanceSection() {
-    const [hideFab, setHideFab] = useLocalStorage("hide_feedback_fab", true);
+  const dispatch = useDispatch();
+  const [hideFab, setHideFab] = useLocalStorage("hide_feedback_fab", true);
 
   const { setTheme, resolvedTheme } = useTheme();
+
+  const handleHideFeedbackFab = () => {
+    setHideFab(!hideFab);
+    dispatch(setHideFeedbackFab(hideFab));
+  };
 
   return (
     <div className="space-y-6">
@@ -46,12 +54,15 @@ export function AppearanceSection() {
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="hide-feedback-fab">Hide Feedback Fab</Label>
+              <Label htmlFor="hide-feedback-fab">Hide Feedback Button</Label>
+              <p className="text-sm text-muted-foreground">
+                Hide the feedback button from the bottom of the screen.
+              </p>
             </div>
             <Switch
               id="hide-feedback-fab"
               checked={hideFab}
-              onCheckedChange={() => setHideFab(!hideFab)}
+              onCheckedChange={handleHideFeedbackFab}
             />
           </div>
         </CardContent>

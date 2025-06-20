@@ -10,7 +10,6 @@ import {
 } from "@/types/note";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "react-toastify";
-import NoteComponent from "@/components/ui/note-component";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -45,6 +44,7 @@ import { cn } from "@/lib/utils";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
+import InspirationNoteComponent from "@/components/ui/inspiration-note-component";
 
 
 // New component to display active filters
@@ -264,7 +264,7 @@ export default function InspirationGrid() {
     updateSort,
     construction,
   } = useInspiration();
-  const { hasAdvancedFiltering } = useUi();
+  const { hasAdvancedFiltering, hasViewWriter } = useUi();
   const [loadingMore, setLoadingMore] = useState(false);
 
   if (error) {
@@ -343,7 +343,12 @@ export default function InspirationGrid() {
     return {
       id: parseInt(note.id),
       className: "col-span-1",
-      content: <NoteComponent note={note} />,
+      content: (
+        <InspirationNoteComponent
+          note={note}
+          options={{ allowAuthorClick: hasViewWriter }}
+        />
+      ),
     };
   });
 

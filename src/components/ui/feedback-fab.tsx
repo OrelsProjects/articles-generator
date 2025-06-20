@@ -1,22 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { toast } from "react-toastify";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
+import { setHideFeedbackFab } from "@/lib/features/ui/uiSlice";
 
 interface FeedbackFabProps {
   onClick: () => void;
 }
 
 export function FeedbackFab({ onClick }: FeedbackFabProps) {
+  const dispatch = useAppDispatch();
   const [isHovered, setIsHovered] = useState(false);
   const [hideFab, setHideFab] = useLocalStorage("hide_feedback_fab", false);
+  const { hideFeedbackFab } = useAppSelector(state => state.ui);
 
-  if (hideFab) {
+  useEffect(() => {
+    dispatch(setHideFeedbackFab(hideFab));
+  }, [hideFeedbackFab]);
+
+  if (hideFeedbackFab) {
     return null;
   }
 

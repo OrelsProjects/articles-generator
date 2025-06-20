@@ -21,11 +21,7 @@ import { useBilling } from "@/lib/hooks/useBilling";
 import { Logger } from "@/logger";
 
 export function CreditsSection() {
-  const {
-    purchaseCredits,
-    loadingCredits,
-    cancelSubscription,
-  } = usePayments();
+  const { purchaseCredits, loadingCredits, cancelSubscription } = usePayments();
   const { user } = useAppSelector(selectAuth);
   const { credits, cancelAt } = useAppSelector(selectSettings);
   const { billingInfo } = useBilling();
@@ -63,13 +59,12 @@ export function CreditsSection() {
 
   return (
     <div className="space-y-6">
-
       <Card>
         <CardHeader>
           <CardTitle>Your Credits</CardTitle>
           <CardDescription>
-            Credits are used for AI-powered features like notes generation
-            and content enhancement.
+            Credits are used for AI-powered features like notes generation and
+            content enhancement.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -115,9 +110,7 @@ export function CreditsSection() {
             </div>
 
             <div className="mt-2 w-fit">
-              <div className="text-muted-foreground text-center mb-2">
-                Or
-              </div>
+              <div className="text-muted-foreground text-center mb-2">Or</div>
               <Button variant="outline" className="w-full" asChild>
                 <Link
                   href={"/settings/pricing"}
@@ -127,15 +120,6 @@ export function CreditsSection() {
                 </Link>
               </Button>
             </div>
-          </div>
-          <div className="w-full flex justify-end">
-            <Button
-              variant="link"
-              className="mt-2 text-muted-foreground hover:text-destructive"
-              onClick={() => setShowCancelDialog(true)}
-            >
-              Cancel subscription
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -150,4 +134,4 @@ export function CreditsSection() {
       />
     </div>
   );
-} 
+}

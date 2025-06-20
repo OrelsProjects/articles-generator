@@ -40,6 +40,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Check, Loader2, X } from "lucide-react";
+import { useAppSelector } from "@/lib/hooks/redux";
+import { selectSettings } from "@/lib/features/settings/settingsSlice";
 
 interface BillingHistoryItem {
   id: string;
@@ -56,8 +58,9 @@ interface BillingHistoryItem {
 
 export function BillingSection() {
   const { billingInfo, loading: loadingBilling } = useBilling();
-  const { cancelSubscription, applyRetentionDiscount } = usePayments();
+  const { cancelSubscription, uncancelSubscription, applyRetentionDiscount } = usePayments();
   const { shouldShow50PercentOffOnCancel } = useSettings();
+  const { cancelAt } = useAppSelector(selectSettings);
   const [billingHistory, setBillingHistory] = useState<BillingHistoryItem[]>(
     [],
   );
@@ -70,6 +73,7 @@ export function BillingSection() {
   const [loadingCancel, setLoadingCancel] = useState(false);
   const [loadingDiscount, setLoadingDiscount] = useState(false);
   const [loadingCancelDiscount, setLoadingCancelDiscount] = useState(false);
+  const [loadingUncancel, setLoadingUncancel] = useState(false);
 
   useEffect(() => {
     fetchBillingHistory();
@@ -201,6 +205,19 @@ export function BillingSection() {
     }
   };
 
+  const handleUncancelSubscription = async () => {
+    try {
+      setLoadingUncancel(true);
+      await uncancelSubscription();
+      toast.success("Your subscription has been reactivated!");
+    } catch (error) {
+      Logger.error("Error uncanceling subscription:", { error });
+      toast.error("Failed to reactivate subscription. Please try again.");
+    } finally {
+      setLoadingUncancel(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Current Subscription */}
@@ -317,6 +334,42 @@ export function BillingSection() {
                 )}
               </div>
 
+              {cancelAt && (
+                <div className="mt-4 p-3 border border-destructive/20 rounded-md bg-destructive/10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm text-destructive font-medium">
+                        Your subscription will be canceled on:{" "}
+                        {new Date(cancelAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        You'll continue to have access until this date.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleUncancelSubscription}
+                      disabled={loadingUncancel}
+                      className="ml-3 border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    >
+                      {loadingUncancel ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Reactivating...
+                        </>
+                      ) : (
+                        "Reactivate"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row justify-between gap-3 mt-4">
                 <Button variant="outline" asChild className="w-full sm:w-auto">
                   <Link
@@ -326,13 +379,15 @@ export function BillingSection() {
                     Update plan
                   </Link>
                 </Button>
-                <Button
-                  variant="link"
-                  className="text-muted-foreground hover:text-destructive w-full sm:w-auto"
-                  onClick={() => setShowCancelDialog(true)}
-                >
-                  Cancel Subscription
-                </Button>
+                {!cancelAt && (
+                  <Button
+                    variant="link"
+                    className="text-muted-foreground hover:text-destructive w-full sm:w-auto"
+                    onClick={() => setShowCancelDialog(true)}
+                  >
+                    Cancel Subscription
+                  </Button>
+                )}
               </div>
             </>
           )}

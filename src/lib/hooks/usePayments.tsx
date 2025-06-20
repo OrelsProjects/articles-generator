@@ -190,10 +190,28 @@ export default function usePayments() {
     }
   };
 
+  /**
+   * Uncancel user subscription
+   */
+  const uncancelSubscription = async () => {
+    if (!user) {
+      return;
+    }
+    try {
+      await axiosInstance.post("/api/user/subscription/uncancel");
+      Logger.info("Subscription uncanceled successfully");
+      window.location.reload();
+    } catch (error: any) {
+      Logger.error("Failed to uncancel subscription", { error });
+      throw error;
+    }
+  };
+
   return {
     getProducts,
     goToCheckout,
     cancelSubscription,
+    uncancelSubscription,
     updateSubscription,
     purchaseCredits,
     loadingCredits,
