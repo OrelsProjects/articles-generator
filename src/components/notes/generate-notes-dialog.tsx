@@ -51,12 +51,14 @@ export interface GenerateNotesDialogProps {
   defaultOpen?: boolean;
   defaultSource?: GenerateSource;
   variant?: "default" | "ghost";
+  tooltip?: boolean;
 }
 
 export function GenerateNotesDialog({
   onOpenChange,
   defaultOpen,
   defaultSource,
+  tooltip = true,
   variant = "default",
 }: GenerateNotesDialogProps) {
   const params = useParams();
@@ -168,12 +170,13 @@ export function GenerateNotesDialog({
         </DialogTrigger>
         <DialogTrigger asChild>
           <TooltipButton
+            hideTooltip={!tooltip}
             tooltipContent="Generate personalized notes"
             className={cn(
               "px-2",
               variant === "default"
                 ? ""
-                : " flex cursor-default select-none items-center rounded-sm px-2 py-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground ",
+                : " flex cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground ",
             )}
             variant={variant === "default" ? "neumorphic-primary" : variant}
           >

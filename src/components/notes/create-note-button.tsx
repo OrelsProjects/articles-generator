@@ -9,28 +9,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GenerateNotesDialog } from "./generate-notes-dialog";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export function CreateNoteButton() {
   const { createDraftNote, loadingCreateNote } = useNotes();
+  const [open, setOpen] = useState(false);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <TooltipButton
-          tooltipContent="Create content"
+        <Button
           variant="outline"
           className="items-center gap-2"
+          onClick={() => setOpen(true)}
         >
           <Plus size={16} />
           New note
           <ChevronDown className="h-4 w-4" />
-        </TooltipButton>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => createDraftNote()}
+        <Button
+          variant="ghost"
+          onClick={() => createDraftNote().finally(() => setOpen(false))}
           disabled={loadingCreateNote}
-          className="cursor-pointer"
+          className="w-full cursor-pointer p-1.5 hover flex justify-start"
         >
           {loadingCreateNote ? (
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -38,8 +42,8 @@ export function CreateNoteButton() {
             <StickyNote className="h-4 w-4 mr-2" />
           )}
           New draft
-        </DropdownMenuItem>
-        <GenerateNotesDialog variant="ghost" />
+        </Button>
+        <GenerateNotesDialog variant="ghost" tooltip={false} />
       </DropdownMenuContent>
     </DropdownMenu>
   );

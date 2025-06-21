@@ -87,7 +87,9 @@ export const TooltipButton = React.forwardRef<
               {children}
             </Button>
           </TooltipTrigger>
-          <TooltipContent side={tooltipSide} align={tooltipAlign}>
+          <TooltipContent side={tooltipSide} align={tooltipAlign} className={cn({
+            "hidden": hideTooltip
+          })}>
             {tooltipContent}
           </TooltipContent>
         </Tooltip>
