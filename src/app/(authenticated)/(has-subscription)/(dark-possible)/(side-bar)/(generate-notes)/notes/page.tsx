@@ -119,11 +119,11 @@ const ViewToggle = ({
 );
 
 // Persistent Action Bar Component
-const ActionBar = () => (
+const ActionBar = ({ className }: { className?: string }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="z-50 flex flex-col gap-2 sm:flex-row sm:gap-3"
+    className={cn("z-50 flex flex-col gap-2 sm:flex-row sm:gap-3", className)}
   >
     <CreateNoteButton />
   </motion.div>
@@ -435,8 +435,6 @@ export default function StatusBoardPage() {
           <h1 className="text-3xl font-bold">
             {viewMode === "kanban" ? KANBAN_TITLE : LIST_TITLE}
           </h1>
-        </div>
-        <div className="w-full flex justify-end mb-6">
           <ActionBar />
         </div>
 
