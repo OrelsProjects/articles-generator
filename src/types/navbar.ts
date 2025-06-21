@@ -10,6 +10,7 @@ import {
   Bot,
   User,
   FileChartColumnIncreasing,
+  StickyNote,
 } from "lucide-react";
 
 export const rootPath = "/queue";
@@ -37,20 +38,20 @@ export const navItems: {
     disabled: false,
     position: 1,
   },
+  // {
+  //   name: "Queue",
+  //   mobileName: "Queue",
+  //   href: "/queue",
+  //   icon: Calendar,
+  //   adminOnly: false,
+  //   locationInMobile: "bottom",
+  //   position: 2,
+  // },
   {
-    name: "Queue",
-    mobileName: "Queue",
-    href: "/queue",
-    icon: Calendar,
-    adminOnly: false,
-    locationInMobile: "bottom",
-    position: 2,
-  },
-  {
-    name: "My drafts",
-    mobileName: "Drafts",
-    href: "/status-board",
-    icon: KanbanSquare,
+    name: "My notes",
+    mobileName: "Notes",
+    href: "/notes",
+    icon: StickyNote,
     locationInMobile: "bottom",
     position: 3,
   },
@@ -70,7 +71,7 @@ export const navItems: {
     newTab: true,
     icon: PenTool,
     locationInMobile: "sidebar",
-    position: 5,
+    position: 99,
   },
   {
     name: "Statistics",
@@ -97,13 +98,5 @@ export const navItems: {
     locationInMobile: "sidebar",
     featureFlagsRequired: ["canUseRadar"],
     position: 8,
-  },
-  {
-    name: "Settings",
-    mobileName: "Settings",
-    href: "/settings",
-    icon: Settings,
-    locationInMobile: "sidebar",
-    position: 9,
   },
 ];

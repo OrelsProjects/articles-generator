@@ -276,7 +276,10 @@ export const useNotes = () => {
           scheduledTo?: Date;
         } = status === "archived" ? { isArchived: true } : { status };
 
-        if (previousStatus === "scheduled" && status !== "scheduled") {
+        if (
+          previousStatus === "scheduled" &&
+          (status !== "scheduled" || body.isArchived)
+        ) {
           Logger.info(
             "[UPDATE-NOTE-STATUS] Deleting schedule for note: " + noteId,
           );

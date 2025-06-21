@@ -1,12 +1,12 @@
 import { TransactionalClient } from "@/lib/mail/transactional-client";
 import loggerServer from "@/loggerServer";
-
-type Tag = "writestack" | "writestack-new-subscriber" | "writestack-subscriber";
+import { Tag } from "@/types/mail";
 
 const tagIds = {
   writestack: 7711550,
   "writestack-new-subscriber": 7713183,
   "writestack-subscriber": 7711556,
+  "writestack-no-subscription": 8336193,
 };
 
 export interface MailClientConfig {
@@ -231,7 +231,10 @@ export class MailClient {
         `${this.config.baseUrl}/bulk/tags/subscribers`,
         {
           method: "POST",
-          headers,
+          headers: {
+            ...headers,
+            Authorization: `Bearer ${this.config.apiKey}`,
+          },
           body: JSON.stringify(bodyInput),
         },
       );

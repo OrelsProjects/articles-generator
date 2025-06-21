@@ -38,7 +38,7 @@ export function FeedbackFab({ onClick }: FeedbackFabProps) {
 
   return (
     <motion.div
-      className="fixed bottom-20 md:bottom-6 right-6 z-50 "
+      className="fixed bottom-20 md:bottom-6 right-6 z-50 hidden md:block"
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0, opacity: 0 }}

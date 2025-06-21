@@ -9,6 +9,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { ChevronDownIcon } from "lucide-react";
 
 export type FrontendModel =
   | "auto"
@@ -67,36 +68,36 @@ export function AiModelsDropdown({
   const currentModel = AI_MODELS.find(model => model.value === selectedModel);
 
   return (
-      <div className={cn(className)}>
-        <Select
-          value={selectedModel}
-          onValueChange={(value: FrontendModel) => {
-            setSelectedModel(value);
-            onModelChange(value);
-          }}
+    <div className={cn(className)}>
+      <Select
+        value={selectedModel}
+        onValueChange={(value: FrontendModel) => {
+          setSelectedModel(value);
+          onModelChange(value);
+        }}
+      >
+        <SelectTrigger
+          className={cn(
+            "w-fit hover:bg-foreground/5 cursor-pointer p-0 pl-1 flex items-center gap-1 border-none text-sm font-bold px-1.5",
+            { "text-sm font-normal": size === "md" },
+            classNameTrigger,
+          )}
+          hideChevron
         >
-          <SelectTrigger
-            className={cn(
-              "w-fit hover:bg-foreground/5 cursor-pointer p-0 pl-1 flex items-center gap-1 border-none text-xs font-bold",
-              { "text-sm font-normal": size === "md" },
-              classNameTrigger,
-            )}
-          >
-            <span>{currentModel?.shortName}</span>
-          </SelectTrigger>
-          <SelectContent>
-            {AI_MODELS.map(model => (
-              <SelectItem key={model.value} value={model.value}>
-                {model.label}
-                {model.recommended && (
-                  <span className="text-xs text-primary ml-4">
-                    (Recommended)
-                  </span>
-                )}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          <span>{currentModel?.shortName}</span>
+          <ChevronDownIcon className="h-4 w-4" />
+        </SelectTrigger>
+        <SelectContent>
+          {AI_MODELS.map(model => (
+            <SelectItem key={model.value} value={model.value}>
+              {model.label}
+              {model.recommended && (
+                <span className="text-xs text-primary ml-4">(Recommended)</span>
+              )}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

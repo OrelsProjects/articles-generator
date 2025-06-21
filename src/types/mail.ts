@@ -1,5 +1,8 @@
-export type Tag = "writestack-new-subscriber" | "writestack" | "writestack-subscriber";
-
+export type Tag =
+  | "writestack-new-subscriber"
+  | "writestack"
+  | "writestack-subscriber"
+  | "writestack-no-subscription";
 
 export interface SendEmailOptions {
   to: string | string[];

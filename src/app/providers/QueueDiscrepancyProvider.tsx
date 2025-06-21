@@ -91,13 +91,13 @@ export default function QueueDiscrepancyProvider() {
 
   /**
    * Checks for discrepancies between scheduled notes and extension schedules/alarms
-   * @param currentSchedules The schedules from the extension
+   * @param schedulesFromExtension The schedules from the extension
    */
-  const checkForDiscrepancies = (currentSchedules: GetSchedulesResponse) => {
+  const checkForDiscrepancies = (schedulesFromExtension: GetSchedulesResponse) => {
     if (!scheduledNotes.length) {
       return;
     }
-    if (!currentSchedules.schedules.length || !currentSchedules.alarms.length) {
+    if (!schedulesFromExtension.schedules.length || !schedulesFromExtension.alarms.length) {
       // set discrapancy to to all scheduled notes
       dispatch(
         setSchedulesDiscrepancies(
@@ -116,15 +116,40 @@ export default function QueueDiscrepancyProvider() {
     setIsCheckingDiscrepancies(true);
     const newDiscrepancies: Discrepancy[] = [];
 
+    // Check
+
     // Check for notes that have scheduledTo but no corresponding schedule
     scheduledNotes.forEach(note => {
       if (!note.scheduledTo) return;
 
       const noteTimestamp = new Date(note.scheduledTo).getTime();
 
+      // Check for schedules/alarms that don't have a corresponding note
+      schedulesFromExtension.schedules.forEach(scheduleEntry => {
+        const scheduleTime = scheduleEntry.timestamp;
+
+
+        
+
+        // Find a note with matching timestamp
+        const matchingNote = scheduledNotes.find(
+          note =>
+            note.scheduledTo &&
+            Math.abs(new Date(note.scheduledTo).getTime() - scheduleTime) <
+              60000,
+        );
+
+        if (!matchingNote) {
+          newDiscrepancies.push({
+            type: "missing_note",
+            scheduleId: scheduleEntry.scheduleId,
+            details: `Schedule exists for time ${new Date(scheduleTime).toLocaleString()} but no note is scheduled for this time`,
+          });
+        }
+      });
+
       // If note is in the past, add a missed note
       if (noteTimestamp < Date.now()) {
-        ;
         newDiscrepancies.push({
           type: "missed",
           noteId: note.id,
@@ -134,7 +159,7 @@ export default function QueueDiscrepancyProvider() {
       }
 
       // Find schedule that matches this note's timestamp
-      const matchingScheduleEntry = currentSchedules.schedules.find(
+      const matchingScheduleEntry = schedulesFromExtension.schedules.find(
         s => Math.abs(s.timestamp - noteTimestamp) < 60000,
       );
 
@@ -149,7 +174,7 @@ export default function QueueDiscrepancyProvider() {
       }
 
       // Check if there's an alarm for this schedule
-      const matchingAlarm = currentSchedules.alarms.find(
+      const matchingAlarm = schedulesFromExtension.alarms.find(
         alarm => Math.abs(alarm.scheduledTime - noteTimestamp) < 60000,
       );
 
@@ -163,32 +188,12 @@ export default function QueueDiscrepancyProvider() {
       }
     });
 
-    // Check for schedules/alarms that don't have a corresponding note
-    currentSchedules.schedules.forEach(scheduleEntry => {
-      const scheduleTime = scheduleEntry.timestamp;
-
-      // Find a note with matching timestamp
-      const matchingNote = scheduledNotes.find(
-        note =>
-          note.scheduledTo &&
-          Math.abs(new Date(note.scheduledTo).getTime() - scheduleTime) < 60000,
-      );
-
-      if (!matchingNote) {
-        newDiscrepancies.push({
-          type: "missing_note",
-          scheduleId: scheduleEntry.scheduleId,
-          details: `Schedule exists for time ${new Date(scheduleTime).toLocaleString()} but no note is scheduled for this time`,
-        });
-      }
-    });
-
     // Check for any orphaned alarms (alarms with no matching schedule)
-    currentSchedules.alarms.forEach(alarm => {
+    schedulesFromExtension.alarms.forEach(alarm => {
       const alarmTime = alarm.scheduledTime;
 
       // Check if this alarm has a matching schedule
-      const matchingSchedule = currentSchedules.schedules.find(
+      const matchingSchedule = schedulesFromExtension.schedules.find(
         s => Math.abs(s.timestamp - alarmTime) < 60000,
       );
 
@@ -205,8 +210,29 @@ export default function QueueDiscrepancyProvider() {
       discrepancy => discrepancy.noteId,
     );
     const uniqueDiscrepancies = validDiscrepancies.filter(
-      (discrepancy, index, self) =>
-        index === self.findIndex(t => t.noteId === discrepancy.noteId),
+      (discrepancy, index, self) => {
+        // Find all discrepancies with the same noteId
+        const sameNoteDiscrepancies = self.filter(
+          d => d.noteId === discrepancy.noteId,
+        );
+
+        // If there's only one, keep it
+        if (sameNoteDiscrepancies.length === 1) {
+          return true;
+        }
+        // If there are multiple, check if any is "missed"
+        const missedDiscrepancy = sameNoteDiscrepancies.find(
+          d => d.type === "missing_note",
+        );
+
+        if (missedDiscrepancy) {
+          // Keep only the "missed" discrepancy
+          return discrepancy.type === "missing_note";
+        } else {
+          // No "missed" type, keep the first occurrence
+          return index === self.findIndex(t => t.noteId === discrepancy.noteId);
+        }
+      },
     );
 
     dispatch(setSchedulesDiscrepancies(uniqueDiscrepancies));

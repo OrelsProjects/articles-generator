@@ -11,6 +11,7 @@ interface ArticleComponentProps extends React.HTMLAttributes<HTMLDivElement> {
   disabled?: boolean;
   hoverLayout?: () => React.ReactNode;
   showShadowHover?: boolean;
+  hideGlare?: boolean;
 }
 
 export default function ArticleComponent({
@@ -21,6 +22,7 @@ export default function ArticleComponent({
   disabled = false,
   hoverLayout,
   showShadowHover = true,
+  hideGlare = false,
   ...props
 }: ArticleComponentProps) {
   return (

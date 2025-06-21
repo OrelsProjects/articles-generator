@@ -12,6 +12,7 @@ import { EventTracker } from "@/eventTracker";
 import { useSearchParams } from "next/navigation";
 import { rootPath } from "@/types/navbar";
 import { Logger } from "@/logger";
+import { cn } from "@/lib/utils";
 
 const emailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -80,9 +81,10 @@ export function EmailSignIn() {
                 autoComplete="email"
                 autoCorrect="off"
                 disabled={isSubmitting}
-                className={
-                  errors.email && touched.email ? "border-red-500" : ""
-                }
+                className={cn(
+                  "py-5",
+                  errors.email && touched.email ? "border-red-500" : "",
+                )}
               />
               {errors.email && touched.email ? (
                 <div className="text-sm font-medium text-destructive">

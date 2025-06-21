@@ -19,8 +19,9 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { CustomDragOverlay } from "./custom-drag-overlay";
 import { useDragOverlay } from "../hooks/useDragOverlay";
 import { Logger } from "@/logger";
-import { Pencil } from "lucide-react";
+import { Calendar, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 interface ScheduledNotesListProps {
   days: Date[];
@@ -265,9 +266,9 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
           Set up your posting schedule to start planning your notes. You can
           always edit it later.
         </div>
-        <Button variant="neumorphic-primary" onClick={onEditQueue}>
-          <Pencil className="w-4 h-4 mr-2" />
-          Edit queue
+        <Button variant="outline" onClick={onEditQueue}>
+          <Calendar className="w-4 h-4 mr-2" />
+          Create a schedule
         </Button>
       </div>
     );
@@ -281,43 +282,59 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       sensors={sensors}
       collisionDetection={closestCenter}
     >
-      <div className="space-y-8">
-        {days.map(day => {
-          const dateKey = format(day, "yyyy-MM-dd");
-          const notesForDay = groupedNotes[dateKey] || [];
-          const schedulesForDay = filteredGroupedSchedules[dateKey] || [];
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative"
+      >
+        <div className="absolute top-1 right-0 flex justify-end mb-4">
+          <Button
+            variant="link-foreground"
+            className="py-0 items-start"
+            onClick={onEditQueue}
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            Edit Queue
+          </Button>
+        </div>
+        <div className="space-y-8">
+          {days.map(day => {
+            const dateKey = format(day, "yyyy-MM-dd");
+            const notesForDay = groupedNotes[dateKey] || [];
+            const schedulesForDay = filteredGroupedSchedules[dateKey] || [];
 
-          return (
-            <DaySchedule
-              key={dateKey}
-              day={day}
-              notes={notesForDay}
-              schedules={schedulesForDay}
-              onSelectNote={onSelectNote}
-              onUnscheduleNote={handleUnscheduleNote}
-              lastNoteRef={lastNoteRef}
-              lastNoteId={lastNoteId}
-              onEmptySlotClick={handleCreateDraftNote}
-              activeDropTarget={activeDropTarget}
-              useDndContext={false} // Don't create another DndContext
-              isPastScheduled={isNotePastScheduled} // Pass function to check past scheduled notes
-            />
-          );
-        })}
-      </div>
+            return (
+              <DaySchedule
+                key={dateKey}
+                day={day}
+                notes={notesForDay}
+                schedules={schedulesForDay}
+                onSelectNote={onSelectNote}
+                onUnscheduleNote={handleUnscheduleNote}
+                lastNoteRef={lastNoteRef}
+                lastNoteId={lastNoteId}
+                onEmptySlotClick={handleCreateDraftNote}
+                activeDropTarget={activeDropTarget}
+                useDndContext={false} // Don't create another DndContext
+                isPastScheduled={isNotePastScheduled} // Pass function to check past scheduled notes
+              />
+            );
+          })}
+        </div>
 
-      {/* Using our custom drag overlay component */}
-      <CustomDragOverlay className="w-full">
-        {activeDragNote && (
-          <div className="opacity-90">
-            <ScheduleNoteRow
-              note={activeDragNote}
-              onSelect={() => {}}
-              isDragOverlay
-            />
-          </div>
-        )}
-      </CustomDragOverlay>
+        {/* Using our custom drag overlay component */}
+        <CustomDragOverlay className="w-full">
+          {activeDragNote && (
+            <div className="opacity-90">
+              <ScheduleNoteRow
+                note={activeDragNote}
+                onSelect={() => {}}
+                isDragOverlay
+              />
+            </div>
+          )}
+        </CustomDragOverlay>
+      </motion.div>
     </DndContext>
   );
 };

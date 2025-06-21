@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -32,6 +33,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Article } from "@/types/article";
 import ArticleComponent from "@/components/ui/article-component";
+import { cn } from "@/lib/utils";
+import AutoAdjustTextArea from "@/components/ui/auto-adjust-textarea";
+import { useUi } from "@/lib/hooks/useUi";
 
 const ideaLoadingStates = [
   { text: "Finding relevant notes..." },
@@ -46,15 +50,18 @@ export interface GenerateNotesDialogProps {
   onOpenChange?: (open: boolean) => void;
   defaultOpen?: boolean;
   defaultSource?: GenerateSource;
+  variant?: "default" | "ghost";
 }
 
 export function GenerateNotesDialog({
   onOpenChange,
   defaultOpen,
   defaultSource,
+  variant = "default",
 }: GenerateNotesDialogProps) {
   const params = useParams();
   const handle = params?.handle as string;
+  const { hasAdvancedGPT } = useUi();
 
   const [topic, setTopic] = useState("");
   const [open, setOpen] = useState(defaultOpen || false);
@@ -162,10 +169,15 @@ export function GenerateNotesDialog({
         <DialogTrigger asChild>
           <TooltipButton
             tooltipContent="Generate personalized notes"
-            variant="neumorphic-primary"
-            // className="hidden md:flex"
+            className={cn(
+              "px-2",
+              variant === "default"
+                ? ""
+                : " flex cursor-default select-none items-center rounded-sm px-2 py-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground ",
+            )}
+            variant={variant === "default" ? "neumorphic-primary" : variant}
           >
-            <Sparkles size={16} className="h-4 w-4 mr-2" />
+            <Sparkles className="h-4 w-4 mr-2" />
             Generate notes
           </TooltipButton>
         </DialogTrigger>
@@ -174,6 +186,18 @@ export function GenerateNotesDialog({
           <form onSubmit={handleSubmit}>
             <DialogHeader>
               <DialogTitle>Generate new notes</DialogTitle>
+              <DialogDescription>
+                {selectedSource === "description" ? (
+                  <span>
+                    The notes will be generated based on your note analysis.
+                  </span>
+                ) : (
+                  <span>
+                    The notes will be generated based on the articles you
+                    choose.
+                  </span>
+                )}
+              </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="flex items-center gap-2">
@@ -212,123 +236,121 @@ export function GenerateNotesDialog({
                     Topic
                   </Label>
                   <div className="col-span-4 relative">
-                    <Input
+                    <AutoAdjustTextArea
                       id="topic"
-                      placeholder="The topic of the notes (optional)"
-                      className="w-full pr-20"
-                      maxLength={200}
+                      placeholder="Describe the topic you want AI to write about."
+                      className="w-full"
                       value={topic}
+                      maxRows={8}
                       onChange={e => setTopic(e.target.value)}
-                    />
-
-                    <AiModelsDropdown
-                      onModelChange={setSelectedModel}
-                      className="absolute right-0 top-0"
                     />
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="col-span-4">
-                    Selected Articles ({selectedArticles.length}/
-                    {notesToGenerate})
-                  </Label>
-                  <div className="col-span-4">
-                    {selectedArticles.length > 0 ? (
-                      <div className="grid grid-cols-3 gap-2">
-                        {selectedArticles.map(article => (
-                          <div
-                            key={article.id}
-                            className="relative h-fit w-fit"
-                          >
-                            <ArticleComponent
-                              onMouseEnter={() => setHoveredArticle(article)}
-                              onMouseLeave={() => setHoveredArticle(null)}
+                <div className="w-full items-center gap-4">
+                  <div className="w-full bg-muted-foreground/5 rounded-md p-4 space-y-2 mb-6">
+                    <Label className="col-span-4">
+                      Selected Articles ({selectedArticles.length}/
+                      {notesToGenerate})
+                    </Label>
+                    <div className="col-span-4 mb-6">
+                      {selectedArticles.length > 0 ? (
+                        <div className="grid grid-cols-3 gap-2">
+                          {selectedArticles.map(article => (
+                            <div
                               key={article.id}
-                              article={article}
-                              size="small"
-                              hoverLayout={() =>
-                                hoveredArticle?.id === article.id ? (
-                                  <div className="absolute w-full h-full bg-black/50 flex items-center justify-center z-50">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() =>
-                                        handleRemoveArticle(article.id)
-                                      }
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                ) : null
-                              }
-                              disabled
-                            />
-                            {/* Add X in the center of the article component to remove the article */}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center p-4 border border-dashed rounded-lg text-muted-foreground">
-                        No articles selected
-                      </div>
-                    )}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full mt-2"
-                      onClick={() => setShowArticleDialog(true)}
-                    >
-                      {selectedArticles.length > 0
-                        ? "Change selection"
-                        : "Select articles"}
-                    </Button>
+                              className="relative h-full w-fit opacity-90"
+                            >
+                              <ArticleComponent
+                                onMouseEnter={() => setHoveredArticle(article)}
+                                onMouseLeave={() => setHoveredArticle(null)}
+                                key={article.id}
+                                showShadowHover={false}
+                                article={article}
+                                size="small"
+                                hoverLayout={() =>
+                                  hoveredArticle?.id === article.id ? (
+                                    <div className="absolute w-full h-full bg-black/50 flex items-center justify-center z-50">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() =>
+                                          handleRemoveArticle(article.id)
+                                        }
+                                        className="bg-white/40"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  ) : null
+                                }
+                                disabled
+                              />
+                              {/* Add X in the center of the article component to remove the article */}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center p-4 border border-dashed rounded-lg text-muted-foreground">
+                          No articles selected
+                        </div>
+                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full mt-2"
+                        onClick={() => setShowArticleDialog(true)}
+                      >
+                        {selectedArticles.length > 0
+                          ? "Change selection"
+                          : "Select articles"}
+                      </Button>
+                    </div>
                   </div>
                   <div className="col-span-4 relative mt-2">
-                    <Input
+                    <AutoAdjustTextArea
                       placeholder={
                         selectedSource === "posts"
                           ? "Additional info (optional)"
                           : "Additional topic (optional)"
                       }
-                      className="w-full pr-20"
-                      maxLength={200}
+                      maxRows={8}
+                      className="w-full"
                       value={topic}
                       onChange={e => setTopic(e.target.value)}
-                    />
-
-                    <AiModelsDropdown
-                      onModelChange={setSelectedModel}
-                      className="absolute right-0 top-0"
                     />
                   </div>
                 </div>
               )}
             </div>
             <DialogFooter className="mt-4">
-              <DialogTrigger asChild>
-                <Button type="button" variant="ghost">
-                  Cancel
-                </Button>
-              </DialogTrigger>
-              <DialogTrigger asChild>
-                <Button
-                  type="submit"
-                  disabled={
-                    isLoadingGenerateNotes ||
-                    (selectedSource === "posts" &&
-                      selectedArticles.length === 0)
-                  }
-                >
-                  {isLoadingGenerateNotes
-                    ? "Generating..."
-                    : selectedSource === "description"
-                      ? topic
-                        ? `Generate based on your topic (${notesToGenerate})`
-                        : `Generate personalized notes (${notesToGenerate})`
-                      : `Generate based on selected articles (${notesToGenerate})`}
-                </Button>
-              </DialogTrigger>
+              <div className="flex flex-row gap-0.5">
+                <DialogTrigger asChild>
+                  <Button
+                    type="submit"
+                    className={cn({ "rounded-r-none": hasAdvancedGPT })}
+                    disabled={
+                      isLoadingGenerateNotes ||
+                      (selectedSource === "posts" &&
+                        selectedArticles.length === 0)
+                    }
+                  >
+                    {isLoadingGenerateNotes
+                      ? "Generating..."
+                      : selectedSource === "description"
+                        ? topic
+                          ? `Generate based on your topic (${notesToGenerate})`
+                          : `Generate personalized notes (${notesToGenerate})`
+                        : `Generate based on selected articles (${notesToGenerate})`}
+                  </Button>
+                </DialogTrigger>
+
+                <AiModelsDropdown
+                  onModelChange={setSelectedModel}
+                  className="rounded-none bg-primary rounded-r-md"
+                  classNameTrigger="text-primary-foreground font-normal"
+                />
+              </div>
             </DialogFooter>
           </form>
         </DialogContent>

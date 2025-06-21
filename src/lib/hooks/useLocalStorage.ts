@@ -19,7 +19,8 @@ export type LocalStorageKey =
   | "free_post_url"
   | "show_character_count_bar"
   | "premium-feature-soon-overlay"
-  | "hide_feedback_fab";
+  | "hide_feedback_fab"
+  | "notes_view_mode";
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue
