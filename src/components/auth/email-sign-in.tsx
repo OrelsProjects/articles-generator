@@ -20,7 +20,7 @@ const emailSchema = z.object({
 
 type EmailFormValues = z.infer<typeof emailSchema>;
 
-export function EmailSignIn() {
+export function EmailSignIn({ redirectTo }: { redirectTo?: string }) {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const redirect = searchParams.get("redirect");
@@ -37,10 +37,14 @@ export function EmailSignIn() {
         email: values.email,
         redirect,
       });
+      debugger;
+      const redirectToValid = redirectTo?.includes("/")
+        ? redirectTo
+        : `/${redirectTo}`;
       const result = await signIn("email", {
         email: values.email,
         redirect: true,
-        callbackUrl: redirect || "/onboarding",
+        callbackUrl: redirect || redirectToValid || "/onboarding",
       });
 
       if (result?.error) {

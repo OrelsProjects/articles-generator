@@ -87,7 +87,7 @@ export function LoginDialog({
             </span>
           </div>
 
-          <EmailSignIn />
+          <EmailSignIn redirectTo={redirectPath?.pathname} />
 
           <div className="text-sm text-muted-foreground">
             <p>
