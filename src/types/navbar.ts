@@ -68,7 +68,7 @@ export const navItems: {
     name: "Editor",
     mobileName: "Editor",
     href: "/editor",
-    newTab: true,
+    // newTab: true,
     icon: PenTool,
     locationInMobile: "sidebar",
     position: 99,

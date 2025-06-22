@@ -38,16 +38,11 @@ export function Header({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       className={cn(
-        "w-full grid grid-cols-[auto_1fr_auto] items-center gap-4 bg-background px-4 border-b border-border z-10 py-4 relative",
+        "w-full grid grid-cols-[auto_1fr_auto] items-center gap-4 bg-background px-4 border-b border-border z-10 py-5 relative",
         className,
       )}
     >
       <div className="flex items-center justify-center col-span-1 gap-4 relative">
-        <Button variant="ghost" size="icon" asChild className="bg-muted">
-          <Link href={rootPath} className="hover:cursor-pointer">
-            <ChevronLeft className="hover:cursor-pointer" size={24} />
-          </Link>
-        </Button>
         <DraftIndicator
           saving={!!draftStatus?.saving}
           error={!!draftStatus?.error}
