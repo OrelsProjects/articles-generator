@@ -10,6 +10,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+
 export default function PricingPage() {
   const router = useCustomRouter();
   const { verifySubscription } = usePayments();
@@ -28,7 +29,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen relative">
-      <header className="sticky top-0 z-50 h-16">
+      {/* <header className="sticky top-0 z-50 h-16">
         <div className="max-w-7xl mx-auto px-8 py-4 rounded-full pt-4 shadow-md">
           <div className="flex items-center justify-between bg-background/60 backdrop-blur-sm">
             <Logo />
@@ -40,7 +41,7 @@ export default function PricingPage() {
             </Button>
           </div>
         </div>
-      </header>
+      </header> */}
       <Pricing onboarding code={code} />
     </div>
   );
