@@ -169,7 +169,7 @@ function App() {
 
   return (
     <div
-      className="w-screen overflow-x-hidden bg-primary"
+      className="w-full overflow-x-hidden bg-primary"
       data-scroll-container
     >
       <ThemeProvider forcedTheme="light">

@@ -1,4 +1,5 @@
-import { ExtensionDisabledDialog } from "@/components/notes/extension-disabled-dialog";
+"use client";
+
 import {
   setShowExtensionDialog,
   setShowExtensionDisabledDialog,

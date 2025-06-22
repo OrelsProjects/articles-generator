@@ -15,6 +15,7 @@ export default function FreeSubscriptionProvider({
 }: {
   children: React.ReactNode;
 }) {
+
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { user } = useAppSelector(selectAuth);
@@ -72,13 +73,13 @@ export default function FreeSubscriptionProvider({
     }
   }, [user, code]);
 
-  if (loading) {
-    return (
-      <div className="w-screen h-screen flex items-center justify-center">
-        <Loading spinnerClassName="h-16 w-16" />
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="w-screen h-screen flex items-center justify-center">
+  //       <Loading spinnerClassName="h-16 w-16" />
+  //     </div>
+  //   );
+  // }
 
   return children;
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import Loading from "@/components/ui/loading";
 import usePayments from "@/lib/hooks/usePayments";
 import { redirect } from "next/navigation";
@@ -29,13 +31,13 @@ export default function SubscriptionProvider({
     handleVerifySubscription();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="w-screen h-screen flex items-center justify-center">
-        <Loading spinnerClassName="h-16 w-16" />
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="w-full h-screen flex items-center justify-center">
+  //       <Loading spinnerClassName="h-16 w-16" />
+  //     </div>
+  //   );
+  // }
 
   if (hasSubscription === "error") {
     redirect("/pricing?onboarding=true");

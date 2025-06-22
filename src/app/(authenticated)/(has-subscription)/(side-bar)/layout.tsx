@@ -1,3 +1,4 @@
+import { ThemeProvider } from "@/app/providers/ThemeProvider";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 
@@ -10,5 +11,9 @@ export default function SideBarLayout({
 }) {
   console.log("%c🔥 layout rendered", "color: red; font-size: 20px");
 
-  return <Suspense fallback={<LoadingOverlay />}>{children}</Suspense>;
+  return (
+    <ThemeProvider>
+      <Suspense fallback={<LoadingOverlay />}>{children}</Suspense>
+    </ThemeProvider>
+  );
 }

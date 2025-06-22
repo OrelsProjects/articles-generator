@@ -1,3 +1,5 @@
+"use client";
+
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { usePathname, useSearchParams } from "next/navigation";
