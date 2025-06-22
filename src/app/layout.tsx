@@ -74,7 +74,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
 
-    console.log("%c🔥 layout rendered", "color: orange; font-size: 20px");
+    // console.log("%c🔥 layout rendered", "color: orange; font-size: 20px");
 
 
   return (

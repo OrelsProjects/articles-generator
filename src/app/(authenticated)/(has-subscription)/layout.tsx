@@ -16,7 +16,7 @@ export default function ContentLayout({
 }: {
   children: React.ReactNode;
 }) {
-  console.log("%c🔥 rerender layout", "color: purple; font-size: 20px");
+  // console.log("%c🔥 rerender layout", "color: purple; font-size: 20px");
 
   return (
     <AppSidebar>

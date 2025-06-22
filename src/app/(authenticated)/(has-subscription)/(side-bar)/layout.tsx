@@ -9,7 +9,7 @@ export default function SideBarLayout({
 }: {
   children: React.ReactNode;
 }) {
-  console.log("%c🔥 layout rendered", "color: red; font-size: 20px");
+  // console.log("%c🔥 layout rendered", "color: red; font-size: 20px");
 
   return (
     <ThemeProvider>
