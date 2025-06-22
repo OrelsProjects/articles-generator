@@ -27,7 +27,7 @@ interface SubscriberChartProps {
 
 export default function SubscriberDashboard() {
   return (
-    <div className="w-full max-w-6xl mx-auto p-6">
+    <div className="w-full max-w-7xl mx-auto p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
         {/* All Subscribers Card */}
         <Card className="bg-white">

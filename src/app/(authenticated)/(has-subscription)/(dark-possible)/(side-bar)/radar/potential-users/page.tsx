@@ -297,7 +297,7 @@ export default function PotentialUsersPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] w-full">
       <ScrollArea className="flex-1" ref={containerRef}>
-        <div className="w-full max-w-6xl mx-auto py-10 px-4">
+        <div className="feature-layout-container py-10">
           <h1 className="text-3xl font-bold mb-8">Potential Users</h1>
           <form
             onSubmit={handleAnalyze}

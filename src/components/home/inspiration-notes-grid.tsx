@@ -354,7 +354,7 @@ export default function InspirationGrid() {
 
   return (
     <div className="w-full min-h-screen bg-transparent py-8 pb-28 md:py-16 flex justify-center items-start">
-      <div className="container">
+      <div className="feature-layout-container">
         <div className="mb-6 mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between mb-1">
             <div className="flex items-center mb-6 md:mb-1">

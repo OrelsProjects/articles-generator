@@ -29,7 +29,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen relative">
       <header className="sticky top-0 z-50 h-16">
-        <div className="max-w-6xl mx-auto px-8 py-4 rounded-full pt-4 shadow-md">
+        <div className="max-w-7xl mx-auto px-8 py-4 rounded-full pt-4 shadow-md">
           <div className="flex items-center justify-between bg-background/60 backdrop-blur-sm">
             <Logo />
             <Button variant="ghost" size="icon" className="w-fit px-2" asChild>

@@ -9,7 +9,23 @@ import { toast } from "react-toastify";
 import usePayments from "@/lib/hooks/usePayments";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { Logger } from "@/logger";
-import { Check, Loader2, X, CreditCard, User, Palette, Settings, AlertTriangle, FileText, Bell, Shield, Globe, Users, Code, ChevronRight } from "lucide-react";
+import {
+  Check,
+  Loader2,
+  X,
+  CreditCard,
+  User,
+  Palette,
+  Settings,
+  AlertTriangle,
+  FileText,
+  Bell,
+  Shield,
+  Globe,
+  Users,
+  Code,
+  ChevronRight,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,12 +44,12 @@ import { AppearanceSection } from "@/components/settings/appearance-section";
 import { PublicationsSection } from "@/components/settings/publications-section";
 import { DangerSection } from "@/components/settings/danger-section";
 
-type SettingsSection = 
-  | "account" 
-  | "billing" 
-  | "credits" 
-  | "appearance" 
-  | "publications" 
+type SettingsSection =
+  | "account"
+  | "billing"
+  | "credits"
+  | "appearance"
+  | "publications"
   | "danger";
 
 interface SettingsNavItem {
@@ -56,15 +72,15 @@ const settingsNavItems: SettingsCategory[] = [
         id: "account" as const,
         label: "Account Information",
         icon: User,
-        description: "Manage your personal details and preferences"
+        description: "Manage your personal details and preferences",
       },
       {
         id: "appearance" as const,
         label: "Appearance",
         icon: Palette,
-        description: "Customize how the application looks and feels"
-      }
-    ]
+        description: "Customize how the application looks and feels",
+      },
+    ],
   },
   {
     category: "Subscription",
@@ -73,15 +89,15 @@ const settingsNavItems: SettingsCategory[] = [
         id: "credits" as const,
         label: "Credits",
         icon: CreditCard,
-        description: "Manage your credits and subscription"
+        description: "Manage your credits and subscription",
       },
       {
         id: "billing" as const,
         label: "Billing & Invoices",
         icon: FileText,
-        description: "View your subscription details and billing history"
-      }
-    ]
+        description: "View your subscription details and billing history",
+      },
+    ],
   },
   {
     category: "Configuration",
@@ -90,29 +106,27 @@ const settingsNavItems: SettingsCategory[] = [
         id: "publications" as const,
         label: "Publication Preferences",
         icon: Settings,
-        description: "Manage your publication settings and preferences"
+        description: "Manage your publication settings and preferences",
       },
       {
         id: "danger" as const,
         label: "Danger Zone",
         icon: AlertTriangle,
-        description: "Irreversible and destructive actions"
-      }
-    ]
-  }
+        description: "Irreversible and destructive actions",
+      },
+    ],
+  },
 ];
 
 export default function SettingsPage() {
   const searchParams = useSearchParams();
   const router = useCustomRouter();
-  const {
-    cancelSubscription,
-    applyRetentionDiscount,
-  } = usePayments();
+  const { cancelSubscription, applyRetentionDiscount } = usePayments();
   const { user } = useAppSelector(selectAuth);
   const { shouldShow50PercentOffOnCancel } = useSettings();
-  
-  const [activeSection, setActiveSection] = useState<SettingsSection>("account");
+
+  const [activeSection, setActiveSection] =
+    useState<SettingsSection>("account");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showDiscountDialog, setShowDiscountDialog] = useState(false);
   const [loadingCancel, setLoadingCancel] = useState(false);
@@ -145,7 +159,9 @@ export default function SettingsPage() {
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash) {
       const id = window.location.hash.substring(1);
-      const allItems: SettingsNavItem[] = settingsNavItems.flatMap(category => category.items);
+      const allItems: SettingsNavItem[] = settingsNavItems.flatMap(
+        category => category.items,
+      );
       const section = allItems.find(item => item.id === id);
       if (section) {
         setActiveSection(section.id);
@@ -228,7 +244,9 @@ export default function SettingsPage() {
   };
 
   const getActiveItem = (): SettingsNavItem | undefined => {
-    const allItems: SettingsNavItem[] = settingsNavItems.flatMap(category => category.items);
+    const allItems: SettingsNavItem[] = settingsNavItems.flatMap(
+      category => category.items,
+    );
     return allItems.find(item => item.id === activeSection);
   };
 
@@ -236,7 +254,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex items-start md:items-center justify-center">
-      <div className="w-full max-w-6xl mx-auto">
+      <div className="feature-layout-container">
         {/* Main Settings Container */}
         <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="flex flex-col lg:flex-row min-h-[700px]">
@@ -244,12 +262,14 @@ export default function SettingsPage() {
             <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-border bg-muted/20">
               {/* Header */}
               <div className="p-6 border-b border-border">
-                <h1 className="text-lg font-semibold text-foreground">Settings</h1>
+                <h1 className="text-lg font-semibold text-foreground">
+                  Settings
+                </h1>
               </div>
-              
+
               {/* Navigation */}
               <div className="p-4">
-                {settingsNavItems.map((category) => (
+                {settingsNavItems.map(category => (
                   <div key={category.category} className="mb-6">
                     <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 px-2">
                       {category.category}
@@ -257,29 +277,33 @@ export default function SettingsPage() {
                     {/* Mobile: Horizontal scroll, Desktop: Vertical list */}
                     <div className="lg:hidden">
                       <div className="flex gap-2 overflow-x-auto pb-2">
-                        {category.items.map((item) => {
+                        {category.items.map(item => {
                           const Icon = item.icon;
                           const isActive = activeSection === item.id;
-                          
+
                           return (
                             <button
                               key={item.id}
                               onClick={() => setActiveSection(item.id)}
                               className={cn(
                                 "flex flex-col items-center gap-2 p-3 rounded-lg whitespace-nowrap transition-all duration-200 min-w-[80px]",
-                                isActive 
-                                  ? "bg-primary/10 text-primary" 
-                                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                                isActive
+                                  ? "bg-primary/10 text-primary"
+                                  : "hover:bg-muted text-muted-foreground hover:text-foreground",
                               )}
                             >
-                              <Icon className={cn(
-                                "h-5 w-5 flex-shrink-0",
-                                item.id === "danger" && "text-red-500"
-                              )} />
-                              <div className={cn(
-                                "font-medium text-xs text-center",
-                                item.id === "danger" && "text-red-500"
-                              )}>
+                              <Icon
+                                className={cn(
+                                  "h-5 w-5 flex-shrink-0",
+                                  item.id === "danger" && "text-red-500",
+                                )}
+                              />
+                              <div
+                                className={cn(
+                                  "font-medium text-xs text-center",
+                                  item.id === "danger" && "text-red-500",
+                                )}
+                              >
                                 {item.label}
                               </div>
                             </button>
@@ -287,44 +311,50 @@ export default function SettingsPage() {
                         })}
                       </div>
                     </div>
-                    
+
                     {/* Desktop: Vertical list */}
                     <ul className="space-y-1 hidden lg:block">
-                      {category.items.map((item) => {
+                      {category.items.map(item => {
                         const Icon = item.icon;
                         const isActive = activeSection === item.id;
-                        
+
                         return (
                           <li key={item.id}>
                             <button
                               onClick={() => setActiveSection(item.id)}
                               className={cn(
                                 "w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-200 group",
-                                isActive 
-                                  ? "bg-primary/10 text-primary" 
-                                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                                isActive
+                                  ? "bg-primary/10 text-primary"
+                                  : "hover:bg-muted text-muted-foreground hover:text-foreground",
                               )}
                             >
-                              <Icon className={cn(
-                                "h-4 w-4 flex-shrink-0",
-                                item.id === "danger" && "text-red-500"
-                              )} />
+                              <Icon
+                                className={cn(
+                                  "h-4 w-4 flex-shrink-0",
+                                  item.id === "danger" && "text-red-500",
+                                )}
+                              />
                               <div className="flex-1 min-w-0">
-                                <div className={cn(
-                                  "font-medium text-sm",
-                                  item.id === "danger" && "text-red-500"
-                                )}>
+                                <div
+                                  className={cn(
+                                    "font-medium text-sm",
+                                    item.id === "danger" && "text-red-500",
+                                  )}
+                                >
                                   {item.label}
                                 </div>
                                 <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                                   {item.description}
                                 </div>
                               </div>
-                              <ChevronRight className={cn(
-                                "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                                isActive && "text-primary",
-                                "group-hover:translate-x-0.5"
-                              )} />
+                              <ChevronRight
+                                className={cn(
+                                  "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                                  isActive && "text-primary",
+                                  "group-hover:translate-x-0.5",
+                                )}
+                              />
                             </button>
                           </li>
                         );
@@ -355,12 +385,12 @@ export default function SettingsPage() {
                   </p>
                 )}
               </div> */}
-              
+
               {/* Content Body */}
               <div className="flex-1 p-4 md:p-6 overflow-y-auto">
                 {renderSection()}
               </div>
-              
+
               {/* Footer Actions */}
               <div className="border-t border-border p-4 mb-12 md:p-6 bg-muted/20">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -392,8 +422,8 @@ export default function SettingsPage() {
 
           <div className="bg-muted/50 border border-border rounded-md p-4 my-4">
             <p className="text-muted-foreground">
-              Is there something we can do to change your mind? I&apos;d love
-              to hear from you. <br /> Please{" "}
+              Is there something we can do to change your mind? I&apos;d love to
+              hear from you. <br /> Please{" "}
               <Link
                 href="mailto:oreslam@gmail.com"
                 className="text-primary hover:underline"
@@ -492,8 +522,8 @@ export default function SettingsPage() {
                 50% OFF Your Subscription
               </h3>
               <p className="text-center">
-                We&apos;d hate to see you go! Stay with us and get 50% off
-                your current plan for the next month (30% for annual plans).
+                We&apos;d hate to see you go! Stay with us and get 50% off your
+                current plan for the next month (30% for annual plans).
               </p>
             </div>
 

@@ -2,7 +2,7 @@ import { AlertCircle } from "lucide-react";
 
 export const ContrastSection = () => (
   <section className="py-24 bg-gradient-to-b from-background to-muted">
-    <div className="container max-w-6xl mx-auto px-4">
+    <div className="container max-w-7xl mx-auto px-4">
       <div className="text-center mb-20">
         <h2 className="text-4xl font-bold mb-4">
 MAKE THIS SECTION: AI Alone will not work

@@ -512,7 +512,7 @@ export function StatusBoard({
         onDragEnd={handleDragEnd}
       >
         <div
-          className={`max-w-6xl grid grid-cols-1 ${displayColumns.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"} gap-4 ${className}`}
+          className={`max-w-7xl grid grid-cols-1 ${displayColumns.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"} gap-4 ${className}`}
         >
           {displayColumns.map(column => (
             <div key={column.id} className="flex flex-col h-full">

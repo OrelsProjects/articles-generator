@@ -428,7 +428,7 @@ export default function StatusBoardPage() {
   // Main layout wrapper
   return (
     <div className="w-full h-full py-8 flex flex-col items-center">
-      <div className="w-full h-full max-w-6xl px-6 md:px-0">
+      <div className="feature-layout-container">
         <ViewToggle value={viewMode} onChange={toggleViewMode} />
 
         <div className="flex justify-between items-center mb-12">

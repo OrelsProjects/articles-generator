@@ -42,7 +42,7 @@ export default function FreeLayout({
       </header>
 
       {/* Main content */}
-      <main className="flex-grow max-w-6xl mx-auto">
+      <main className="flex-grow max-w-7xl mx-auto">
         <ThemeProvider>
           <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
             {children}

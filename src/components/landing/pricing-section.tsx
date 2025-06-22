@@ -29,15 +29,15 @@ const basicFeatures = (credits: number, interval: "month" | "year") => [
 
 const hobbyistFeatures = [
   `Notes scheduling, up to ${maxNotesShceduledPerPlan.hobbyist} at a time`,
-  `Basic notes statistics`,
+  `Advanced notes statistics`,
 ];
 
 const advancedFeatures = [
   "Choose your preferred LLM (Includes GPT-4.5)",
   // "Access to The Best Notes Templates",
   "Notes scheduling, <span class='text-primary'>unlimited</span>  ",
-  "Advanced notes statistics",
-  "Personalized chat (Coming soon)",
+  // "Advanced notes statistics",
+  // "Personalized chat (Coming soon)",
   "Find potential clients <span class='text-primary'>with Radar</span>",
 ];
 
@@ -263,7 +263,7 @@ export default function Pricing({
         className,
       )}
     >
-      <div className="max-w-6xl mx-auto px-8 relative z-50">
+      <div className="max-w-7xl mx-auto px-8 relative z-50">
         {onboarding && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -429,7 +429,7 @@ export default function Pricing({
           </motion.div>
           <div
             className={cn(
-              "isolate mx-auto grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-6xl lg:grid-cols-3",
+              "isolate mx-auto grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-7xl lg:grid-cols-3",
               appliedCoupon && "mt-6",
             )}
           >
@@ -461,7 +461,7 @@ export default function Pricing({
                             billingCycle === "year"
                             ? "bg-background border-2 border-primary text-primary transition-shadow shadow-lg"
                             : (appliedCoupon?.includes("FLASH") ||
-                                appliedCoupon?.includes("JOIN")) &&
+                                  appliedCoupon?.includes("JOIN")) &&
                                 billingCycle === "month"
                               ? "bg-background border border-foreground/60 text-muted-foreground"
                               : "bg-green-500 text-white shadow-lg",

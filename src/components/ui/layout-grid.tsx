@@ -55,7 +55,7 @@ export const MasonryGrid = ({
   });
 
   return (
-    <div className={cn("w-full max-w-6xl mx-auto", className)}>
+    <div className={cn("w-full max-w-7xl mx-auto", className)}>
       <div className={cn(
         "grid",
         `grid-cols-1 md:grid-cols-${columns}`,

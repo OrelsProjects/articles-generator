@@ -5,7 +5,7 @@ import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useAppSelector } from "@/lib/hooks/redux";
-import { AlertCircle, Loader, Pencil, Plus } from "lucide-react";
+import { AlertCircle, Calendar, Loader, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditScheduleDialog } from "./edit-schedule-dialog";
@@ -304,7 +304,7 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
             onClick={() => updateShowCreateScheduleDialog(true)}
             className="items-center gap-2"
           >
-            <Pencil size={16} />
+            <Calendar size={16} />
             Edit queue
           </Button>
           <GenerateNotesDialog

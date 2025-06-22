@@ -25,7 +25,7 @@ export const HeroSection = () => {
 
   return (
     <section className="h-fit min-h-screen w-screen bg-background py-12 pb-28 rounded-b-[3rem] shadow-lg overflow-y-visible relative">
-      <div className="w-full h-full  max-w-6xl mx-auto flex flex-col items-center justify-start relative">
+      <div className="w-full h-full  max-w-7xl mx-auto flex flex-col items-center justify-start relative">
         {/* Background grid lines */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
           {/* Vertical lines */}
@@ -132,7 +132,7 @@ export const HeroSection = () => {
                 </div>
               </div>
               <div className="w-screen h-fit px-4 flex justify-center items-center">
-                <div className="relative w-screen h-[220px] lg:max-w-6xl lg:h-[600px] bg-gradient-to-b from-primary via-primary/80 to-primary/60 rounded-[32px] flex items-center justify-center overflow-clip lg:overflow-visible">
+                <div className="relative w-screen h-[220px] lg:max-w-7xl lg:h-[600px] bg-gradient-to-b from-primary via-primary/80 to-primary/60 rounded-[32px] flex items-center justify-center overflow-clip lg:overflow-visible">
                   <motion.img
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3 }}

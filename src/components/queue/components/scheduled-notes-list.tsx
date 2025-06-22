@@ -287,7 +287,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         animate={{ opacity: 1, y: 0 }}
         className="relative"
       >
-        <div className="absolute top-1 right-0 flex justify-end mb-4">
+        <div className="absolute top-0 right-0 flex justify-end">
           <Button
             variant="link-foreground"
             className="py-0 items-start"

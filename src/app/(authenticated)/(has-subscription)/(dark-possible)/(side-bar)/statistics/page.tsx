@@ -84,7 +84,7 @@ export default function StatisticsPage() {
   }, []);
 
   return (
-    <div className="container mx-auto py-8 space-y-8 pb-20 md:pb-8">
+    <div className="feature-layout-container py-8 space-y-8 pb-20 md:pb-8">
       <div>
         <div className="flex flex-col gap-4 mb-8">
           <div className="flex flex-col gap-4">
