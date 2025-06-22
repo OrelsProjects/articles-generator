@@ -192,7 +192,7 @@ export default function StatusBoardPage() {
   // Initialize
   useEffect(() => {
     dispatch(resetNotification());
-    fetchNotes(30);
+    fetchNotes();
     fetchQueue();
   }, []);
 
