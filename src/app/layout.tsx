@@ -14,6 +14,7 @@ import { PlusJakartaSans } from "@/lib/utils/fonts";
 import Script from "next/script";
 import AffiliateProvider from "@/app/providers/AffiliateProvider";
 import { Analytics } from "@vercel/analytics/react";
+import { AppSidebar } from "@/components/layout/app-sidebar";
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME as string;
 const APP_DEFAULT_TITLE = process.env.NEXT_PUBLIC_APP_DEFAULT_TITLE as string;
@@ -73,6 +74,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
+    console.log("%c🔥 layout rendered", "color: orange; font-size: 20px");
+
+
   return (
     <html lang="en" className={cn("antialiased", PlusJakartaSans.className)}>
       <head>
@@ -104,7 +109,7 @@ export default function RootLayout({
               <ToastProvider />
               <Analytics />
               <AnimationProvider className="max-h-screen">
-                {children}
+                <AppSidebar>{children}</AppSidebar>
               </AnimationProvider>
               <ClientTrackersProvider />
             </SessionWrapper>

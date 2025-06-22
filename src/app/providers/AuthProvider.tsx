@@ -71,7 +71,9 @@ export default function AuthProvider({
       dispatch(setUserAction(appUser));
 
       try {
-        const publicationIdResponse = await axiosInstance.get("/api/user/publications");
+        const publicationIdResponse = await axiosInstance.get(
+          "/api/user/publications",
+        );
         const { publication } = publicationIdResponse.data;
         if (publication) {
           hasPublication = true;
@@ -162,7 +164,7 @@ export default function AuthProvider({
 
   if (loading) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center">
+      <div className="w-full h-screen flex items-center justify-center">
         <Loading spinnerClassName="h-16 w-16" />
       </div>
     );

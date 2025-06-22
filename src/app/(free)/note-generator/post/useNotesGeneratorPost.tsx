@@ -8,7 +8,6 @@ import { Logger } from "@/logger";
 import { Byline } from "@/types/article";
 import { FreeToolPage } from "@/types/free-tool-page";
 import { NoteDraft } from "@/types/note";
-import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 const generateMockData = (
@@ -77,7 +76,7 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
   );
   const dispatch = useAppDispatch();
   const { userNotes } = useAppSelector(state => state.notes);
-  const { data: session } = useSession();
+  const { user } = useAppSelector(state => state.auth);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedByline, setSelectedByline] = useState<Byline | null>(null);
   const [notes, setNotes] = useState<NoteDraft[]>([]);
@@ -245,7 +244,7 @@ export function useNotesGeneratorPost(): FreeToolPage<NoteDraft[]> {
   const fetchUserData = async () => {
     if (loadingUserDataRef.current) return;
 
-    let authorId = session?.user?.meta?.tempAuthorId;
+    let authorId = user?.meta?.tempAuthorId;
 
     if (!authorId) {
       authorId = await getAuthorId();

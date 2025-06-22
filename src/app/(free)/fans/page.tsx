@@ -10,9 +10,7 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { Logger } from "@/logger";
-import { usePathname } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
-import useAuth from "@/lib/hooks/useAuth";
 import useMediaQuery from "@/lib/hooks/useMediaQuery";
 import { ToastStepper } from "@/components/ui/toast-stepper";
 import axiosInstance from "@/lib/axios-instance";
@@ -21,8 +19,6 @@ import { LoginDialog } from "@/components/auth/login-dialog";
 function TopEngagersPage() {
   const { data: session } = useSession();
   const router = useCustomRouter();
-  const pathname = usePathname();
-  const { signInWithGoogle } = useAuth();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [url, setUrl] = useState<string | null>(null);
   const [engagers, setEngagers] = useState<Engager[]>([]);

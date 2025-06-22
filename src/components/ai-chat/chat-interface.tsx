@@ -12,13 +12,14 @@ import { Loader2, Plus, MessageSquare, ArrowDown, Menu } from "lucide-react";
 import { AIChat, AIMessage } from "@/types/ai-chat";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useAppSelector } from "@/lib/hooks/redux";
 
 interface ChatInterfaceProps {
   className?: string;
 }
 
 export function ChatInterface({ className }: ChatInterfaceProps) {
-  const { data: session } = useSession();
+  const { user } = useAppSelector(state => state.auth);
   const [chats, setChats] = useState<AIChat[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AIMessage[]>([]);
@@ -27,7 +28,8 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
   const [streamingMessage, setStreamingMessage] = useState("");
   const [streamingNotes, setStreamingNotes] = useState<string[]>([]);
   const [isStreamingNote, setIsStreamingNote] = useState(false);
-  const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -264,13 +266,17 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
 
               if (data.token) {
                 accumulatedMessage += data.token;
-                
+
                 // Check if we're streaming a note
-                const noteMatches = accumulatedMessage.match(/```note\n([\s\S]*?)(?:\n```|$)/g);
+                const noteMatches = accumulatedMessage.match(
+                  /```note\n([\s\S]*?)(?:\n```|$)/g,
+                );
                 if (noteMatches) {
                   const noteContents = noteMatches.map(match => {
-                    const content = match.match(/```note\n([\s\S]*?)(?:\n```|$)/);
-                    return content ? content[1] : '';
+                    const content = match.match(
+                      /```note\n([\s\S]*?)(?:\n```|$)/,
+                    );
+                    return content ? content[1] : "";
                   });
                   currentStreamingNotes = noteContents;
                   setStreamingNotes(currentStreamingNotes);
@@ -278,7 +284,8 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
                   isCurrentlyStreamingNote = true;
                 } else if (isCurrentlyStreamingNote) {
                   // Continue updating streaming notes even without complete blocks
-                  const partialNoteMatch = accumulatedMessage.match(/```note\n([\s\S]*)$/);
+                  const partialNoteMatch =
+                    accumulatedMessage.match(/```note\n([\s\S]*)$/);
                   if (partialNoteMatch) {
                     const partialContent = partialNoteMatch[1];
                     const updatedNotes = [...currentStreamingNotes];
@@ -286,7 +293,7 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
                     setStreamingNotes(updatedNotes);
                   }
                 }
-                
+
                 setStreamingMessage(accumulatedMessage);
               }
 
@@ -330,7 +337,7 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
                   };
                   setMessages(prev => [...prev, partialMessage]);
                 }
-                
+
                 // Show error as separate message
                 const errorMessage: AIMessage = {
                   id: "error-" + Date.now(),
@@ -352,9 +359,9 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
       }
     } catch (error) {
       console.error("Failed to send message:", error);
-      
+
       // Check if it's an abort error (user cancellation)
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         console.log("Request was cancelled by user");
         // Don't show error message for user cancellation
       } else {
@@ -370,7 +377,7 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
           };
           setMessages(prev => [...prev, partialMessage]);
         }
-        
+
         // Show error as separate message
         const errorMessage: AIMessage = {
           id: "error-" + Date.now(),
@@ -490,8 +497,8 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
                       role={message.role as "user" | "assistant"}
                       content={message.content}
                       timestamp={message.createdAt}
-                      userImage={session?.user?.image}
-                      userName={session?.user?.name}
+                      userImage={user?.image}
+                      userName={user?.displayName}
                     />
                   ))}
 
@@ -508,12 +515,14 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
                     <MessageBubble
                       role="assistant"
                       content={streamingMessage}
-                      userImage={session?.user?.image}
-                      userName={session?.user?.name}
+                      userImage={user?.image}
+                      userName={user?.displayName}
                     />
                   )}
 
-                  {isStreaming && !streamingMessage && !isStreamingNote && <LoadingBubble />}
+                  {isStreaming && !streamingMessage && !isStreamingNote && (
+                    <LoadingBubble />
+                  )}
                 </>
               )}
               <div ref={messagesEndRef} />

@@ -275,6 +275,7 @@ export async function POST(req: NextRequest) {
     const top60Articles = articlesWithBody.slice(0, 60);
 
     let count = getTokenCount(top60Articles.map(a => a.bodyText).join("\n"));
+    // IMPORTANT - The limit is 164k tokens.
     while (count > 120000) {
       top60Articles.shift(); // remove the worst-performing article
       count = getTokenCount(top60Articles.map(a => a.bodyText).join("\n"));

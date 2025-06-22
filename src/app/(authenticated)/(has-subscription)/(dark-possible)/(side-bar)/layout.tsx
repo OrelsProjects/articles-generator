@@ -1,5 +1,3 @@
-"use client";
-
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 
@@ -10,9 +8,7 @@ export default function SideBarLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <AppSidebar>
-      <Suspense fallback={<LoadingOverlay />}>{children}</Suspense>
-    </AppSidebar>
-  );
+  console.log("%c🔥 layout rendered", "color: red; font-size: 20px");
+
+  return <Suspense fallback={<LoadingOverlay />}>{children}</Suspense>;
 }

@@ -4,16 +4,16 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
-import { useSession } from "next-auth/react";
 import { Logger } from "@/logger";
 import { rootPath } from "@/types/navbar";
+import { useAppSelector } from "@/lib/hooks/redux";
 
 const NotFound = () => {
-  const { data: session } = useSession();
+  const { user } = useAppSelector(state => state.auth);
 
   useEffect(() => {
-    Logger.info("User hit 404 - session", { session });
-  }, [session]);
+    Logger.info("User hit 404 - session", { user });
+  }, [user]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">

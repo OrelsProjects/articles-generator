@@ -39,8 +39,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUi } from "@/lib/hooks/useUi";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
-import { UserStreak } from "@/components/ui/user-streak";
 import { AffiliateDialog } from "@/components/ui/affiliate-dialog";
+import { useSession } from "next-auth/react";
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const router = useCustomRouter();
@@ -48,6 +48,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const { sideBarState } = useAppSelector(selectUi);
   const [showOpenButton, setShowOpenButton] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
   const { user } = useAppSelector(selectAuth);
   const { signOut } = useAuth();
 
@@ -121,6 +122,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const isActive = (path: string) => {
     return pathname === path;
   };
+
+  if (!session?.user) {
+    return children;
+  }
 
   return (
     <div className="w-screen h-screen flex flex-col">

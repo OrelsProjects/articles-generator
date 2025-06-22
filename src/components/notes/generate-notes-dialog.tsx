@@ -48,6 +48,7 @@ type GenerateSource = "description" | "posts";
 
 export interface GenerateNotesDialogProps {
   onOpenChange?: (open: boolean) => void;
+  onClick?: () => void;
   defaultOpen?: boolean;
   defaultSource?: GenerateSource;
   variant?: "default" | "ghost";
@@ -56,6 +57,7 @@ export interface GenerateNotesDialogProps {
 
 export function GenerateNotesDialog({
   onOpenChange,
+  onClick,
   defaultOpen,
   defaultSource,
   tooltip = true,
@@ -157,18 +159,7 @@ export function GenerateNotesDialog({
           onOpenChange?.(open);
         }}
       >
-        <DialogTrigger asChild>
-          {/* <Button
-            variant="neumorphic-primary"
-            size="icon"
-            className={cn(
-              "md:hidden fixed h-12 w-12 bottom-20 right-4 z-50 transition-all duration-300 bg-background shadow-md border border-border hover:bg-background p-0",
-            )}
-          >
-            <Pencil className="h-6 w-6" />
-          </Button> */}
-        </DialogTrigger>
-        <DialogTrigger asChild>
+        <DialogTrigger asChild onClick={onClick}>
           <TooltipButton
             hideTooltip={!tooltip}
             tooltipContent="Generate personalized notes"
@@ -213,7 +204,7 @@ export function GenerateNotesDialog({
                       className="flex items-center gap-1"
                     >
                       {selectedSource === "description"
-                        ? "Your description"
+                        ? "Your publication analysis"
                         : "Past articles"}
                       <ChevronDown className="h-4 w-4" />
                     </Button>
@@ -222,7 +213,7 @@ export function GenerateNotesDialog({
                     <DropdownMenuItem
                       onClick={() => handleUpdateSelectedSource("description")}
                     >
-                      Your description
+                      Your publication analysis
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => handleUpdateSelectedSource("posts")}
@@ -241,7 +232,7 @@ export function GenerateNotesDialog({
                   <div className="col-span-4 relative">
                     <AutoAdjustTextArea
                       id="topic"
-                      placeholder="Describe the topic you want AI to write about."
+                      placeholder="Describe the topic you want AI to write about (optional)."
                       className="w-full"
                       value={topic}
                       maxRows={8}
@@ -314,7 +305,7 @@ export function GenerateNotesDialog({
                     <AutoAdjustTextArea
                       placeholder={
                         selectedSource === "posts"
-                          ? "Additional info (optional)"
+                          ? "Additional details (optional)"
                           : "Additional topic (optional)"
                       }
                       maxRows={8}
