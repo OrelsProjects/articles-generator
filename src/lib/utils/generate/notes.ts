@@ -268,7 +268,7 @@ export async function generateNotesPrompt({
   };
   const generateNotesMessages =
     userMetadata.notesPromptVersion === 1
-      ? generateNotesPrompt_v1(promptBody)
+      ? generateNotesPrompt_v2(promptBody)
       : generateNotesPrompt_v2(promptBody);
   return {
     messages: generateNotesMessages,
