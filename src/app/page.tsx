@@ -168,7 +168,7 @@ function App() {
     });
   }, []);
 
-  return <MaintenancePage />;
+  return <MaintenancePage startedAt={"19:25 GMT+3"} />;
 
   return (
     <div className="w-full overflow-x-hidden bg-primary" data-scroll-container>

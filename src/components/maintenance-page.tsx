@@ -3,7 +3,11 @@
 import { motion } from "framer-motion";
 import { Clock, Wrench } from "lucide-react";
 
-export default function MaintenancePage() {
+export default function MaintenancePage({
+    startedAt,
+}: {
+    startedAt: string;
+}) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
@@ -45,7 +49,9 @@ export default function MaintenancePage() {
           >
             <div className="flex items-center justify-center space-x-2 text-slate-700">
               <Clock className="w-4 h-4" />
-              <span className="text-sm font-medium">Will be back in in a few minutes (Started 19:25)</span>
+              <span className="text-sm font-medium">
+                Will be back in in a few minutes (Started {startedAt})
+              </span>
             </div>
           </motion.div>
 
