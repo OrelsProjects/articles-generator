@@ -137,14 +137,6 @@ export function SaveDropdown({
             <Clock4 className="h-4 w-4 mr-2" />
             Schedule
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => handleAddToQueue({ forceNextDate: true })}
-            disabled={disabled || loading}
-            className="text-muted-foreground"
-          >
-            <CircleArrowRight className="h-4 w-4 mr-2" />
-            Post next
-          </DropdownMenuItem>
 
           <DropdownMenuItem
             onClick={() => onSave({ closeOnSave: true })}
