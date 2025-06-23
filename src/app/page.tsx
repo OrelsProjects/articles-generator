@@ -95,7 +95,7 @@ const faq = [
   },
   {
     question: `Can I schedule if I have Firefox or Safari?`,
-    answer: `The extension is only available for Chrome, Brave, Opera and Edge. 
+    answer: `The extension is only available for Chrome, Brave, Opera, Arc and any Chromium-based browser. 
     <br/><br/>
     But you can schedule through Chrome and just minimize it and use your favorite browser.`,
   },
