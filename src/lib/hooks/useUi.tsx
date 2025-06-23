@@ -4,6 +4,7 @@ import {
   setDidShowSaveTooltip,
   setShowCreateScheduleDialog,
   setShowGenerateNotesSidebar,
+  setShowGenerateNotesDialog,
   setShowScheduleModal,
   setSideBarState,
   setUiState,
@@ -39,6 +40,13 @@ export function useUi() {
   const updateShowCreateScheduleDialog = (show: boolean) => {
     dispatch(setShowCreateScheduleDialog(show));
   };
+
+  const updateShowGenerateNotesDialog = (show: boolean) => {
+    dispatch(setShowGenerateNotesDialog(show));
+  };
+
+
+  const showGenerateNotesDialog = useAppSelector(selectUi).showGenerateNotesDialog;
 
   const hasAdvancedGPT = user?.meta?.featureFlags.includes(
     FeatureFlag.advancedGPT,
@@ -92,5 +100,7 @@ export function useUi() {
     canAutoDM,
     canUseChat,
     hasViewWriter,
+    showGenerateNotesDialog,
+    updateShowGenerateNotesDialog,
   };
 }

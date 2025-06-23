@@ -65,7 +65,11 @@ export function GenerateNotesDialog({
 }: GenerateNotesDialogProps) {
   const params = useParams();
   const handle = params?.handle as string;
-  const { hasAdvancedGPT } = useUi();
+  const {
+    hasAdvancedGPT,
+    showGenerateNotesDialog,
+    updateShowGenerateNotesDialog,
+  } = useUi();
 
   const [topic, setTopic] = useState("");
   const [open, setOpen] = useState(defaultOpen || false);
@@ -153,29 +157,11 @@ export function GenerateNotesDialog({
   return (
     <>
       <Dialog
-        open={open}
+        open={showGenerateNotesDialog}
         onOpenChange={open => {
-          setOpen(open);
-          onOpenChange?.(open);
+          updateShowGenerateNotesDialog(open);
         }}
       >
-        <DialogTrigger asChild onClick={onClick}>
-          <TooltipButton
-            hideTooltip={!tooltip}
-            tooltipContent="Generate personalized notes"
-            className={cn(
-              "px-2",
-              variant === "default"
-                ? ""
-                : " flex cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground ",
-            )}
-            variant={variant === "default" ? "neumorphic-primary" : variant}
-          >
-            <Sparkles className="h-4 w-4 mr-2" />
-            Generate notes
-          </TooltipButton>
-        </DialogTrigger>
-
         <DialogContent className="overflow-auto sm:max-w-[625px] max-h-[88vh]">
           <form onSubmit={handleSubmit}>
             <DialogHeader>

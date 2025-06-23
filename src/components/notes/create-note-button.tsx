@@ -1,19 +1,18 @@
-import { Loader2, Plus, ChevronDown, StickyNote } from "lucide-react";
+import { Loader2, Plus, ChevronDown, StickyNote, Sparkles } from "lucide-react";
 
-import { TooltipButton } from "@/components/ui/tooltip-button";
 import { useNotes } from "@/lib/hooks/useNotes";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { GenerateNotesDialog } from "./generate-notes-dialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useUi } from "@/lib/hooks/useUi";
 
 export function CreateNoteButton() {
   const { createDraftNote, loadingCreateNote } = useNotes();
+  const { updateShowGenerateNotesDialog } = useUi();
   const [open, setOpen] = useState(false);
 
   return (
@@ -43,7 +42,17 @@ export function CreateNoteButton() {
           )}
           New draft
         </Button>
-        <GenerateNotesDialog variant="ghost" tooltip={false} />
+        <Button
+          variant="ghost"
+          className="flex cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+          onClick={() => {
+            updateShowGenerateNotesDialog(true);
+            setOpen(false);
+          }}
+        >
+          <Sparkles className="h-4 w-4 mr-2" />
+          Generate notes
+        </Button>
       </DropdownMenuContent>
     </DropdownMenu>
   );

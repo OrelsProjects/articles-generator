@@ -13,7 +13,7 @@ interface CharacterCountBarProps {
 
 const VIRAL_RANGES = [
   {
-    range: { low: 180, high: 209 },
+    range: { low: 120, high: 209 },
     score: 7,
     text: "Solid",
     color: "bg-orange-500",
