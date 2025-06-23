@@ -28,7 +28,6 @@ import {
   BestSeller10000,
 } from "@/components/ui/best-seller-badge";
 import { useEffect } from "react";
-import MaintenancePage from "@/components/maintenance-page";
 
 const DividerPrimary = ({
   className,
@@ -167,8 +166,6 @@ function App() {
       };
     });
   }, []);
-
-  return <MaintenancePage startedAt={"19:25 GMT+3"} />;
 
   return (
     <div className="w-full overflow-x-hidden bg-primary" data-scroll-container>
