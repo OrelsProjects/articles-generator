@@ -136,7 +136,7 @@ export default function StatusBoardPage() {
   // View state management
   const [viewMode, setViewMode] = useLocalStorage<"kanban" | "list">(
     "notes_view_mode",
-    "kanban",
+    "list",
   );
 
   // Queue page state
