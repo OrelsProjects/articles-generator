@@ -40,13 +40,13 @@ const standardFeatureFlags = [
   ...hobbyistFeatureFlags,
   FeatureFlag.advancedGPT,
   FeatureFlag.canViewWriters,
-  FeatureFlag.advancedFiltering,
   FeatureFlag.canUseRadar,
 ];
 
 const premiumFeatureFlags = [
   ...standardFeatureFlags,
   FeatureFlag.collaborativeNotes,
+  FeatureFlag.advancedFiltering,
 ];
 
 export const featureFlagsPerPlan: Record<Plan, FeatureFlag[]> = {
