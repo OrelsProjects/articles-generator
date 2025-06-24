@@ -22,6 +22,8 @@ import { useUi } from "@/lib/hooks/useUi";
 import { NotesStatusBoard } from "@/components/notes/notes-status-board";
 import { resetNotification } from "@/lib/features/notes/notesSlice";
 import { motion, AnimatePresence } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
+import KanbanLoading from "@/components/loading/kanban-loading";
 
 const KANBAN_TITLE = "Your notes";
 const LIST_TITLE = "Your notes";
@@ -164,6 +166,8 @@ export default function StatusBoardPage() {
     userNotes,
     createDraftNote,
     loadingCreateNote,
+    loadingNotes,
+    firstLoadingNotes,
   } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
   const { updateShowCreateScheduleDialog } = useUi();
@@ -403,17 +407,6 @@ export default function StatusBoardPage() {
     selectNote(note);
   };
 
-  const handleGenerateNotesOpenChange = (open: boolean) => {
-    if (!open) {
-      const paramsToRemove = [];
-      if (generateParam) paramsToRemove.push("generate");
-      if (postsParam) paramsToRemove.push("post");
-      router.push(pathname, {
-        paramsToRemove,
-      });
-    }
-  };
-
   // Get latest note ID for ref
   const latestNote = getLatestNote();
   const latestNoteId = latestNote?.id;
@@ -423,6 +416,64 @@ export default function StatusBoardPage() {
     if (newMode !== viewMode) {
       setViewMode(newMode);
     }
+  };
+
+  const QueueLoading = () => (
+    <div className="w-full mx-auto z-10">
+      {/* Banner skeleton */}
+      <div className="bg-muted/40 border border-muted p-4 py-5 rounded-lg mb-6 flex items-center">
+        <Skeleton className="h-5 w-5 mr-3 rounded-full" />
+        <Skeleton className="h-4 w-64 rounded " />
+      </div>
+
+      {/* Tab navigation skeleton */}
+      <div className="mb-4 border-b border-border">
+        <div className="flex space-x-8 overflow-x-auto overflow-y-hidden">
+          {["Scheduled", "Drafts", "Published", "All"].map((tab, index) => (
+            <div key={tab} className="flex items-center space-x-2 px-6 py-3">
+              <Skeleton className="h-4 w-16 bg-muted rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {[...Array(9)].map((_, i) => (
+          <div
+            key={i}
+            className="flex flex-col space-y-3 rounded-xl border p-4 shadow-sm"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <div className="space-y-1">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+              <Skeleton className="h-6 w-6 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-2/3" />
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex space-x-1">
+                <Skeleton className="h-6 w-6 rounded-full" />
+                <Skeleton className="h-6 w-6 rounded-full" />
+              </div>
+              <Skeleton className="h-6 w-16 rounded-md" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+
+  const Loading = () => {
+    return viewMode === "kanban" ? <KanbanLoading /> : <QueueLoading />;
   };
 
   // Main layout wrapper
@@ -438,283 +489,189 @@ export default function StatusBoardPage() {
           <ActionBar />
         </div>
 
-        {/* Animated content area */}
-        <AnimatePresence mode="wait">
-          {viewMode === "kanban" ? (
-            <motion.div
-              key="kanban"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="kanban-board-container"
-            >
-              <NotesStatusBoard notes={userNotes} />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="list"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="w-full"
-            >
-              <ScrollArea className="w-full">
-                <div className="space-y-6">
-                  {scheduledNotes.length === 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-red-50 dark:bg-red-950/25 border border-red-200 dark:border-red-900 p-4 rounded-lg mb-6 flex items-center text-red-800 dark:text-red-400"
-                    >
-                      <Info className="h-5 w-5 mr-3 flex-shrink-0" />
-                      <div className="flex-1">
-                        <span>You have no scheduled notes in your queue. </span>
-                      </div>
-                    </motion.div>
-                  )}
+        {loadingNotes && firstLoadingNotes ? (
+          <Loading />
+        ) : (
+          <AnimatePresence mode="wait">
+            {viewMode === "kanban" ? (
+              <motion.div
+                key="kanban"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="kanban-board-container"
+              >
+                <NotesStatusBoard notes={userNotes} loading={loadingNotes} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="list"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="w-full"
+              >
+                <ScrollArea className="w-full">
+                  <div className="space-y-6">
+                    {scheduledNotes.length === 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-red-50 dark:bg-red-950/25 border border-red-200 dark:border-red-900 p-4 rounded-lg mb-6 flex items-center text-red-800 dark:text-red-400"
+                      >
+                        <Info className="h-5 w-5 mr-3 flex-shrink-0" />
+                        <div className="flex-1">
+                          <span>
+                            You have no scheduled notes in your queue.{" "}
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
 
-                  {scheduledNotes.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-green-50 dark:bg-green-950/25 border border-green-200 dark:border-green-900 p-4 rounded-lg mb-6 flex items-center text-green-800 dark:text-green-400"
-                    >
-                      <Info className="h-5 w-5 mr-3 flex-shrink-0" />
-                      <span>
-                        You have {scheduledNotes.length}{" "}
-                        {scheduledNotes.length === 1 ? "note" : "notes"}{" "}
-                        scheduled.{" "}
-                        {scheduledNotes.length === 1 &&
-                        scheduledNotes[0].scheduledTo
-                          ? `It will be published on `
-                          : scheduledNotes.length > 1
-                            ? `The last one will be published on `
-                            : ""}
-                        {scheduledNotes.length === 1 &&
-                        scheduledNotes[0].scheduledTo ? (
-                          <strong
-                            className="underline cursor-pointer hover:no-underline transition-all"
-                            onClick={scrollToLatestNote}
-                          >
-                            {format(
-                              new Date(scheduledNotes[0].scheduledTo),
-                              "EEEE MMMM do, HH:mm",
-                            )}
-                          </strong>
-                        ) : scheduledNotes.length > 1 ? (
-                          (() => {
-                            // Find the latest scheduled note
-                            const latestNote = [...scheduledNotes].sort(
-                              (a, b) =>
-                                new Date(b.scheduledTo || 0).getTime() -
-                                new Date(a.scheduledTo || 0).getTime(),
-                            )[0];
-                            return latestNote.scheduledTo ? (
-                              <strong
-                                className="underline cursor-pointer hover:no-underline transition-all"
-                                onClick={scrollToLatestNote}
-                              >
-                                {format(
-                                  new Date(latestNote.scheduledTo),
+                    {scheduledNotes.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-green-50 dark:bg-green-950/25 border border-green-200 dark:border-green-900 p-4 rounded-lg mb-6 flex items-center text-green-800 dark:text-green-400"
+                      >
+                        <Info className="h-5 w-5 mr-3 flex-shrink-0" />
+                        <span>
+                          You have {scheduledNotes.length}{" "}
+                          {scheduledNotes.length === 1 ? "note" : "notes"}{" "}
+                          scheduled.{" "}
+                          {scheduledNotes.length === 1 &&
+                          scheduledNotes[0].scheduledTo
+                            ? `It will be published on `
+                            : scheduledNotes.length > 1
+                              ? `The last one will be published on `
+                              : ""}
+                          {scheduledNotes.length === 1 &&
+                          scheduledNotes[0].scheduledTo ? (
+                            <strong
+                              className="underline cursor-pointer hover:no-underline transition-all"
+                              onClick={scrollToLatestNote}
+                            >
+                              {scheduledNotes[0].scheduledTo &&
+                                format(
+                                  new Date(scheduledNotes[0].scheduledTo),
                                   "EEEE MMMM do, HH:mm",
                                 )}
-                              </strong>
-                            ) : null;
-                          })()
-                        ) : null}
-                      </span>
-                    </motion.div>
-                  )}
+                            </strong>
+                          ) : scheduledNotes.length > 1 ? (
+                            (() => {
+                              // Find the latest scheduled note
+                              const latestNote = [...scheduledNotes].sort(
+                                (a, b) =>
+                                  new Date(b.scheduledTo || 0).getTime() -
+                                  new Date(a.scheduledTo || 0).getTime(),
+                              )[0];
+                              return latestNote.scheduledTo ? (
+                                <strong
+                                  className="underline cursor-pointer hover:no-underline transition-all"
+                                  onClick={scrollToLatestNote}
+                                >
+                                  {latestNote.scheduledTo &&
+                                    format(
+                                      new Date(latestNote.scheduledTo),
+                                      "EEEE MMMM do, HH:mm",
+                                    )}
+                                </strong>
+                              ) : null;
+                            })()
+                          ) : null}
+                        </span>
+                      </motion.div>
+                    )}
 
-                  <Tabs
-                    defaultValue="scheduled"
-                    value={activeTab}
-                    onValueChange={handleUpdateActiveTab}
-                    className="w-full"
-                  >
-                    <TabsList className="mb-4 border-b w-full rounded-none bg-transparent p-0 justify-start overflow-x-auto overflow-y-hidden">
-                      <TabsTrigger
-                        value="scheduled"
-                        className={cn(
-                          "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
-                        )}
-                      >
-                        Scheduled ({counters.scheduledCount})
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="drafts"
-                        className={cn(
-                          "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
-                        )}
-                      >
-                        Drafts ({counters.draftCount})
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="published"
-                        className={cn(
-                          "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
-                        )}
-                      >
-                        Published ({counters.publishedCount})
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="all"
-                        className={cn(
-                          "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
-                        )}
-                      >
-                        All (
-                        {counters.scheduledCount +
-                          counters.draftCount +
-                          counters.publishedCount}
-                        )
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="scheduled" className="mt-0">
-                      <ScheduledNotesList
-                        days={activeDays}
-                        onEditQueue={() => updateShowCreateScheduleDialog(true)}
-                        groupedNotes={groupedScheduledNotes()}
-                        groupedSchedules={groupedSchedules()}
-                        onSelectNote={handleSelectNote}
-                        lastNoteRef={lastNoteRef}
-                        lastNoteId={latestNoteId}
-                      />
-                    </TabsContent>
-
-                    <TabsContent value="drafts">
-                      {draftNotes.length === 0 ? (
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex flex-col items-center justify-center py-16 gap-6"
+                    <Tabs
+                      defaultValue="scheduled"
+                      value={activeTab}
+                      onValueChange={handleUpdateActiveTab}
+                      className="w-full"
+                    >
+                      <TabsList className="mb-4 border-b w-full rounded-none bg-transparent p-0 justify-start overflow-x-auto overflow-y-hidden">
+                        <TabsTrigger
+                          value="scheduled"
+                          className={cn(
+                            "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
+                          )}
                         >
-                          <div className="text-center text-muted-foreground">
-                            <p className="text-lg mb-2">No drafts yet</p>
-                            <p className="text-sm">
-                              Create your first note to get started
-                            </p>
-                          </div>
-                          <div className="w-full max-w-sm">
-                            <EmptyStateCard
-                              onAddNote={() => createDraftNote()}
-                              loading={loadingCreateNote}
-                              text="Create your first draft"
-                            />
-                          </div>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                          Scheduled ({counters.scheduledCount})
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="drafts"
+                          className={cn(
+                            "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
+                          )}
                         >
-                          {draftNotes.map((note, index) => (
-                            <motion.div
-                              key={note.id}
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                            >
-                              <NoteComponent note={note} />
-                            </motion.div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </TabsContent>
-
-                    <TabsContent value="published">
-                      {publishedNotes.length === 0 ? (
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex flex-col items-center justify-center py-16 gap-6"
+                          Drafts ({counters.draftCount})
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="published"
+                          className={cn(
+                            "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
+                          )}
                         >
-                          <div className="text-center text-muted-foreground">
-                            <p className="text-lg mb-2">
-                              No published notes yet
-                            </p>
-                            <p className="text-sm">
-                              Notes you publish will appear here
-                            </p>
-                          </div>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                          Published ({counters.publishedCount})
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="all"
+                          className={cn(
+                            "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
+                          )}
                         >
-                          {publishedNotes.map((note, index) => (
-                            <motion.div
-                              key={note.id}
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                            >
-                              <NoteComponent note={note} />
-                            </motion.div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </TabsContent>
+                          All (
+                          {counters.scheduledCount +
+                            counters.draftCount +
+                            counters.publishedCount}
+                          )
+                        </TabsTrigger>
+                      </TabsList>
 
-                    <TabsContent value="all">
-                      {scheduledNotes.length === 0 &&
-                      draftNotes.length === 0 &&
-                      publishedNotes.length === 0 ? (
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex flex-col items-center justify-center py-16 gap-6"
-                        >
-                          <div className="text-center text-muted-foreground">
-                            <p className="text-lg mb-2">No notes yet</p>
-                            <p className="text-sm">
-                              Create your first note to get started
-                            </p>
-                          </div>
-                          <div className="w-full max-w-sm">
-                            <EmptyStateCard
-                              onAddNote={() => createDraftNote()}
-                              text="Create your first note"
-                            />
-                          </div>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                        >
-                          {/* Combine all notes and sort them as specified */}
-                          {[...scheduledNotes, ...draftNotes, ...publishedNotes]
-                            .sort((a, b) => {
-                              // Sort by type first: scheduled > drafts > published
-                              const getTypeOrder = (note: NoteDraft) => {
-                                if (note.scheduledTo) return 0; // Scheduled notes first
-                                if (note.status !== "published") return 1; // Then drafts
-                                return 2; // Then published notes
-                              };
+                      <TabsContent value="scheduled" className="mt-0">
+                        <ScheduledNotesList
+                          days={activeDays}
+                          onEditQueue={() =>
+                            updateShowCreateScheduleDialog(true)
+                          }
+                          groupedNotes={groupedScheduledNotes()}
+                          groupedSchedules={groupedSchedules()}
+                          onSelectNote={handleSelectNote}
+                          lastNoteRef={lastNoteRef}
+                          lastNoteId={latestNoteId}
+                        />
+                      </TabsContent>
 
-                              const typeA = getTypeOrder(a);
-                              const typeB = getTypeOrder(b);
-
-                              if (typeA !== typeB) return typeA - typeB;
-
-                              // If same type, sort by createdAt date (newest first)
-                              const dateA = new Date(
-                                a.createdAt || 0,
-                              ).getTime();
-                              const dateB = new Date(
-                                b.createdAt || 0,
-                              ).getTime();
-                              return dateB - dateA;
-                            })
-                            .map((note, index) => (
+                      <TabsContent value="drafts">
+                        {draftNotes.length === 0 ? (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col items-center justify-center py-16 gap-6"
+                          >
+                            <div className="text-center text-muted-foreground">
+                              <p className="text-lg mb-2">No drafts yet</p>
+                              <p className="text-sm">
+                                Create your first note to get started
+                              </p>
+                            </div>
+                            <div className="w-full max-w-sm">
+                              <EmptyStateCard
+                                onAddNote={() => createDraftNote()}
+                                loading={loadingCreateNote}
+                                text="Create your first draft"
+                              />
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                          >
+                            {draftNotes.map((note, index) => (
                               <motion.div
                                 key={note.id}
                                 initial={{ opacity: 0, y: 20 }}
@@ -724,15 +681,122 @@ export default function StatusBoardPage() {
                                 <NoteComponent note={note} />
                               </motion.div>
                             ))}
-                        </motion.div>
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              </ScrollArea>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                          </motion.div>
+                        )}
+                      </TabsContent>
+
+                      <TabsContent value="published">
+                        {publishedNotes.length === 0 ? (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col items-center justify-center py-16 gap-6"
+                          >
+                            <div className="text-center text-muted-foreground">
+                              <p className="text-lg mb-2">
+                                No published notes yet
+                              </p>
+                              <p className="text-sm">
+                                Notes you publish will appear here
+                              </p>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                          >
+                            {publishedNotes.map((note, index) => (
+                              <motion.div
+                                key={note.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                              >
+                                <NoteComponent note={note} />
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </TabsContent>
+
+                      <TabsContent value="all">
+                        {scheduledNotes.length === 0 &&
+                        draftNotes.length === 0 &&
+                        publishedNotes.length === 0 ? (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col items-center justify-center py-16 gap-6"
+                          >
+                            <div className="text-center text-muted-foreground">
+                              <p className="text-lg mb-2">No notes yet</p>
+                              <p className="text-sm">
+                                Create your first note to get started
+                              </p>
+                            </div>
+                            <div className="w-full max-w-sm">
+                              <EmptyStateCard
+                                onAddNote={() => createDraftNote()}
+                                text="Create your first note"
+                              />
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                          >
+                            {/* Combine all notes and sort them as specified */}
+                            {[
+                              ...scheduledNotes,
+                              ...draftNotes,
+                              ...publishedNotes,
+                            ]
+                              .sort((a, b) => {
+                                // Sort by type first: scheduled > drafts > published
+                                const getTypeOrder = (note: NoteDraft) => {
+                                  if (note.scheduledTo) return 0; // Scheduled notes first
+                                  if (note.status !== "published") return 1; // Then drafts
+                                  return 2; // Then published notes
+                                };
+
+                                const typeA = getTypeOrder(a);
+                                const typeB = getTypeOrder(b);
+
+                                if (typeA !== typeB) return typeA - typeB;
+
+                                // If same type, sort by createdAt date (newest first)
+                                const dateA = new Date(
+                                  a.createdAt || 0,
+                                ).getTime();
+                                const dateB = new Date(
+                                  b.createdAt || 0,
+                                ).getTime();
+                                return dateB - dateA;
+                              })
+                              .map((note, index) => (
+                                <motion.div
+                                  key={note.id}
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: index * 0.1 }}
+                                >
+                                  <NoteComponent note={note} />
+                                </motion.div>
+                              ))}
+                          </motion.div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                </ScrollArea>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </div>
     </div>
   );

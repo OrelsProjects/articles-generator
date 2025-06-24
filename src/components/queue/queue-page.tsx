@@ -21,6 +21,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { CreateNoteButton } from "@/components/notes/create-note-button";
 import { useUi } from "@/lib/hooks/useUi";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface QueuePageProps {
   onFetchingForUpdate: (isFetching: boolean) => void;
@@ -41,7 +42,7 @@ export function QueuePage({ onFetchingForUpdate }: QueuePageProps) {
     resetPage,
     fetchQueue,
   } = useQueue();
-  const { selectNote, fetchNotes } = useNotes();
+  const { selectNote, fetchNotes, loadingNotes } = useNotes();
   const { userSchedules } = useAppSelector(state => state.notes);
   const { updateShowCreateScheduleDialog } = useUi();
   const [activeDays, setActiveDays] = useState<Date[]>([]);

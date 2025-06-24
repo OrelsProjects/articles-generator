@@ -258,7 +258,11 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
 
   if (!hasAnyNotesScheduled && !hasQueue) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center gap-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center justify-center py-16 text-center gap-6"
+      >
         <div className="text-2xl font-semibold text-foreground">
           No schedule yet
         </div>
@@ -270,7 +274,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
           <Calendar className="w-4 h-4 mr-2" />
           Create a schedule
         </Button>
-      </div>
+      </motion.div>
     );
   }
 

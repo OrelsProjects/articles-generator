@@ -9,12 +9,16 @@ import { toast } from "react-toastify";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { FileText, Clock, CheckCircle, Archive } from "lucide-react";
 import { Logger } from "@/logger";
+import { Skeleton } from "@/components/ui/skeleton";
+import KanbanLoading from "@/components/loading/kanban-loading";
 
 export interface NotesStatusBoardProps {
   notes: NoteDraft[];
+  loading: boolean;
 }
 
-export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
+
+export function NotesStatusBoard({ notes, loading }: NotesStatusBoardProps) {
   const { updateNoteStatus, createDraftNote, selectNote, selectedNote } =
     useNotes();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -127,6 +131,10 @@ export function NotesStatusBoard({ notes }: NotesStatusBoardProps) {
     },
     [notes, updateNoteStatus, isUpdating],
   );
+
+  if (loading) {
+    return <KanbanLoading />;
+  }
 
   return (
     <StatusBoard

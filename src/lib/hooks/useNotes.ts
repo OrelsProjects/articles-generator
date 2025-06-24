@@ -19,6 +19,7 @@ import {
   removeAttachmentFromNote,
   addAttachmentToNote,
   addNote,
+  setFirstLoadingNotes,
 } from "@/lib/features/notes/notesSlice";
 import {
   isEmptyNote,
@@ -82,6 +83,7 @@ export const useNotes = () => {
     loadingFetchingByline,
     errorGenerateNotes,
     loadingNotesGenerate,
+    firstLoadingNotes,
   } = useAppSelector(selectNotes);
 
   const { consumeCredits } = useCredits();
@@ -105,40 +107,45 @@ export const useNotes = () => {
 
   const fetchNotes = async (limit?: number, loadMore = false) => {
     if (loadingNotesRef.current) return;
-    try {
-      if (userNotes.length > 0) {
-        EventTracker.track("notes_user_load_more");
-      }
-      loadingNotesRef.current = true;
-      dispatch(setLoadingNotes(true));
-      const queryParams = new URLSearchParams();
-      if (limit) queryParams.set("limit", limit.toString());
-      if (loadMore && userNotesCursor)
-        queryParams.set("cursor", userNotesCursor);
+      try {
+        if (userNotes.length > 0) {
+          EventTracker.track("notes_user_load_more");
+        }
+        loadingNotesRef.current = true;
+        dispatch(setLoadingNotes(true));
+        const queryParams = new URLSearchParams();
+        if (limit) queryParams.set("limit", limit.toString());
+        if (loadMore && userNotesCursor)
+          queryParams.set("cursor", userNotesCursor);
 
-      const response = await axiosInstance.get(
-        `/api/user/notes?${queryParams.toString()}`,
-      );
-      dispatch(setError(null));
-      if (loadMore) {
-        dispatch(
-          addNotes({
-            items: response.data.items,
-            nextCursor: response.data.nextCursor,
-          }),
+        const response = await axiosInstance.get(
+          `/api/user/notes?${queryParams.toString()}`,
         );
-      } else {
-        dispatch(setNotes(response.data));
+        dispatch(setError(null));
+        if (loadMore) {
+          dispatch(
+            addNotes({
+              items: response.data.items,
+              nextCursor: response.data.nextCursor,
+            }),
+          );
+        } else {
+          dispatch(setNotes(response.data));
+        }
+      } catch (error) {
+        dispatch(
+          setError(
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+          ),
+        );
+        Logger.error("Error fetching notes:", { error: String(error) });
+      } finally {
+        dispatch(setLoadingNotes(false));
+      if (firstLoadingNotes) {
+        dispatch(setFirstLoadingNotes(false));
       }
-    } catch (error) {
-      dispatch(
-        setError(
-          error instanceof Error ? error.message : "An unknown error occurred",
-        ),
-      );
-      Logger.error("Error fetching notes:", { error: String(error) });
-    } finally {
-      dispatch(setLoadingNotes(false));
       loadingNotesRef.current = false;
     }
   };
@@ -954,5 +961,6 @@ export const useNotes = () => {
     fetchNotesForDate,
     uploadLink,
     getOgData,
+    firstLoadingNotes,
   };
 };

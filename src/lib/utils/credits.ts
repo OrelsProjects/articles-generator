@@ -46,7 +46,13 @@ export async function canUseAI(
   }
 
   let creditsLeft = subscription.creditsRemaining;
-
+  loggerServer.info("AI usage credits left: " + creditsLeft, {
+    userId,
+    cost,
+    subscription,
+    usageType,
+    presetCredits,
+  });
   if (creditsLeft < cost) {
     const nextRefill = getNextRefillDate(subscription.lastCreditReset);
     return {

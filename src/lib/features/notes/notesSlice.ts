@@ -11,6 +11,7 @@ export interface NotesState {
   inspirationFilters: Filter[];
   selectedImage: { url: string; alt: string } | null;
   loadingNotes: boolean;
+  firstLoadingNotes: boolean;
   loadingNotesGenerate: boolean;
   loadingInspiration: boolean;
   loadingFetchingByline: boolean;
@@ -37,6 +38,7 @@ export const initialState: NotesState = {
   selectedNote: null,
   selectedImage: null,
   loadingNotes: false,
+  firstLoadingNotes: true,
   loadingNotesGenerate: false,
   loadingInspiration: false,
   loadingFetchingByline: false,
@@ -173,6 +175,9 @@ const notesSlice = createSlice({
     setLoadingNotes: (state, action: PayloadAction<boolean>) => {
       state.loadingNotes = action.payload;
     },
+    setFirstLoadingNotes: (state, action: PayloadAction<boolean>) => {
+      state.firstLoadingNotes = action.payload;
+    },
     setLoadingInspiration: (state, action: PayloadAction<boolean>) => {
       state.loadingInspiration = action.payload;
     },
@@ -285,6 +290,7 @@ export const {
   setSelectedNote,
   setSelectedImage,
   setLoadingNotes,
+  setFirstLoadingNotes,
   setLoadingInspiration,
   setError,
   setInspirationNotes,
