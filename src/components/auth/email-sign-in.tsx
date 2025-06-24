@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EventTracker } from "@/eventTracker";
 import { useSearchParams } from "next/navigation";
-import { rootPath } from "@/types/navbar";
 import { Logger } from "@/logger";
 import { cn } from "@/lib/utils";
 
@@ -33,18 +32,23 @@ export function EmailSignIn({ redirectTo }: { redirectTo?: string }) {
       setError(null);
 
       EventTracker.track("magic_link_sign_in_attempt", { email: values.email });
+      const redirectToValid = redirectTo
+      ? redirectTo?.includes("/")
+      ? redirectTo
+      : `/${redirectTo}`
+      : "/onboarding";
+      
       Logger.info("[EMAIL-SIGN-IN] Signing in with email", {
         email: values.email,
         redirect,
+        redirectTo,
+        redirectToValid,
       });
-      debugger;
-      const redirectToValid = redirectTo?.includes("/")
-        ? redirectTo
-        : `/${redirectTo}`;
+ 
       const result = await signIn("email", {
         email: values.email,
         redirect: true,
-        callbackUrl: redirect || redirectToValid || "/onboarding",
+        callbackUrl: redirect || redirectToValid,
       });
 
       if (result?.error) {
