@@ -56,50 +56,49 @@ export function ScheduleInstructionsDialog() {
     <Dialog open={openDialog} onOpenChange={handleDialogOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Schedule Instructions</DialogTitle>
+          <DialogTitle>🗓️ Schedule Instructions</DialogTitle>
         </DialogHeader>
-        <DialogDescription>
-          (You can skip this if it&apos;s not the first time you schedule a
-          note.)
-          <br />
-          <br />
-          After scheduling a note, your note will be scheduled via the Chrome
-          extension.
-          <br />
-          In order for the note to be posted: <br />
-          <ul>
-            <li>
-              <span className="text-foreground font-bold">
-                Your Chrome browser must remain open (Doesn&apos;t matter which
-                tab)
-              </span>
-            </li>
-            <li>
-              <span className="text-foreground font-bold">
-                You have to be logged in to Substack on Chrome
-              </span>
-            </li>
+
+        <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
+          <p className="mb-4 italic">
+            (Skip this if you’ve already scheduled a note before.)
+          </p>
+
+          <p className="mb-2">
+            Once you schedule a note, the <strong>Chrome extension</strong> will
+            handle posting it.
+          </p>
+
+          <p className="mb-2 font-semibold">To ensure your note is posted:</p>
+          <ul className="list-disc pl-5 space-y-1 font-medium text-foreground">
+            <li>Keep your Chrome browser open (any tab is fine)</li>
+            <li>You must be logged in to Substack in Chrome</li>
           </ul>
-          <br />
-          If in the time of the scheduled post your Chrome is closed or you are
-          not logged in to Substack on Chrome, the note will not be posted.
-          <br />
-          <br />
-          You can also see the schedules from anywhere by clicking the extension
-          icon in the top right corner of your browser.
+
+          <p className="mt-4 text-red-500 font-medium">
+            If Chrome is closed or you’re logged out of Substack when the note
+            is scheduled to post, it will not be posted.
+          </p>
+
+          <p className="mt-6">
+            To view your scheduled notes anytime, click the extension icon in
+            the top-right of your browser.
+          </p>
+
           <motion.div
-            whileHover={{ scale: 2, x: 240 }}
+            whileHover={{ scale: 1.2, x: 40 }}
             transition={{ duration: 0.3 }}
           >
             <Image
               src="/extension-click.png"
-              alt="Extension click"
+              alt="How to open the extension"
               width={200}
               height={200}
               className="rounded-md mt-4"
             />
           </motion.div>
         </DialogDescription>
+
         <DialogFooter>
           <Button onClick={() => setDidShowScheduleInstructions(true)}>
             Got it

@@ -261,18 +261,21 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center justify-center py-16 text-center gap-6"
+        className="flex flex-col items-center justify-center gap-6 py-16 text-center"
       >
-        <div className="text-2xl font-semibold text-foreground">
-          No schedule yet
-        </div>
-        <div className="text-muted-foreground max-w-md mx-auto text-base">
-          Set up your posting schedule to start planning your notes. You can
-          always edit it later.
-        </div>
-        <Button variant="outline" onClick={onEditQueue}>
-          <Calendar className="w-4 h-4 mr-2" />
-          Create a schedule
+        <h3 className="text-2xl font-bold text-foreground">No schedule yet</h3>
+
+        <p className="max-w-md text-base leading-relaxed text-muted-foreground">
+          Set your posting times once. Every new note can be scheduled into the
+          next slot with one click.
+        </p>
+        <p className="max-w-md text-base leading-relaxed text-muted-foreground">
+          You can edit your schedule anytime.
+        </p>
+
+        <Button onClick={onEditQueue}>
+          <Calendar className="mr-2 h-4 w-4" />
+          Create schedule
         </Button>
       </motion.div>
     );
