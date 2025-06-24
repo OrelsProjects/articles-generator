@@ -58,7 +58,7 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
   const { showCreateScheduleDialog, updateShowCreateScheduleDialog } = useUi();
   const { userSchedules } = useAppSelector(state => state.notes);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
-  const [isAddingSlot, setIsAddingSlot] = useState(true);
+  const [isAddingSlot, setIsAddingSlot] = useState(false);
 
   // Time picker state
   const [hours, setHours] = useState(12);
