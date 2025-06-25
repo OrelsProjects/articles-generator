@@ -141,13 +141,16 @@ const notesSlice = createSlice({
       action: PayloadAction<{
         items: NoteDraft[];
         nextCursor: string | null;
-        options?: { toStart: boolean };
+        options?: { toStart?: boolean; notification?: boolean };
       }>,
     ) => {
       state.userNotes = [...action.payload.items, ...state.userNotes];
 
       state.userNotesCursor = action.payload.nextCursor;
       state.hasMoreUserNotes = !!action.payload.nextCursor;
+      if (action.payload.options?.notification) {
+        state.hasNewNotes = true;
+      }
     },
     setSelectedNote: (
       state,

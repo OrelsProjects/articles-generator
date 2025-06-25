@@ -191,9 +191,6 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
         friday: true,
         saturday: true,
       });
-
-      // Toast success - the component will update when Redux store updates
-      toast.success("New schedule slot added");
     } catch (error) {
       if (error instanceof ScheduleExistsError) {
         toast.error("Schedule already exists in the queue");
@@ -284,7 +281,6 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
       });
 
       await Promise.all(updatePromises);
-      toast.success("Updated schedule with natural timing");
     } catch (error) {
       toast.error("Failed to update schedule");
       console.error(error);

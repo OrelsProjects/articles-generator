@@ -42,19 +42,19 @@ export function PublicationOnboarding({
       <div className="absolute inset-0 bg-foreground/70 dark:bg-background/50 backdrop-blur-sm z-20" />
       <Card className="w-full max-w-md z-30">
         <CardHeader>
-          {/* <div className="w-full flex items-center justify-center"> */}
           <Logo className="w-10 h-10" />
-          {/* </div> */}
           <CardTitle className="text-2xl">Welcome to {appName}</CardTitle>
           <CardDescription>
-            Before you can start, we need to connect your publication.
+            In order to get started, you need to connect your publication.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
             {appName} works by analyzing your existing content to help you
-            create better notes and ideas. Please connect your publication to
-            continue.
+            create better notes and ideas.
+          </p>
+          <p className="text-sm text-muted-foreground font-semibold">
+            Make sure to connect the publication you&apos;re logged into to be able to use all the features.
           </p>
         </CardContent>
         <CardFooter className="w-full">

@@ -575,7 +575,7 @@ const TextEditor = ({
           </div>
         </ScrollArea>
       ) : (
-        <BlankPage hasPublication={!!publication} />
+        <BlankPage />
       )}
       <PreviewModal
         open={showPreviewModal}

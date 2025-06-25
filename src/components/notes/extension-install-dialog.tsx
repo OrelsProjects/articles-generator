@@ -8,7 +8,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { PuzzleIcon } from "lucide-react";
+import { PuzzleIcon, RefreshCw } from "lucide-react";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
 
@@ -18,6 +21,7 @@ interface ExtensionInstallDialogProps {
   onInstall: () => void;
   onRefresh: () => void;
   loading: boolean;
+  selectedNoteId?: string;
 }
 
 export function ExtensionInstallDialog({
@@ -27,6 +31,7 @@ export function ExtensionInstallDialog({
   onRefresh,
   loading,
 }: ExtensionInstallDialogProps) {
+
   const handleInstall = () => {
     // Open Chrome extension store in a new tab
     window.open(
@@ -56,11 +61,15 @@ export function ExtensionInstallDialog({
             <br />
             <span className="text-foreground">
               <span
-                onClick={() => {
-                  window.location.reload();
-                }}
-                className="text-primary cursor-pointer underline"
+                onClick={loading ? undefined : onRefresh}
+                className={cn(
+                  "text-primary cursor-pointer underline flex items-center gap-2",
+                  {
+                    "opacity-50 cursor-not-allowed": loading,
+                  },
+                )}
               >
+                {loading && <RefreshCw className="h-4 w-4 animate-spin" />}
                 (Refresh after installation)
               </span>
             </span>

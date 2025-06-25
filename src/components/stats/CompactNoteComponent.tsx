@@ -9,20 +9,52 @@ import {
   ExternalLink,
   MousePointer,
   Users,
-  UserPlus,
+  BadgeDollarSign,
+  MoreVertical,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { convertMDToHtml, NoteDraft } from "@/types/note";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { loadContent, notesTextEditorOptions } from "@/lib/utils/text-editor";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CompactNoteComponentProps {
   note: NoteWithEngagementStats;
   loading: boolean;
   onNoteClick?: (noteDraft: Omit<NoteDraft, "authorId">) => void;
 }
+
+const TooltipStat = ({
+  children,
+  tooltip,
+}: {
+  children: React.ReactNode;
+  tooltip: string;
+}) => {
+  return (
+    <TooltipProvider>
+      <Tooltip delayDuration={50}>
+        <TooltipTrigger asChild className="cursor-default">
+          {children}
+        </TooltipTrigger>
+        <TooltipContent>{tooltip}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 export function CompactNoteComponent({
   note,
@@ -69,12 +101,6 @@ export function CompactNoteComponent({
     return num.toString();
   };
 
-  // const truncateText = (text: string, maxLength: number = 120) => {
-  //   if (showMore) return htmlContent;
-  // if (text.length <= maxLength) return htmlContent;
-  //   return htmlContent?.substring(0, maxLength * 1.5) + "...";
-  // };
-
   const hasShowMore = useMemo(
     () => htmlContent && htmlContent.length > 120,
     [htmlContent, showMore],
@@ -112,12 +138,39 @@ export function CompactNoteComponent({
             )}
           </div>
         </div>
-        <div className="text-xs text-muted-foreground">
-          {new Date(note.date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
+        <div className="flex items-center gap-2">
+          <div className="text-xs text-muted-foreground">
+            {new Date(note.date).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 hover:bg-accent"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  const commentIdWithCDash = `c-${note.id.replace("c-", "")}`;
+                  window.open(
+                    `https://substack.com/@${note.handle}/note/${commentIdWithCDash}`,
+                    "_blank",
+                  );
+                }}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                View on Substack
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -141,7 +194,7 @@ export function CompactNoteComponent({
       </div>
 
       {/* Stats */}
-      <div className="flex items-center justify-between text-xs">
+      <div className="flex items-center justify-between text-xs mt-6">
         <div className="flex items-center gap-3">
           {/* Reactions */}
           <span className="text-muted-foreground flex items-center">
@@ -166,49 +219,32 @@ export function CompactNoteComponent({
         <div className="flex items-center gap-3">
           {/* Clicks */}
           {note.totalClicks > 0 && (
-            <span className="text-muted-foreground flex items-center">
-              <MousePointer className="h-3 w-3 mr-1" />
-              {formatNumber(note.totalClicks)}
-            </span>
-          )}
-
-          {/* Follows */}
-          {note.totalFollows > 0 && (
-            <span className="text-muted-foreground flex items-center">
-              <UserPlus className="h-3 w-3 mr-1" />
-              {formatNumber(note.totalFollows)}
-            </span>
+            <TooltipStat tooltip="Clicks">
+              <span className="text-muted-foreground flex items-center">
+                <MousePointer className="h-3 w-3 mr-1" />
+                {formatNumber(note.totalClicks)}
+              </span>
+            </TooltipStat>
           )}
 
           {/* Subscriptions */}
-          {(note.totalPaidSubscriptions > 0 ||
-            note.totalFreeSubscriptions > 0) && (
-            <span className="text-muted-foreground flex items-center">
-              <Users className="h-3 w-3 mr-1" />
-              {formatNumber(
-                note.totalPaidSubscriptions + note.totalFreeSubscriptions,
-              )}
-            </span>
+          {note.totalFreeSubscriptions > 0 && (
+            <TooltipStat tooltip="Free subscriptions">
+              <span className="text-muted-foreground flex items-center">
+                <Users className="h-3 w-3 mr-1" />
+                {formatNumber(note.totalFreeSubscriptions)}
+              </span>
+            </TooltipStat>
+          )}
+          {note.totalPaidSubscriptions > 0 && (
+            <TooltipStat tooltip="Paid subscriptions">
+              <span className="text-muted-foreground flex items-center">
+                <BadgeDollarSign className="h-3 w-3 mr-1 text-yellow-500 fill-yellow-500" />
+                {formatNumber(note.totalPaidSubscriptions)}
+              </span>
+            </TooltipStat>
           )}
         </div>
-      </div>
-
-      {/* External Link */}
-      <div className="flex justify-end mt-2">
-        <Button
-          onClick={() => {
-            const commentIdWithCDash = `c-${note.id.replace("c-", "")}`;
-            window.open(
-              `https://substack.com/@${note.handle}/note/${commentIdWithCDash}`,
-              "_blank",
-            );
-          }}
-          variant="link"
-          size="sm"
-          className="text-xs text-muted-foreground hover:text-foreground p-0 h-auto"
-        >
-          View on Substack <ExternalLink className="w-3 h-3 ml-1" />
-        </Button>
       </div>
     </div>
   );

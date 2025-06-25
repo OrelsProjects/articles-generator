@@ -130,7 +130,6 @@ export function AnalyzePublicationDialog({
         url: validUrl || url,
       });
       const data = response.data;
-      debugger;
       setBylines(data || []);
       setOpenAuthorSelectionDialog(true);
     } catch (error) {
@@ -224,9 +223,10 @@ export function AnalyzePublicationDialog({
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
+            <div className="flex flex-col gap-1">
             <Input
               id="substackUrl"
-              placeholder="your-blog.substack.com"
+              placeholder="your-newsletter.substack.com"
               className="col-span-4"
               value={url}
               onChange={e => setUrl(e.target.value)}
@@ -239,6 +239,10 @@ export function AnalyzePublicationDialog({
                 }
               }}
             />
+              <p className="text-xs text-muted-foreground">
+                Can also be custom domain
+              </p>
+            </div>
 
             {error?.value && (
               <div className="flex flex-col items-start">

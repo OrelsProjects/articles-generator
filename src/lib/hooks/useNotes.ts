@@ -107,42 +107,40 @@ export const useNotes = () => {
 
   const fetchNotes = async (limit?: number, loadMore = false) => {
     if (loadingNotesRef.current) return;
-      try {
-        if (userNotes.length > 0) {
-          EventTracker.track("notes_user_load_more");
-        }
-        loadingNotesRef.current = true;
-        dispatch(setLoadingNotes(true));
-        const queryParams = new URLSearchParams();
-        if (limit) queryParams.set("limit", limit.toString());
-        if (loadMore && userNotesCursor)
-          queryParams.set("cursor", userNotesCursor);
+    try {
+      if (userNotes.length > 0) {
+        EventTracker.track("notes_user_load_more");
+      }
+      loadingNotesRef.current = true;
+      dispatch(setLoadingNotes(true));
+      const queryParams = new URLSearchParams();
+      if (limit) queryParams.set("limit", limit.toString());
+      if (loadMore && userNotesCursor)
+        queryParams.set("cursor", userNotesCursor);
 
-        const response = await axiosInstance.get(
-          `/api/user/notes?${queryParams.toString()}`,
-        );
-        dispatch(setError(null));
-        if (loadMore) {
-          dispatch(
-            addNotes({
-              items: response.data.items,
-              nextCursor: response.data.nextCursor,
-            }),
-          );
-        } else {
-          dispatch(setNotes(response.data));
-        }
-      } catch (error) {
+      const response = await axiosInstance.get(
+        `/api/user/notes?${queryParams.toString()}`,
+      );
+      dispatch(setError(null));
+      if (loadMore) {
         dispatch(
-          setError(
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-          ),
+          addNotes({
+            items: response.data.items,
+            nextCursor: response.data.nextCursor,
+          }),
         );
-        Logger.error("Error fetching notes:", { error: String(error) });
-      } finally {
-        dispatch(setLoadingNotes(false));
+      } else {
+        dispatch(setNotes(response.data));
+      }
+    } catch (error) {
+      dispatch(
+        setError(
+          error instanceof Error ? error.message : "An unknown error occurred",
+        ),
+      );
+      Logger.error("Error fetching notes:", { error: String(error) });
+    } finally {
+      dispatch(setLoadingNotes(false));
       if (firstLoadingNotes) {
         dispatch(setFirstLoadingNotes(false));
       }
@@ -224,7 +222,7 @@ export const useNotes = () => {
           addNotes({
             items: body,
             nextCursor: null,
-            options: { toStart: true },
+            options: { toStart: true, notification: true },
           }),
         );
       } catch (error) {
@@ -521,7 +519,15 @@ export const useNotes = () => {
       const response = await axiosInstance.post<NoteDraft>("/api/note", {
         ...draft,
       });
-      dispatch(addNotes({ items: [response.data], nextCursor: null }));
+      dispatch(
+        addNotes({
+          items: [response.data],
+          nextCursor: null,
+          options: {
+            notification: true,
+          },
+        }),
+      );
       selectNote(response.data);
     } catch (error: any) {
       Logger.error("Error creating draft note:", error);

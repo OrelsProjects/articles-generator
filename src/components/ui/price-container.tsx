@@ -20,35 +20,47 @@ export default function PriceContainer({
   className,
   hasCoupon = false,
 }: PriceContainerProps) {
+  // print all props
+  console.log("props", {
+    originalPrice,
+    discountPrice,
+    isPrimary,
+    suffix,
+    annualSavings,
+    className,
+    hasCoupon,
+  });
   const formattedOriginalPrice = `$${originalPrice.toFixed(2)}`;
-  const formattedDiscountPrice = discountPrice
-    ? `$${discountPrice.toFixed(2)}`
-    : null;
+  const formattedDiscountPrice =
+    discountPrice !== undefined ? `$${discountPrice.toFixed(2)}` : undefined;
 
   return (
     <div className={cn("font-sans", className)}>
       <div>
         <span
           className={cn("text-4xl font-medium tracking-tight", {
-            "text-gray-300 dark:text-gray-300/50 line-through": discountPrice,
+            "text-gray-300 dark:text-gray-300/50 line-through":
+              discountPrice !== undefined,
           })}
         >
           {formattedOriginalPrice}
         </span>
       </div>
 
-      {discountPrice && (
+      {discountPrice !== undefined && (
         <div className="flex">
           <div className="mt-7 relative">
             <span className="text-4xl font-medium tracking-tight text-foreground">
-              {formattedDiscountPrice || formattedOriginalPrice}
+              {formattedDiscountPrice !== undefined
+                ? formattedDiscountPrice
+                : formattedOriginalPrice}
             </span>
             <span className="text-sm/6 font-semibold text-muted-foreground">
               {suffix}
             </span>
             <PriceContainerSVG
               isPrimary={isPrimary}
-              disabled={!discountPrice}
+              disabled={formattedDiscountPrice === undefined}
             />
           </div>
         </div>

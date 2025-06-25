@@ -179,7 +179,7 @@ export function GenerateNotesDialog({
                 )}
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 py-4 space-y-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm">Based on</span>
                 <DropdownMenu>
@@ -213,13 +213,13 @@ export function GenerateNotesDialog({
               {selectedSource === "description" ? (
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="topic" className="col-span-4">
-                    Topic
+                    Topic <span className="text-xs text-muted-foreground">(optional)</span>
                   </Label>
                   <div className="col-span-4 relative">
                     <AutoAdjustTextArea
                       id="topic"
-                      placeholder="Describe the topic you want AI to write about (optional)."
-                      className="w-full"
+                      placeholder="Describe the topic you want AI to write about."
+                      className="w-full focus-visible:ring-muted-foreground/50"
                       value={topic}
                       maxRows={8}
                       onChange={e => setTopic(e.target.value)}

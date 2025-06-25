@@ -144,7 +144,7 @@ export default function StatusBoardPage() {
   // Queue page state
   const [activeTabCache, setActiveTabCache] = useLocalStorage(
     "queue_active_tab",
-    "drafts",
+    "scheduled",
   );
   const [activeDays, setActiveDays] = useState<Date[]>([]);
   const [activeTab, setActiveTab] = useState("scheduled");
@@ -159,6 +159,7 @@ export default function StatusBoardPage() {
     nextPage,
     resetPage,
     fetchQueue,
+    loadingFetchingSchedules,
   } = useQueue();
   const {
     selectNote,
@@ -169,7 +170,7 @@ export default function StatusBoardPage() {
     loadingNotes,
     firstLoadingNotes,
   } = useNotes();
-  const { userSchedules } = useAppSelector(state => state.notes);
+  const { userSchedules, hasNewNotes } = useAppSelector(state => state.notes);
   const { updateShowCreateScheduleDialog } = useUi();
 
   // Refs
@@ -180,8 +181,6 @@ export default function StatusBoardPage() {
   // Navigation
   const router = useCustomRouter();
   const pathname = usePathname();
-  const generateParam = searchParams.get("generate");
-  const postsParam = searchParams.get("posts");
   const viewFromSearchParams = searchParams.get("view");
 
   useEffect(() => {
@@ -199,6 +198,15 @@ export default function StatusBoardPage() {
     fetchNotes();
     fetchQueue();
   }, []);
+
+  useEffect(() => {
+    debugger;
+    if (activeTab === "drafts") {
+      if (hasNewNotes) {
+        dispatch(resetNotification());
+      }
+    }
+  }, [hasNewNotes, activeTab]);
 
   // Generate an array of dates based on scheduled notes and minimum 28 days
   useEffect(() => {
@@ -471,7 +479,6 @@ export default function StatusBoardPage() {
     </div>
   );
 
-
   const Loading = () => {
     return viewMode === "kanban" ? <KanbanLoading /> : <QueueLoading />;
   };
@@ -603,9 +610,23 @@ export default function StatusBoardPage() {
                         <TabsTrigger
                           value="drafts"
                           className={cn(
-                            "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
+                            "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all relative",
                           )}
                         >
+                          {/* If has new notes, show a circular badge like a notification 
+                          animation should be smooth, and show a shadow for 2.3 seconds
+                          */}
+                          <AnimatePresence>
+                            {hasNewNotes && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 1 }}
+                                transition={{ duration: 0.12 }}
+                                className="absolute top-3 right-3 w-2 h-2 bg-red-600 dark:bg-red-500 rounded-full shadow-red-600 dark:shadow-red-500 shadow-md"
+                              />
+                            )}
+                          </AnimatePresence>
                           Drafts ({counters.draftCount})
                         </TabsTrigger>
                         <TabsTrigger
@@ -636,6 +657,7 @@ export default function StatusBoardPage() {
                           onEditQueue={() =>
                             updateShowCreateScheduleDialog(true)
                           }
+                          loading={loadingFetchingSchedules}
                           groupedNotes={groupedScheduledNotes()}
                           groupedSchedules={groupedSchedules()}
                           onSelectNote={handleSelectNote}

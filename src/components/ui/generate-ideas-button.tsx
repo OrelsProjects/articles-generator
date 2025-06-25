@@ -45,9 +45,6 @@ export default function GenerateIdeasButton({
   const canGenerateIdeas = hasEnoughCredits("ideaGeneration");
 
   const text = useMemo(() => {
-    if (!hasPublication) {
-      return "Connect your Substack to generate ideas";
-    }
     return didExceedLimit ? "Daily limit reached" : "Generate ideas";
   }, [didExceedLimit, hasPublication]);
 

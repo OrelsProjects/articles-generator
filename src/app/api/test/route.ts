@@ -23,6 +23,93 @@ import { getStripeInstance, shouldApplyRetentionCoupon } from "@/lib/stripe";
 import { bigint } from "zod";
 import { getBylineByUserId } from "@/lib/dal/byline";
 import { fetchAuthor } from "@/lib/utils/lambda";
+
+// dumpSlackEmails.ts
+// Run with:  node --env-file=.env dumpSlackEmails.ts  (Node 20+ has native fetch)
+// .env should contain:
+//   SLACK_TOKEN=xoxc-xxxxxxxxxxxxxxxxxxxxxxxx
+//   SLACK_COOKIES=utm=%7B%7D; b=...; d=....   (everything after “cookie:” in your own request)
+
+import fs from "node:fs/promises";
+
+const WORKSPACE_ID = "T05NYCU89K4"; // leave as-is unless you’re on another org
+const CHANNEL_ID = "C05NVFBU077"; // change to the channel you care about
+const TOKEN =
+  "xoxc-5780436281650-8876189816469-9086462224421-3e60fa6572b19255cab314dbd3588259833fe3f4528d57bceec75b324289c849";
+const COOKIES = `utm=%7B%7D; b=.8d81e809e676fffcc00f09c1bccc0fdf; shown_ssb_redirect_page=1; ssb_instance_id=32a73835-a4b9-449f-83ba-b1c75031494c; cjConsent=MHxOfDB8Tnww; cjUser=88cd4483-5f0d-4af3-b71b-f4e0cfddf08b; _cs_c=0; _clck=1g14hwb%7C2%7Cfw4%7C0%7C1968; _ga=GA1.1.1273036061.1747934258; d-s=1750661345; x=8d81e809e676fffcc00f09c1bccc0fdf.1750661345; PageCount=2; _cs_cvars=%7B%7D; _cs_id=2f0e6ec6-da7e-ae70-da24-0d93e31204a2.1747934257.3.1750661999.1750661999.1.1782098257132.1.x; _ga_QTJQME5M5D=GS2.1.s1750661999$o3$g0$t1750661999$j60$l0$h0; _gcl_au=1.1.994749767.1747934258.2115733602.1750662001.1750662007; ec=enQtOTA4MjAzNjU1MjE2Ni1kYTNkODVkMTU5NzFlZjljMzQ5YWMyNGJhZTE2NDg5ODU3Y2M2MjZhNWY5MDJkYTI5NjZlN2QzNWExODBlMmM5; lc=1750662031; OptanonConsent=isGpcEnabled=0&datestamp=Mon+Jun+23+2025+10%3A00%3A33+GMT%2B0300+(Israel+Daylight+Time)&version=202402.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=b9cb107e-e729-4157-a682-6e0873fed3e2&interactionCount=1&isAnonUser=1&landingPath=NotLandingPage&groups=1%3A1%2C3%3A1%2C2%3A1%2C4%3A1&AwaitingReconsent=false; shown_download_ssb_modal=1; show_download_ssb_banner=1; no_download_ssb_banner=1; d=xoxd-hosU2q0PLxk%2FP%2BbS8Kigs62Lc%2B%2FpsdXjgvteEa4VfKBq93MEkYKzgQM9mZEoLaN%2FLcKYTtpMPQdjgCZnMzep2uSsfq4AUi8RisqrYQmny4UloZjrytU1aFw8aciQ1bzuneosLUjXERf73NgKqJS474LQB4IrDOJo%2BOJvodUYH7Alt92IF%2BRd%2BRBJ%2FFgdfeBhsLAxcXF2Q0ZBPNF2tfSNwiIFo4dw; tz=180; web_cache_last_updated2363ab2545063fe866c33a474aae911b=1750662046822; _cs_s=1.5.0.9.1750663859959`;
+
+type SlackUser = {
+  id: string;
+  name: string;
+  profile: { email?: string; real_name?: string };
+};
+
+async function fetchBatch(marker: string | null): Promise<{
+  members: SlackUser[];
+  nextMarker: string | null;
+}> {
+  const body: any = {
+    token: TOKEN,
+    include_profile_only_users: true,
+    count: 50,
+    channels: [CHANNEL_ID],
+    filter: "people",
+    index: "users_by_display_name",
+    locale: "en-US",
+    present_first: false,
+    fuzz: 1,
+  };
+  if (marker) body.marker = marker;
+
+  const res = await fetch(
+    `https://edgeapi.slack.com/cache/${WORKSPACE_ID}/users/list?_x_app_name=client&fp=64&_x_num_retries=0`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "text/plain;charset=UTF-8",
+        cookie: COOKIES,
+        accept: "*/*",
+      },
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error(`Slack puked ${res.status} ${res.statusText}`);
+  }
+
+  const json = await res.json();
+  return {
+    members: (json.results || []) as SlackUser[],
+    nextMarker: json.next_marker ?? null,
+  };
+}
+
+async function dumpSlackEmails() {
+  let marker: string | null = null;
+  const everyone: SlackUser[] = [];
+  console.log("Starting the roundup…");
+
+  do {
+    const { members, nextMarker } = await fetchBatch(marker);
+    console.log(`Fetched ${members.length} users`);
+    everyone.push(...members);
+    marker = nextMarker;
+  } while (marker);
+
+  // Strip to what you want
+  const emails = everyone
+    // .filter(u => u.profile?.email)
+    // .map(u => ({
+    //   id: u.id,
+    //   name: u.profile.real_name || u.name,
+    //   email: u.profile.email!,
+    // }));
+
+  await fs.writeFile("emails.json", JSON.stringify(emails, null, 2));
+  console.log(`Saved ${emails.length} emails to emails.json`);
+}
+
 // async function processUser(userId: string) {
 //   try {
 //     const userMetadata = await prisma.userMetadata.findUnique({
@@ -325,6 +412,8 @@ export async function GET(request: NextRequest) {
   // //     template: template1.body,
   // //   });
   // // // }
+
+  await dumpSlackEmails();
 
   return NextResponse.json({ success: true });
 

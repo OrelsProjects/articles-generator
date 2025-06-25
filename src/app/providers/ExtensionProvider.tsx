@@ -13,9 +13,13 @@ import { useExtension } from "@/lib/hooks/useExtension";
 import NoSubstackCookiesDialog from "@/components/notes/no-substack-cookies-dialog";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { Logger } from "@/logger";
-import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog copy";
+import { ExtensionInstallDialog } from "@/components/notes/extension-install-dialog";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
+import { usePathname } from "next/navigation";
 
 export function ExtensionProvider() {
+  const router = useCustomRouter();
+  const pathname = usePathname();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.auth);
   const [, setExtensionAvailable] = useLocalStorage<{
@@ -33,13 +37,14 @@ export function ExtensionProvider() {
     showNoSubstackCookiesDialogState,
     setShowNoSubstackCookiesDialogState,
   ] = useState(showNoSubstackCookiesDialog);
-  const [
-    showExtensionDisabledDialogState,
-    setShowExtensionDisabledDialogState,
-  ] = useState(showExtensionDisabledDialog);
+  const [, setShowExtensionDisabledDialogState] = useState(
+    showExtensionDisabledDialog,
+  );
   const [loading, setLoading] = useState(false);
   const { hasExtension, setUserSubstackCookies, verifyExtension } =
     useExtension();
+
+  const { selectedNote } = useAppSelector(state => state.notes);
 
   useEffect(() => {
     verifyExtension().then(extensionDetails => {
@@ -85,7 +90,7 @@ export function ExtensionProvider() {
 
   const handleRefresh = async () => {
     setLoading(true);
-    window.location.reload();
+    debugger;
     try {
       const has = await hasExtension();
       if (!has) {
@@ -95,9 +100,15 @@ export function ExtensionProvider() {
     } catch (error) {
       console.error(error);
     } finally {
+      let url = pathname;
+      const paramsToAdd: Record<string, string> = {};
+      if (selectedNote?.id) {
+        paramsToAdd.noteId = selectedNote.id;
+      }
+      router.push(url, { paramsToAdd, forceRefresh: true });
       setTimeout(() => {
         setLoading(false);
-      }, 500);
+      }, 1500);
     }
   };
 
@@ -109,6 +120,7 @@ export function ExtensionProvider() {
         onInstall={() => {}}
         onRefresh={handleRefresh}
         loading={loading}
+        selectedNoteId={selectedNote?.id}
       />
       <NoSubstackCookiesDialog
         open={showNoSubstackCookiesDialogState}

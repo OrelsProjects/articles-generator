@@ -1,10 +1,11 @@
 "use client";
 
-import { redirect } from "next/navigation";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { useEffect } from "react";
 
 export default function StatusBoardPage() {
+  const router = useCustomRouter();
   useEffect(() => {
-    redirect("/notes?view=kanban");
+    router.redirect("/notes?view=kanban");
   });
 }

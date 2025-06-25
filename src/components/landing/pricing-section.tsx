@@ -175,7 +175,12 @@ export default function Pricing({
     setLoading(true);
     try {
       if (onboarding) {
-        await goToCheckout(billingCycle, plan, appliedCoupon || undefined);
+        await goToCheckout(
+          billingCycle,
+          plan,
+          appliedCoupon || undefined,
+          () => setLoading(false),
+        );
       } else {
         if (!user) {
           let url = `/login?plan=${plan}&interval=${billingCycle}`;
@@ -231,6 +236,7 @@ export default function Pricing({
 
       setCouponDiscounts(nonNullDiscounts);
       setAppliedCoupon(code.toUpperCase());
+      debugger;
       toast.success("Coupon applied successfully!");
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Invalid coupon code");
@@ -508,10 +514,11 @@ export default function Pricing({
                           (plan as any).originalPrice || plan.monthlyPrice
                         }
                         discountPrice={
-                          (plan as any).discountedPrice ||
-                          (billingCycle === "month"
-                            ? undefined
-                            : plan.yearlyPlanPrice)
+                          (plan as any).discountedPrice !== undefined
+                            ? (plan as any).discountedPrice
+                            : billingCycle === "month"
+                              ? undefined
+                              : plan.yearlyPlanPrice
                         }
                         isPrimary={plan.popular}
                         annualSavings={

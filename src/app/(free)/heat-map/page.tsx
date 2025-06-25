@@ -1,11 +1,12 @@
 "use client";
 
-import { redirect } from "next/navigation";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { useEffect } from "react";
 
 export default function OldHeatmap() {
+  const router = useCustomRouter();
   useEffect(() => {
-    redirect("/heatmap");
+    router.redirect("/heatmap");
   }, []);
 
   return null;

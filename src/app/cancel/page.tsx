@@ -1,6 +1,10 @@
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { rootPath } from "@/types/navbar";
-import { redirect } from "next/navigation";
+import { useEffect } from "react";
 
 export default function CancelPage() {
-  redirect(rootPath);
+  const router = useCustomRouter();
+  useEffect(() => {
+    router.redirect(rootPath);
+  }, []);
 }

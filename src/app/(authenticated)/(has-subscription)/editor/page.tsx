@@ -4,7 +4,7 @@ import { IdeasPanel } from "@/components/ui/text-editor/ideas-panel";
 import TextEditor from "@/components/ui/text-editor/text-editor";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { Idea } from "@/types/idea";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -44,14 +44,20 @@ const MobilesIdeasPanel = () => {
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:w-[400px] p-0">
         <SheetTitle className="sr-only">Ideas</SheetTitle>
-        <IdeasPanel onSelectIdea={handleSelectIdea} onClose={() => setIsOpen(false)} />
+        <IdeasPanel
+          onSelectIdea={handleSelectIdea}
+          onClose={() => setIsOpen(false)}
+        />
       </SheetContent>
     </Sheet>
   );
 };
 
 export default function IdeasPage() {
-  const [draftStatus, setDraftStatus] = useState<{ error: boolean, saving: boolean }>({ error: false, saving: false });
+  const [draftStatus, setDraftStatus] = useState<{
+    error: boolean;
+    saving: boolean;
+  }>({ error: false, saving: false });
   const { state } = useAppSelector(selectUi);
   const { publications, selectedIdea } = useAppSelector(
     state => state.publications,
@@ -65,7 +71,6 @@ export default function IdeasPage() {
   return (
     <div className="w-full max-w-screen h-screen flex flex-col items-center overflow-clip">
       <GenerateIdeasDialog />
-      <AnalyzePublicationDialog />
       <Header draftStatus={draftStatus} />
       <div className="h-full w-full flex flex-row md:grid md:grid-cols-8 2xl:grid-cols-7 relative">
         {/* Main editor area - expands when in writing mode */}
@@ -77,7 +82,10 @@ export default function IdeasPage() {
               : "md:col-span-6 2xl:col-span-5",
           )}
         >
-          <TextEditor publication={publications[0]} onDraftStatusChange={handleDraftStatusChange} />
+          <TextEditor
+            publication={publications[0]}
+            onDraftStatusChange={handleDraftStatusChange}
+          />
         </div>
 
         {/* Desktop Ideas Panel - collapses when in writing mode */}

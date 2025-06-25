@@ -27,6 +27,7 @@ export function useQueue() {
   const { bestTimeToPublish, loadingFetchBestTimeToPublish } = useAppSelector(
     state => state.statistics,
   );
+
   const [loading, setLoading] = useState(false);
 
   const [page, setPage] = useState(1);
@@ -71,7 +72,9 @@ export function useQueue() {
 
   const initQueue = async () => {
     try {
-      const response = await axiosInstance.post<UserSchedule[]>("/api/user/queue/init");
+      const response = await axiosInstance.post<UserSchedule[]>(
+        "/api/user/queue/init",
+      );
       dispatch(setUserSchedule(response.data));
     } catch (error) {
       Logger.error(String(error));
@@ -144,7 +147,8 @@ export function useQueue() {
     }
     dispatch(setLoadingFetchingSchedules(true));
     try {
-      const response = await axiosInstance.get<UserSchedule[]>("/api/user/queue");
+      const response =
+        await axiosInstance.get<UserSchedule[]>("/api/user/queue");
       dispatch(setUserSchedule(response.data));
     } catch (error) {
       Logger.error(String(error));
@@ -303,7 +307,6 @@ export function useQueue() {
     if (bestTimeToPublish.length > 0) {
       return;
     }
-    ;
     loadingBestNotesRef.current = true;
     dispatch(setLoadingFetchBestTimeToPublish(true));
     try {
@@ -375,5 +378,6 @@ export function useQueue() {
     resetPage,
     counters,
     hasQueue,
+    loadingFetchingSchedules,
   };
 }

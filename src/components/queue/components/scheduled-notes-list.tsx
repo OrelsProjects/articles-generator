@@ -19,7 +19,7 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { CustomDragOverlay } from "./custom-drag-overlay";
 import { useDragOverlay } from "../hooks/useDragOverlay";
 import { Logger } from "@/logger";
-import { Calendar, Pencil } from "lucide-react";
+import { Calendar, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -31,6 +31,7 @@ interface ScheduledNotesListProps {
   onEditQueue: () => void;
   lastNoteRef?: RefObject<HTMLDivElement>;
   lastNoteId?: string;
+  loading?: boolean;
 }
 
 export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
@@ -41,6 +42,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   lastNoteRef,
   lastNoteId,
   onEditQueue,
+  loading,
 }) => {
   const { updateNoteStatus, createDraftNote, rescheduleNote } = useNotes();
 
@@ -255,6 +257,14 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   }, [groupedNotes]);
 
   const hasQueue = Object.keys(filteredGroupedSchedules).length > 0;
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
+        <Loader2 className="w-4 h-4 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!hasAnyNotesScheduled && !hasQueue) {
     return (

@@ -1,8 +1,7 @@
 "use client";
 
-import Loading from "@/components/ui/loading";
 import usePayments from "@/lib/hooks/usePayments";
-import { redirect } from "next/navigation";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { useEffect, useState } from "react";
 
 export default function SubscriptionProvider({
@@ -14,16 +13,14 @@ export default function SubscriptionProvider({
   const [hasSubscription, setHasSubscription] = useState<
     "pending" | "success" | "error"
   >("pending");
-  const [loading, setLoading] = useState(true);
 
+  const router = useCustomRouter();
   const handleVerifySubscription = async () => {
     try {
       await verifySubscription();
       setHasSubscription("success");
     } catch (error) {
       setHasSubscription("error");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -31,17 +28,9 @@ export default function SubscriptionProvider({
     handleVerifySubscription();
   }, []);
 
-  // if (loading) {
-  //   return (
-  //     <div className="w-full h-screen flex items-center justify-center">
-  //       <Loading spinnerClassName="h-16 w-16" />
-  //     </div>
-  //   );
-  // }
-
   if (hasSubscription === "error") {
-    redirect("/pricing?onboarding=true");
+    router.redirect("/pricing?onboarding=true");
   }
 
-  return <>{children}</>;
+  return children;
 }

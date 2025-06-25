@@ -167,8 +167,8 @@ export default function InspirationNoteComponent({
         target="_blank"
       >
         <div className="flex space-x-3">
-          <span className="text-xs text-muted-foreground flex items-center text-red-500">
-            <Heart className="h-4 w-4 mr-1 text-red-500 fill-red-500" />
+          <span className="text-xs text-muted-foreground flex items-center">
+            <Heart className="h-4 w-4 mr-1" />
             {noteReactions.reactionCount}
           </span>
           <span className="text-xs text-muted-foreground flex items-center">

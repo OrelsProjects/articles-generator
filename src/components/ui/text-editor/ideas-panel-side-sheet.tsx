@@ -33,13 +33,6 @@ export const IdeasSideSheet = ({
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (!features.ideasPress) {
-      setIsOpen(true);
-      setFeatures({ ...features, ideasPress: true });
-    }
-  }, [features.ideasPress]);
-
-  useEffect(() => {
     if (showIdeasPanel) {
       setIsOpen(true);
       dispatch(setShowIdeasPanel(false));

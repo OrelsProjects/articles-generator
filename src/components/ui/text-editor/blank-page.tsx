@@ -7,10 +7,7 @@ import { Loader2 } from "lucide-react";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
-export interface BlankPageProps {
-  hasPublication: boolean;
-}
-export default function BlankPage({ hasPublication }: BlankPageProps) {
+export default function BlankPage() {
   const { createNewIdea } = useIdea();
   const { ideas } = useAppSelector(state => state.publications);
   const [loadingCreateNewIdea, setLoadingCreateNewIdea] = useState(false);
@@ -35,56 +32,41 @@ export default function BlankPage({ hasPublication }: BlankPageProps) {
             : "Seems like you need a fresh start."}
         </h2>
         <div className="text-lg max-w-md text-center mb-1">
-          {hasPublication ? (
-            <div className="flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center justify-center">
+            <p
+              className={cn("mb-2", {
+                hidden: hasIdeas,
+              })}
+            >
+              Let&apos;s start with generating your first idea.
+            </p>
+            <GenerateIdeasButton />
+            <div
+              className={cn("flex flex-col items-center justify-center mt-8", {
+                "mt-2": hasIdeas,
+              })}
+            >
               <p
                 className={cn("mb-2", {
                   hidden: hasIdeas,
                 })}
               >
-                Let&apos;s start with generating your first idea.
+                Or create a new idea from scratch.
               </p>
-              <GenerateIdeasButton />
-              <div
-                className={cn(
-                  "flex flex-col items-center justify-center mt-8",
-                  {
-                    "mt-2": hasIdeas,
-                  },
-                )}
+              <Button
+                variant={hasIdeas ? "ghost" : "outline"}
+                onClick={handleCreateNewIdea}
+                disabled={loadingCreateNewIdea}
               >
-                <p
-                  className={cn("mb-2", {
-                    hidden: hasIdeas,
-                  })}
-                >
-                  Or create a new idea from scratch and connect your Substack
-                  later.
-                </p>
-                <Button
-                  variant={hasIdeas ? "ghost" : "outline"}
-                  onClick={handleCreateNewIdea}
-                  disabled={loadingCreateNewIdea}
-                >
-                  {loadingCreateNewIdea ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Plus className="w-4 h-4 mr-2" />
-                  )}
-                  Create a draft
-                </Button>
-              </div>
+                {loadingCreateNewIdea ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4 mr-2" />
+                )}
+                Create a draft
+              </Button>
             </div>
-          ) : (
-            <span>
-              Connect your Substack account above or create a new draft.
-              <br />
-              <span className="text-muted-foreground">
-                (You can always connect your Substack later through the
-                settings)
-              </span>
-            </span>
-          )}
+          </div>
         </div>
       </div>
     </div>

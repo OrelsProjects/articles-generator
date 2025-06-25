@@ -30,8 +30,8 @@ export default function QueueDiscrepancyProvider() {
   const [shouldReschedule, setShouldReschedule] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [notesRescheduled, setNotesRescheduled] = useState(0);
-  const [timesTriedToFix, setTimesTriedToFix] = useState(0);
+  const [, setNotesRescheduled] = useState(0);
+  const [, setTimesTriedToFix] = useState(0);
 
   const [isCheckingDiscrepancies, setIsCheckingDiscrepancies] = useState(false);
   const [showDiscrepancyBar, setShowDiscrepancyBar] = useState(false);
@@ -76,28 +76,37 @@ export default function QueueDiscrepancyProvider() {
 
   useEffect(() => {
     if (scheduledNotes.length === 0) return;
-
-    getSchedulesFromExtension()
-      .then(schedules => {
-        checkForDiscrepancies(schedules);
-      })
-      .catch(error => {
-        checkForDiscrepancies({
-          schedules: [],
-          alarms: [],
+    // Timeout, to let the system settle
+    const timeout = setTimeout(() => {
+      getSchedulesFromExtension()
+        .then(schedules => {
+          checkForDiscrepancies(schedules);
+        })
+        .catch(error => {
+          checkForDiscrepancies({
+            schedules: [],
+            alarms: [],
+          });
         });
-      });
+    }, 2000);
+
+    return () => clearTimeout(timeout);
   }, [scheduledNotes]);
 
   /**
    * Checks for discrepancies between scheduled notes and extension schedules/alarms
    * @param schedulesFromExtension The schedules from the extension
    */
-  const checkForDiscrepancies = (schedulesFromExtension: GetSchedulesResponse) => {
+  const checkForDiscrepancies = (
+    schedulesFromExtension: GetSchedulesResponse,
+  ) => {
     if (!scheduledNotes.length) {
       return;
     }
-    if (!schedulesFromExtension.schedules.length || !schedulesFromExtension.alarms.length) {
+    if (
+      !schedulesFromExtension.schedules.length ||
+      !schedulesFromExtension.alarms.length
+    ) {
       // set discrapancy to to all scheduled notes
       dispatch(
         setSchedulesDiscrepancies(
@@ -127,9 +136,6 @@ export default function QueueDiscrepancyProvider() {
       // Check for schedules/alarms that don't have a corresponding note
       schedulesFromExtension.schedules.forEach(scheduleEntry => {
         const scheduleTime = scheduleEntry.timestamp;
-
-
-        
 
         // Find a note with matching timestamp
         const matchingNote = scheduledNotes.find(

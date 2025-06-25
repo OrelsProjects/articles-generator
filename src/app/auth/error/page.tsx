@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { redirect, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,12 +15,14 @@ import { XCircle, ArrowLeft } from "lucide-react";
 import { EventTracker } from "@/eventTracker";
 import { useSession } from "next-auth/react";
 import { rootPath } from "@/types/navbar";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
 export default function AuthErrorPage() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
-
+  const router = useCustomRouter();
+  
   useEffect(() => {
     EventTracker.track("auth_error_page_view", { error });
   }, [error]);
@@ -43,7 +45,7 @@ export default function AuthErrorPage() {
   };
 
   if (session) {
-    redirect(rootPath);
+    router.redirect(rootPath);
   }
 
   return (

@@ -60,6 +60,7 @@ export default function usePayments() {
     interval: "month" | "year",
     plan: string,
     couponCode?: string,
+    beforeRouting?: () => void,
   ) => {
     try {
       let affiliateId = null;
@@ -83,6 +84,7 @@ export default function usePayments() {
       Logger.info("response", { response: response.data });
       const stripe = await stripePromise;
       Logger.info("stripe", { stripe });
+      beforeRouting?.();
       const { error } = await stripe!.redirectToCheckout({
         sessionId: response.data.sessionId,
       });

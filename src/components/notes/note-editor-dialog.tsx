@@ -498,8 +498,13 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
       !isInspiration &&
       !isAiGenerated
     );
-  }, [loadingEditNote, loadingScheduleNote, isSendingNote, isInspiration, isAiGenerated]);
-
+  }, [
+    loadingEditNote,
+    loadingScheduleNote,
+    isSendingNote,
+    isInspiration,
+    isAiGenerated,
+  ]);
 
   return (
     <>

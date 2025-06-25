@@ -8,6 +8,7 @@ export interface CustomRouterOptions {
   paramsToRemove?: string[];
   paramsToAdd?: Record<string, string>;
   newTab?: boolean;
+  forceRefresh?: boolean;
 }
 
 export function useCustomRouter() {
@@ -20,7 +21,6 @@ export function useCustomRouter() {
     routerOptions: CustomRouterOptions = { preserveQuery: true },
     options?: NavigateOptions,
   ) => {
-    
     // If relative URL, prepend the current origin
     const baseUrl = href.startsWith("http")
       ? href
@@ -51,8 +51,6 @@ export function useCustomRouter() {
 
     let urlString = url.toString();
 
-    console.log("navigating to: ", urlString);
-
     // If the href argument was relative, revert it back to relative for router.push
     if (!href.startsWith("http")) {
       urlString = url.pathname + url.search;
@@ -60,7 +58,14 @@ export function useCustomRouter() {
     if (routerOptions?.newTab) {
       window.open(urlString, "_blank");
     } else {
-      router.push(urlString, options);
+      if (routerOptions?.forceRefresh) {
+        window.location.href = urlString;
+      } else {
+        router.push(urlString, {
+          ...options,
+          scroll: !routerOptions?.forceRefresh,
+        });
+      }
     }
   };
 
@@ -70,5 +75,13 @@ export function useCustomRouter() {
     });
   };
 
-  return { ...router, push, removeParams };
+  const redirect = (
+    href: string,
+    routerOptions?: CustomRouterOptions,
+    options?: NavigateOptions,
+  ) => {
+    push(href, routerOptions, options);
+  };
+
+  return { ...router, push, removeParams, redirect };
 }
