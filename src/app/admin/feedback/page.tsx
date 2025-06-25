@@ -250,7 +250,7 @@ export default function AdminFeedbackPage() {
       {/* Feedback Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredFeedback.map(item => (
-          <Card key={item.id} className="hover:shadow-md transition-shadow">
+          <Card key={item.id} className={cn("hover:shadow-md transition-shadow", item.status === FeedbackStatus.resolved && "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 opacity-50")}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <CardTitle className="text-lg font-semibold line-clamp-2">
