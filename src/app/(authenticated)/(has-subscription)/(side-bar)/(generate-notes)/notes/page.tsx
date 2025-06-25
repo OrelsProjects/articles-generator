@@ -666,7 +666,7 @@ export default function StatusBoardPage() {
                         />
                       </TabsContent>
 
-                      <TabsContent value="drafts">
+                      <TabsContent value="drafts" className="pb-6 md:pb-6">
                         {draftNotes.length === 0 ? (
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
