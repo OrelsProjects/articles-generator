@@ -1,3 +1,5 @@
+"use client";
+
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 import { rootPath } from "@/types/navbar";
 import { useEffect } from "react";
