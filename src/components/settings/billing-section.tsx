@@ -58,7 +58,8 @@ interface BillingHistoryItem {
 
 export function BillingSection() {
   const { billingInfo, loading: loadingBilling } = useBilling();
-  const { cancelSubscription, uncancelSubscription, applyRetentionDiscount } = usePayments();
+  const { cancelSubscription, uncancelSubscription, applyRetentionDiscount } =
+    usePayments();
   const { shouldShow50PercentOffOnCancel } = useSettings();
   const { cancelAt } = useAppSelector(selectSettings);
   const [billingHistory, setBillingHistory] = useState<BillingHistoryItem[]>(
@@ -563,7 +564,8 @@ export function BillingSection() {
 
       {/* 50% Discount Offer Dialog */}
       <Dialog
-        open={showDiscountDialog}
+        open={true}
+        // open={showDiscountDialog}
         onOpenChange={open => {
           if (!open) {
             setShowDiscountDialog(false);
@@ -583,8 +585,14 @@ export function BillingSection() {
                 50% OFF Your Subscription
               </h3>
               <p className="text-center">
-                We&apos;d hate to see you go! Stay with us and get 50% off your
-                current plan for the next month (30% for annual plans).
+                We&apos;d hate to see you go! <br />
+                <br />
+                Stay with us and get 50% off
+                {billingInfo?.interval === "year"
+                  ? " the monthly plan"
+                  : " your current plan"}{" "}
+                for the next month <br />
+                <strong>(30% for annual plans)</strong>
               </p>
             </div>
 
