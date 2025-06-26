@@ -190,7 +190,7 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-muted">
       {/* Connectivity Issue Banner */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 1, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -198,7 +198,7 @@ const Auth = () => {
         <p className="text-yellow-800 text-sm font-medium">
           We are aware of an ongoing connectivity issue. We are working on a fix.
         </p>
-      </motion.div>
+      </motion.div> */}
 
       <div className="grid lg:grid-cols-2 min-h-screen">
         {/* Left Side - Login Form */}
