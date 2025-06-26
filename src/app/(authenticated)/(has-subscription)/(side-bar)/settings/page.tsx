@@ -69,13 +69,13 @@ const settingsNavItems: SettingsCategory[] = [
     category: "Account",
     items: [
       {
-        id: "account" as const,
+        id: "account",
         label: "Account Information",
         icon: User,
         description: "Manage your personal details and preferences",
       },
       {
-        id: "appearance" as const,
+        id: "appearance",
         label: "Appearance",
         icon: Palette,
         description: "Customize how the application looks and feels",
@@ -86,13 +86,13 @@ const settingsNavItems: SettingsCategory[] = [
     category: "Subscription",
     items: [
       {
-        id: "credits" as const,
+        id: "credits",
         label: "Credits",
         icon: CreditCard,
         description: "Manage your credits and subscription",
       },
       {
-        id: "billing" as const,
+        id: "billing",
         label: "Billing & Invoices",
         icon: FileText,
         description: "View your subscription details and billing history",
@@ -103,13 +103,18 @@ const settingsNavItems: SettingsCategory[] = [
     category: "Configuration",
     items: [
       {
-        id: "publications" as const,
+        id: "publications",
         label: "Publication Preferences",
         icon: Settings,
         description: "Manage your publication settings and preferences",
       },
+    ],
+  },
+  {
+    category: "Danger Zone",
+    items: [
       {
-        id: "danger" as const,
+        id: "danger",
         label: "Danger Zone",
         icon: AlertTriangle,
         description: "Irreversible and destructive actions",

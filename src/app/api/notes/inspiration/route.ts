@@ -11,68 +11,10 @@ import { z } from "zod";
 import { generateVectorSearchOptimizedDescriptionPrompt } from "@/lib/prompts";
 import { runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
-import { setUserNotesDescription } from "@/lib/dal/analysis";
+import { getUserNotesDescription, setUserNotesDescription } from "@/lib/dal/analysis";
 import { AttachmentType } from "@prisma/client";
 
 export const maxDuration = 300;
-
-const getUserNotesDescription = async (
-  userMetadata: {
-    userId: string;
-    notesDescription: string | null;
-  },
-  authorId: number,
-  publicationId: string,
-) => {
-  let validUserMetadata = { ...userMetadata };
-  if (!userMetadata.notesDescription) {
-    await setUserNotesDescription(userMetadata.userId, authorId);
-  }
-  const newUserMetadata = await prisma.userMetadata.findUnique({
-    where: { userId: userMetadata.userId },
-    select: {
-      userId: true,
-      notesDescription: true,
-    },
-  });
-
-  if (!newUserMetadata) {
-    return null;
-  }
-
-  validUserMetadata = {
-    userId: newUserMetadata?.userId,
-    notesDescription: newUserMetadata?.notesDescription,
-  };
-  const prompt =
-    generateVectorSearchOptimizedDescriptionPrompt(validUserMetadata);
-  const [deepseek] = await Promise.all([
-    runPrompt(
-      prompt,
-      "deepseek/deepseek-r1",
-      "G-N-DESC-" + userMetadata.userId,
-    ),
-    // runPrompt(prompt, "openai/gpt-4.1"),
-    // runPrompt(prompt, "openai/gpt-4.5-preview"),
-    // runPrompt(prompt, "x-ai/grok-3-beta"),
-    // runPrompt(prompt, "anthropic/claude-3.7-sonnet"),
-    // runPrompt(prompt, "google/gemini-2.5-pro-preview-03-25"),
-  ]);
-
-  const result = await parseJson<{
-    optimizedDescription: string;
-  }>(deepseek);
-
-  
-  await prisma.publicationMetadata.update({
-    where: { id: publicationId },
-    data: {
-      generatedDescriptionForSearch: result.optimizedDescription,
-    },
-  });
-
-  return result.optimizedDescription;
-};
 
 // zod this. Use InspirationFilters type
 const InspirationFiltersSchema = z.object({

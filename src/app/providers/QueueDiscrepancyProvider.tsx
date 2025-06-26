@@ -74,22 +74,23 @@ export default function QueueDiscrepancyProvider() {
     updateSetShowDiscrepancyBar();
   }, [schedulesDiscrepancies]);
 
-  useEffect(() => {
-    if (scheduledNotes.length === 0) return;
-    // Timeout, to let the system settle
+  const checkForDiscrepanciesTimeout = (delay: number = 2000) => {
     const timeout = setTimeout(() => {
       getSchedulesFromExtension()
         .then(schedules => {
           checkForDiscrepancies(schedules);
         })
         .catch(error => {
-          checkForDiscrepancies({
-            schedules: [],
-            alarms: [],
-          });
+          Logger.error("Error getting schedules from extension", error);
         });
-    }, 2000);
+    }, delay);
+    return timeout;
+  };
 
+  useEffect(() => {
+    if (scheduledNotes.length === 0) return;
+    // Timeout, to let the system settle
+    const timeout = checkForDiscrepanciesTimeout(2000);
     return () => clearTimeout(timeout);
   }, [scheduledNotes]);
 
@@ -327,29 +328,31 @@ export default function QueueDiscrepancyProvider() {
     setShowDialog(true);
   }, [didResetSchedules, scheduledNotes, draftNotes, publishedNotes]);
 
+  const scheduleNotes = async () => {
+    for (const note of scheduledNotes) {
+      setNotesRescheduled(prev => prev + 1);
+      if (!note.scheduledTo) continue;
+      Logger.info("deleting schedule", {
+        noteId: note.id,
+      });
+      await deleteSchedule(note.id);
+      Logger.info("scheduling note", {
+        noteId: note.id,
+      });
+      await scheduleNote(note, note.scheduledTo);
+      Logger.info("scheduled note", {
+        noteId: note.id,
+      });
+    }
+  };
+
   useEffect(() => {
     if (!shouldReschedule) return;
     if (didResetSchedules) return;
     if (isScheduled.current) return;
     isScheduled.current = true;
     Logger.info("scheduling notes");
-    const scheduleNotes = async () => {
-      for (const note of scheduledNotes) {
-        setNotesRescheduled(prev => prev + 1);
-        if (!note.scheduledTo) continue;
-        Logger.info("deleting schedule", {
-          noteId: note.id,
-        });
-        await deleteSchedule(note.id);
-        Logger.info("scheduling note", {
-          noteId: note.id,
-        });
-        await scheduleNote(note, note.scheduledTo);
-        Logger.info("scheduled note", {
-          noteId: note.id,
-        });
-      }
-    };
+
     setLoading(true);
     scheduleNotes()
       .then(() => {

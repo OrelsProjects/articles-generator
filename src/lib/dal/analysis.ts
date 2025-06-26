@@ -1,7 +1,7 @@
 import { parseJson } from "@/lib/utils/json";
 
 import { prisma, prismaArticles } from "@/lib/prisma";
-import { generateNotesDescriptionPrompt } from "@/lib/prompts";
+import { generateNotesDescriptionPrompt, generateVectorSearchOptimizedDescriptionPrompt } from "@/lib/prompts";
 import { runPrompt } from "@/lib/open-router";
 import { getAuthorId } from "@/lib/dal/publication";
 import { UserMetadata } from "@prisma/client";
@@ -86,4 +86,66 @@ export const shouldRefreshUserPublicationData = (userMetadata: UserMetadata) => 
   const diffHours = diffTime / (1000 * 60 * 60);
   // 4 hours passed?
   return diffHours > 4;
+};
+
+export const getUserNotesDescription = async (
+  userMetadata: {
+    userId: string;
+    notesDescription: string | null;
+  },
+  authorId: number,
+  publicationId: string,
+  options: {
+    setIfNonExistent: boolean;
+  } = {
+    setIfNonExistent: true,
+  }
+) => {
+  let validUserMetadata = { ...userMetadata };
+  if (!userMetadata.notesDescription && options.setIfNonExistent) {
+    await setUserNotesDescription(userMetadata.userId, authorId);
+  }
+  const newUserMetadata = await prisma.userMetadata.findUnique({
+    where: { userId: userMetadata.userId },
+    select: {
+      userId: true,
+      notesDescription: true,
+    },
+  });
+
+  if (!newUserMetadata) {
+    return null;
+  }
+
+  validUserMetadata = {
+    userId: newUserMetadata?.userId,
+    notesDescription: newUserMetadata?.notesDescription,
+  };
+  const prompt =
+    generateVectorSearchOptimizedDescriptionPrompt(validUserMetadata);
+  const [deepseek] = await Promise.all([
+    runPrompt(
+      prompt,
+      "deepseek/deepseek-r1",
+      "G-N-DESC-" + userMetadata.userId,
+    ),
+    // runPrompt(prompt, "openai/gpt-4.1"),
+    // runPrompt(prompt, "openai/gpt-4.5-preview"),
+    // runPrompt(prompt, "x-ai/grok-3-beta"),
+    // runPrompt(prompt, "anthropic/claude-3.7-sonnet"),
+    // runPrompt(prompt, "google/gemini-2.5-pro-preview-03-25"),
+  ]);
+
+  const result = await parseJson<{
+    optimizedDescription: string;
+  }>(deepseek);
+
+  await prisma.publicationMetadata.update({
+    where: { id: publicationId },
+    data: {
+      generatedDescriptionForSearch: result.optimizedDescription,
+    },
+  });
+
+  return result.optimizedDescription;
 };

@@ -28,7 +28,10 @@ import { AIUsageType } from "@prisma/client";
 import { sendMailSafe } from "@/lib/mail/mail";
 import { generatePublicationAnalysisCompleteEmail } from "@/lib/mail/templates";
 import { getBylineByUserId } from "@/lib/dal/byline";
-import { setUserNotesDescription } from "@/lib/dal/analysis";
+import {
+  getUserNotesDescription,
+  setUserNotesDescription,
+} from "@/lib/dal/analysis";
 
 const schema = z.object({
   url: z.string().optional(),
@@ -387,6 +390,25 @@ export async function POST(req: NextRequest) {
     // if (didConsumeCredits) {
     // The user has requested a refresh, update notes as well.
     // }
+
+    try {
+      await getUserNotesDescription(
+        {
+          userId,
+          notesDescription: userMetadata?.notesDescription || null,
+        },
+        byline.authorId,
+        publicationFromDb?.id.toString(),
+        {
+          setIfNonExistent: true,
+        },
+      );
+    } catch (error: any) {
+      loggerServer.critical("Error getting user notes description", {
+        error,
+        userId,
+      });
+    }
 
     await fetchAuthor({
       authorId: byline.authorId.toString(),

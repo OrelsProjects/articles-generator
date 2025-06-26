@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { sendMailSafe } from "@/lib/mail/mail";
 import { createLogger, format, transports } from "winston";
 
 type LogItem = {
@@ -9,6 +10,7 @@ interface Logger {
   debug: (message: string, data?: LogItem) => void;
   info: (message: string, data?: LogItem) => void;
   error: (message: string, data?: LogItem) => void;
+  critical: (message: string, data?: LogItem) => void;
   warn: (message: string, data?: LogItem) => void;
   time: (label: string) => void;
   timeEnd: (label: string) => void;
@@ -73,6 +75,15 @@ const logger: () => Logger = () => {
     info: (message: string, data?: LogItem) => log("info", message, data),
     error: (message: string, data?: LogItem) => log("error", message, data),
     warn: (message: string, data?: LogItem) => log("warn", message, data),
+    critical: async (message: string, data?: LogItem) => {
+      log("error", message, data);
+      await sendMailSafe({
+        to: "support@getnotes.ai",
+        subject: "Critical error",
+        template: `<p>${message}, <br/> data: ${JSON.stringify(data)}</p>`,
+        from: "support",
+      });
+    },
     time: (label: string) => {
       timers[label] = performance.now();
       console.time(label);
