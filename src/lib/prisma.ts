@@ -13,7 +13,5 @@ declare global {
 export const prisma = globalThis.prisma ?? new PrismaClient();
 export const prismaArticles = globalThis.prismaArticles ?? new PostgresClient();
 
-if (process.env.NODE_ENV !== "production") {
-  globalThis.prisma = prisma;
-  globalThis.prismaArticles = prismaArticles;
-}
+globalThis.prisma = prisma;
+globalThis.prismaArticles = prismaArticles;
