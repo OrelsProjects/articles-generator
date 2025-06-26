@@ -2,6 +2,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { PrismaClient as PostgresClient } from "@/../prisma/generated/articles";
+import loggerServer from "@/loggerServer";
 
 // Make TypeScript happy about globalThis
 declare global {
@@ -10,7 +11,12 @@ declare global {
 }
 
 // Make a SINGLE PrismaClient instance, or re-use existing
-export const prisma = globalThis.prisma ?? new PrismaClient();
+export const prisma =
+  globalThis.prisma ??
+  (() => {
+    loggerServer.debug("Creating PrismaClient, " + globalThis.prisma);
+    return new PrismaClient();
+  })();
 export const prismaArticles = globalThis.prismaArticles ?? new PostgresClient();
 
 globalThis.prisma = prisma;
