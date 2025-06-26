@@ -55,12 +55,12 @@ export async function POST(
         note?.body || "",
         "Note schedule was triggered, but more than 10 minutes have passed since the scheduled time",
       );
-      await sendMailSafe({
-        to: "orelsmail@gmail.com",
-        from: "noreply",
-        subject: missedEmail.subject,
-        template: missedEmail.body,
-      });
+      // await sendMailSafe({
+      //   to: "orelsmail@gmail.com",
+      //   from: "noreply",
+      //   subject: missedEmail.subject,
+      //   template: missedEmail.body,
+      // });
       return NextResponse.json(
         { canPost: false, error: "Schedule was missed" },
         { status: 200 },
