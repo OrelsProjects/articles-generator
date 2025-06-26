@@ -63,6 +63,7 @@ const getUserNotesDescription = async (
     optimizedDescription: string;
   }>(deepseek);
 
+  
   await prisma.publicationMetadata.update({
     where: { id: publicationId },
     data: {
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
     });
 
-    const shouldGenerateSearchQuery = !userMetadata.notesDescription;
+    const shouldGenerateSearchQuery = !userMetadata.notesDescription || !userMetadata.publication?.generatedDescriptionForSearch;
     loggerServer.info("[INSPIRATIONS] Should generate search query", {
       shouldGenerateSearchQuery,
       userId: session.user.id,
