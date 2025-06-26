@@ -564,8 +564,8 @@ export function BillingSection() {
 
       {/* 50% Discount Offer Dialog */}
       <Dialog
-        open={true}
-        // open={showDiscountDialog}
+        // open={true}
+        open={showDiscountDialog}
         onOpenChange={open => {
           if (!open) {
             setShowDiscountDialog(false);
