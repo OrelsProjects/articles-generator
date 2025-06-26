@@ -55,6 +55,14 @@ export async function POST(
         note?.body || "",
         "Note schedule was triggered, but more than 10 minutes have passed since the scheduled time",
       );
+      loggerServer.debug("Sending missed email", {
+        missedEmail,
+        userId: user?.id || "unknown",
+        noteId: schedule.noteId,
+        noteBody: note?.body || "",
+        reason:
+          "Note schedule was triggered, but more than 10 minutes have passed since the scheduled time",
+      });
       // await sendMailSafe({
       //   to: "orelsmail@gmail.com",
       //   from: "noreply",
