@@ -273,29 +273,34 @@ export const shouldApplyRetentionCoupon = async (
     if (!subscription) {
       return false;
     }
+    const stripe = getStripeInstance();
 
-    const subscriptionId = subscription.stripeSubId;
-    const payment = await getUserLatestPayment(userId);
-    const hasPaymentHistory = !!payment;
-
-    // Check if the user already has the retention coupon applied
-    const stripeSubscriptionCoupon =
-      await getStripeSubscriptionAppliedCoupons(subscriptionId);
-    const hasRetentionCoupon = stripeSubscriptionCoupon.some(
-      discount =>
-        discount.coupon?.id === RETENTION_COUPON_ID ||
-        discount.coupon?.id === RETENTION_COUPON_ID_YEAR,
+    const stripeSubscription = await stripe.subscriptions.retrieve(
+      subscription.stripeSubId,
     );
-    if (hasRetentionCoupon) {
-      return false;
+    const stripeCustomer = await stripe.customers.retrieve(
+      stripeSubscription.customer as string,
+    );
+
+    const invoices = await stripe.invoices.list({
+      customer: stripeCustomer.id,
+      limit: 100,
+    });
+
+    const invoicesWithCoupons = invoices.data.filter(
+      invoice =>
+        invoice.discount || invoice.total_discount_amounts?.length || 0 > 0,
+    );
+
+    for (const invoice of invoicesWithCoupons) {
+      if (
+        invoice.discount?.coupon?.id === RETENTION_COUPON_ID ||
+        invoice.discount?.coupon?.id === RETENTION_COUPON_ID_YEAR
+      ) {
+        return false;
+      }
     }
 
-    // If they're on a trial, check if they've made a payment before
-    if (subscription.status === "trialing") {
-      return hasPaymentHistory;
-    }
-
-    // By default, users with active subscriptions are eligible
     return true;
   } catch (error) {
     Logger.error("Error checking retention coupon eligibility:", {
@@ -311,6 +316,6 @@ export const getRetentionCoupon = async (
 ) => {
   const promoCode =
     interval === "year" ? RETENTION_PROMO_CODE_YEAR : RETENTION_PROMO_CODE;
-  const coupon =  await getCoupon(stripe, promoCode, interval);
+  const coupon = await getCoupon(stripe, promoCode, interval);
   return coupon;
 };
