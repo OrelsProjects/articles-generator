@@ -161,11 +161,7 @@ export default function InspirationNoteComponent({
 
   const Reactions = () =>
     noteReactions && (
-      <Link
-        className="flex justify-between items-center pl-2"
-        href={`https://substack.com/@${handle}/note/${entityKey}`}
-        target="_blank"
-      >
+      <div className="flex justify-between items-center pl-2">
         <div className="flex space-x-3">
           <span className="text-xs text-muted-foreground flex items-center">
             <Heart className="h-4 w-4 mr-1" />
@@ -180,7 +176,7 @@ export default function InspirationNoteComponent({
             <p>{noteReactions.restacks}</p>
           </span>
         </div>
-      </Link>
+      </div>
     );
 
   const Author = () => {
@@ -188,7 +184,7 @@ export default function InspirationNoteComponent({
       if (note.authorId) {
         const authorId = note.authorId.toString();
         const authorName = note.authorName;
-        
+
         blockWriter(authorId)
           .then(() => {
             // Store toast ID so we can dismiss it later
@@ -219,7 +215,7 @@ export default function InspirationNoteComponent({
               {
                 autoClose: 8000,
                 closeButton: false,
-              }
+              },
             );
           })
           .catch(() => {
