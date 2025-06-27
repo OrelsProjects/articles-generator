@@ -284,6 +284,13 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
           />
         )}
 
+        <InstantPostButton
+          noteId={note.id}
+          source="schedule"
+          showText={false}
+          className="text-muted-foreground transition-colors p-2 z-10"
+        />
+
         {/* Unschedule button */}
         {onUnschedule && (
           <TooltipButton
