@@ -171,13 +171,7 @@ export async function generateNotesPrompt({
 
   console.log("About to run promises");
   console.time("promises");
-  const [
-    userNotes,
-    notesUserDisliked,
-    notesUserLiked,
-    notesFromAuthor,
-    inspirations,
-  ] = await Promise.all([
+  const [userNotes, notesFromAuthor, inspirations] = await Promise.all([
     prisma.note.findMany({
       where: {
         AND: [
@@ -187,25 +181,6 @@ export async function generateNotesPrompt({
             OR: [{ status: "published" }, { status: "scheduled" }],
           },
         ],
-      },
-      take: 15,
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.note.findMany({
-      where: {
-        AND: [
-          { userId },
-          {
-            OR: [{ feedback: "dislike" }, { isArchived: true }],
-          },
-        ],
-      },
-      take: 25,
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.note.findMany({
-      where: {
-        AND: [{ userId }, { feedback: "like" }],
       },
       take: 15,
       orderBy: { updatedAt: "desc" },
@@ -241,19 +216,12 @@ export async function generateNotesPrompt({
       (note, index, self) =>
         index === self.findIndex(t => t.body === note.body),
     )
-    .filter(
-      note =>
-        !notesUserDisliked.some(dislike => dislike.body === note.body) &&
-        !notesUserLiked.some(like => like.body === note.body),
-    )
     .slice(0, 15);
 
   // remove all userNotes that are in uniqueInspirations and in like and dislike
   const userNotesNoDuplicates = userNotes.filter(
     note =>
-      !uniqueInspirations.some(inspiration => inspiration.body === note.body) &&
-      !notesUserDisliked.some(dislike => dislike.body === note.body) &&
-      !notesUserLiked.some(like => like.body === note.body),
+      !uniqueInspirations.some(inspiration => inspiration.body === note.body),
   );
 
   let preSelectedArticles: Post[] = [];
@@ -266,8 +234,6 @@ export async function generateNotesPrompt({
     inspirationNotes: [],
     userPastNotes: notesFromAuthor.map(note => note.body),
     userNotes: userNotesNoDuplicates,
-    notesUserDisliked,
-    notesUserLiked,
     options: {
       noteCount: count,
       maxLength: 280,
@@ -322,12 +288,7 @@ export async function generateNotes({
       where: {
         userId,
       },
-      select: {
-        userId: true,
-        preferredLanguage: true,
-        featureFlags: true,
-        notesToGenerateCount: true,
-        notesPromptVersion: true,
+      include: {
         publication: true,
       },
     });

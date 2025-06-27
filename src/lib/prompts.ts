@@ -846,8 +846,6 @@ export const generateNotesPrompt_v2 = ({
   inspirationNotes,
   userPastNotes,
   userNotes,
-  notesUserDisliked,
-  notesUserLiked,
   options = {
     noteCount: 3,
     maxLength: 280,
@@ -861,8 +859,6 @@ export const generateNotesPrompt_v2 = ({
   inspirationNotes: string[];
   userPastNotes: string[];
   userNotes: Note[];
-  notesUserDisliked: Note[];
-  notesUserLiked: Note[];
   options: {
     noteCount?: number;
     maxLength?: number;
@@ -926,7 +922,7 @@ User style snapshot:
   const lockToTopic = !lockToArticles && !!topic;
 
   // ─────────────────────── System Message ──────────────────────
-  
+
   const systemMessage = `
 ${publication.generatedDescription || ""}
 ${userMetadata.noteWritingStyle || publication.writingStyle || ""}
@@ -986,10 +982,6 @@ Previously written notes:\n${userPastNotes.map((n, i) => `(${i + 1}) ${n}`).join
 
 Inspiration notes:\n${inspirationNotes.map((n, i) => `(${i + 1}) ${n}`).join("\n")}
 
-Notes I liked:\n${notesUserLiked.map((n, i) => `(${i + 1}) ${n.body}`).join("\n")}
-
-Notes I disliked:\n${notesUserDisliked.map((n, i) => `(${i + 1}) ${n.body}`).join("\n")}
-
 Topic counts: ${JSON.stringify(topicsCount)}
 `.trim();
 
@@ -1006,8 +998,6 @@ export const generateNotesPrompt_v1 = ({
   inspirationNotes,
   userPastNotes,
   userNotes,
-  notesUserDisliked,
-  notesUserLiked,
   options = {
     noteCount: 3,
     maxLength: 280,
@@ -1021,8 +1011,6 @@ export const generateNotesPrompt_v1 = ({
   inspirationNotes: string[];
   userPastNotes: string[];
   userNotes: Note[];
-  notesUserDisliked: Note[];
-  notesUserLiked: Note[];
   options: {
     noteCount?: number;
     maxLength?: number;
@@ -1049,14 +1037,6 @@ export const generateNotesPrompt_v1 = ({
 
   const hasPreselectedArticles = preSelectedArticles?.length || 0 > 0;
   const shouldUseTopic = hasPreselectedArticles ? false : true;
-
-  const likedTopicsCount = notesUserLiked
-    .map(note => note.topics)
-    .flat()
-    .reduce((acc: Record<string, number>, topic) => {
-      acc[topic] = (acc[topic] || 0) + 1;
-      return acc;
-    }, {});
 
   const messages = [
     {
@@ -1163,15 +1143,8 @@ export const generateNotesPrompt_v1 = ({
           ${userNotes.length > 0 ? `Past notes that I posted:` : ""}
           ${userNotes.map((note, index) => `(${index + 1}) ${note.body}`).join("\\n")}
 
-          ${notesUserDisliked.length > 0 ? `Here are some of the notes I didn't like. Don't repeat them:` : ""}
-          ${notesUserDisliked.map((note, index) => `(${index + 1}) Body: ${note.body}, ${note.feedbackComment ? `Reason: ${note.feedbackComment}` : ""}`).join("\\n")}
-
-          ${notesUserLiked.length > 0 ? `Here are some of the notes I liked:` : ""}
-          ${notesUserLiked.map((note, index) => `(${index + 1}) Body: ${note.body}, ${note.feedbackComment ? `Reason: ${note.feedbackComment}` : ""}`).join("\\n")}
-
           ${allTopics.length > 0 ? `Here are all the topics I've written about and their count:` : ""}
           ${JSON.stringify(topicsCount)}
-          ${allTopics.length > 0 && notesUserLiked.length > 0 ? `Make sure not to repeat topics that are already in the list. If the list is too long and you need to repeat, repeat the ones with the highest count. from this list: ${Object.keys(likedTopicsCount).join("\\n")}` : ""}
       
           Generate ${noteCount} new notes in my writing style while drawing inspiration from these.`,
     },
