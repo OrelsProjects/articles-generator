@@ -32,10 +32,8 @@ import TitleSection from "./title-section";
 import SubtitleSection from "./subtitle-section";
 import EditorArea from "./editor-area";
 import PreviewModal from "./preview-modal";
-import LoadingIdeas from "@/components/ui/loading-ideas";
 import { copyHTMLToClipboard } from "@/lib/utils/copy";
-import { DOMSerializer } from "@tiptap/pm/model";
-import { Decoration, DecorationSet } from "prosemirror-view";
+import { Decoration } from "prosemirror-view";
 
 type ImageName = string;
 
@@ -585,7 +583,6 @@ const TextEditor = ({
         onCancel={handleCancelImprovement}
         onAccept={handleAcceptImprovement}
       />
-      <LoadingIdeas />
     </motion.div>
   );
 };

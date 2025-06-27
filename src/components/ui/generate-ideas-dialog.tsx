@@ -23,6 +23,7 @@ import {
 } from "@/lib/features/ui/uiSlice";
 import { toast } from "react-toastify";
 import { useNotes } from "@/lib/hooks/useNotes";
+
 export default function GenerateIdeasDialog() {
   const dispatch = useAppDispatch();
   const { notesToGenerate } = useNotes();

@@ -60,12 +60,8 @@ export const MenuBar = ({
   onCopy,
 }: MenuBarProps) => {
   const { state } = useAppSelector(selectUi);
-  const { createNewIdea } = useIdea();
   const [didCopy, setDidCopy] = useState(false);
 
-  const [loadingNewIdea, setLoadingNewIdea] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [showImageDialog, setShowImageDialog] = useState(false);
 
   useEffect(() => {
     if (didCopy) {
@@ -75,17 +71,6 @@ export const MenuBar = ({
     }
   }, [didCopy]);
 
-  const handleCreateNewIdea = () => {
-    setLoadingNewIdea(true);
-    createNewIdea({ showIdeasAfterCreate: true })
-      .catch((error: any) => {
-        toast.error(error.response?.data?.error || "Failed to create new idea");
-      })
-      .finally(() => {
-        setLoadingNewIdea(false);
-      });
-  };
-
   const handleCopy = (copyType: "title" | "subtitle" | "body") => {
     try {
       onCopy(copyType);
@@ -93,14 +78,6 @@ export const MenuBar = ({
     } catch (error: any) {
       toast.error("Failed to copy content");
       Logger.error("Failed to copy content:", error);
-    }
-  };
-
-  const handleImageInsert = () => {
-    if (imageUrl && editor) {
-      editor.chain().focus().setImage({ src: imageUrl }).run();
-      setImageUrl("");
-      setShowImageDialog(false);
     }
   };
 
@@ -410,46 +387,7 @@ export const MenuBar = ({
 
         <Separator orientation="vertical" className="h-6" />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-8 w-fit px-2 py-4 space-x-2"
-              disabled={loadingNewIdea}
-            >
-              {loadingNewIdea ? (
-                <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4 md:w-5 md:h-5" />
-              )}
-              <p className="text-sm pr-1">New</p>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem
-              onClick={handleCreateNewIdea}
-              className="hover:cursor-pointer"
-            >
-              <StickyNote className="w-4 h-4 mr-2" />
-              Draft
-            </DropdownMenuItem>
-            <GenerateIdeasButton
-              variant="ghost"
-              className="w-full h-fit font-normal text-sm pl-2 flex justify-start py-1.5"
-            />
-
-            {!!selectedIdea && (
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <SendToDraftButton
-                  publicationUrl={publication?.url || null}
-                  variant="ghost"
-                  className="w-full h-fit font-normal text-sm pl-0 gap-2 !py-1.5"
-                />
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+       
         <div className="flex items-center gap-1 md:gap-2">
           <MainActionButton />
         </div>

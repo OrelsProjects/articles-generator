@@ -290,34 +290,6 @@ function TopEngagersPage() {
         description="To avoid abuse and keep this tool a unique experience, I'll need you to quickly sign up (Less than 10 seconds)."
         redirectPath={getLoginRedirect()}
       />
-
-      {/* Mobile Sheet/Dialog */}
-      {/* <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>{selectedEngager?.name}</SheetTitle>
-            <SheetDescription>
-              {selectedEngager?.subscriberCountString
-                ? `Subscribers: ${selectedEngager.subscriberCountString}`
-                : "Fan Profile"}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="mt-6 flex flex-col gap-4">
-            <div className="flex justify-center">
-              {selectedEngager && (
-                <img
-                  src={selectedEngager.photoUrl}
-                  alt={`${selectedEngager.name}'s avatar`}
-                  className="w-24 h-24 rounded-full object-cover border-2 border-primary"
-                />
-              )}
-            </div>
-            <Button onClick={handleViewProfile} className="mt-4">
-              View Profile
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet> */}
     </div>
   );
 }
