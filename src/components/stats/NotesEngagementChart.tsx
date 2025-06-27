@@ -465,119 +465,119 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
       }
       body="In order to see how many subscribers, free or paid, you got from your notes, you'll need to install our Chrome extension."
     >
-      errorReactions ? (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Engagement Statistics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <p className="text-destructive">Failed to load statistics data</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              {errorReactions}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-      ) : (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full space-y-4 hidden lg:block"
-      >
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <UserPlus className="h-4 w-4 text-primary" />
-                Total Follows
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? (
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                ) : (
-                  noteStats?.engagementTotals?.follows.toLocaleString() || 0
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" />
-                Free Subscriptions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? (
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                ) : (
-                  noteStats?.engagementTotals?.freeSubscriptions.toLocaleString() ||
-                  0
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <CoinsIcon className="h-4 w-4 text-primary" />
-                Paid Subscriptions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? (
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                ) : (
-                  noteStats?.engagementTotals?.paidSubscriptions.toLocaleString() ||
-                  0
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts */}
-        {isFetchingNotesStats && !noteStats ? (
-          <div className="h-[300px] flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : chartData.length === 0 ? (
-          <div className="h-[300px] flex items-center justify-center">
-            <div className="text-center space-y-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-muted-foreground">
-                Your data is being loaded...
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Please keep WriteStack open for a few minutes until the data is
-                fully fetched.
+      {errorReactions ? (
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Engagement Statistics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <p className="text-destructive">Failed to load statistics data</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                {errorReactions}
               </p>
             </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full space-y-4 hidden lg:block"
+        >
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <UserPlus className="h-4 w-4 text-primary" />
+                  Total Follows
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {isLoading ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  ) : (
+                    noteStats?.engagementTotals?.follows.toLocaleString() || 0
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  Free Subscriptions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {isLoading ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  ) : (
+                    noteStats?.engagementTotals?.freeSubscriptions.toLocaleString() ||
+                    0
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <CoinsIcon className="h-4 w-4 text-primary" />
+                  Paid Subscriptions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {isLoading ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  ) : (
+                    noteStats?.engagementTotals?.paidSubscriptions.toLocaleString() ||
+                    0
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Full width subscription charts */}
-            {renderChart({
-              dataKey: "freeSubscriptions",
-              title: "Free Subscriptions",
-              dataKeyLabel: "Free Subscriptions",
-              color: "#a855f7",
-              gradientId: "freeSubscriptionsGradient",
-              className: "w-full",
-              isAdvancedStats: true,
-            })}
 
-            {/* Dummy free subscriptions data starting from Feb 11, 2024 */}
-            {/* {renderChart(
+          {/* Charts */}
+          {isFetchingNotesStats && !noteStats ? (
+            <div className="h-[300px] flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : chartData.length === 0 ? (
+            <div className="h-[300px] flex items-center justify-center">
+              <div className="text-center space-y-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="text-muted-foreground">
+                  Your data is being loaded...
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Please keep WriteStack open for a few minutes until the data
+                  is fully fetched.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Full width subscription charts */}
+              {renderChart({
+                dataKey: "freeSubscriptions",
+                title: "Free Subscriptions",
+                dataKeyLabel: "Free Subscriptions",
+                color: "#a855f7",
+                gradientId: "freeSubscriptionsGradient",
+                className: "w-full",
+                isAdvancedStats: true,
+              })}
+
+              {/* Dummy free subscriptions data starting from Feb 11, 2024 */}
+              {/* {renderChart(
             "freeSubscriptions",
             "Free Subscriptions Over Time",
             "#a855f7",
@@ -594,100 +594,100 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
             generateMessyGrowingStats("2024-02-11", 30, 371),
           )} */}
 
-            {renderChart({
-              dataKey: "paidSubscriptions",
-              title: "Paid Subscriptions",
-              dataKeyLabel: "Paid Subscriptions",
-              color: "#3b82f6",
-              gradientId: "paidSubscriptionsGradient",
-              className: "w-full",
-              isAdvancedStats: true,
-            })}
+              {renderChart({
+                dataKey: "paidSubscriptions",
+                title: "Paid Subscriptions",
+                dataKeyLabel: "Paid Subscriptions",
+                color: "#3b82f6",
+                gradientId: "paidSubscriptionsGradient",
+                className: "w-full",
+                isAdvancedStats: true,
+              })}
 
-            {/* Side by side engagement charts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {renderChart({
-                dataKey: "clicks",
-                title: "Note Clicks",
-                dataKeyLabel: "Note Clicks",
-                color: "hsl(var(--primary))",
-                gradientId: "clicksGradient",
-                isAdvancedStats: true,
-              })}
-              {renderChart({
-                dataKey: "follows",
-                title: "Follows",
-                dataKeyLabel: "Follows",
-                color: "#22c55e",
-                gradientId: "followsGradient",
-                isAdvancedStats: true,
-              })}
+              {/* Side by side engagement charts */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderChart({
+                  dataKey: "clicks",
+                  title: "Note Clicks",
+                  dataKeyLabel: "Note Clicks",
+                  color: "hsl(var(--primary))",
+                  gradientId: "clicksGradient",
+                  isAdvancedStats: true,
+                })}
+                {renderChart({
+                  dataKey: "follows",
+                  title: "Follows",
+                  dataKeyLabel: "Follows",
+                  color: "#22c55e",
+                  gradientId: "followsGradient",
+                  isAdvancedStats: true,
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Notes Popover */}
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-          <PopoverTrigger asChild>
-            <div
-              style={{
-                position: "fixed",
-                left: clickPosition?.x || 0,
-                top: clickPosition?.y || 0,
-                width: 1,
-                height: 1,
-                pointerEvents: "none",
-                opacity: 0,
-              }}
-            />
-          </PopoverTrigger>
-          <PopoverContent
-            className={cn("w-96 max-h-[500px] overflow-y-auto", {
-              "h-64": notesForDate?.length === 0 && !loadingNotesForDate,
-            })}
-            side="top"
-            align="center"
-            sideOffset={10}
-          >
-            <PremiumFeatureSoonOverlay
-              planRequired={Plan.standard}
-              className="w-full"
-              overlayClassName="justify-start pt-4"
+          {/* Notes Popover */}
+          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <PopoverTrigger asChild>
+              <div
+                style={{
+                  position: "fixed",
+                  left: clickPosition?.x || 0,
+                  top: clickPosition?.y || 0,
+                  width: 1,
+                  height: 1,
+                  pointerEvents: "none",
+                  opacity: 0,
+                }}
+              />
+            </PopoverTrigger>
+            <PopoverContent
+              className={cn("w-96 max-h-[500px] overflow-y-auto", {
+                "h-64": notesForDate?.length === 0 && !loadingNotesForDate,
+              })}
+              side="top"
+              align="center"
+              sideOffset={10}
             >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm">
-                    Notes for{" "}
-                    {selectedDate &&
-                      formatPeriod(selectedDate, reactionsInterval)}
-                  </h3>
-                </div>
-                <div className="w-full flex items-center justify-center">
-                  {loadingNotesForDate && (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              <PremiumFeatureSoonOverlay
+                planRequired={Plan.standard}
+                className="w-full"
+                overlayClassName="justify-start pt-4"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-sm">
+                      Notes for{" "}
+                      {selectedDate &&
+                        formatPeriod(selectedDate, reactionsInterval)}
+                    </h3>
+                  </div>
+                  <div className="w-full flex items-center justify-center">
+                    {loadingNotesForDate && (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                    )}
+                  </div>
+                  {notesForDate?.length === 0 && !loadingNotesForDate ? (
+                    <p className="text-sm text-muted-foreground">
+                      No notes found for this date.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {notesForDate?.map(note => (
+                        <CompactNoteComponent
+                          loading={loadingNotesForDate}
+                          key={note.id}
+                          note={note}
+                        />
+                      ))}
+                    </div>
                   )}
                 </div>
-                {notesForDate?.length === 0 && !loadingNotesForDate ? (
-                  <p className="text-sm text-muted-foreground">
-                    No notes found for this date.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {notesForDate?.map(note => (
-                      <CompactNoteComponent
-                        loading={loadingNotesForDate}
-                        key={note.id}
-                        note={note}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </PremiumFeatureSoonOverlay>
-          </PopoverContent>
-        </Popover>
-      </motion.div>
-      )
+              </PremiumFeatureSoonOverlay>
+            </PopoverContent>
+          </Popover>
+        </motion.div>
+      )}
     </ExtensionNeededWrapper>
   );
 }
