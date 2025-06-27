@@ -145,6 +145,8 @@ export async function generateNotesPrompt({
 
   const query = `${userMetadata.publication.preferredTopics || ""}, ${userMetadata.noteTopics}.`;
 
+  loggerServer.info("Query: ", { query, userId });
+
   const randomMinReaction = Math.floor(Math.random() * 400);
   const randomMaxReaction =
     randomMinReaction + Math.floor(Math.random() * 60000);
