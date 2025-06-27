@@ -78,7 +78,7 @@ export async function runPrompt(
   tokenCount = getTokenCount(messages.map(m => m.content).join("\n"));
   const priceInput = getPrice(model, tokenCount);
   loggerServer.info(
-    `About to run prompt on model ${model} with ${tokenCount} tokens. Estimated price: $${priceInput.toFixed(5)}`,
+    `About to run prompt on model ${model} with ${tokenCount} tokens. Estimated price: $${priceInput.toFixed(5)}.\n prompt: ${messages.map(m => m.content).join("\n")}`,
     {
       model,
       tokenCount,

@@ -926,6 +926,7 @@ User style snapshot:
   const lockToTopic = !lockToArticles && !!topic;
 
   // ─────────────────────── System Message ──────────────────────
+  
   const systemMessage = `
 ${publication.generatedDescription || ""}
 ${userMetadata.noteWritingStyle || publication.writingStyle || ""}
