@@ -11,7 +11,7 @@ interface LogPayload {
   level: "info" | "error" | "warn";
 }
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   // Verify authentication
   let session: Session | null = null;
   try {
