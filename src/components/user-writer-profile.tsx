@@ -20,14 +20,7 @@ import { cn } from "@/lib/utils";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { UserWriterWithData } from "@/types/writer";
-import { CompactNoteComponent } from "@/components/stats/CompactNoteComponent";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CompactNoteComponent } from "@/components/stats/compact-note-component";
 import {
   OrderByNotesEngagement,
   OrderByNotesEngagementEnum,
@@ -68,6 +61,18 @@ const LoadingNotes = () => (
 
     <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
       <div className="space-y-6">
+        {/* Sort Controls Skeleton */}
+        <div className="sort-controls mb-6">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Skeleton className="h-4 w-16 mr-2" />
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-9 w-20" />
+            ))}
+            <div className="w-px h-6 bg-border/50" />
+            <Skeleton className="h-9 w-12" />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
             <Skeleton key={i} className="h-96 w-full rounded-lg" />
@@ -128,12 +133,15 @@ export default function UserWriterProfile({
       <CompactNoteComponent
         note={note}
         loading={false}
-        onNoteClick={noteDraft =>
-          selectNote({
-            ...noteDraft,
-            authorId: Number(writer.authorId),
-          })
-        }
+        className="w-full max-h-48"
+        onNoteClick={noteDraft => {
+          if (noteDraft) {
+            selectNote({
+              ...noteDraft,
+              authorId: Number(writer.authorId),
+            });
+          }
+        }}
       />
     ),
   }));
@@ -226,7 +234,7 @@ export default function UserWriterProfile({
                 onClick={() => updateOrderBy(metric.key)}
                 disabled={isLoadingOrderBy || isLoadingOrderDirection}
                 variant={orderBy === metric.key ? "outline-primary" : "ghost"}
-                className="gap-2"
+                className="gap-2 bg-transparent"
               >
                 {isLoadingOrderBy && orderBy === metric.key ? (
                   <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -248,7 +256,7 @@ export default function UserWriterProfile({
             }
             disabled={isLoadingOrderBy || isLoadingOrderDirection}
             title={orderDirection === "desc" ? "Descending" : "Ascending"}
-            className="gap-2"
+            className="gap-2 bg-transparent"
             variant={orderDirection === "desc" ? "outline-primary" : "ghost"}
           >
             {isLoadingOrderDirection ? (
@@ -263,7 +271,11 @@ export default function UserWriterProfile({
           </Button>
         </div>
 
-        <MasonryGrid cards={noteCards} columns={3} gap={4} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {noteCards.map(note => (
+            <div key={note.id}>{note.content}</div>
+          ))}
+        </div>
 
         {isLoadingMore && <LoadingNotes />}
         {hasMore && (

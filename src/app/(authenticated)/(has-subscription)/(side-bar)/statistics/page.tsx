@@ -53,7 +53,7 @@ export default function StatisticsPage() {
     if (interval === reactionsInterval) return;
     setIsChangingInterval(true);
     try {
-      await changeReactionsInterval(interval);
+      changeReactionsInterval(interval);
     } finally {
       setIsChangingInterval(false);
     }

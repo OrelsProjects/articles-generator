@@ -7,7 +7,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   Area,
   AreaChart,
@@ -24,6 +24,12 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
 import useMediaQuery from "@/lib/hooks/useMediaQuery";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 const intervalLabels: Record<ReactionInterval, string> = {
   day: "Daily",
@@ -333,21 +339,33 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
               Notes Statistics
             </CardTitle>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="normalize-data"
-                  checked={normalizeData}
-                  onCheckedChange={setNormalizeData}
-                  disabled={loadingReactions || isLoading}
-                />
-                <Label
-                  htmlFor="normalize-data"
-                  className="text-xs text-muted-foreground cursor-pointer flex items-center gap-1"
-                >
-                  <BarChart3 className="h-3 w-3" />
-                  Normalize outliers
-                </Label>
-              </div>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="normalize-data"
+                        checked={normalizeData}
+                        onCheckedChange={setNormalizeData}
+                        disabled={loadingReactions || isLoading}
+                      />
+                      <Label
+                        htmlFor="normalize-data"
+                        className="text-xs text-muted-foreground cursor-pointer flex items-center gap-1"
+                      >
+                        <BarChart3 className="h-3 w-3" />
+                        Normalize outliers
+                      </Label>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-sm">
+                      Normalize outliers if you have a a few viral notes that
+                      skew the data.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
 
@@ -419,7 +437,7 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
         <CardContent className={cn("p-6", isMobileOrTablet && "p-2 px-0")}>
           {loadingReactions || isLoading ? (
             <div className="h-[300px] flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
           ) : chartData.length === 0 ? (
             <div className="h-[300px] flex items-center justify-center">
@@ -433,13 +451,15 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
               </div>
             </div>
           ) : (
-            <div className={cn(
-              "h-[300px] w-full", 
-              isMobileOrTablet ? "overflow-x-auto -mx-2" : "overflow-x-auto"
-            )}>
-              <ResponsiveContainer 
-                width="100%" 
-                height="100%" 
+            <div
+              className={cn(
+                "h-[300px] w-full",
+                isMobileOrTablet ? "overflow-x-auto -mx-2" : "overflow-x-auto",
+              )}
+            >
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
                 minWidth={isMobileOrTablet ? 320 : undefined}
               >
                 <AreaChart
@@ -449,8 +469,12 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
                     right: isMobileOrTablet ? 5 : 30,
                     left: isMobileOrTablet ? 5 : 20,
                     bottom: isMobileOrTablet
-                      ? (reactionsInterval === "week" ? 40 : 5)
-                      : (reactionsInterval === "week" ? 60 : 5),
+                      ? reactionsInterval === "week"
+                        ? 40
+                        : 5
+                      : reactionsInterval === "week"
+                        ? 60
+                        : 5,
                   }}
                   className="h-full w-full"
                 >
@@ -531,7 +555,7 @@ export function NotesReactionsChart({ isLoading }: NotesReactionsChartProps) {
                     stroke="hsl(var(--muted-foreground))"
                     fontSize={12}
                   />
-                  <Tooltip
+                  <RechartsTooltip
                     content={
                       <CustomTooltip
                         interval={reactionsInterval}

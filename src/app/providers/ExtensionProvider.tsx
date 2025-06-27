@@ -90,26 +90,15 @@ export function ExtensionProvider() {
 
   const handleRefresh = async () => {
     setLoading(true);
-    debugger;
-    try {
-      const has = await hasExtension();
-      if (!has) {
-        return;
-      }
-      await setUserSubstackCookies();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      let url = pathname;
-      const paramsToAdd: Record<string, string> = {};
-      if (selectedNote?.id) {
-        paramsToAdd.noteId = selectedNote.id;
-      }
-      router.push(url, { paramsToAdd, forceRefresh: true });
-      setTimeout(() => {
-        setLoading(false);
-      }, 1500);
+    let url = pathname;
+    const paramsToAdd: Record<string, string> = {};
+    if (selectedNote?.id) {
+      paramsToAdd.noteId = selectedNote.id;
     }
+    router.push(url, { paramsToAdd, forceRefresh: true });
+    setTimeout(() => {
+      setLoading(false);
+    }, 1500);
   };
 
   return (

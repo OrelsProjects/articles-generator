@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { NoteWithEngagementStats } from "@/types/notes-stats";
 import {
   Heart,
@@ -30,10 +30,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { buildNoteUrl } from "@/lib/utils/note";
 
 interface CompactNoteComponentProps {
   note: NoteWithEngagementStats;
   loading: boolean;
+  className?: string;
   onNoteClick?: (noteDraft: Omit<NoteDraft, "authorId">) => void;
 }
 
@@ -60,8 +62,11 @@ export function CompactNoteComponent({
   note,
   loading,
   onNoteClick,
+  className,
 }: CompactNoteComponentProps) {
   const [showMore, setShowMore] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [hasShowMore, setHasShowMore] = useState(false);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
 
   const editor = useEditor(
@@ -80,6 +85,7 @@ export function CompactNoteComponent({
             authorName: note.name,
             wasSentViaSchedule: false,
             attachments: note.attachments,
+            thumbnail: note.photoUrl,
             status: "inspiration",
           });
         },
@@ -91,6 +97,7 @@ export function CompactNoteComponent({
     if (!editor) return;
     convertMDToHtml(note.body).then(html => {
       loadContent(html, editor);
+      setHtmlContent(html);
     });
   }, [note.body, editor]);
 
@@ -100,23 +107,27 @@ export function CompactNoteComponent({
     }
     return num.toString();
   };
-
-  const hasShowMore = useMemo(
-    () => htmlContent && htmlContent.length > 120,
-    [htmlContent, showMore],
-  );
+  // Once the HTML is loaded, measure to see if it exceeds 260px
+  useEffect(() => {
+    if (contentRef.current) {
+      requestAnimationFrame(() => {
+        const height = contentRef.current?.scrollHeight || 999;
+        setHasShowMore(height > 260);
+      });
+    }
+  }, [htmlContent]);
 
   return (
     <div
       className={cn(
-        "border border-border/60 rounded-lg p-3 bg-card hover:bg-accent/5 transition-colors",
+        "h-full flex flex-col gap-4 border border-border/60 rounded-lg p-3 bg-card transition-colors overflow-hidden",
         {
           "opacity-50": loading,
         },
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0 overflow-hidden">
             {note.photoUrl ? (
@@ -159,9 +170,12 @@ export function CompactNoteComponent({
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 onClick={() => {
-                  const commentIdWithCDash = `c-${note.id.replace("c-", "")}`;
                   window.open(
-                    `https://substack.com/@${note.handle}/note/${commentIdWithCDash}`,
+                    buildNoteUrl({
+                      handle: note.handle,
+                      noteId: note.id,
+                      isComment: true,
+                    }),
                     "_blank",
                   );
                 }}
@@ -175,26 +189,37 @@ export function CompactNoteComponent({
       </div>
 
       {/* Content */}
-      <div className="mb-3">
+      <div
+        ref={contentRef}
+        className={cn(
+          "overflow-hidden relative cursor-pointer",
+          showMore ? "max-h-none" : "max-h-[260px]",
+        )}
+      >
         <div className="text-sm text-foreground leading-relaxed">
           <EditorContent disabled editor={editor} />
         </div>
-        {hasShowMore && (
-          <div className="w-full flex justify-end">
-            <Button
-              variant="link"
-              size="sm"
-              className="text-xs hover:text-foreground p-0 h-auto text-primary"
-              onClick={() => setShowMore(!showMore)}
-            >
-              {showMore ? "Show less" : "Show more"}
-            </Button>
-          </div>
-        )}
       </div>
+      {hasShowMore && (
+        <div className="relative h-4 w-full z-20">
+          <Button
+            variant="link"
+            onClick={() => setShowMore(!showMore)}
+            className="absolute -bottom-4 right-0 text-xs text-primary hover:underline focus:outline-none mt-1 block ml-auto"
+          >
+            {showMore ? "Show less" : "Show more"}
+          </Button>
+          <div
+            className={cn(
+              "absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent -z-10",
+              showMore ? "opacity-0" : "opacity-100",
+            )}
+          />
+        </div>
+      )}
 
       {/* Stats */}
-      <div className="flex items-center justify-between text-xs mt-6">
+      <div className="flex items-center justify-between text-xs mt-auto">
         <div className="flex items-center gap-3">
           {/* Reactions */}
           <span className="text-muted-foreground flex items-center">

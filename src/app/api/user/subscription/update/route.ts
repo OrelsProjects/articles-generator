@@ -4,6 +4,8 @@ import { getPlanPriceId, getStripeInstance } from "@/lib/stripe";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { Plan } from "@prisma/client";
+import { featureFlagsPerPlan } from "@/lib/plans-consts";
+import { updateUserFeatureFlags } from "@/lib/dal/user";
 
 // If the user is on a free trial, automatically move them to the new plan
 // If not, create a checkout session to upgrade
@@ -64,6 +66,8 @@ export async function POST(req: NextRequest) {
         },
       ],
     });
+
+    await updateUserFeatureFlags(userId, plan as Plan);
 
     return NextResponse.json({
       success: true,

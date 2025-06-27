@@ -60,13 +60,12 @@ export async function GET(request: NextRequest) {
     loggerServer.warn(
       "[GETTING-NOTES-FOR-STATS] Unauthorized, no extension key",
       {
-        userId: "not logged in",
+        userId: "unknown",
       },
     );
     return NextResponse.json(
       {
-        error:
-          "Make sure you are connected to the same account on WriteStack and on Substack",
+        error: "Make sure you have the extension installed",
       },
       { status: 403 },
     );
@@ -81,7 +80,13 @@ export async function GET(request: NextRequest) {
         userId: "not logged in",
       },
     );
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      {
+        error:
+          "Make sure you are connected to the same account on WriteStack and on Substack",
+      },
+      { status: 401 },
+    );
   }
 
   try {

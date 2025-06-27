@@ -26,13 +26,13 @@ export default function ContentLayout({
           <VisitProvider>
             <DataFetchProvider>
               <ShowNoteFromUrlProvider />
-              <SubstackCookiesProvider>
+              {/* <SubstackCookiesProvider> */}
                 <ExtensionProvider />
                 <DialogProvider />
                 <QueueDiscrepancyProvider />
                 <UpdateDataProvider />
                 {children}
-              </SubstackCookiesProvider>
+              {/* </SubstackCookiesProvider> */}
             </DataFetchProvider>
           </VisitProvider>
         </SubscriptionProvider>

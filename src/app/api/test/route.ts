@@ -18,7 +18,7 @@ import {
 } from "@/lib/mail/templates";
 import { prisma, prismaArticles } from "@/lib/prisma";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
-import { Note, NoteStatus } from "@prisma/client";
+import { Note, NoteStatus, User } from "@prisma/client";
 import { getStripeInstance, shouldApplyRetentionCoupon } from "@/lib/stripe";
 import { bigint } from "zod";
 import { getBylineByUserId } from "@/lib/dal/byline";
@@ -98,13 +98,13 @@ async function dumpSlackEmails() {
   } while (marker);
 
   // Strip to what you want
-  const emails = everyone
-    // .filter(u => u.profile?.email)
-    // .map(u => ({
-    //   id: u.id,
-    //   name: u.profile.real_name || u.name,
-    //   email: u.profile.email!,
-    // }));
+  const emails = everyone;
+  // .filter(u => u.profile?.email)
+  // .map(u => ({
+  //   id: u.id,
+  //   name: u.profile.real_name || u.name,
+  //   email: u.profile.email!,
+  // }));
 
   await fs.writeFile("emails.json", JSON.stringify(emails, null, 2));
   console.log(`Saved ${emails.length} emails to emails.json`);
@@ -153,6 +153,29 @@ async function dumpSlackEmails() {
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
+
+  const subscription = await prisma.subscription.findMany({
+    where: {
+      stripeSubId: "sub_1RTJ5xRxhYQDfRYGstLlP9tU",
+    },
+  });
+  const usersApplied: Record<string, Partial<User> & { applied: boolean }> = {};
+  for (const sub of subscription) {
+    const apply = await shouldApplyRetentionCoupon(sub.userId);
+    usersApplied[sub.userId] = {
+      ...sub,
+      applied: apply,
+    };
+  }
+  await fs.writeFile(
+    "usersApplied.json",
+    JSON.stringify(usersApplied, null, 2),
+  );
+  console.log(
+    `Saved ${Object.keys(usersApplied).length} users to usersApplied.json`,
+  );
+  return NextResponse.json({ success: true });
+
   // if (!session || !session.user || !session.user.meta) {
   //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // }

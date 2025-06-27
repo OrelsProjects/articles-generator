@@ -4,7 +4,7 @@ import React, { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNotesStats } from "@/lib/hooks/useNotesStats";
-import { CompactNoteComponent } from "@/components/stats/CompactNoteComponent";
+import { CompactNoteComponent } from "@/components/stats/compact-note-component";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { NoteWithEngagementStats } from "@/types/notes-stats";

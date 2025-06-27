@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
@@ -24,6 +24,7 @@ import { resetNotification } from "@/lib/features/notes/notesSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import KanbanLoading from "@/components/loading/kanban-loading";
+import { appName } from "@/lib/consts";
 
 const KANBAN_TITLE = "Your notes";
 const LIST_TITLE = "Your notes";
@@ -33,10 +34,12 @@ const EmptyStateCard = ({
   onAddNote,
   text = "Add new note",
   loading,
+  onTriggerDropdown,
 }: {
   onAddNote: () => void;
   text?: string;
   loading?: boolean;
+  onTriggerDropdown?: () => void;
 }) => (
   <motion.div
     initial={{ opacity: 0.7 }}
@@ -51,7 +54,7 @@ const EmptyStateCard = ({
       "border-2 border-dashed border-muted-foreground/50 dark:border-muted-foreground/50 rounded-lg p-6 text-center hover:border-muted-foreground/40 dark:hover:border-muted-foreground/40 transition-colors cursor-pointer group",
       { "cursor-not-allowed": loading },
     )}
-    onClick={loading ? undefined : onAddNote}
+    onClick={loading ? undefined : onTriggerDropdown || onAddNote}
   >
     {loading ? (
       <RefreshCw className="w-5 h-5 mx-auto mb-2 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors animate-spin" />
@@ -120,7 +123,7 @@ const ViewToggle = ({
   </div>
 );
 
-// Persistent Action Bar Component
+// Enhanced Action Bar Component with first-time drafts support
 const ActionBar = ({ className }: { className?: string }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -141,6 +144,17 @@ export default function StatusBoardPage() {
     "list",
   );
 
+  // First-time drafts experience state
+  const [featureEnabled] = useLocalStorage(
+    "drafts_onboarding_feature_flag",
+    true,
+  );
+  const [dropdownOpened, setDropdownOpened] = useLocalStorage(
+    "create_note_dropdown_opened",
+    false,
+  );
+  const [dropdownRef, setDropdownRef] = useState<HTMLElement | null>(null);
+
   // Queue page state
   const [activeTabCache, setActiveTabCache] = useLocalStorage(
     "queue_active_tab",
@@ -149,6 +163,7 @@ export default function StatusBoardPage() {
   const [activeDays, setActiveDays] = useState<Date[]>([]);
   const [activeTab, setActiveTab] = useState("scheduled");
   const [_, setIsFetchingForUpdate] = useState(false);
+  const [highlightDropdown, setHighlightDropdown] = useState(false);
 
   // Hooks
   const {
@@ -161,15 +176,8 @@ export default function StatusBoardPage() {
     fetchQueue,
     loadingFetchingSchedules,
   } = useQueue();
-  const {
-    selectNote,
-    fetchNotes,
-    userNotes,
-    createDraftNote,
-    loadingCreateNote,
-    loadingNotes,
-    firstLoadingNotes,
-  } = useNotes();
+  const { selectNote, fetchNotes, userNotes, loadingNotes, firstLoadingNotes } =
+    useNotes();
   const { userSchedules, hasNewNotes } = useAppSelector(state => state.notes);
   const { updateShowCreateScheduleDialog } = useUi();
 
@@ -426,6 +434,40 @@ export default function StatusBoardPage() {
     }
   };
 
+  // Trigger dropdown from empty state
+  const triggerDropdown = useCallback(() => {
+    if (dropdownRef) {
+      (dropdownRef as HTMLButtonElement).click();
+    }
+  }, [dropdownRef]);
+
+  // Handle dropdown opening
+  const handleDropdownOpen = useCallback(() => {
+    setDropdownOpened(true);
+  }, [setDropdownOpened]);
+
+  // Keyboard shortcut handling (N key)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only trigger on 'N' key when not in an input/textarea and conditions are met
+      if (
+        e.key.toLowerCase() === "n" &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA" &&
+        !document.activeElement?.hasAttribute("contenteditable")
+      ) {
+        e.preventDefault();
+        triggerDropdown();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [triggerDropdown]);
+
   const QueueLoading = () => (
     <div className="w-full mx-auto z-10">
       {/* Banner skeleton */}
@@ -479,6 +521,16 @@ export default function StatusBoardPage() {
     </div>
   );
 
+  const CreateNewNoteInstructions = () => (
+    <p
+      className="text-sm"
+      onMouseEnter={() => setHighlightDropdown(true)}
+      onMouseLeave={() => setHighlightDropdown(false)}
+    >
+      Click <strong>+ New note</strong> up top to start writing.
+    </p>
+  );
+
   const Loading = () => {
     return viewMode === "kanban" ? <KanbanLoading /> : <QueueLoading />;
   };
@@ -493,7 +545,12 @@ export default function StatusBoardPage() {
           <h1 className="text-3xl font-bold">
             {viewMode === "kanban" ? KANBAN_TITLE : LIST_TITLE}
           </h1>
-          <ActionBar />
+          <ActionBar
+            className={cn(
+              "transition-shadow rounded-md",
+              highlightDropdown ? "shadow-md shadow-primary" : "",
+            )}
+          />
         </div>
 
         {loadingNotes && firstLoadingNotes ? (
@@ -674,17 +731,10 @@ export default function StatusBoardPage() {
                             className="flex flex-col items-center justify-center py-16 gap-6"
                           >
                             <div className="text-center text-muted-foreground">
-                              <p className="text-lg mb-2">No drafts yet</p>
-                              <p className="text-sm">
-                                Create your first note to get started
+                              <p className="text-lg mb-2">
+                                Your {appName} notes will be here.
                               </p>
-                            </div>
-                            <div className="w-full max-w-sm">
-                              <EmptyStateCard
-                                onAddNote={() => createDraftNote()}
-                                loading={loadingCreateNote}
-                                text="Create your first draft"
-                              />
+                              <CreateNewNoteInstructions />
                             </div>
                           </motion.div>
                         ) : (
@@ -754,15 +804,7 @@ export default function StatusBoardPage() {
                           >
                             <div className="text-center text-muted-foreground">
                               <p className="text-lg mb-2">No notes yet</p>
-                              <p className="text-sm">
-                                Create your first note to get started
-                              </p>
-                            </div>
-                            <div className="w-full max-w-sm">
-                              <EmptyStateCard
-                                onAddNote={() => createDraftNote()}
-                                text="Create your first note"
-                              />
+                              <CreateNewNoteInstructions />
                             </div>
                           </motion.div>
                         ) : (

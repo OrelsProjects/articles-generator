@@ -259,9 +259,15 @@ export function useExtension(): UseExtension {
           // toast.error("Extension not found. Please, install the extension.");
           return;
         }
+
+        const messageWithSource = {
+          ...message,
+          source: "write-stack"
+        }
+
         runtime.sendMessage(
           process.env.NEXT_PUBLIC_EXTENSION_ID!,
-          message,
+          messageWithSource,
           (response?: {
             success: boolean;
             data: {

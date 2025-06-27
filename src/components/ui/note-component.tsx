@@ -1,12 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { cn } from "@/lib/utils";
-import {
-  convertMDToHtml,
-  Note,
-  NoteDraft,
-  NoteStatus,
-} from "@/types/note";
+import { convertMDToHtml, Note, NoteDraft, NoteStatus } from "@/types/note";
 import {
   Heart,
   MessageCircle,
@@ -26,6 +21,7 @@ import { NoteImageContainer } from "@/components/notes/note-image-container";
 import { AttachmentType } from "@prisma/client";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { loadContent, notesTextEditorOptions } from "@/lib/utils/text-editor";
+import { buildNoteUrl } from "@/lib/utils/note";
 
 export type NoteProps = {
   note: Note | NoteDraft;
@@ -92,12 +88,8 @@ export default function NoteComponent({
   isFree = false,
   onNoteArchived,
 }: NoteProps) {
-  const {
-    selectImage,
-    updateNoteStatus,
-    selectNote,
-    selectedNote,
-  } = useNotes();
+  const { selectImage, updateNoteStatus, selectNote, selectedNote } =
+    useNotes();
   const [isExpanded, setIsExpanded] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [showExpandButton, setShowExpandButton] = useState(false);
@@ -226,11 +218,7 @@ export default function NoteComponent({
 
   const Reactions = () =>
     noteReactions && (
-      <Link
-        className="flex justify-between items-center pl-2"
-        href={`https://substack.com/@${handle}/note/${entityKey}`}
-        target="_blank"
-      >
+      <div className="flex justify-between items-center pl-2">
         <div className="flex space-x-3">
           <span className="text-xs text-muted-foreground flex items-center text-red-500">
             <Heart className="h-4 w-4 mr-1 text-red-500 fill-red-500" />
@@ -245,7 +233,7 @@ export default function NoteComponent({
             <p>{noteReactions.restacks}</p>
           </span>
         </div>
-      </Link>
+      </div>
     );
 
   const Author = () => (
@@ -328,7 +316,6 @@ export default function NoteComponent({
     if (contentRef.current) {
       requestAnimationFrame(() => {
         const height = contentRef.current?.scrollHeight || 999;
-
         setShowExpandButton(height > 260);
       });
     }
@@ -497,7 +484,6 @@ export default function NoteComponent({
           </div>
         </div>
         <div className="w-full flex items-center justify-between border-t border-border/60 py-2">
-          {/* {!isFree && ( */}
           <div className="w-full flex items-center justify-between gap-2">
             <Reactions />
             <div
@@ -513,27 +499,31 @@ export default function NoteComponent({
                 extraFeedbackText={extraFeedbackText}
                 isFree={isFree}
               />
-              <Button
-                onClick={() =>
-                  window.open(
-                    `https://substack.com/@${handle}/note/${entityKey}`,
-                    "_blank",
-                  )
-                }
-                variant="link"
-                size="sm"
-                className={cn(
-                  "text-xs text-muted-foreground hover:text-foreground",
-                  {
-                    hidden: isUserNote,
-                  },
-                )}
-              >
-                View on Substack <ExternalLink className="w-4 h-4 ml-2" />
-              </Button>
+              {handle && entityKey && (
+                <Button
+                  onClick={() =>
+                    window.open(
+                      buildNoteUrl({
+                        handle,
+                        noteId: entityKey,
+                      }),
+                      "_blank",
+                    )
+                  }
+                  variant="link"
+                  size="sm"
+                  className={cn(
+                    "text-xs text-muted-foreground hover:text-foreground",
+                    {
+                      hidden: isUserNote,
+                    },
+                  )}
+                >
+                  View on Substack <ExternalLink className="w-4 h-4 ml-2" />
+                </Button>
+              )}
             </div>
           </div>
-          {/* )} */}
         </div>
       </div>
     </div>

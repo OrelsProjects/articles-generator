@@ -20,7 +20,10 @@ export type LocalStorageKey =
   | "show_character_count_bar"
   | "premium-feature-soon-overlay"
   | "hide_feedback_fab"
-  | "notes_view_mode";
+  | "notes_view_mode"
+  | "first_time_drafts_tooltip_shown"
+  | "create_note_dropdown_opened"
+  | "drafts_onboarding_feature_flag";
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue
