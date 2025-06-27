@@ -180,9 +180,13 @@ export async function generateNotesPrompt({
   ] = await Promise.all([
     prisma.note.findMany({
       where: {
-        userId,
-        isArchived: false,
-        OR: [{ status: "published" }, { status: "scheduled" }],
+        AND: [
+          { userId },
+          { isArchived: false },
+          {
+            OR: [{ status: "published" }, { status: "scheduled" }],
+          },
+        ],
       },
       take: 15,
       orderBy: { updatedAt: "desc" },
@@ -200,14 +204,18 @@ export async function generateNotesPrompt({
       orderBy: { updatedAt: "desc" },
     }),
     prisma.note.findMany({
-      where: { userId, feedback: "like" },
+      where: {
+        AND: [{ userId }, { feedback: "like" }],
+      },
       take: 15,
       orderBy: { updatedAt: "desc" },
     }),
     prismaArticles.notesComments.findMany({
       where: {
-        authorId: parseInt(authorId.toString()),
-        noteIsRestacked: false,
+        AND: [
+          { authorId: parseInt(authorId.toString()) },
+          { noteIsRestacked: false },
+        ],
       },
       orderBy: {
         reactionCount: "desc",
@@ -315,6 +323,7 @@ export async function generateNotes({
         userId,
       },
       select: {
+        userId: true,
         preferredLanguage: true,
         featureFlags: true,
         notesToGenerateCount: true,
