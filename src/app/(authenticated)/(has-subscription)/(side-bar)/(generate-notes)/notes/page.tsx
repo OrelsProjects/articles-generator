@@ -5,7 +5,14 @@ import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useAppSelector, useAppDispatch } from "@/lib/hooks/redux";
-import { LayoutGrid, List, Info, Plus, RefreshCw } from "lucide-react";
+import {
+  LayoutGrid,
+  List,
+  Info,
+  Plus,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -32,45 +39,39 @@ const LIST_TITLE = "Your notes";
 // Enhanced Empty State Card Component
 const EmptyStateCard = ({
   onAddNote,
-  text = "Add new note",
+  onGenerateNotes,
   loading,
-  onTriggerDropdown,
 }: {
   onAddNote: () => void;
-  text?: string;
+  onGenerateNotes: () => void;
   loading?: boolean;
-  onTriggerDropdown?: () => void;
 }) => (
-  <motion.div
-    initial={{ opacity: 0.7 }}
-    animate={{ opacity: [0.7, 1, 0.7] }}
-    transition={{
-      duration: 3,
-      repeat: Infinity,
-      repeatDelay: 5,
-      ease: "easeInOut",
-    }}
-    className={cn(
-      "border-2 border-dashed border-muted-foreground/50 dark:border-muted-foreground/50 rounded-lg p-6 text-center hover:border-muted-foreground/40 dark:hover:border-muted-foreground/40 transition-colors cursor-pointer group",
-      { "cursor-not-allowed": loading },
-    )}
-    onClick={loading ? undefined : onTriggerDropdown || onAddNote}
-  >
-    {loading ? (
-      <RefreshCw className="w-5 h-5 mx-auto mb-2 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors animate-spin" />
-    ) : (
-      <Plus className="w-5 h-5 mx-auto mb-2 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
-    )}
-    <p
-      className={cn(
-        "text-sm text-muted-foreground/60 group-hover:text-foreground transition-colors",
-        {
-          "text-muted-foreground/50": loading,
-        },
-      )}
-    >
-      {text}
-    </p>
+  <motion.div className="rounded-lg p-6 text-center space-y-4">
+    <p className="text-muted-foreground">You don&apos;t have any drafts.</p>
+    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:justify-center">
+      <Button
+        onClick={onAddNote}
+        disabled={loading}
+        variant="outline"
+        className="flex items-center gap-2"
+      >
+        {loading ? (
+          <RefreshCw className="w-4 h-4 animate-spin" />
+        ) : (
+          <Plus className="w-4 h-4" />
+        )}
+        Create new draft
+      </Button>
+
+      <Button
+        onClick={onGenerateNotes}
+        disabled={loading}
+        className="flex items-center gap-2"
+      >
+        <Sparkles className={cn("w-4 h-4")} />
+        Generate notes
+      </Button>
+    </div>
   </motion.div>
 );
 
@@ -144,22 +145,17 @@ export default function StatusBoardPage() {
     "list",
   );
 
-  // First-time drafts experience state
-  const [featureEnabled] = useLocalStorage(
-    "drafts_onboarding_feature_flag",
-    true,
-  );
-  const [dropdownOpened, setDropdownOpened] = useLocalStorage(
-    "create_note_dropdown_opened",
-    false,
-  );
-  const [dropdownRef, setDropdownRef] = useState<HTMLElement | null>(null);
-
   // Queue page state
   const [activeTabCache, setActiveTabCache] = useLocalStorage(
     "queue_active_tab",
     "scheduled",
   );
+
+  const [didCreateNote, setDidCreateNote] = useLocalStorage(
+    "did_create_note",
+    false,
+  );
+
   const [activeDays, setActiveDays] = useState<Date[]>([]);
   const [activeTab, setActiveTab] = useState("scheduled");
   const [_, setIsFetchingForUpdate] = useState(false);
@@ -176,10 +172,18 @@ export default function StatusBoardPage() {
     fetchQueue,
     loadingFetchingSchedules,
   } = useQueue();
-  const { selectNote, fetchNotes, userNotes, loadingNotes, firstLoadingNotes } =
-    useNotes();
+  const {
+    selectNote,
+    fetchNotes,
+    userNotes,
+    createDraftNote,
+    loadingNotes,
+    firstLoadingNotes,
+    loadingCreateNote,
+  } = useNotes();
   const { userSchedules, hasNewNotes } = useAppSelector(state => state.notes);
-  const { updateShowCreateScheduleDialog } = useUi();
+  const { updateShowCreateScheduleDialog, updateShowGenerateNotesDialog } =
+    useUi();
 
   // Refs
   const lastFetchOnActiveTab = useRef<Date | null>(null);
@@ -190,6 +194,13 @@ export default function StatusBoardPage() {
   const router = useCustomRouter();
   const pathname = usePathname();
   const viewFromSearchParams = searchParams.get("view");
+
+  // Set didCreateNote to true if the user has created a note
+  useEffect(() => {
+    if (draftNotes.length > 0 && !didCreateNote) {
+      setDidCreateNote(true);
+    }
+  }, [draftNotes]);
 
   useEffect(() => {
     if (viewFromSearchParams) {
@@ -208,7 +219,6 @@ export default function StatusBoardPage() {
   }, []);
 
   useEffect(() => {
-    debugger;
     if (activeTab === "drafts") {
       if (hasNewNotes) {
         dispatch(resetNotification());
@@ -434,40 +444,6 @@ export default function StatusBoardPage() {
     }
   };
 
-  // Trigger dropdown from empty state
-  const triggerDropdown = useCallback(() => {
-    if (dropdownRef) {
-      (dropdownRef as HTMLButtonElement).click();
-    }
-  }, [dropdownRef]);
-
-  // Handle dropdown opening
-  const handleDropdownOpen = useCallback(() => {
-    setDropdownOpened(true);
-  }, [setDropdownOpened]);
-
-  // Keyboard shortcut handling (N key)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Only trigger on 'N' key when not in an input/textarea and conditions are met
-      if (
-        e.key.toLowerCase() === "n" &&
-        !e.ctrlKey &&
-        !e.metaKey &&
-        !e.altKey &&
-        document.activeElement?.tagName !== "INPUT" &&
-        document.activeElement?.tagName !== "TEXTAREA" &&
-        !document.activeElement?.hasAttribute("contenteditable")
-      ) {
-        e.preventDefault();
-        triggerDropdown();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [triggerDropdown]);
-
   const QueueLoading = () => (
     <div className="w-full mx-auto z-10">
       {/* Banner skeleton */}
@@ -522,13 +498,16 @@ export default function StatusBoardPage() {
   );
 
   const CreateNewNoteInstructions = () => (
-    <p
-      className="text-sm"
-      onMouseEnter={() => setHighlightDropdown(true)}
-      onMouseLeave={() => setHighlightDropdown(false)}
-    >
-      Click <strong>+ New note</strong> up top to start writing.
-    </p>
+    <div className="text-center text-muted-foreground">
+      <p className="text-lg mb-2">Your {appName} notes will be here.</p>
+      <p
+        className="cursor-default"
+        onMouseEnter={() => setHighlightDropdown(true)}
+        onMouseLeave={() => setHighlightDropdown(false)}
+      >
+        Click <strong>+ New note</strong> up top to start writing.
+      </p>
+    </div>
   );
 
   const Loading = () => {
@@ -730,12 +709,19 @@ export default function StatusBoardPage() {
                             animate={{ opacity: 1, y: 0 }}
                             className="flex flex-col items-center justify-center py-16 gap-6"
                           >
-                            <div className="text-center text-muted-foreground">
-                              <p className="text-lg mb-2">
-                                Your {appName} notes will be here.
-                              </p>
+                            {didCreateNote ? (
+                              <EmptyStateCard
+                                onAddNote={() => {
+                                  createDraftNote();
+                                }}
+                                onGenerateNotes={() => {
+                                  updateShowGenerateNotesDialog(true);
+                                }}
+                                loading={loadingCreateNote}
+                              />
+                            ) : (
                               <CreateNewNoteInstructions />
-                            </div>
+                            )}
                           </motion.div>
                         ) : (
                           <motion.div
