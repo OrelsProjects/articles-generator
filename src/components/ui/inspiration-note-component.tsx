@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useInspiration } from "@/lib/hooks/useInspiration";
 import { Undo2 } from "lucide-react";
+import { buildCreatorUrl } from "@/lib/utils/note";
 
 export type NoteProps = {
   note: Note | NoteDraft;
@@ -275,6 +276,17 @@ export default function InspirationNoteComponent({
             <Ban className="w-4 h-4" />
             Hide creator&apos;s notes
           </DropdownMenuItem>
+          {handle && (
+            <DropdownMenuItem
+              onClick={() => {
+                window.open(buildCreatorUrl({ handle }), "_blank");
+              }}
+              className="cursor-pointer flex flex-row gap-1.5"
+            >
+              <ExternalLink className="w-4 h-4" />
+              View on Substack
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     );

@@ -42,9 +42,6 @@ import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
 import { Logger } from "@/logger";
 import { MAX_FILE_SIZE } from "@/lib/consts";
 import { EventTracker } from "@/eventTracker";
-import NoteEditorAdvancedSheet from "@/components/notes/note-editor-advanced-sheet";
-import { useAutoDM } from "@/lib/hooks/useAutoDM";
-import { useUi } from "@/lib/hooks/useUi";
 import { CharacterCountBar } from "@/components/notes/character-count-bar";
 import { isPlagiarism } from "@/lib/utils/note-editor-utils";
 
@@ -89,7 +86,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [uploadingFilesCount, setUploadingFilesCount] = useState(0);
   const [isSendingNote, setIsSendingNote] = useState(false);
-  const [showAdvancedSheet, setShowAdvancedSheet] = useState(false);
   const [characterCount, setCharacterCount] = useState(0);
 
   // State for drag and drop
@@ -181,18 +177,26 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   }, [selectedNote]);
 
   const noteAuthorName = useMemo(() => {
-    if (isInspiration) {
-      return selectedNote.name || selectedNote.handle;
-    }
-    return name;
-  }, [isInspiration, selectedNote?.handle, name]);
+    return user?.displayName || name;
+  }, [user?.displayName, name]);
 
   const noteThumbnail = useMemo(() => {
+    return thumbnail;
+  }, [thumbnail]);
+
+  const inspirationAuthorName = useMemo(() => {
+    if (isInspiration) {
+      return selectedNote.authorName || selectedNote.handle;
+    }
+    return null;
+  }, [isInspiration, selectedNote?.name, selectedNote?.handle]);
+
+  const inspirationThumbnail = useMemo(() => {
     if (isInspiration) {
       return selectedNote.thumbnail;
     }
-    return thumbnail;
-  }, [isInspiration, selectedNote?.thumbnail, thumbnail]);
+    return null;
+  }, [isInspiration, selectedNote?.thumbnail]);
 
   const userInitials = useMemo(() => {
     let writerName = name || user?.displayName || "";
@@ -203,7 +207,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
         .map(name => name[0])
         .join("") || "OZ"
     );
-  }, [name]);
+  }, [name, user?.displayName]);
 
   async function handleBodyChange(
     html: string,
@@ -515,34 +519,11 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
           className="sm:min-w-[600px] sm:min-h-[290px] max-w-[600px] p-0 gap-0 border-border bg-background rounded-2xl"
         >
           <div className="relative overflow-visible">
-            <div className="w-full h-full absolute bottom-0 z-10">
-              <NoteEditorAdvancedSheet
-                open={showAdvancedSheet}
-                onOpenChange={setShowAdvancedSheet}
-              />
-            </div>
             <div
               className="flex flex-col w-full relative z-20 bg-background rounded-2xl h-[99%]"
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
             >
-              {/* {canAutoDM && (
-                <Switch
-                  checked={!!noteAutoDM}
-                  loading={loadingAutoDM}
-                  onCheckedChange={checked => {
-                    if (!checked && noteAutoDM) {
-                      deleteAutoDM(noteAutoDM.id);
-                    } else {
-                      createAutoDM({
-                        noteId: selectedNote?.id || "",
-                        message: "",
-                      });
-                    }
-                  }}
-                  className="absolute top-2 right-2"
-                />
-              )} */}
               <ImageDropOverlay
                 isVisible={isDraggingOver}
                 onFileDrop={handleFileDrop}
@@ -561,9 +542,24 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                 </Avatar>
                 <div className="flex-1 flex flex-col">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-medium text-foreground">
-                      {noteAuthorName || userName}
-                    </h3>
+                    <div className="flex flex-col">
+                      <h3 className="font-medium text-foreground">
+                        {noteAuthorName || userName}
+                      </h3>
+                      {isInspiration && inspirationAuthorName && (
+                        <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
+                          <span>(Inspired by:</span>
+                          {inspirationThumbnail && (
+                            <img
+                              src={inspirationThumbnail}
+                              alt={inspirationAuthorName}
+                              className="w-4 h-4 rounded-full"
+                            />
+                          )}
+                          <span>{inspirationAuthorName})</span>
+                        </div>
+                      )}
+                    </div>
                     <div className="max-w-xs">
                       <CharacterCountBar
                         characterCount={characterCount}
@@ -589,7 +585,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                             onImageSelect={handleImageSelect}
                             onImageDelete={handleImageDelete}
                             attachment={attachment}
-                            allowDelete={attachment.id !== ""}
+                            allowDelete={!isInspiration && attachment.id !== ""}
                           />
                         ))}
                       </div>
@@ -694,15 +690,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                   >
                     <Copy className="h-5 w-5 text-muted-foreground" />
                   </TooltipButton>
-                  {/* <TooltipButton
-                    tooltipContent="Copy"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 hidden md:flex"
-                    onClick={() => setShowAdvancedSheet(!showAdvancedSheet)}
-                  >
-                    <BookOpenIcon className="h-5 w-5 text-muted-foreground" />
-                  </TooltipButton> */}
                 </div>
                 <div className="flex gap-3">
                   {!isInspiration && !free && (

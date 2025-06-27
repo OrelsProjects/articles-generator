@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { BarChart3, X } from "lucide-react";
+import { BarChart3, Eye, EyeOff } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 
@@ -99,12 +99,12 @@ export function CharacterCountBar({
       return "Perfect."; // Extended peak range 281-300
     }
     // A text that doesn't tell the user that they're wrong, but doesn't give them a false sense of security
-    return ""
+    return "";
   };
 
   const getScore = () => {
     if (currentRange) {
-    return currentRange.score;
+      return currentRange.score;
     }
     if (characterCount < 150) {
       return Math.max(1, Math.floor((characterCount / 150) * 5));
@@ -116,25 +116,9 @@ export function CharacterCountBar({
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
-      <div className="flex items-center justify-end">
-        <TooltipButton
-          tooltipContent={showCharacterCountBar ? "Hide virality bar" : "Show virality bar"}
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowCharacterCountBar(!showCharacterCountBar)}
-          className="h-6 w-6 p-0"
-        >
-          {showCharacterCountBar ? (
-            <X className="h-3 w-3" />
-          ) : (
-            <BarChart3 className="h-3 w-3" />
-          )}
-        </TooltipButton>
-      </div>
-
+    <div className={cn("hidden md:flex items-center gap-2", className)}>
       {showCharacterCountBar && (
-        <>
+        <div className="flex flex-col gap-2">
           <div className="w-40 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               className={cn(
@@ -152,8 +136,25 @@ export function CharacterCountBar({
               {getFeedbackText()}
             </p>
           </div>
-        </>
+        </div>
       )}
+      <div className="flex items-center justify-end">
+        <TooltipButton
+          tooltipContent={
+            showCharacterCountBar ? "Hide virality bar" : "Show virality bar"
+          }
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowCharacterCountBar(!showCharacterCountBar)}
+          className="h-6 w-6 p-0"
+        >
+          {showCharacterCountBar ? (
+            <Eye className="h-3 w-3" />
+          ) : (
+            <BarChart3 className="h-3 w-3" />
+          )}
+        </TooltipButton>
+      </div>
     </div>
   );
 }

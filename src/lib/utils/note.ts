@@ -7,3 +7,9 @@ export const buildNoteUrl = (data: {
     data.isComment ? `#comments` : ""
   }`;
 };
+
+export const buildCreatorUrl = (data: {
+  handle: string;
+}) => {
+  return `https://substack.com/@${data.handle}`;
+};
