@@ -43,6 +43,7 @@ import {
   TooltipProvider,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 
 const ideaLoadingStates = [
   { text: "Finding relevant notes..." },
@@ -95,7 +96,10 @@ export function GenerateNotesDialog({
   const [showArticleDialog, setShowArticleDialog] = useState(false);
   const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
   const [hoveredArticle, setHoveredArticle] = useState<Article | null>(null);
-  const [includeArticleLinks, setIncludeArticleLinks] = useState(true);
+  const [includeArticleLinks, setIncludeArticleLinks] = useLocalStorage<boolean>(
+    "include_articles_checked",
+    true,
+  );
 
   useEffect(() => {
     if (errorGenerateNotes) {

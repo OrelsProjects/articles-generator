@@ -23,7 +23,8 @@ export type LocalStorageKey =
   | "notes_view_mode"
   | "first_time_drafts_tooltip_shown"
   | "create_note_dropdown_opened"
-  | "did_create_note";
+  | "did_create_note"
+  | "include_articles_checked"
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue
