@@ -13,7 +13,7 @@ import {
   StickyNote,
 } from "lucide-react";
 
-export const rootPath = "/queue";
+export const rootPath = "/notes";
 
 export const navItems: {
   name: string;
