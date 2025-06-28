@@ -22,6 +22,7 @@ import { MotionAlert } from "@/components/ui/motion-components";
 import { AlertDescription } from "@/components/ui/alert";
 import { useSession } from "next-auth/react";
 import HowToFindNewsletterUrlDialog from "@/components/ui/how-to-find-newsletter-url-dialog";
+import { validatePublication } from "@/lib/utils/url";
 
 export const ERRORS = {
   INVALID_URL: {
@@ -111,21 +112,6 @@ export default function UrlAnalysisInput({
         (hasData && !!substackUrl))
     );
   }, [isLoading, loadingBylines, isInputDisabled, hasData, substackUrl]);
-
-  const validatePublication = async (url: string) => {
-    try {
-      const res = await axiosInstance.post(
-        `/api/user/analyze/validate`,
-        {
-          url,
-        },
-      );
-      return res.data;
-    } catch (error) {
-      console.error("Error validating publication: " + url, error);
-      return { valid: false, hasPublication: false };
-    }
-  };
 
   const getBylines = async () => {
     if (isLoading || loadingBylines) return;

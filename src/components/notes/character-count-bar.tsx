@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { BarChart3, Eye, EyeOff } from "lucide-react";
+import { BarChart3, EyeOff } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 
@@ -149,7 +149,7 @@ export function CharacterCountBar({
           className="h-6 w-6 p-0"
         >
           {showCharacterCountBar ? (
-            <Eye className="h-3 w-3" />
+            <EyeOff className="h-3 w-3" />
           ) : (
             <BarChart3 className="h-3 w-3" />
           )}

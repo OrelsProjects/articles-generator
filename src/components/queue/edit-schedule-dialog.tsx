@@ -9,12 +9,16 @@ import {
   Save,
   Clock,
   ChevronUp,
+  Globe,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -54,6 +58,7 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
     updateSchedule,
     loading,
     loadingBestTimeToPublish,
+    loadingDaySchedule,
   } = useQueue();
   const { showCreateScheduleDialog, updateShowCreateScheduleDialog } = useUi();
   const { userSchedules } = useAppSelector(state => state.notes);
@@ -140,19 +145,22 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
       const { hour, minute, ampm } = parseTimeString(updatedEntry.time);
 
       // This is an existing entry, so we need to update it
-      await updateSchedule({
-        id: updatedEntry.id,
-        hour,
-        minute,
-        ampm,
-        sunday: updatedEntry.days.sun,
-        monday: updatedEntry.days.mon,
-        tuesday: updatedEntry.days.tue,
-        wednesday: updatedEntry.days.wed,
-        thursday: updatedEntry.days.thu,
-        friday: updatedEntry.days.fri,
-        saturday: updatedEntry.days.sat,
-      });
+      await updateSchedule(
+        {
+          id: updatedEntry.id,
+          hour,
+          minute,
+          ampm,
+          sunday: updatedEntry.days.sun,
+          monday: updatedEntry.days.mon,
+          tuesday: updatedEntry.days.tue,
+          wednesday: updatedEntry.days.wed,
+          thursday: updatedEntry.days.thu,
+          friday: updatedEntry.days.fri,
+          saturday: updatedEntry.days.sat,
+        },
+        day,
+      );
     } catch (error) {
       // Revert the optimistic update
       toast.error("Failed to update schedule");
@@ -263,19 +271,22 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
         if (!entry.id.startsWith("temp-")) {
           const { hour, minute, ampm } = parseTimeString(entry.time);
 
-          return updateSchedule({
-            id: entry.id,
-            hour,
-            minute,
-            ampm,
-            sunday: entry.days.sun,
-            monday: entry.days.mon,
-            tuesday: entry.days.tue,
-            wednesday: entry.days.wed,
-            thursday: entry.days.thu,
-            friday: entry.days.fri,
-            saturday: entry.days.sat,
-          });
+          return updateSchedule(
+            {
+              id: entry.id,
+              hour,
+              minute,
+              ampm,
+              sunday: entry.days.sun,
+              monday: entry.days.mon,
+              tuesday: entry.days.tue,
+              wednesday: entry.days.wed,
+              thursday: entry.days.thu,
+              friday: entry.days.fri,
+              saturday: entry.days.sat,
+            },
+            null,
+          );
         }
         return Promise.resolve();
       });
@@ -286,6 +297,43 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
       console.error(error);
     }
   };
+  // Open the time picker dialog and set the hours and minutes
+  const handleTimeClicked = (hour: number, minutes: number) => {
+    setHours(hour);
+    setMinutes(minutes);
+    setIsAddingSlot(true);
+  };
+
+  // Check if the current selected time already exists in the schedule
+  const isTimeAlreadyUsed = () => {
+    const currentTimeString = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+    return schedule.some(entry => entry.time === currentTimeString);
+  };
+
+  const DayCheckbox = ({
+    id,
+    day,
+  }: {
+    id: string;
+    day: keyof ScheduleEntry["days"];
+  }) => {
+    const isDayLoading = loadingDaySchedule === day;
+    return isDayLoading ? (
+      <div className="flex items-center justify-center">
+        <Loader2 className="h-4 w-4 text-primary animate-spin" />
+      </div>
+    ) : (
+      <Checkbox
+        checked={
+          schedule.find(s => s.id === id)?.days[
+            day as keyof ScheduleEntry["days"]
+          ]
+        }
+        onCheckedChange={() => handleToggleDay(id, day)}
+        disabled={loading || isDayLoading}
+      />
+    );
+  };
 
   return (
     <Dialog open={showCreateScheduleDialog} onOpenChange={updateOpen}>
@@ -295,7 +343,12 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
             Edit your posting schedule
           </DialogTitle>
         </DialogHeader>
-
+        <DialogDescription className="mb-4">
+          <p className="text-sm text-muted-foreground">
+            Make a posting schedule, so you post consistently on consistent
+            times.
+          </p>
+        </DialogDescription>
         <div className="overflow-x-auto ">
           <table className="w-full">
             <thead>
@@ -338,53 +391,25 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
                       </Button>
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <Checkbox
-                        checked={entry.days.mon}
-                        onCheckedChange={() => handleToggleDay(entry.id, "mon")}
-                        disabled={loading}
-                      />
+                      <DayCheckbox id={entry.id} day="mon" />
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <Checkbox
-                        checked={entry.days.tue}
-                        onCheckedChange={() => handleToggleDay(entry.id, "tue")}
-                        disabled={loading}
-                      />
+                      <DayCheckbox id={entry.id} day="tue" />
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <Checkbox
-                        checked={entry.days.wed}
-                        onCheckedChange={() => handleToggleDay(entry.id, "wed")}
-                        disabled={loading}
-                      />
+                      <DayCheckbox id={entry.id} day="wed" />
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <Checkbox
-                        checked={entry.days.thu}
-                        onCheckedChange={() => handleToggleDay(entry.id, "thu")}
-                        disabled={loading}
-                      />
+                      <DayCheckbox id={entry.id} day="thu" />
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <Checkbox
-                        checked={entry.days.fri}
-                        onCheckedChange={() => handleToggleDay(entry.id, "fri")}
-                        disabled={loading}
-                      />
+                      <DayCheckbox id={entry.id} day="fri" />
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <Checkbox
-                        checked={entry.days.sat}
-                        onCheckedChange={() => handleToggleDay(entry.id, "sat")}
-                        disabled={loading}
-                      />
+                      <DayCheckbox id={entry.id} day="sat" />
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <Checkbox
-                        checked={entry.days.sun}
-                        onCheckedChange={() => handleToggleDay(entry.id, "sun")}
-                        disabled={loading}
-                      />
+                      <DayCheckbox id={entry.id} day="sun" />
                     </td>
                   </tr>
                 ))}
@@ -537,6 +562,11 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
                           </Button>
                         </div>
                       </div>
+                      <p className="text-xs text-muted-foreground mt-2 text-center">
+                        {Intl.DateTimeFormat()
+                          .resolvedOptions()
+                          .timeZone.replace("_", "/")}
+                      </p>
                     </motion.div>
 
                     <motion.div
@@ -546,11 +576,11 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
                     >
                       <Button
                         onClick={handleAddNewSlot}
-                        disabled={loading}
+                        disabled={loading || isTimeAlreadyUsed()}
                         className="px-5 py-2"
                       >
                         <Save className="mr-2 h-4 w-4" />
-                        Save Slot
+                        {isTimeAlreadyUsed() ? "Time used" : "Save slot"}
                       </Button>
                     </motion.div>
                   </motion.div>
@@ -567,8 +597,15 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
               <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <FollowerActivityChart />
+            <FollowerActivityChart onTimeClicked={handleTimeClicked} />
           )}
+        </div>
+        <div className="w-full flex items-center justify-center mt-4 text-sm text-muted-foreground">
+          <Globe className="h-4 w-4 mr-2" />
+          <span>
+            Timezone:{" "}
+            {Intl.DateTimeFormat().resolvedOptions().timeZone.replace("_", "/")}
+          </span>
         </div>
       </DialogContent>
     </Dialog>

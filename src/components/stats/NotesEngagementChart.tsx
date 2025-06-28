@@ -29,13 +29,6 @@ import { Plan } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import ExtensionNeededWrapper from "@/components/extension-needed-wrapper";
 
-type MetricType =
-  | "clicks"
-  | "follows"
-  | "paid Subscriptions"
-  | "free Subscriptions"
-  | null;
-
 const formatPeriod = (period: string, interval: ReactionInterval) => {
   const date = new Date(period);
 
@@ -151,7 +144,6 @@ interface NotesEngagementChartProps {
 }
 
 export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
-  console.log("Is loading in NotesEngagementChart", isLoading);
   const { isFetchingNotesStats } = useAppSelector(state => state.statistics);
   const {
     noteStats,
@@ -164,7 +156,6 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
     fetchNotesForDate,
   } = useNotesStats();
 
-  const [normalizeData, setNormalizeData] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [clickPosition, setClickPosition] = useState<{
@@ -212,50 +203,50 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
         };
       });
 
-    if (!normalizeData) return { chartData: rawData, originalData: rawData };
+    return { chartData: rawData, originalData: rawData };
 
-    // Apply normalization to handle viral outliers
-    const normalizeMetric = (values: number[]) => {
-      if (values.length === 0) return values;
+    // // Apply normalization to handle viral outliers
+    // const normalizeMetric = (values: number[]) => {
+    //   if (values.length === 0) return values;
 
-      // Calculate percentiles
-      const sorted = [...values].sort((a, b) => a - b);
-      const q75Index = Math.floor(sorted.length * 0.75);
-      const q95Index = Math.floor(sorted.length * 0.95);
-      const q75 = sorted[q75Index];
-      const q95 = sorted[q95Index];
+    //   // Calculate percentiles
+    //   const sorted = [...values].sort((a, b) => a - b);
+    //   const q75Index = Math.floor(sorted.length * 0.75);
+    //   const q95Index = Math.floor(sorted.length * 0.95);
+    //   const q75 = sorted[q75Index];
+    //   const q95 = sorted[q95Index];
 
-      // Calculate IQR-based cap (more conservative than just using max)
-      const iqr = q95 - q75;
-      const cap = q95 + iqr * 1.5;
+    //   // Calculate IQR-based cap (more conservative than just using max)
+    //   const iqr = q95 - q75;
+    //   const cap = q95 + iqr * 1.5;
 
-      // Apply cap to values
-      return values.map(value => Math.min(value, cap));
-    };
+    //   // Apply cap to values
+    //   return values.map(value => Math.min(value, cap));
+    // };
 
-    if (!rawData || rawData.length === 0)
-      return { chartData: [], originalData: [] };
+    // if (!rawData || rawData.length === 0)
+    //   return { chartData: [], originalData: [] };
 
-    const clicks = rawData.map(d => d.clicks);
-    const follows = rawData.map(d => d.follows);
-    const paidSubscriptions = rawData.map(d => d.paidSubscriptions);
-    const freeSubscriptions = rawData.map(d => d.freeSubscriptions);
+    // const clicks = rawData.map(d => d.clicks);
+    // const follows = rawData.map(d => d.follows);
+    // const paidSubscriptions = rawData.map(d => d.paidSubscriptions);
+    // const freeSubscriptions = rawData.map(d => d.freeSubscriptions);
 
-    const normalizedClicks = normalizeMetric(clicks);
-    const normalizedFollows = normalizeMetric(follows);
-    const normalizedPaidSubscriptions = normalizeMetric(paidSubscriptions);
-    const normalizedFreeSubscriptions = normalizeMetric(freeSubscriptions);
+    // const normalizedClicks = normalizeMetric(clicks);
+    // const normalizedFollows = normalizeMetric(follows);
+    // const normalizedPaidSubscriptions = normalizeMetric(paidSubscriptions);
+    // const normalizedFreeSubscriptions = normalizeMetric(freeSubscriptions);
 
-    const normalizedData = rawData.map((item, index) => ({
-      ...item,
-      clicks: normalizedClicks[index],
-      follows: normalizedFollows[index],
-      paidSubscriptions: normalizedPaidSubscriptions[index],
-      freeSubscriptions: normalizedFreeSubscriptions[index],
-    }));
+    // const normalizedData = rawData.map((item, index) => ({
+    //   ...item,
+    //   clicks: normalizedClicks[index],
+    //   follows: normalizedFollows[index],
+    //   paidSubscriptions: normalizedPaidSubscriptions[index],
+    //   freeSubscriptions: normalizedFreeSubscriptions[index],
+    // }));
 
-    return { chartData: normalizedData, originalData: rawData };
-  }, [noteStats, normalizeData]);
+    // return { chartData: normalizedData, originalData: rawData };
+  }, [noteStats]);
 
   useEffect(() => {
     // If no engagement data, fetch it every 60 seconds
@@ -373,7 +364,7 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
                     top: 5,
                     right: 30,
                     left: 20,
-                    bottom: reactionsInterval === "week" ? 60 : 5,
+                    bottom: 0,
                   }}
                   className="h-full"
                   onClick={handleChartClick}
@@ -417,7 +408,6 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
                     content={
                       <CustomTooltip
                         interval={reactionsInterval}
-                        isNormalized={normalizeData}
                         originalData={originalData}
                         isAdvancedStats={isAdvancedStats}
                         dataKeyLabel={dataKeyLabel}

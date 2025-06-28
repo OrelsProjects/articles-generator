@@ -1,3 +1,5 @@
+import axiosInstance from "@/lib/axios-instance";
+
 const PUBLIC_SUFFIX_LIST = [
   "com",
   "co",
@@ -281,3 +283,18 @@ export const getUrlComponents = (
     return { validUrl: `https://${validUrl}`, mainComponentInUrl };
   }
 };
+
+
+
+
+  export const validatePublication = async (url: string) => {
+    try {
+      const res = await axiosInstance.post(`/api/user/analyze/validate`, {
+        url,
+      });
+      return res.data;
+    } catch (error) {
+      console.error("Error validating publication: " + url, error);
+      return { valid: false, hasPublication: false };
+    }
+  };

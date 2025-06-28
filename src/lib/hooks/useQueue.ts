@@ -29,6 +29,9 @@ export function useQueue() {
   );
 
   const [loading, setLoading] = useState(false);
+  const [loadingDaySchedule, setLoadingDaySchedule] = useState<string | null>(
+    null,
+  );
 
   const [page, setPage] = useState(1);
   const [pageSize] = useState(30);
@@ -120,7 +123,11 @@ export function useQueue() {
     }
   };
 
-  const updateSchedule = async (schedule: UserSchedule) => {
+  const updateSchedule = async (
+    schedule: UserSchedule,
+    day: string | null,
+  ) => {
+    setLoadingDaySchedule(day);
     setLoading(true);
     const previousSchedule = userSchedules.find(s => s.id === schedule.id);
     if (!previousSchedule) {
@@ -138,6 +145,7 @@ export function useQueue() {
       throw error;
     } finally {
       setLoading(false);
+      setLoadingDaySchedule(null);
     }
   };
 
@@ -379,5 +387,6 @@ export function useQueue() {
     counters,
     hasQueue,
     loadingFetchingSchedules,
+    loadingDaySchedule,
   };
 }

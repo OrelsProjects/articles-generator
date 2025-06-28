@@ -12,6 +12,7 @@ import {
   Plus,
   RefreshCw,
   Sparkles,
+  StickyNote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,12 +59,13 @@ const EmptyStateCard = ({
         {loading ? (
           <RefreshCw className="w-4 h-4 animate-spin" />
         ) : (
-          <Plus className="w-4 h-4" />
+          <StickyNote className="w-4 h-4" />
         )}
-        Create new draft
+        New draft
       </Button>
 
       <Button
+        variant="outline"
         onClick={onGenerateNotes}
         disabled={loading}
         className="flex items-center gap-2"
@@ -500,12 +502,24 @@ export default function StatusBoardPage() {
   const CreateNewNoteInstructions = () => (
     <div className="text-center text-muted-foreground">
       <p className="text-lg mb-2">Your {appName} notes will be here.</p>
-      <p
-        className="cursor-default"
-        onMouseEnter={() => setHighlightDropdown(true)}
-        onMouseLeave={() => setHighlightDropdown(false)}
-      >
-        Click <strong>+ New note</strong> up top to start writing.
+      <p className="cursor-default">
+        To create a new note, click{" "}
+        <span
+          className="font-bold"
+          onMouseEnter={() => setHighlightDropdown(true)}
+          onMouseLeave={() => setHighlightDropdown(false)}
+        >
+          New draft
+        </span>{" "}
+        to create an empty note, or{" "}
+        <span
+          className="font-bold"
+          onMouseEnter={() => setHighlightDropdown(true)}
+          onMouseLeave={() => setHighlightDropdown(false)}
+        >
+          Generate notes
+        </span>{" "}
+        to generate a note from your article.
       </p>
     </div>
   );

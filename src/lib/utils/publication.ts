@@ -8,6 +8,7 @@ import {
   getUserArticlesBody,
 } from "@/lib/dal/articles";
 import { getUrlComponents, toValidUrl } from "@/lib/utils/url";
+import axiosInstance from "@/lib/axios-instance";
 
 export const getArticleEndpoint = (
   url: string,
