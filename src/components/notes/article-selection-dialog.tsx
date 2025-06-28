@@ -121,13 +121,17 @@ export function ArticleSelectionDialog({
             >
               No articles found
             </p>
-            <Button variant="outline" onClick={reloadArticles}>
+            <Button
+              variant="outline"
+              onClick={reloadArticles}
+              disabled={isLoading}
+            >
               {isLoading ? (
                 <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <RefreshCcw className="h-4 w-4 mr-2" />
               )}
-              Reload
+              {isLoading ? "Loading..." : "Reload"}
             </Button>
           </div>
         ) : (

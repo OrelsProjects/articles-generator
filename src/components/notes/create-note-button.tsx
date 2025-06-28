@@ -38,7 +38,7 @@ export function CreateNoteButton() {
           className="items-center gap-2"
         >
           <Sparkles className="h-4 w-4" />
-          Generate notes
+          Notes generator
         </Button>
       </div>
 
@@ -79,7 +79,7 @@ export function CreateNoteButton() {
               }}
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              Generate notes
+              Notes generator
             </Button>
           </DropdownMenuContent>
         </DropdownMenu>

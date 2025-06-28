@@ -13,6 +13,7 @@ const generateNotesSchema = z.object({
   useTopTypes: z.boolean().optional(),
   topic: z.string().optional(),
   preSelectedPostIds: z.array(z.string()).optional(),
+  includeArticleLinks: z.boolean().optional(),
 });
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
@@ -51,7 +52,7 @@ export async function POST(
   const requestedModel = parsedBody.data.model;
   const topic = parsedBody.data.topic;
   const preSelectedPostIds = parsedBody.data.preSelectedPostIds;
-  const featureFlags = session.user.meta?.featureFlags || [];
+  const includeArticleLinks = parsedBody.data.includeArticleLinks;
 
   loggerServer.time("generate notes");
   const response = await generateNotes({
@@ -59,6 +60,7 @@ export async function POST(
     requestedModel,
     topic,
     preSelectedPostIds,
+    includeArticleLinks,
   });
 
   loggerServer.timeEnd("generate notes");

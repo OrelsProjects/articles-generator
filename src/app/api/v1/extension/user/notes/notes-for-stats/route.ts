@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    loggerServer.info("[GETTING-NOTES-FOR-STATS] Found notes", {
+     loggerServer.info("[GETTING-NOTES-FOR-STATS] Found notes", {
       notesCount: notes.length,
       userId,
     });

@@ -32,9 +32,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import Logo from "@/components/ui/logo";
 import { Separator } from "@radix-ui/react-separator";
-import { navItems, rootPath } from "@/types/navbar";
+import { navItems, rootPath, categoryIcons } from "@/types/navbar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUi } from "@/lib/hooks/useUi";
 import { selectUi } from "@/lib/features/ui/uiSlice";
@@ -111,6 +117,70 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     return validNavItems.sort((a, b) => a.position - b.position);
   }, [validNavItems]);
 
+  // Group nav items by category and calculate positions
+  const groupedNavItems = useMemo(() => {
+    const categorized: Record<string, typeof sortedNavItems> = {};
+    const uncategorized: typeof sortedNavItems = [];
+    const categoryPositions: Record<string, number> = {};
+
+    sortedNavItems.forEach(item => {
+      if (item.category) {
+        if (!categorized[item.category]) {
+          categorized[item.category] = [];
+          categoryPositions[item.category] = item.position;
+        } else {
+          // Update to the lowest position
+          categoryPositions[item.category] = Math.min(
+            categoryPositions[item.category],
+            item.position,
+          );
+        }
+        categorized[item.category].push(item);
+      } else {
+        uncategorized.push(item);
+      }
+    });
+
+    // Create a sorted array mixing uncategorized items and categories
+    const sortedMixedItems: Array<
+      | { type: "item"; item: (typeof sortedNavItems)[0] }
+      | {
+          type: "category";
+          category: string;
+          items: typeof sortedNavItems;
+          position: number;
+        }
+    > = [];
+
+    // Add uncategorized items
+    uncategorized.forEach(item => {
+      sortedMixedItems.push({ type: "item", item });
+    });
+
+    // Add categories
+    Object.entries(categorized).forEach(([category, items]) => {
+      sortedMixedItems.push({
+        type: "category",
+        category,
+        items,
+        position: categoryPositions[category],
+      });
+    });
+
+    // Sort by position
+    sortedMixedItems.sort((a, b) => {
+      const positionA = a.type === "item" ? a.item.position : a.position;
+      const positionB = b.type === "item" ? b.item.position : b.position;
+      return positionA - positionB;
+    });
+
+    return { categorized, uncategorized, sortedMixedItems };
+  }, [sortedNavItems]);
+
+  const isActive = (path: string) => {
+    return pathname === path;
+  };
+
   // Filter nav items by location
   const bottomNavItems = sortedNavItems.filter(
     item => item.locationInMobile === "bottom",
@@ -119,8 +189,109 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     item => item.locationInMobile === "sidebar" || !item.locationInMobile,
   );
 
-  const isActive = (path: string) => {
-    return pathname === path;
+  // If the pathname is a category, return the category
+  const categorySelected = sortedNavItems.find(item =>
+    isActive(item.href),
+  )?.category;
+
+  console.log("categorySelected", categorySelected);
+
+  // Group sidebar nav items by category for mobile
+  const groupedSidebarNavItems = useMemo(() => {
+    const categorized: Record<string, typeof sidebarNavItems> = {};
+    const uncategorized: typeof sidebarNavItems = [];
+    const categoryPositions: Record<string, number> = {};
+
+    sidebarNavItems.forEach(item => {
+      if (item.category) {
+        if (!categorized[item.category]) {
+          categorized[item.category] = [];
+          categoryPositions[item.category] = item.position;
+        } else {
+          // Update to the lowest position
+          categoryPositions[item.category] = Math.min(
+            categoryPositions[item.category],
+            item.position,
+          );
+        }
+        categorized[item.category].push(item);
+      } else {
+        uncategorized.push(item);
+      }
+    });
+
+    // Create a sorted array mixing uncategorized items and categories
+    const sortedMixedItems: Array<
+      | { type: "item"; item: (typeof sidebarNavItems)[0] }
+      | {
+          type: "category";
+          category: string;
+          items: typeof sidebarNavItems;
+          position: number;
+        }
+    > = [];
+
+    // Add uncategorized items
+    uncategorized.forEach(item => {
+      sortedMixedItems.push({ type: "item", item });
+    });
+
+    // Add categories
+    Object.entries(categorized).forEach(([category, items]) => {
+      sortedMixedItems.push({
+        type: "category",
+        category,
+        items,
+        position: categoryPositions[category],
+      });
+    });
+
+    // Sort by position
+    sortedMixedItems.sort((a, b) => {
+      const positionA = a.type === "item" ? a.item.position : a.position;
+      const positionB = b.type === "item" ? b.item.position : b.position;
+      return positionA - positionB;
+    });
+
+    return { categorized, uncategorized, sortedMixedItems };
+  }, [sidebarNavItems]);
+
+  const renderNavItem = (
+    item: (typeof navItems)[0],
+    collapsed: boolean = false,
+  ) => {
+    if (item.adminOnly && !user?.meta?.isAdmin) return null;
+
+    return (
+      <li key={item.name}>
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                href={item.disabled ? "" : item.href}
+                target={item.newTab ? "_blank" : "_self"}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                  isActive(item.href)
+                    ? "text-primary hover:bg-primary/10"
+                    : "hover:bg-muted",
+                  item.disabled && "cursor-not-allowed opacity-50",
+                )}
+              >
+                <item.icon size={20} />
+                {!collapsed && <span>{item.name}</span>}
+              </Link>
+            </TooltipTrigger>
+            {(collapsed || item.toolTip) && (
+              <TooltipContent side="right" className="flex items-center gap-2">
+                {item.toolTip || item.name}{" "}
+                {item.newTab ? <ExternalLink size={12} /> : ""}
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+      </li>
+    );
   };
 
   if (!session?.user) {
@@ -179,42 +350,62 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
           <nav className="flex-1 py-4 overflow-y-auto">
             <ul className="space-y-2 px-2">
-              {sortedNavItems.map(item =>
-                item.adminOnly && !user?.meta?.isAdmin ? null : (
-                  <li key={item.name}>
-                    <TooltipProvider delayDuration={0}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Link
-                            key={item.name}
-                            href={item.disabled ? "" : item.href}
-                            target={item.newTab ? "_blank" : "_self"}
-                            className={cn(
-                              "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                              isActive(item.href)
-                                ? "text-primary hover:bg-primary/10"
-                                : "hover:bg-muted",
-                              item.disabled && "cursor-not-allowed opacity-50",
-                            )}
+              {!sidebarCollapsed
+                ? groupedNavItems.sortedMixedItems.map(mixedItem => {
+                    if (mixedItem.type === "item") {
+                      return renderNavItem(mixedItem.item, sidebarCollapsed);
+                    } else {
+                      const { category, items } = mixedItem;
+                      const CategoryIcon =
+                        categoryIcons[category as keyof typeof categoryIcons];
+                      return (
+                        <li key={category}>
+                          <Accordion
+                            type="single"
+                            collapsible
+                            className={cn("w-full")}
+                            defaultValue={
+                              categorySelected?.toLowerCase() ===
+                              category.toLowerCase()
+                                ? category
+                                : undefined
+                            }
                           >
-                            <item.icon size={20} />
-                            {!sidebarCollapsed && <span>{item.name}</span>}
-                          </Link>
-                        </TooltipTrigger>
-                        {(sidebarCollapsed || item.toolTip) && (
-                          <TooltipContent
-                            side="right"
-                            className="flex items-center gap-2"
-                          >
-                            {item.toolTip || item.name}{" "}
-                            {item.newTab ? <ExternalLink size={12} /> : ""}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </TooltipProvider>
-                  </li>
-                ),
-              )}
+                            <AccordionItem
+                              value={category}
+                              className="border-none"
+                            >
+                              <AccordionTrigger
+                                className={cn(
+                                  "px-3 py-2 text-base hover:no-underline hover:bg-muted rounded-md transition-colors",
+                                  {
+                                    "bg-primary/20":
+                                      categorySelected?.toLowerCase() ===
+                                      category.toLowerCase(),
+                                  },
+                                )}
+                              >
+                                <div className="flex items-center gap-3 font-normal">
+                                  {CategoryIcon && <CategoryIcon size={20} />}
+                                  {category}
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="pb-0">
+                                <ul className="space-y-1 ml-4">
+                                  {items.map(item =>
+                                    renderNavItem(item, false),
+                                  )}
+                                </ul>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        </li>
+                      );
+                    }
+                  })
+                : sortedNavItems.map(item =>
+                    renderNavItem(item, sidebarCollapsed),
+                  )}
             </ul>
           </nav>
           {/* Affiliate Section */}
@@ -318,42 +509,128 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                 <Logo withText className="mb-4" />
                 <nav className="py-4">
                   <ul className="space-y-2">
-                    {sidebarNavItems.map(item =>
-                      item.adminOnly && !user?.meta?.isAdmin ? null : (
-                        <TooltipProvider key={item.name} delayDuration={0}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <li>
-                                <Link
-                                  href={item.disabled ? "" : item.href}
-                                  target={item.newTab ? "_blank" : "_self"}
-                                  className={cn(
-                                    "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                                    isActive(item.href)
-                                      ? "text-primary"
-                                      : "text-foreground hover:bg-muted",
-                                    item.disabled &&
-                                      "cursor-not-allowed opacity-50",
-                                  )}
-                                >
-                                  <item.icon size={20} />
-                                  <span>{item.mobileName}</span>
-                                  {item.newTab && (
-                                    <ExternalLink
-                                      size={12}
-                                      className="ml-auto"
-                                    />
-                                  )}
-                                </Link>
-                              </li>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">
-                              {item.toolTip || item.name}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      ),
-                    )}
+                    {groupedSidebarNavItems.sortedMixedItems.map(mixedItem => {
+                      if (mixedItem.type === "item") {
+                        const item = mixedItem.item;
+                        return item.adminOnly && !user?.meta?.isAdmin ? null : (
+                          <TooltipProvider key={item.name} delayDuration={0}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <li>
+                                  <Link
+                                    href={item.disabled ? "" : item.href}
+                                    target={item.newTab ? "_blank" : "_self"}
+                                    className={cn(
+                                      "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                                      isActive(item.href)
+                                        ? "text-primary"
+                                        : "text-foreground hover:bg-muted",
+                                      item.disabled &&
+                                        "cursor-not-allowed opacity-50",
+                                    )}
+                                  >
+                                    <item.icon size={20} />
+                                    <span>{item.mobileName}</span>
+                                    {item.newTab && (
+                                      <ExternalLink
+                                        size={12}
+                                        className="ml-auto"
+                                      />
+                                    )}
+                                  </Link>
+                                </li>
+                              </TooltipTrigger>
+                              <TooltipContent side="right">
+                                {item.toolTip || item.name}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        );
+                      } else {
+                        const { category, items } = mixedItem;
+                        const CategoryIcon =
+                          categoryIcons[category as keyof typeof categoryIcons];
+                        return (
+                          <li key={category}>
+                            <Accordion
+                              type="single"
+                              collapsible
+                              className="w-full"
+                              defaultValue={
+                                categorySelected?.toLowerCase() ===
+                                category.toLowerCase()
+                                  ? category
+                                  : undefined
+                              }
+                            >
+                              <AccordionItem
+                                value={category}
+                                className="border-none"
+                              >
+                                <AccordionTrigger className="px-3 py-2 text-sm hover:no-underline hover:bg-muted rounded-md">
+                                  <div className="flex items-center gap-2">
+                                    {CategoryIcon && <CategoryIcon size={16} />}
+                                    {category}
+                                  </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="pb-0">
+                                  <ul className="space-y-1 ml-4">
+                                    {items.map(item =>
+                                      item.adminOnly &&
+                                      !user?.meta?.isAdmin ? null : (
+                                        <TooltipProvider
+                                          key={item.name}
+                                          delayDuration={0}
+                                        >
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <li>
+                                                <Link
+                                                  href={
+                                                    item.disabled
+                                                      ? ""
+                                                      : item.href
+                                                  }
+                                                  target={
+                                                    item.newTab
+                                                      ? "_blank"
+                                                      : "_self"
+                                                  }
+                                                  className={cn(
+                                                    "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                                                    isActive(item.href)
+                                                      ? "text-primary"
+                                                      : "text-foreground hover:bg-muted",
+                                                    item.disabled &&
+                                                      "cursor-not-allowed opacity-50",
+                                                  )}
+                                                >
+                                                  <item.icon size={20} />
+                                                  <span>{item.mobileName}</span>
+                                                  {item.newTab && (
+                                                    <ExternalLink
+                                                      size={12}
+                                                      className="ml-auto"
+                                                    />
+                                                  )}
+                                                </Link>
+                                              </li>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="right">
+                                              {item.toolTip || item.name}
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      ),
+                                    )}
+                                  </ul>
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
+                          </li>
+                        );
+                      }
+                    })}
                   </ul>
                 </nav>
               </div>

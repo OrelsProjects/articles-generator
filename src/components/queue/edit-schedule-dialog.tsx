@@ -11,6 +11,7 @@ import {
   ChevronUp,
   Globe,
   Loader2,
+  Trash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,6 +35,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
 import { FollowerActivityChart } from "@/components/analytics/follower-activity-chart";
 import { useUi } from "@/lib/hooks/useUi";
+import { cn } from "@/lib/utils";
 
 interface ScheduleEntry {
   id: string;
@@ -64,6 +66,7 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
   const { userSchedules } = useAppSelector(state => state.notes);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
   const [isAddingSlot, setIsAddingSlot] = useState(false);
+  const [didChangeSlotViaChart, setDidChangeSlotViaChart] = useState(false);
 
   // Time picker state
   const [hours, setHours] = useState(12);
@@ -302,6 +305,10 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
     setHours(hour);
     setMinutes(minutes);
     setIsAddingSlot(true);
+    setDidChangeSlotViaChart(true);
+    setTimeout(() => {
+      setDidChangeSlotViaChart(false);
+    }, 1000);
   };
 
   // Check if the current selected time already exists in the schedule
@@ -380,15 +387,6 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
                   <tr key={entry.id} className="border-t border-zinc-700">
                     <td className="py-3 pl-2 pr-4 flex items-center">
                       <span className="mr-2">{entry.time}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 rounded-full"
-                        onClick={() => handleRemoveEntry(entry.id)}
-                        disabled={loading}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
                     </td>
                     <td className="py-3 px-4 text-center">
                       <DayCheckbox id={entry.id} day="mon" />
@@ -411,6 +409,15 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
                     <td className="py-3 px-4 text-center">
                       <DayCheckbox id={entry.id} day="sun" />
                     </td>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 rounded-full hover:text-destructive"
+                      onClick={() => handleRemoveEntry(entry.id)}
+                      disabled={loading}
+                    >
+                      <Trash className="h-3 w-3" />
+                    </Button>
                   </tr>
                 ))}
             </tbody>
@@ -499,7 +506,15 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
                                 setHours(23); // Cap at 23
                               }
                             }}
-                            className="text-2xl font-bold my-2 w-12 text-center bg-transparent !border !border-border/80 focus-visible:outline-none rounded-md p-1"
+                            className={cn(
+                              "text-2xl font-bold my-2 w-12 text-center bg-transparent !border !border-border/80 focus-visible:outline-none rounded-md p-1 transition-colors",
+                              {
+                                "bg-primary/60 duration-700":
+                                  didChangeSlotViaChart,
+                                "bg-transparent duration-200":
+                                  !didChangeSlotViaChart,
+                              },
+                            )}
                             aria-label="Hours"
                           />
                           <Button
@@ -547,7 +562,15 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
                                 setMinutes(59); // Cap at 59
                               }
                             }}
-                            className="text-2xl font-bold my-2 w-12 text-center bg-transparent !border !border-border/80 focus-visible:outline-none rounded-md p-1"
+                            className={cn(
+                              "text-2xl font-bold my-2 w-12 text-center bg-transparent !border !border-border/80 focus-visible:outline-none rounded-md p-1 transition-colors",
+                              {
+                                "bg-primary/60 duration-700":
+                                  didChangeSlotViaChart,
+                                "bg-transparent duration-200":
+                                  !didChangeSlotViaChart,
+                              },
+                            )}
                             aria-label="Minutes"
                           />
                           <Button

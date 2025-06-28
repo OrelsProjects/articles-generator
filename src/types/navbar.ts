@@ -1,19 +1,20 @@
 import { FeatureFlag } from "@prisma/client";
 import {
-  KanbanSquare,
   PenTool,
-  Settings,
   Lightbulb,
-  Calendar,
   BarChart,
   Radar,
   Bot,
-  User,
   FileChartColumnIncreasing,
   StickyNote,
+  BarChart3,
 } from "lucide-react";
 
 export const rootPath = "/notes";
+
+export const categoryIcons = {
+  Statistics: BarChart3,
+};
 
 export const navItems: {
   name: string;
@@ -27,26 +28,17 @@ export const navItems: {
   disabled?: boolean;
   adminOnly?: boolean;
   position: number;
+  category?: string;
 }[] = [
   {
     name: "Inspiration",
     mobileName: "Inspiration",
-    // toolTip: "Inspiration - under construction",
     href: "/home",
     icon: Lightbulb,
     locationInMobile: "bottom",
     disabled: false,
     position: 1,
   },
-  // {
-  //   name: "Queue",
-  //   mobileName: "Queue",
-  //   href: "/queue",
-  //   icon: Calendar,
-  //   adminOnly: false,
-  //   locationInMobile: "bottom",
-  //   position: 2,
-  // },
   {
     name: "My notes",
     mobileName: "Notes",
@@ -68,23 +60,23 @@ export const navItems: {
     name: "Editor",
     mobileName: "Editor",
     href: "/editor",
-    // newTab: true,
     icon: PenTool,
     locationInMobile: "sidebar",
     position: 99,
   },
   {
-    name: "Statistics",
-    mobileName: "Stats",
+    category: "Statistics",
+    name: "Overall",
+    mobileName: "Overall",
     href: "/statistics",
     icon: BarChart,
     locationInMobile: "sidebar",
-    // adminOnly: true,
     position: 6,
   },
   {
-    name: "Notes Stats",
-    mobileName: "Notes Stats",
+    category: "Statistics",
+    name: "Notes Performance",
+    mobileName: "Notes Performance",
     href: "/notes-stats",
     icon: FileChartColumnIncreasing,
     locationInMobile: "sidebar",

@@ -188,6 +188,7 @@ export const useNotes = () => {
         useTopTypes?: boolean;
         topic?: string;
         preSelectedPostIds?: string[];
+        includeArticleLinks?: boolean;
       },
     ) => {
       try {
@@ -197,6 +198,7 @@ export const useNotes = () => {
           useTopTypes: hasAdvancedGPT ? options?.useTopTypes : false,
           model: hasAdvancedGPT ? model : undefined,
           preSelectedPostIds: options?.preSelectedPostIds || [],
+          includeArticleLinks: options?.includeArticleLinks || false,
         };
 
         EventTracker.track("notes_generate_new_notes", { model });

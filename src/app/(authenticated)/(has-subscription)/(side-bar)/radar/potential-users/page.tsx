@@ -36,6 +36,8 @@ import {
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import axiosInstance from "@/lib/axios-instance";
+import { motion } from "framer-motion";
+import { validatePublication } from "@/lib/utils/url";
 
 const loadingStates = [
   { text: "Grabbing engagement data...", delay: 5000 },
@@ -57,6 +59,16 @@ export type OrderBy =
 
 const getUserSubstackUrl = (handle: string) => {
   return `https://www.substack.com/@${handle}`;
+};
+
+// URL validation function
+const isValidSubstackUrl = (url: string) => {
+  const trimmedUrl = url.trim();
+  if (!trimmedUrl) return false;
+
+  // Allow various formats: substack.com, .substack.com, https://...
+  const substackRegex = /^(https?:\/\/)?([\w-]+\.)?substack\.com\/?.*$/i;
+  return substackRegex.test(trimmedUrl);
 };
 
 const WelcomeDialog = ({
@@ -122,6 +134,8 @@ export default function PotentialUsersPage() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   const loadingRef = useRef<boolean>(false);
   const scrollThrottleRef = useRef<boolean>(false);
   const [orderBy, setOrderBy] = useState<OrderBy>("recommended");
@@ -140,6 +154,7 @@ export default function PotentialUsersPage() {
     if (loadingRef.current) return;
     loadingRef.current = true;
     setLoading(true);
+
     try {
       const response = await axiosInstance.post(
         "/api/v1/radar/potential-users",
@@ -166,18 +181,37 @@ export default function PotentialUsersPage() {
     }
   };
 
-  useEffect(() => {
-    if (publication) {
-      fetchPotentialUsers(undefined, 0);
-    }
-  }, [publication]);
+  // Remove automatic fetch on mount
+  // useEffect(() => {
+  //   if (publication) {
+  //     fetchPotentialUsers(undefined, 0);
+  //   }
+  // }, [publication]);
 
-  const handleAnalyze = (e: React.FormEvent) => {
+  const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputUrl.trim()) {
+    if (!inputUrl.trim()) {
+      toast.error("Please enter a URL");
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    try {
+      const { valid } = await validatePublication(inputUrl.trim());
+
+      if (!valid) {
+        toast.error("The url is not a valid Substack publication url");
+        return;
+      }
+
       setPage(0);
       setHasMore(true);
       fetchPotentialUsers(inputUrl.trim(), 0);
+    } catch (error) {
+      toast.error("Error analyzing publication");
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -234,7 +268,6 @@ export default function PotentialUsersPage() {
             transformSubscriberCount(b.subscriberCountString) -
             transformSubscriberCount(a.subscriberCountString),
         );
-        console.log(sorted);
     }
     const uniqueSorted = sorted.filter(
       (user, index, self) =>
@@ -279,6 +312,10 @@ export default function PotentialUsersPage() {
     [loading, sortedUsers],
   );
 
+  // Check if we should show the centered layout
+  // Show centered layout only when there's no data AND no ongoing search
+  const showCenteredLayout = sortedUsers.length === 0 && !loading;
+
   function SkeletonCard() {
     return (
       <div className="flex items-center justify-between bg-card rounded-xl shadow p-4 w-full border border-border">
@@ -295,135 +332,202 @@ export default function PotentialUsersPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] w-full">
-      <ScrollArea className="flex-1" ref={containerRef}>
-        <div className="feature-layout-container py-10">
-          <h1 className="text-3xl font-bold mb-8">Potential Users</h1>
-          <form
-            onSubmit={handleAnalyze}
-            className="flex items-center gap-2 mb-8"
+    <div className="h-full w-full flex flex-col">
+      <div className="h-full flex-1 overflow-y-auto" ref={containerRef}>
+        <div className="feature-layout-container py-6 md:py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className={`${showCenteredLayout ? "h-full flex flex-col" : ""}`}
           >
-            <Input
-              type="text"
-              className="py-4"
-              placeholder="Enter Substack URL to analyze ([substack-name].substack.com)"
-              value={inputUrl}
-              onChange={e => setInputUrl(e.target.value)}
-            />
-            <Button type="submit" disabled={loading && page === 0}>
-              {loading && page === 0 ? "Analyzing..." : "Analyze"}
-            </Button>
-          </form>
-          <div className="flex items-center gap-2 mb-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {/* Header Section */}
+            <div
+              className={`space-y-4 ${showCenteredLayout ? "flex-shrink-0" : "mb-8"}`}
+            >
+              <h1
+                className={`font-bold ${showCenteredLayout ? "text-4xl" : "text-3xl"}`}
+              >
+                Potential Users
+              </h1>
+              <p
+                className={`text-muted-foreground ${showCenteredLayout ? "text-lg" : "hidden"}`}
+              >
+                Find potential customers by analyzing Substack publications
+              </p>
+            </div>
+
+            {/* Form Container - Animated positioning */}
+            <motion.div
+              className={`${showCenteredLayout ? "h-full flex-1 flex flex-col items-center justify-center" : ""}`}
+              layout
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              <motion.form
+                onSubmit={handleAnalyze}
+                className={`flex items-center gap-2 ${showCenteredLayout ? "w-full max-w-xl mx-auto" : "mb-8"}`}
+                layout
+                transition={{ duration: 0.5 }}
+              >
+                <Input
+                  type="text"
+                  className={`${showCenteredLayout ? "py-4 text-lg" : "py-4"}`}
+                  placeholder="Enter Substack newsletter URL"
+                  value={inputUrl}
+                  onChange={e => setInputUrl(e.target.value)}
+                />
                 <Button
-                  variant="outline"
-                  className="min-w-[160px] justify-between"
+                  type="submit"
+                  disabled={(loading && page === 0) || isAnalyzing}
+                  size={showCenteredLayout ? "lg" : "default"}
                 >
-                  Order by: {orderByText}
+                  {(loading && page === 0) || isAnalyzing
+                    ? "Analyzing..."
+                    : "Analyze"}
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuRadioGroup
-                  value={orderBy}
-                  onValueChange={v => {
-                    console.log(v);
-                    setOrderBy(v as OrderBy);
-                  }}
-                >
-                  <DropdownMenuRadioItem value="recommended">
-                    Recommended
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="subscriberCount">
-                    Subscriber Count
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="bestsellerTier">
-                    Bestseller Tier
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="name">
-                    Name
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="flex flex-col gap-2 w-full">
-            {isLoadingSkeleton
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <SkeletonCard key={i} />
-                ))
-              : sortedUsers.map((user, index) => (
-                  <div
-                    key={`${user.authorId}-${index}`}
-                    className="flex items-center justify-between bg-card rounded-xl shadow p-4 w-full hover:shadow-md transition border border-border"
-                  >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <Avatar>
-                        <AvatarImage
-                          src={user.photoUrl}
-                          alt={user.name}
-                          onClick={() => {
-                            window.open(
-                              getUserSubstackUrl(user.handle),
-                              "_blank",
-                            );
-                          }}
-                          className="w-12 h-12 rounded-full object-cover border border-border flex-shrink-0 cursor-pointer"
-                        />
-                        <AvatarFallback className="bg-muted text-muted-foreground">
-                          <User className="h-8 w-8" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-lg truncate flex items-center gap-1.5">
-                          <Button
-                            variant="link"
-                            className="p-0 text-foreground text-lg"
-                            asChild
-                          >
-                            <Link
-                              href={getUserSubstackUrl(user.handle)}
-                              target="_blank"
-                            >
-                              {user.name}
-                            </Link>
-                          </Button>
-                          {user.bestsellerTier >= 10000 ? (
-                            <BestSeller10000 height={16} width={16} />
-                          ) : user.bestsellerTier >= 1000 ? (
-                            <BestSeller1000 height={16} width={16} />
-                          ) : user.bestsellerTier >= 100 ? (
-                            <BestSeller100 height={16} width={16} />
-                          ) : null}
-                        </div>
-                        {shouldShowSubscriberCountString(user) ? (
-                          <div className="text-xs text-muted-foreground">
-                            {user.subscriberCountString}
-                          </div>
-                        ) : shouldShowSubscriberCount(user) ? (
-                          <div className="text-muted-foreground text-xs line-clamp-2">
-                            {user.subscriberCount.toLocaleString()} subscribers
-                          </div>
-                        ) : null}
-                        <div className="text-muted-foreground text-sm line-clamp-2">
-                          {user.bio}
-                        </div>
-                      </div>
-                    </div>
-                    {/* <Button variant={user.isFollowing ? "ghost" : "outline"}>
-                      {user.isFollowing ? "Following" : "Follow"}
-                    </Button> */}
-                  </div>
-                ))}
-            {loading && page > 0 && (
-              <div className="flex flex-col gap-2 mt-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <SkeletonCard key={`loading-${i}`} />
-                ))}
+              </motion.form>
+
+              {/* Example text - only show when centered */}
+              <motion.div
+                className="text-sm text-muted-foreground space-y-2 text-center mt-4"
+                initial={false}
+                animate={{
+                  opacity: showCenteredLayout ? 1 : 0,
+                  height: showCenteredLayout ? "auto" : 0,
+                }}
+                transition={{ duration: 0.3 }}
+                style={{ overflow: "hidden" }}
+              >
+                <p className="text-muted-foreground">
+                  Use the Radar to find top engagers of other newsletters.
+                </p>
+                <p>(Analysis may take up to 2 minutes for detailed insights)</p>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+
+          {/* Results Section - only show when there's data or loading */}
+          {(loading || sortedUsers.length > 0) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="min-w-[160px] justify-between"
+                    >
+                      Order by: {orderByText}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuRadioGroup
+                      value={orderBy}
+                      onValueChange={v => {
+                        console.log(v);
+                        setOrderBy(v as OrderBy);
+                      }}
+                    >
+                      <DropdownMenuRadioItem value="recommended">
+                        Recommended
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="subscriberCount">
+                        Subscriber Count
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="bestsellerTier">
+                        Bestseller Tier
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="name">
+                        Name
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-            )}
-          </div>
+
+              <div className="flex flex-col gap-2 w-full">
+                {isLoadingSkeleton
+                  ? Array.from({ length: 5 }).map((_, i) => (
+                      <SkeletonCard key={i} />
+                    ))
+                  : sortedUsers.map((user, index) => (
+                      <motion.div
+                        key={`${user.authorId}-${index}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className="flex items-center justify-between bg-card rounded-xl shadow p-4 w-full hover:shadow-md transition border border-border"
+                      >
+                        <div className="flex items-center gap-4 min-w-0">
+                          <Avatar>
+                            <AvatarImage
+                              src={user.photoUrl}
+                              alt={user.name}
+                              onClick={() => {
+                                window.open(
+                                  getUserSubstackUrl(user.handle),
+                                  "_blank",
+                                );
+                              }}
+                              className="w-12 h-12 rounded-full object-cover border border-border flex-shrink-0 cursor-pointer"
+                            />
+                            <AvatarFallback className="bg-muted text-muted-foreground">
+                              <User className="h-8 w-8" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <div className="font-semibold text-lg truncate flex items-center gap-1.5">
+                              <Button
+                                variant="link"
+                                className="p-0 text-foreground text-lg"
+                                asChild
+                              >
+                                <Link
+                                  href={getUserSubstackUrl(user.handle)}
+                                  target="_blank"
+                                >
+                                  {user.name}
+                                </Link>
+                              </Button>
+                              {user.bestsellerTier >= 10000 ? (
+                                <BestSeller10000 height={16} width={16} />
+                              ) : user.bestsellerTier >= 1000 ? (
+                                <BestSeller1000 height={16} width={16} />
+                              ) : user.bestsellerTier >= 100 ? (
+                                <BestSeller100 height={16} width={16} />
+                              ) : null}
+                            </div>
+                            {shouldShowSubscriberCountString(user) ? (
+                              <div className="text-xs text-muted-foreground">
+                                {user.subscriberCountString}
+                              </div>
+                            ) : shouldShowSubscriberCount(user) ? (
+                              <div className="text-muted-foreground text-xs line-clamp-2">
+                                {user.subscriberCount.toLocaleString()}{" "}
+                                subscribers
+                              </div>
+                            ) : null}
+                            <div className="text-muted-foreground text-sm line-clamp-2">
+                              {user.bio}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                {loading && page > 0 && (
+                  <div className="flex flex-col gap-2 mt-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <SkeletonCard key={`loading-${i}`} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
           <ToastStepper
             loadingStates={loadingStates}
             loading={isLoadingStates}
@@ -433,7 +537,7 @@ export default function PotentialUsersPage() {
             onOpenChange={setShowWelcomeDialog}
           />
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

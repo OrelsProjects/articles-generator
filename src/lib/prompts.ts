@@ -852,6 +852,7 @@ export const generateNotesPrompt_v2 = ({
     noteTemplates: [],
     topic: "",
     preSelectedArticles: [],
+    includeArticleLinks: false,
   },
 }: {
   userMetadata: UserMetadata;
@@ -866,6 +867,7 @@ export const generateNotesPrompt_v2 = ({
     topic?: string;
     preSelectedArticles?: Post[];
     language?: string;
+    includeArticleLinks?: boolean;
   };
 }) => {
   // ───────────────────────── Defaults ──────────────────────────
@@ -876,6 +878,7 @@ export const generateNotesPrompt_v2 = ({
     topic = "",
     preSelectedArticles = [],
     language,
+    includeArticleLinks,
   } = options;
 
   // ────────────────────────── Stats ────────────────────────────
@@ -951,6 +954,9 @@ If there are fewer than ${noteCount} unique articles, continue generating by ran
 You must generate ${noteCount} notes, all focused entirely on the topic: **${topic}**.`
       : ""
 }
+
+${includeArticleLinks ? `8. Add links to the articles in the end of the note, with a new line before it. (Crucial)` : ""}
+
 ⚠️ IMPORTANT – HARD LIMIT  
 Any note > ${lenCeil} chars (spaces *included*) is invalid.  
 Regenerate it until it fits.
@@ -972,7 +978,7 @@ ${noteTemplates.length > 0 ? `\nTemplates:\n${noteTemplates.map(t => `• ${t.de
 
   // ──────────────────────── User Message ───────────────────────
   const userMessage = `
-$${lockToArticles ? `Articles:\n${preSelectedArticles.map(a => `• ${a.bodyText}`).join("\n")}` : ""}
+$${lockToArticles ? `Articles:\n${preSelectedArticles.map(a => `• ${a.bodyText}${includeArticleLinks ? `\n(Link: ${a.canonicalUrl})` : ""}`).join("\n")}` : ""}
 
 ${publication.personalDescription ? `Here's my preffered way of writing. Give it priority when you write notes: ${publication.personalDescription}` : ""}
 

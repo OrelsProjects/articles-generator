@@ -180,7 +180,7 @@ export default function AIImproveDropdown({
       trigger={
         <TooltipButton
           disabled={!hasContent || loadingImprovement}
-          tooltipContent="Improve selected text (1 credit)"
+          tooltipContent="Improve note (1 credit)"
           variant="ghost"
           size="icon"
           className="text-muted-foreground transition-colors"

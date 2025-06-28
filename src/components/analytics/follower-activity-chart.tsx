@@ -22,7 +22,9 @@ function formatHour(hour: number): string {
 }
 
 // Component to display the follower activity chart
-export function FollowerActivityChart({onTimeClicked}: FollowerActivityChartProps) {
+export function FollowerActivityChart({
+  onTimeClicked,
+}: FollowerActivityChartProps) {
   const { bestTimeToPublish: data } = useAppSelector(state => state.statistics);
 
   if (!data || data.length === 0) {
@@ -94,7 +96,12 @@ export function FollowerActivityChart({onTimeClicked}: FollowerActivityChartProp
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="text-center">
-                      <div className="font-medium">{formatHour(item.hour)}</div>
+                      <div className="font-medium">
+                        {formatHour(item.hour)}{" "}
+                        <span className="text-muted-foreground text-xs">
+                          (Click to change slot)
+                        </span>
+                      </div>
                     </div>
                   </TooltipContent>
                 </Tooltip>

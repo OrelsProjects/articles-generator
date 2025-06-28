@@ -175,11 +175,8 @@ export default function Pricing({
     setLoading(true);
     try {
       if (onboarding) {
-        await goToCheckout(
-          billingCycle,
-          plan,
-          appliedCoupon || undefined,
-          () => setLoading(false),
+        await goToCheckout(billingCycle, plan, appliedCoupon || undefined, () =>
+          setLoading(false),
         );
       } else {
         if (!user) {
@@ -361,51 +358,38 @@ export default function Pricing({
             className="flex justify-center mb-4 mt-10"
           >
             <div className="flex flex-col items-center space-y-3">
-              {!showCouponInput && !appliedCoupon && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCouponInput(true)}
-                  className="text-sm"
-                >
-                  Apply coupon
-                </Button>
-              )}
-
               <motion.div initial={false} className="overflow-hidden mb-3">
-                {showCouponInput && (
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      placeholder="COUPON30"
-                      value={coupon}
-                      onChange={e => setCoupon(e.target.value)}
-                      className="w-48 uppercase"
-                      disabled={!!appliedCoupon}
-                      onKeyDown={e => e.key === "Enter" && applyCoupon(coupon)}
-                    />
-                    <Button
-                      onClick={() => applyCoupon(coupon)}
-                      disabled={loadingCoupon || !coupon.trim()}
-                      size="sm"
-                    >
-                      {loadingCoupon ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        "Apply"
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setShowCouponInput(false);
-                        setCoupon("");
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2">
+                  <Input
+                    placeholder="COUPON30"
+                    value={coupon}
+                    onChange={e => setCoupon(e.target.value)}
+                    className="w-48 uppercase"
+                    disabled={!!appliedCoupon}
+                    onKeyDown={e => e.key === "Enter" && applyCoupon(coupon)}
+                  />
+                  <Button
+                    onClick={() => applyCoupon(coupon)}
+                    disabled={loadingCoupon || !coupon.trim()}
+                    size="sm"
+                  >
+                    {loadingCoupon ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Apply"
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowCouponInput(false);
+                      setCoupon("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </motion.div>
 
               {appliedCoupon && (

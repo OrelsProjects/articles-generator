@@ -71,7 +71,7 @@ const EmptyStateCard = ({
         className="flex items-center gap-2"
       >
         <Sparkles className={cn("w-4 h-4")} />
-        Generate notes
+        Notes generator
       </Button>
     </div>
   </motion.div>

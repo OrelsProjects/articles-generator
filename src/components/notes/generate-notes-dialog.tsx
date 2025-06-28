@@ -36,6 +36,13 @@ import ArticleComponent from "@/components/ui/article-component";
 import { cn } from "@/lib/utils";
 import AutoAdjustTextArea from "@/components/ui/auto-adjust-textarea";
 import { useUi } from "@/lib/hooks/useUi";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipProvider,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 const ideaLoadingStates = [
   { text: "Finding relevant notes..." },
@@ -56,12 +63,7 @@ export interface GenerateNotesDialogProps {
 }
 
 export function GenerateNotesDialog({
-  onOpenChange,
-  onClick,
-  defaultOpen,
   defaultSource,
-  tooltip = true,
-  variant = "default",
 }: GenerateNotesDialogProps) {
   const params = useParams();
   const handle = params?.handle as string;
@@ -72,7 +74,6 @@ export function GenerateNotesDialog({
   } = useUi();
 
   const [topic, setTopic] = useState("");
-  const [open, setOpen] = useState(defaultOpen || false);
   const {
     generateNewNotes,
     isLoadingGenerateNotes,
@@ -94,6 +95,7 @@ export function GenerateNotesDialog({
   const [showArticleDialog, setShowArticleDialog] = useState(false);
   const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
   const [hoveredArticle, setHoveredArticle] = useState<Article | null>(null);
+  const [includeArticleLinks, setIncludeArticleLinks] = useState(true);
 
   useEffect(() => {
     if (errorGenerateNotes) {
@@ -123,6 +125,7 @@ export function GenerateNotesDialog({
         await generateNewNotes(selectedModel, {
           topic,
           preSelectedPostIds: selectedArticles.map(article => article.id),
+          includeArticleLinks,
         });
       }
     } catch (e: any) {
@@ -213,7 +216,10 @@ export function GenerateNotesDialog({
               {selectedSource === "description" ? (
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="topic" className="col-span-4">
-                    Topic <span className="text-xs text-muted-foreground">(optional)</span>
+                    Topic{" "}
+                    <span className="text-xs text-muted-foreground">
+                      (optional)
+                    </span>
                   </Label>
                   <div className="col-span-4 relative">
                     <AutoAdjustTextArea
@@ -228,11 +234,35 @@ export function GenerateNotesDialog({
                 </div>
               ) : (
                 <div className="w-full items-center gap-4">
-                  <div className="w-full bg-muted-foreground/5 rounded-md p-4 space-y-2 mb-6">
-                    <Label className="col-span-4">
-                      Selected Articles ({selectedArticles.length}/
-                      {notesToGenerate})
-                    </Label>
+                  <div className="w-full bg-muted-foreground/5 rounded-md p-4 space-y-4 mb-6">
+                    <div className="w-full flex flex-row items-center justify-between gap-2">
+                      <Label className="col-span-4">
+                        Selected Articles ({selectedArticles.length}/
+                        {notesToGenerate})
+                      </Label>
+                      <TooltipProvider delayDuration={50}>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className="flex flex-row items-center gap-2">
+                              <Checkbox
+                                checked={includeArticleLinks}
+                                onCheckedChange={() =>
+                                  setIncludeArticleLinks(!includeArticleLinks)
+                                }
+                                className="w-4 h-4"
+                              />
+                              <Label className="text-sm">Include links</Label>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              Include links to the articles at the bottom of the
+                              notes
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <div className="col-span-4 mb-6">
                       {selectedArticles.length > 0 ? (
                         <div className="grid grid-cols-3 gap-2">

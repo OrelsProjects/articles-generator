@@ -29,14 +29,6 @@ import { z } from "zod";
 import { getPublicationByIds } from "@/lib/dal/publication";
 import { formatNote } from "@/lib/utils/notes";
 
-const generateNotesSchema = z.object({
-  count: z.number().or(z.string()).optional(),
-  model: z.string().optional(),
-  useTopTypes: z.boolean().optional(),
-  topic: z.string().optional(),
-  preSelectedPostIds: z.array(z.string()).optional(),
-});
-
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
 const modelsRequireImprovement = [
@@ -51,12 +43,14 @@ export async function generateNotesPrompt({
   topic,
   preSelectedPostIds,
   userMetadata,
+  includeArticleLinks = false,
 }: {
   userMetadata: UserMetadata & { publication: PublicationMetadata };
   notesCount?: number;
   requestedModel?: string;
   topic?: string;
   preSelectedPostIds?: string[];
+  includeArticleLinks?: boolean;
 }) {
   const userId = userMetadata.userId;
   const featureFlags = userMetadata.featureFlags || [];
@@ -240,6 +234,7 @@ export async function generateNotesPrompt({
       topic,
       preSelectedArticles,
       language: userMetadata.preferredLanguage || undefined,
+      includeArticleLinks,
     },
   };
   const generateNotesMessages =
@@ -260,12 +255,14 @@ export async function generateNotes({
   topic,
   preSelectedPostIds,
   takeCreditPerNote = true,
+  includeArticleLinks = false,
 }: {
   notesCount?: number;
   requestedModel?: string;
   topic?: string;
   preSelectedPostIds?: string[];
   takeCreditPerNote?: boolean;
+  includeArticleLinks?: boolean;
 }): Promise<{
   success: boolean;
   errorMessage?: string;
@@ -319,6 +316,7 @@ export async function generateNotes({
         userMetadata: userMetadata as UserMetadata & {
           publication: PublicationMetadata;
         },
+        includeArticleLinks,
       });
 
     if (!messages) {
