@@ -3,13 +3,12 @@ export const buildNoteUrl = (data: {
   noteId: string;
   isComment?: boolean;
 }) => {
-  return `https://substack.com/@${data.handle}/note/${data.noteId}${
-    data.isComment ? `#comments` : ""
-  }`;
+  const noteIdWithCDash = data.noteId.includes("c-")
+    ? data.noteId
+    : `c-${data.noteId}`;
+  return `https://substack.com/@${data.handle}/note/${noteIdWithCDash}`;
 };
 
-export const buildCreatorUrl = (data: {
-  handle: string;
-}) => {
+export const buildCreatorUrl = (data: { handle: string }) => {
   return `https://substack.com/@${data.handle}`;
 };
