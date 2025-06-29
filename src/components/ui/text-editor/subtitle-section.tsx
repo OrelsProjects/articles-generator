@@ -37,7 +37,7 @@ const SubtitleSection: React.FC<SubtitleSectionProps> = ({
         value={subtitle}
         maxLength={200}
         onChange={onSubtitleChange}
-        className="w-full text-xl text-muted-foreground outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
+        className="w-full text-xl text-muted-foreground outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0 bg-transparent"
       />
       <TitleMenu
         open={showSubtitleMenu}

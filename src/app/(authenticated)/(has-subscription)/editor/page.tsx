@@ -18,7 +18,13 @@ import { Header } from "@/app/(authenticated)/(has-subscription)/editor/header";
 import LoadingIdeas from "@/components/ui/loading-ideas";
 import GenerateIdeasDialog from "@/components/ui/generate-ideas-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import NewArticleDropdown from "@/components/ui/new-article-dropdown";
 import { usePublication } from "@/lib/hooks/usePublication";
@@ -35,7 +41,6 @@ const ArticlesGrid = ({
   onCreateNew: () => void;
 }) => {
   const { ideas } = useAppSelector(state => state.publications);
-  const {} = usePublication();
   const { updateStatus } = useIdea();
   const [currentTab, setCurrentTab] = useState<
     "new" | "used" | "archived" | "all"
@@ -85,9 +90,9 @@ const ArticlesGrid = ({
 
           <TabsContent value={currentTab} className="mt-0">
             {sortedIdeas.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {sortedIdeas.map(idea => (
-                  <Card 
+                  <Card
                     key={idea.id}
                     className="cursor-pointer hover:bg-muted/50 transition-colors h-52 flex flex-col group"
                     onClick={() => onSelectIdea(idea)}
@@ -234,7 +239,7 @@ export default function EditorPage() {
   }>({ error: false, saving: false });
 
   const [viewMode, setViewMode] = useState<"articles" | "editor">("articles");
-  const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null);
+  const { setSelectedIdea } = useIdea();
 
   const { publications } = useAppSelector(state => state.publications);
 

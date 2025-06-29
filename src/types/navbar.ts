@@ -13,7 +13,7 @@ import {
 export const rootPath = "/notes";
 
 export const categoryIcons = {
-  Statistics: BarChart3,
+  "Notes Statistics": BarChart3,
 };
 
 export const navItems: {
@@ -65,7 +65,7 @@ export const navItems: {
     position: 99,
   },
   {
-    category: "Statistics",
+    category: "Notes Statistics",
     name: "Overall",
     mobileName: "Overall",
     href: "/statistics",
@@ -74,7 +74,7 @@ export const navItems: {
     position: 6,
   },
   {
-    category: "Statistics",
+    category: "Notes Statistics",
     name: "Notes Performance",
     mobileName: "Notes Performance",
     href: "/notes-stats",

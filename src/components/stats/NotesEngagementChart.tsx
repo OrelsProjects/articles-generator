@@ -11,10 +11,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useNotesStats } from "@/lib/hooks/useNotesStats";
 import { ReactionInterval } from "@/types/notes-stats";
-import { PuzzleIcon, Users, UserPlus, CoinsIcon } from "lucide-react";
+import { Users, UserPlus, CoinsIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   Popover,
@@ -22,7 +21,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CompactNoteComponent } from "@/components/stats/compact-note-component";
-import { useExtension } from "@/lib/hooks/useExtension";
 import { useAppSelector } from "@/lib/hooks/redux";
 import PremiumFeatureSoonOverlay from "@/components/ui/premium-feature-soon-overlay";
 import { Plan } from "@prisma/client";
@@ -489,7 +487,7 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {isLoading ? (
+                  {isLoading || loadingReactions ? (
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   ) : (
                     noteStats?.engagementTotals?.follows.toLocaleString() || 0
@@ -506,7 +504,7 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {isLoading ? (
+                  {isLoading || loadingReactions ? (
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   ) : (
                     noteStats?.engagementTotals?.freeSubscriptions.toLocaleString() ||
@@ -524,7 +522,7 @@ export function NotesEngagementChart({ isLoading }: NotesEngagementChartProps) {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {isLoading ? (
+                  {isLoading || loadingReactions ? (
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   ) : (
                     noteStats?.engagementTotals?.paidSubscriptions.toLocaleString() ||

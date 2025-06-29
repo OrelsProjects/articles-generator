@@ -379,11 +379,16 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                                 className={cn(
                                   "px-3 py-2 text-base hover:no-underline hover:bg-muted rounded-md transition-colors",
                                   {
-                                    "bg-primary/20":
+                                    "bg-primary/10 text-primary":
                                       categorySelected?.toLowerCase() ===
                                       category.toLowerCase(),
                                   },
                                 )}
+                                chevronClassName={cn({
+                                  "text-primary":
+                                    categorySelected?.toLowerCase() ===
+                                    category.toLowerCase(),
+                                })}
                               >
                                 <div className="flex items-center gap-3 font-normal">
                                   {CategoryIcon && <CategoryIcon size={20} />}

@@ -37,7 +37,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         value={title}
         onChange={onTitleChange}
         maxLength={200}
-        className="w-full text-4xl font-bold outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0"
+        className="w-full text-4xl font-bold outline-none placeholder:text-muted-foreground border-none shadow-none resize-none focus-visible:ring-0 focus-visible:outline-none p-0 bg-transparent"
       />
       <TitleMenu
         open={showTitleMenu}

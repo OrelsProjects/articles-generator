@@ -98,9 +98,9 @@ export const useIdea = () => {
     }
   };
 
-  const setSelectedIdea = (idea: Idea) => {
+  const setSelectedIdea = (idea: Idea | null) => {
     dispatch(setSelectedIdeaAction(idea));
-    setLastUsedIdea(idea.id);
+    setLastUsedIdea(idea?.id || null);
   };
 
   const generateIdeas = async (
