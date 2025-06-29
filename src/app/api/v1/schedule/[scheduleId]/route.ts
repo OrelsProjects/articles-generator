@@ -30,33 +30,3 @@ export async function GET(
     );
   }
 }
-
-export async function DELETE(
-  _: NextRequest,
-  { params }: { params: { scheduleId: string } },
-) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    loggerServer.info("[DELETE-SCHEDULE] Deleting schedule: " + params.scheduleId, {
-      userId: session.user.id,
-    });
-    const { scheduleId } = params;
-    await deleteScheduleById(scheduleId);
-    loggerServer.info("[DELETE-SCHEDULE] Successfully deleted schedule: " + scheduleId, {
-      userId: session.user.id,
-    });
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error: any) {
-    Logger.error("[DELETE-SCHEDULE] Error deleting schedule: " + error, {
-      userId: session.user.id,
-    });
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
-  }
-}

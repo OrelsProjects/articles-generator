@@ -394,7 +394,7 @@ export function GenerateNotesDialog({
         loading={isLoadingGenerateNotes}
         duration={4500}
         loop={false}
-        position="bottom-left"
+        position="bottom-right"
       />
     </>
   );

@@ -169,6 +169,12 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       });
     } catch (error: any) {
       Logger.error("Error rescheduling note", { error });
+      toast.update(toastId, {
+        render: "Failed to reschedule note",
+        type: "error",
+        isLoading: false,
+        autoClose: 1500,
+      });
     }
   };
 

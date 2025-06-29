@@ -4,7 +4,10 @@ import { ScheduledNote } from "@prisma/client";
 
 export type CreateScheduledNote =
   | Omit<ScheduledNote, "id" | "createdAt" | "updatedAt" | "isDeleted">
-  | Omit<ScheduledNote, "id" | "createdAt" | "updatedAt" | "cronExpression" | "isDeleted">;
+  | Omit<
+      ScheduledNote,
+      "id" | "createdAt" | "updatedAt" | "cronExpression" | "isDeleted"
+    >;
 
 export async function createSchedule(
   schedule: CreateScheduledNote,

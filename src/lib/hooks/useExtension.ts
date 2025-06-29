@@ -633,29 +633,6 @@ export function useExtension(): UseExtension {
     }
   }, [sendExtensionMessage]);
 
-  const sendExtensionApiRequest = async <T extends ApiRoute, R = any>(
-    route: T,
-    body: RouteBody<T>,
-    config?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<R>> => {
-    const cookiesValid = await getSubstackCookiesExpiration(config);
-    if (!cookiesValid.valid) {
-      const userHasExtension = await hasExtension();
-      if (!userHasExtension) {
-        dispatch(setShowExtensionDialog(true));
-        throw new NoExtensionError(
-          "Authentication required. Please log in to Substack.",
-        );
-      } else {
-        dispatch(setShowNoSubstackCookiesDialog(true));
-        throw new NoCookiesError(
-          "Authentication required. Please log in to Substack.",
-        );
-      }
-    }
-    return await extensionApiRequest<T, R>(route, body, config);
-  };
-
   const verifyExtensionKey = useCallback(async () => {
     let key: string | null = null;
     let authorId: number | null = null;
@@ -763,7 +740,6 @@ export function useExtension(): UseExtension {
     getNoteById,
     hasExtension,
     setUserSubstackCookies,
-    sendExtensionApiRequest,
     sendNote,
     createSchedule,
     deleteSchedule,

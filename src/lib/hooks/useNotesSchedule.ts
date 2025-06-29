@@ -21,7 +21,8 @@ import {
 export const useNotesSchedule = () => {
   const { user } = useAppSelector(selectAuth);
   const dispatch = useAppDispatch();
-  const { userNotes, loadingNotes, error } = useAppSelector(selectNotes);
+  const { userNotes, loadingNotes, error, userSchedules } =
+    useAppSelector(selectNotes);
   const {
     createSchedule,
     getSchedules,
@@ -89,20 +90,27 @@ export const useNotesSchedule = () => {
       },
     ) => {
       try {
-        const scheduleResponse = await axiosInstance.get(
-          `/api/user/notes/${noteId}/schedule`,
+        const deleteResponse = await axiosInstance.delete(
+          `/api/v1/schedule?noteId=${noteId}`,
         );
-        const schedule = scheduleResponse.data;
-        if (!schedule) {
+        const scheduleId = deleteResponse.data.scheduleId;
+        if (!scheduleId) {
           if (options.throwIfNotFound) {
             throw new ScheduleNotFoundError("Schedule not found");
           }
           return;
         }
-        await deleteScheduleExtension(schedule.id);
-        await axiosInstance.delete(`/api/v1/schedule/${schedule.id}`);
+        await deleteScheduleExtension(scheduleId);
       } catch (error: any) {
+        debugger;
         Logger.error("Error deleting schedule", { error });
+        // If error is 404, throw a schedule not found error
+        if (error.response?.status === 404) {
+          if (options.throwIfNotFound) {
+            throw new ScheduleNotFoundError("Schedule not found");
+          }
+          return;
+        }
         throw error;
       }
     },
@@ -158,28 +166,27 @@ export const useNotesSchedule = () => {
           showDialog: true,
         });
 
-        Logger.info("ADDING-SCHEDULE: scheduleNote: hasExtension passed");
-        const existingSchedule = await axiosInstance.get(
+        const deleteResponse = await axiosInstance.delete(
           `/api/user/notes/${note.id}/schedule`,
         );
-        if (existingSchedule.data) {
-          Logger.info("ADDING-SCHEDULE: scheduleNote: existingSchedule found", {
-            existingSchedule,
-          });
-          const deletedScheduleId = existingSchedule.data.id;
-          await axiosInstance.delete(`/api/user/notes/${note.id}/schedule`);
+        const deletedScheduleId = deleteResponse.data.id;
+        if (deletedScheduleId) {
           await deleteScheduleExtension(deletedScheduleId);
-          Logger.info(
-            "ADDING-SCHEDULE: scheduleNote: deleted existing schedule",
-            {
-              deletedScheduleId,
-            },
-          );
         }
-        const newScheduleResponse = await axiosInstance.post("/api/v1/schedule", {
-          noteId: note.id,
-          scheduledTo: note.scheduledTo,
-        });
+        
+        Logger.info(
+          "ADDING-SCHEDULE: scheduleNote: deleted existing schedule",
+          {
+            deletedScheduleId,
+          },
+        );
+        const newScheduleResponse = await axiosInstance.post(
+          "/api/v1/schedule",
+          {
+            noteId: note.id,
+            scheduledTo: note.scheduledTo,
+          },
+        );
         Logger.info("ADDING-SCHEDULE: scheduleNote: newScheduleResponse", {
           newScheduleResponse,
         });

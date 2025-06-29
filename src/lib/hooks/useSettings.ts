@@ -15,6 +15,10 @@ import { AIUsageType } from "@prisma/client";
 import { AllUsages, Settings } from "@/types/settings";
 import { SubscriptionInfo } from "@/types/settings";
 import { Logger } from "@/logger";
+import {
+  updateName as updateNameAction,
+  updatePreferredLanguage as updatePreferredLanguageAction,
+} from "@/lib/features/auth/authSlice";
 
 export const useSettings = () => {
   const dispatch = useAppDispatch();
@@ -89,6 +93,7 @@ export const useSettings = () => {
       await axiosInstance.post("/api/v1/user/settings/language", {
         language,
       });
+      dispatch(updatePreferredLanguageAction(language));
       return true;
     } catch (error: any) {
       Logger.error("Error updating preferred language", { error });
@@ -101,9 +106,10 @@ export const useSettings = () => {
       await axiosInstance.patch("api/v1/user/settings/name", {
         name,
       });
+      dispatch(updateNameAction(name));
       return true;
     } catch (error: any) {
-      Logger.error("Error updating preferred language", { error });
+      Logger.error("Error updating name", { error });
       throw error;
     }
   };

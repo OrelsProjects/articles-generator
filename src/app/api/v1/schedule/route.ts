@@ -2,8 +2,13 @@ import { authOptions } from "@/auth/authOptions";
 import {
   createSchedule,
   deleteLatestScheduleByNoteId,
+  deleteScheduleById,
+  getLatestScheduleForNote,
 } from "@/lib/dal/schedules";
-import { isValidScheduleTime, MIN_SCHEDULE_MINUTES } from "@/lib/utils/date/schedule";
+import {
+  isValidScheduleTime,
+  MIN_SCHEDULE_MINUTES,
+} from "@/lib/utils/date/schedule";
 import { Logger } from "@/logger";
 import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
@@ -94,6 +99,63 @@ export async function POST(request: NextRequest) {
     Logger.error("Error scheduling note", {
       userId: session?.user.id,
       error,
+    });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const queryParams = request.nextUrl.searchParams;
+    // Can have either scheduleId or noteId
+    let scheduleId = queryParams.get("scheduleId");
+    const noteId = queryParams.get("noteId");
+    if (!scheduleId && !noteId) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    // If no scheduleId, get the scheduleId from the noteId
+    if (!scheduleId) {
+      const schedule = await getLatestScheduleForNote(noteId as string);
+      if (!schedule) {
+        loggerServer.error("[DELETE-SCHEDULE] Schedule not found: " + noteId, {
+          userId: session.user.id,
+        });
+        return NextResponse.json(
+          { error: "Schedule not found" },
+          { status: 404 },
+        );
+      }
+      scheduleId = schedule.id;
+    }
+    loggerServer.info(
+      "[DELETE-SCHEDULE] Deleting schedule: " +
+        scheduleId +
+        " noteId: " +
+        noteId,
+      {
+        userId: session.user.id,
+      },
+    );
+    await deleteScheduleById(scheduleId);
+    loggerServer.info(
+      "[DELETE-SCHEDULE] Successfully deleted schedule: " + scheduleId,
+      {
+        userId: session.user.id,
+      },
+    );
+    return NextResponse.json({ scheduleId }, { status: 200 });
+  } catch (error: any) {
+    Logger.error("[DELETE-SCHEDULE] Error deleting schedule: " + error, {
+      userId: session.user.id,
     });
     return NextResponse.json(
       { error: "Internal server error" },

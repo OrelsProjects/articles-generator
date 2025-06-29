@@ -885,20 +885,9 @@ export const useNotes = () => {
         if (!note) {
           throw new Error("Note not found");
         }
-        try {
-          await deleteSchedule(noteId);
-        } catch (error: any) {
-          // If the schedule is not found, it's ok, we can continue
-          if (error instanceof ScheduleNotFoundError) {
-            Logger.error("Error deleting schedule:", error);
-          } else {
-            throw error;
-          }
-        }
         await scheduleNote(note, newTime, {
           showToast: options?.showToast,
         });
-        await updateNoteStatus(noteId, "scheduled", newTime);
       } catch (error: any) {
         Logger.error(
           `Error rescheduling note: ${noteId}, ${error}, ${newTime}`,

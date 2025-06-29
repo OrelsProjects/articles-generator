@@ -4,7 +4,11 @@ import { CreatePostResponse } from "@/types/createPostResponse";
 import { AxiosRequestConfig } from "axios";
 import { NoteDraft } from "@/types/note";
 import { AxiosResponse } from "axios";
-import { NoteStats, NoteWithEngagementStats, ReactionInterval } from "@/types/notes-stats";
+import {
+  NoteStats,
+  NoteWithEngagementStats,
+  ReactionInterval,
+} from "@/types/notes-stats";
 import { AttachmentType } from "@prisma/client";
 
 /**
@@ -131,11 +135,6 @@ export interface UseExtension {
     showDialog?: boolean;
     throwIfNoExtension?: boolean;
   }) => Promise<boolean>;
-  sendExtensionApiRequest: <T extends ApiRoute, R = any>(
-    route: T,
-    body: RouteBody<T>,
-    config?: AxiosRequestConfig,
-  ) => Promise<AxiosResponse<R>>;
   sendNote: (params: CreatePostParams) => Promise<CreatePostResponse | null>;
   createSchedule: (schedule: {
     scheduleId: string;
@@ -159,7 +158,7 @@ export interface UseExtension {
       orderDirection?: "asc" | "desc";
       page?: number;
       limit?: number;
-    }
+    },
   ) => Promise<NoteWithEngagementStats[]>;
   verifyExtensionKey: () => Promise<boolean>;
   updateExtensionData: () => Promise<boolean>;
