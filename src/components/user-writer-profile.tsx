@@ -199,11 +199,6 @@ export default function UserWriterProfile({
             </span>
             {[
               {
-                key: OrderByNotesEngagementEnum.totalClicks,
-                label: "Clicks",
-                icon: <MousePointer className="h-3.5 w-3.5" />,
-              },
-              {
                 key: OrderByNotesEngagementEnum.totalFreeSubscriptions,
                 label: "Free Subs",
                 icon: <Users className="h-3.5 w-3.5" />,
@@ -212,6 +207,11 @@ export default function UserWriterProfile({
                 key: OrderByNotesEngagementEnum.totalPaidSubscriptions,
                 label: "Paid Subs",
                 icon: <CoinsIcon className="h-3.5 w-3.5" />,
+              },
+              {
+                key: OrderByNotesEngagementEnum.totalClicks,
+                label: "Clicks",
+                icon: <MousePointer className="h-3.5 w-3.5" />,
               },
               {
                 key: OrderByNotesEngagementEnum.reactionCount,

@@ -12,7 +12,7 @@ import { AxiosError } from "axios";
 export const useMePage = () => {
   const [data, setData] = useState<UserWriterWithData | null>(null);
   const [orderBy, setOrderBy] = useState<OrderByNotesEngagement>(
-    OrderByNotesEngagementEnum.totalClicks,
+    OrderByNotesEngagementEnum.totalFreeSubscriptions,
   );
   const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("desc");
 
