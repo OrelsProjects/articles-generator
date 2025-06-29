@@ -274,16 +274,6 @@ export const ScheduleNoteRow: React.FC<ScheduleNoteRowProps> = ({
 
       {/* Action buttons on the right */}
       <div className="flex items-center gap-2 mr-2" onClick={handleActionClick}>
-        {/* Past schedule indicator */}
-        {isPastScheduled && (
-          <InstantPostButton
-            noteId={note.id}
-            source="schedule"
-            showText={false}
-            className="text-muted-foreground transition-colors p-2 z-10"
-          />
-        )}
-
         <InstantPostButton
           noteId={note.id}
           source="schedule"
