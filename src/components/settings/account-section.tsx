@@ -74,7 +74,6 @@ export function AccountSection() {
 
   return (
     <div className="space-y-6">
-
       <Card>
         <CardHeader>
           <CardTitle>Personal Details</CardTitle>
@@ -142,7 +141,14 @@ export function AccountSection() {
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="en">
+                  English{" "}
+                  <span className="text-muted-foreground">(American)</span>
+                </SelectItem>
+                <SelectItem value="en-GB">
+                  English{" "}
+                  <span className="text-muted-foreground">(British)</span>
+                </SelectItem>
                 <SelectItem value="es">Español</SelectItem>
                 <SelectItem value="fr">Français</SelectItem>
                 <SelectItem value="de">Deutsch</SelectItem>
@@ -162,8 +168,8 @@ export function AccountSection() {
             )}
             <div className="mt-4 text-sm text-muted-foreground">
               <p>
-                Note: The language preference affects the AI-generated
-                content only, not the application interface.
+                Note: The language preference affects the AI-generated content
+                only, not the application interface.
               </p>
             </div>
           </div>
@@ -171,4 +177,4 @@ export function AccountSection() {
       </Card>
     </div>
   );
-} 
+}
