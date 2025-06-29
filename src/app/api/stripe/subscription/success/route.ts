@@ -6,6 +6,7 @@ import { sendMail } from "@/lib/mail/mail";
 import { generateWelcomeTemplateTrial } from "@/lib/mail/templates";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/authOptions";
+import { rootPath } from "@/types/navbar";
 
 export async function GET(req: NextRequest) {
   const userSession = await getServerSession(authOptions);
@@ -89,7 +90,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.redirect(
-      req.nextUrl.origin + `/home?success=true&plan=${plan}`,
+      req.nextUrl.origin + `${rootPath}?success=true&plan=${plan}`,
     );
   } catch (error: any) {
     loggerServer.error("Failed to complete subscription", {

@@ -1,4 +1,5 @@
 import { Plan } from "@prisma/client";
+import { rootPath } from "@/types/navbar";
 
 export interface EmailTemplate {
   body: string;
@@ -133,7 +134,7 @@ export const generateWelcomeTemplateTrial = (name: string): EmailTemplate => ({
 
         
         <div class="button-container">
-        <a class="button" href="https://writestack.io/home">Start growing</a>
+        <a class="button" href="https://writestack.io${rootPath}">Start growing</a>
         </div>
 
         <p><strong>P.S.</strong> Your feedback shapes WriteStack's future. Have ideas, questions, or just want to chat about writing? Just reply to this email. I read every message personally.</p>
