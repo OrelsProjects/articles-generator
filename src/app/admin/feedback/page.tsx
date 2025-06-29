@@ -28,7 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TooltipButton } from "@/components/ui/tooltip-button";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 interface UserFeedback {
@@ -298,7 +297,7 @@ export default function AdminFeedbackPage() {
 
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  <span>{format(new Date(item.createdAt), "MMM d, yyyy")}</span>
+                  <span>{format(new Date(item.createdAt), "MMM d, yyyy, hh:mm a")}</span>
                 </div>
 
                 {item._count.responses > 0 && (
