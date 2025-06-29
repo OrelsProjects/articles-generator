@@ -943,7 +943,8 @@ Rules:
 5. Use "\\n\\n" for **every** line break. Never output a single newline.
 6. Twist every borrowed idea ≥ 40 % so it’s fresh.
 7. Output a JSON array only, following the schema below.
-${language ? `8. The notes must be in ${language} language.` : ""}
+8. Never EVER copy and paste the same note from the user's previously written notes or inspiration notes.
+${language ? `9. The notes must be in ${language} language.` : ""}
 ${
   lockToArticles
     ? `
@@ -1102,6 +1103,7 @@ export const generateNotesPrompt_v1 = ({
   - ${avoidWordsPrompt}
   - Mark a new line with double '\\n' (blackslash n). No hard line breaks.
   - Do not use dashes or em dash.
+  - **Never EVER copy and paste the same note from the user's previously written notes or inspiration notes.**
   
   ${language ? `- The notes must be in ${language} language.` : ""}
 

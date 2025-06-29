@@ -362,6 +362,7 @@ Your note content here...
 5. If ${emojiRatio} ≤ 0.20, do not use emojis. Otherwise, match user ratio.
 6. Use "\\n\\n" for **every** line break. Never output a single newline.
 7. Twist every borrowed idea ≥ 40 % so it’s fresh.
+8. **Never EVER copy and paste the same note from the user's previously written notes or inspiration notes.**
 
 ⚠️ IMPORTANT – HARD LIMIT  
 Any note > ${lenCeil} chars (spaces *included*) is invalid.  
