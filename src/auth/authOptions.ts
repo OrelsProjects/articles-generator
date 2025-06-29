@@ -53,9 +53,7 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       try {
         session.user.id = token.sub as string;
-        // if (session.user.id === "6817eb234db08da5b12af777") {
-        //   throw new Error("Not allowed - Old Stefan Girard account");
-        // }
+
         const promises = [
           prisma.userMetadata.findUnique({
             where: {
@@ -70,6 +68,11 @@ export const authOptions: AuthOptions = {
             },
           }),
           getActiveSubscription(token.sub as string),
+          prisma.user.findUnique({
+            where: {
+              id: token.sub as string,
+            },
+          }),
           prisma.extensionDetails.findUnique({
             where: {
               userId: token.sub as string,
@@ -77,7 +80,7 @@ export const authOptions: AuthOptions = {
           }),
         ];
         const byline = await getBylineByUserId(token.sub as string);
-        const [userMetadata, activeSubscription, extensionDetails] =
+        const [userMetadata, activeSubscription, user, extensionDetails] =
           (await Promise.all(promises)) as [
             {
               publicationId: string | null;
@@ -91,6 +94,10 @@ export const authOptions: AuthOptions = {
               } | null;
             } | null,
             Subscription | null,
+            {
+              name: string | null;
+              image: string | null;
+            } | null,
             {
               versionInstalled: string | null;
             } | null,
@@ -118,6 +125,8 @@ export const authOptions: AuthOptions = {
             photoUrl: byline?.photoUrl || token.picture || "",
           },
         };
+        session.user.name = user?.name || null;
+        session.user.image = user?.image || null;
         session.user.publicationId = userMetadata?.publicationId || "";
         return session;
       } catch (error) {

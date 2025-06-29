@@ -84,11 +84,28 @@ const authSlice = createSlice({
       state.user = null;
       state.state = "unauthenticated";
     },
+    updatePreferredLanguage: (state, action: PayloadAction<string>) => {
+      if (state.user?.meta) {
+        state.user.meta.preferredLanguage = action.payload;
+      }
+    },
+    updateName: (state, action: PayloadAction<string>) => {
+      if (state.user) {
+        state.user.displayName = action.payload;
+      }
+    },
   },
 });
 
-export const { setUser, setError, clearUser, setLoading, updateUserPlan } =
-  authSlice.actions;
+export const {
+  setUser,
+  setError,
+  clearUser,
+  setLoading,
+  updateUserPlan,
+  updatePreferredLanguage,
+  updateName,
+} = authSlice.actions;
 
 export const selectAuth = (state: RootState): AuthState => state.auth;
 

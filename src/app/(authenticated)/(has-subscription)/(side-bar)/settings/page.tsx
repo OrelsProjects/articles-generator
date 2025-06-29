@@ -397,22 +397,20 @@ export default function SettingsPage() {
               </div>
 
               {/* Footer Actions */}
-              <div className="border-t border-border p-4 mb-12 md:p-6 bg-muted/20">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <Button
-                    variant="link"
-                    size="sm"
-                    asChild
-                    className="text-muted-foreground text-sm"
-                  >
-                    <Link href="/tos" target="_blank">
-                      Terms of Service
-                    </Link>
-                  </Button>
-                </div>
-              </div>
             </div>
           </div>
+        </div>
+        <div className="w-full flex justify-end bg-transparent">
+          <Button
+            variant="link"
+            size="sm"
+            asChild
+            className="text-muted-foreground text-sm"
+          >
+            <Link href="/tos" target="_blank">
+              Terms of Service
+            </Link>
+          </Button>
         </div>
       </div>
 
