@@ -9,6 +9,7 @@ import {
   ExternalLink,
   ChevronDown,
   Ban,
+  Layers,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -266,15 +267,8 @@ export default function InspirationNoteComponent({
               hidden: !options.allowAuthorClick,
             })}
           >
-            <ExternalLink className="w-4 h-4" />
+            <Layers className="w-4 h-4" />
             WriteStack profile
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={handleBlockWriter}
-            className="cursor-pointer flex flex-row gap-1.5"
-          >
-            <Ban className="w-4 h-4" />
-            Hide creator&apos;s notes
           </DropdownMenuItem>
           {handle && (
             <DropdownMenuItem
@@ -287,6 +281,13 @@ export default function InspirationNoteComponent({
               View on Substack
             </DropdownMenuItem>
           )}
+          <DropdownMenuItem
+            onClick={handleBlockWriter}
+            className="cursor-pointer flex flex-row gap-1.5 hover:!bg-destructive/10 hover:!text-destructive transition-colors"
+          >
+            <Ban className="w-4 h-4" />
+            Hide creator&apos;s notes
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     );

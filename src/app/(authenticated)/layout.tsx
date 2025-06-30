@@ -2,6 +2,7 @@
 
 import AuthProvider from "@/app/providers/AuthProvider";
 import { FeedbackProvider } from "@/app/providers/FeedbackProvider";
+import { AppSidebar } from "@/components/layout/app-sidebar";
 
 export default function ContentLayout({
   children,
@@ -9,9 +10,9 @@ export default function ContentLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
-      <FeedbackProvider />
-      {children}
-    </AuthProvider>
+      <AuthProvider>
+        <FeedbackProvider />
+        {children}
+      </AuthProvider>
   );
 }

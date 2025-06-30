@@ -148,7 +148,7 @@ export default function AuthProvider({
         break;
       case "loading":
         break;
-      case "unauthenticated":
+
         setUser(undefined);
         handleNavigation("unauthenticated", false);
         break;
@@ -162,7 +162,7 @@ export default function AuthProvider({
     setUserLogger(currentUser);
   }, [currentUser]);
 
-  if (loading) {
+  if (loading && !currentUser) {
     return (
       <div className="w-full h-screen flex items-center justify-center">
         <Loading spinnerClassName="h-16 w-16" />
