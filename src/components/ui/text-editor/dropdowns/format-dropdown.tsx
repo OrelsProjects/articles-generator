@@ -179,7 +179,7 @@ export function FormatDropdown({
             exit={{ opacity: 0, y: openUp ? 10 : -10 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              "absolute z-50 w-40 shadow-md transition-none",
+              "absolute z-50 w-40 shadow-md transition-none border border-border rounded-md",
               expandedOption ? "w-64" : "w-fit max-w-72",
               "bg-popover text-popover-foreground backdrop-blur-sm",
               openUp ? "bottom-full mb-2" : "top-full mt-2",

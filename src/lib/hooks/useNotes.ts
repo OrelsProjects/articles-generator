@@ -803,8 +803,6 @@ export const useNotes = () => {
       } catch (error: any) {
         Logger.error("Error sending note:", error);
         throw error;
-      } finally {
-        setLoadingSendNote(false);
       }
       try {
         await updateNoteStatus(noteId, "published");
@@ -815,8 +813,8 @@ export const useNotes = () => {
         );
       }
 
+      setLoadingSendNote(false);
       dispatch(setNotePostedData(sendResponse));
-
       return sendResponse;
     },
     [user, userNotes, selectedNote, selectNote, updateNoteStatus, dispatch],

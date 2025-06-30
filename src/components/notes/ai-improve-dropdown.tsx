@@ -13,6 +13,7 @@ import {
   User,
   AudioLines,
   Anchor,
+  ChevronDown,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Note, NoteDraft } from "@/types/note";
@@ -188,7 +189,10 @@ export default function AIImproveDropdown({
           {loadingImprovement ? (
             <RefreshCw className="h-5 w-5 animate-spin" />
           ) : (
-            <Sparkles className="h-5 w-5" />
+            <div className="flex flex-row gap-1 items-center px-1">
+              <Sparkles className="h-4 w-4" />
+              <ChevronDown className="h-3 w-3" />
+            </div>
           )}
         </TooltipButton>
       }
