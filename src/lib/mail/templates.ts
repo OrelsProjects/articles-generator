@@ -222,15 +222,18 @@ export function generateSubscriptionDeletedEmail(
 }
 
 export function generateInvoicePaymentFailedEmail(
-  invoiceId: string,
+  invoiceUrl: string,
   email: string,
 ) {
   const content = `
     <h2>We noticed an issue with your payment</h2>
-    <p>Hi there! We wanted to let you know that the payment for invoice <strong>${invoiceId}</strong> associated with <strong>${email}</strong> wasn't able to go through.</p>
-    <p>This sometimes happens due to temporary card issues or bank security measures. No worrie. You can update your payment method or try again through your account dashboard.</p>
+    <p>Hi there! We wanted to let you know that the payment for your invoice associated with <strong>${email}</strong> wasn't able to go through.</p>
+    <p>This sometimes happens due to temporary card issues or bank security measures. No worries! You can update your payment method or try again through your account dashboard.</p>
     <p>Need any help sorting this out? We're here for you!</p>
     <div class="center-button-container">
+      <a href="${invoiceUrl}" class="button">View Invoice</a>
+    </div>
+    <div class="center-button-container" style="margin-top: 10px;">
       <a href="https://writestack.io/settings" class="button">Update Payment Information</a>
     </div>
   `;
@@ -239,7 +242,6 @@ export function generateInvoicePaymentFailedEmail(
     subject: "We noticed an issue with your payment",
   };
 }
-
 export function generateFailedToSendNoteEmail(
   noteBody: string,
   noteId: string,

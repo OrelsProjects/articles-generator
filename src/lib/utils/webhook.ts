@@ -593,12 +593,11 @@ export async function handleInvoicePaymentFailed(event: any) {
     );
     return;
   }
-
   const emailTemplate = generateInvoicePaymentFailedEmail(
-    invoice.id,
+    invoice.hosted_invoice_url || "",
     customerEmail,
   );
-
+  
   await sendMail({
     to: "orelsmail@gmail.com",
     from: "support",
