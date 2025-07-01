@@ -223,25 +223,22 @@ export function generateSubscriptionDeletedEmail(
 
 export function generateInvoicePaymentFailedEmail(
   invoiceUrl: string,
+  invoicePdfUrl: string,
   email: string,
 ) {
   const content = `
     <h2>We noticed an issue with your payment</h2>
     <p>Hi there! We wanted to let you know that the payment for your invoice associated with <strong>${email}</strong> wasn't able to go through.</p>
     <p>This sometimes happens due to temporary card issues or bank security measures. No worries! You can update your payment method or try again through your account dashboard.</p>
-    <p>Need any help sorting this out? We're here for you!</p>
-    <div class="center-button-container">
-      <a href="${invoiceUrl}" class="button">View Invoice</a>
-    </div>
-    <div class="center-button-container" style="margin-top: 10px;">
-      <a href="https://writestack.io/settings" class="button">Update Payment Information</a>
-    </div>
+    <p>Need any help sorting this out? We're here for you! Just reply to this email.</p>
+    <p>You can <a href="${invoiceUrl}" style="color: #ff661a; text-decoration: underline;">view the invoice</a> or <a href="${invoicePdfUrl}" style="color: #ff661a; text-decoration: underline;">download the PDF</a>.</p>
   `;
   return {
     body: baseEmailTemplate(content),
     subject: "We noticed an issue with your payment",
   };
 }
+
 export function generateFailedToSendNoteEmail(
   noteBody: string,
   noteId: string,

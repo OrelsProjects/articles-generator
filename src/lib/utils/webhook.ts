@@ -581,6 +581,7 @@ export async function handleInvoicePaymentSucceeded(event: any) {
   });
 }
 
+
 export async function handleInvoicePaymentFailed(event: any) {
   const invoice = event.data.object as Stripe.Invoice;
   const customerEmail = invoice.customer_email;
@@ -595,9 +596,9 @@ export async function handleInvoicePaymentFailed(event: any) {
   }
   const emailTemplate = generateInvoicePaymentFailedEmail(
     invoice.hosted_invoice_url || "",
+    invoice.invoice_pdf || "",
     customerEmail,
   );
-  
   await sendMail({
     to: "orelsmail@gmail.com",
     from: "support",
