@@ -39,6 +39,16 @@ function formatBlockquotes(markdown: string): string {
   return result.join("\n");
 }
 
+export function bodyJsonToSubstackBody(bodyJson: any): any {
+  return {
+    type: "doc",
+    attrs: {
+      schemaVersion: "v1",
+    },
+    content: bodyJson,
+  };
+}
+
 export async function markdownToADF(markdown: string): Promise<any> {
   const formattedMarkdown = formatBlockquotes(markdown);
   const transformer = new MarkdownTransformer();
@@ -49,9 +59,7 @@ export async function markdownToADF(markdown: string): Promise<any> {
     ? rawADF.content
     : rawADF.content?.toJSON?.() ?? [];
 
-  const content = transformContent(contentArray);
-
-  return content;
+  return bodyJsonToSubstackBody(transformContent(contentArray));
 }
 
 function transformContent(content: any[]): any[] {

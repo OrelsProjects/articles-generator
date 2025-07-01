@@ -1,7 +1,7 @@
 import { authOptions } from "@/auth/authOptions";
 import { getNoteAttachments, getNoteByScheduleId } from "@/lib/dal/note";
 import { deleteScheduleById } from "@/lib/dal/schedules";
-import { markdownToADF } from "@/lib/utils/adf";
+import { bodyJsonToSubstackBody, markdownToADF } from "@/lib/utils/adf";
 import { Logger } from "@/logger";
 import { NoteDraftImage } from "@/types/note";
 import { getServerSession } from "next-auth";
@@ -18,17 +18,17 @@ export async function GET(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    const adf = note.bodyJson
-      ? JSON.parse(note.bodyJson)
-      : await markdownToADF(note.body);
-
-    const substackJsonBody = {
-      type: "doc",
-      attrs: {
-        schemaVersion: "v1",
-      },
-      content: adf,
-    };
+    let adf: any | null = null;
+    if (note.bodyJson) {
+      try {
+        const bodyJson = JSON.parse(note.bodyJson);
+        adf = bodyJsonToSubstackBody(bodyJson);
+      } catch (error) {
+        adf = await markdownToADF(note.body);
+      }
+    } else {
+      adf = await markdownToADF(note.body);
+    }
 
     const attachments = await getNoteAttachments(note.id);
     const attachmentsForResponse: NoteDraftImage[] = attachments.map(
@@ -43,7 +43,7 @@ export async function GET(
       attachmentUrls: string[];
       attachments: NoteDraftImage[];
     } = {
-      jsonBody: substackJsonBody,
+      jsonBody: adf,
       attachmentUrls: attachments.map(attachment => attachment.s3Url),
       attachments: attachmentsForResponse,
     };
