@@ -39,7 +39,7 @@ function formatBlockquotes(markdown: string): string {
   return result.join("\n");
 }
 
-export async function markdownToADF(markdown: string) {
+export async function markdownToADF(markdown: string): Promise<any> {
   const formattedMarkdown = formatBlockquotes(markdown);
   const transformer = new MarkdownTransformer();
   const rawADF = transformer.parse(formattedMarkdown);
@@ -49,15 +49,9 @@ export async function markdownToADF(markdown: string) {
     ? rawADF.content
     : rawADF.content?.toJSON?.() ?? [];
 
-  const cleanADF = {
-    type: "doc",
-    attrs: {
-      schemaVersion: "v1",
-    },
-    content: transformContent(contentArray),
-  };
+  const content = transformContent(contentArray);
 
-  return cleanADF;
+  return content;
 }
 
 function transformContent(content: any[]): any[] {

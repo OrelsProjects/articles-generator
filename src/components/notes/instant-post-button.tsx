@@ -60,12 +60,12 @@ export function InstantPostButton({
     EventTracker.track("note_post_button_clicked_" + source);
     let sendNoteId = noteId;
     try {
-      updateLoading(true);
-      const customNoteId = await onSave?.();
+      // updateLoading(true);
+      // const customNoteId = await onSave?.();
 
-      if (customNoteId) {
-        sendNoteId = customNoteId;
-      }
+      // if (customNoteId) {
+      //   sendNoteId = customNoteId;
+      // }
       const response = await sendNote(sendNoteId!);
       onNoteSent?.();
       if (response) {

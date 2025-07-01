@@ -21,6 +21,15 @@ export async function GET(
     const adf = note.bodyJson
       ? JSON.parse(note.bodyJson)
       : await markdownToADF(note.body);
+
+    const substackJsonBody = {
+      type: "doc",
+      attrs: {
+        schemaVersion: "v1",
+      },
+      content: adf,
+    };
+
     const attachments = await getNoteAttachments(note.id);
     const attachmentsForResponse: NoteDraftImage[] = attachments.map(
       attachment => ({
@@ -34,7 +43,7 @@ export async function GET(
       attachmentUrls: string[];
       attachments: NoteDraftImage[];
     } = {
-      jsonBody: adf,
+      jsonBody: substackJsonBody,
       attachmentUrls: attachments.map(attachment => attachment.s3Url),
       attachments: attachmentsForResponse,
     };
