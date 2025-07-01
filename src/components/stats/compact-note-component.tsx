@@ -181,7 +181,8 @@ export function CompactNoteComponent({
                 }}
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
-                View on Substack
+                <span className="hidden md:block">View note on Substack</span>
+                <span className="block md:hidden">View on Substack</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

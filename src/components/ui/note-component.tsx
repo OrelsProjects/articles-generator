@@ -519,7 +519,9 @@ export default function NoteComponent({
                     },
                   )}
                 >
-                  View on Substack <ExternalLink className="w-4 h-4 ml-2" />
+                  <ExternalLink className="w-4 h-4 ml-2" />
+                  <span className="hidden md:block">View note on Substack</span>
+                  <span className="block md:hidden">View on Substack</span>
                 </Button>
               )}
             </div>

@@ -46,7 +46,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MasonryGrid } from "@/components/ui/masonry-grid";
 import InspirationNoteComponent from "@/components/ui/inspiration-note-component";
 
-
 // New component to display active filters
 const ActiveFilters = ({
   filters,
@@ -532,11 +531,7 @@ export default function InspirationGrid() {
                     ? "Try changing the filters to find more notes"
                     : "Something probably went wrong. Try again."}
                 </p>
-                <Button
-                  variant="ghost"
-                  onClick={() => fetchInspirationNotes()}
-                  className="px-6 py-3 bg-primary text-foreground rounded-md hover:bg-primary/90 transition-colors"
-                >
+                <Button onClick={() => fetchInspirationNotes()}>
                   Try again
                 </Button>
               </div>
