@@ -588,6 +588,7 @@ export async function handleInvoicePaymentSucceeded(event: any) {
 export async function handleInvoicePaymentFailed(event: any) {
   const invoice = event.data.object as Stripe.Invoice;
   const customerEmail = invoice.customer_email;
+  const customerName = invoice.customer_name;
   if (!customerEmail) {
     loggerServer.error(
       "No email found for customer" +
@@ -597,10 +598,14 @@ export async function handleInvoicePaymentFailed(event: any) {
     );
     return;
   }
+
+  const customerFirstName = customerName?.split(" ")[0];
+
   const emailTemplate = generateInvoicePaymentFailedEmail(
     invoice.hosted_invoice_url || "",
     invoice.invoice_pdf || "",
     customerEmail,
+    customerFirstName || undefined,
   );
   await sendMail({
     to: customerEmail,
