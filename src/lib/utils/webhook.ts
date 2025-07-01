@@ -21,6 +21,13 @@ import { Interval, Payment, Plan, Subscription } from "@prisma/client";
 import { Stripe } from "stripe";
 import { applyCoupon, removeCouponUsage } from "@/lib/dal/coupon";
 
+const formatSubscriptionStatus = (status: string) => {
+  if (status === "incomplete") {
+    return "active";
+  }
+  return status;
+};
+
 async function getUserBySubscription(subscription: Stripe.Subscription) {
   const customer = await getStripeInstance().customers.retrieve(
     subscription.customer as string,
@@ -110,7 +117,7 @@ export async function handleSubscriptionCreated(event: Stripe.Event) {
   }
 
   const subscriptionData = {
-    status: subscription.status,
+    status: formatSubscriptionStatus(subscription.status),
     userId: user?.id,
     plan: plan,
     stripeSubId: subscriptionId,
@@ -262,7 +269,7 @@ export async function handleSubscriptionUpdated(event: any) {
   const newSubscription: Omit<Subscription, "id"> = {
     ...currentSubscriptionNoId,
     plan: plan || currentSubscription.plan,
-    status: subscription.status,
+    status: formatSubscriptionStatus(subscription.status),
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
     currentPeriodEnd: new Date(subscription.current_period_end * 1000),
     currentPeriodStart: new Date(subscription.current_period_start * 1000),
@@ -375,7 +382,7 @@ export async function handleSubscriptionResumed(event: Stripe.Event) {
       stripeSubId: subscriptionId,
     },
     data: {
-      status: subscription.status,
+      status: formatSubscriptionStatus(subscription.status),
     },
   });
 }

@@ -278,8 +278,7 @@ export default function InspirationNoteComponent({
               className="cursor-pointer flex flex-row gap-1.5"
             >
               <ExternalLink className="w-4 h-4" />
-              <span className="hidden md:block">View note on Substack</span>
-              <span className="block md:hidden">View on Substack</span>
+              View creator on Substack
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
@@ -483,7 +482,7 @@ export default function InspirationNoteComponent({
                   "text-xs text-muted-foreground hover:text-foreground",
                 )}
               >
-                <ExternalLink className="w-4 h-4 ml-2" />
+                <ExternalLink className="w-4 h-4 mr-2" />
                 <span className="hidden md:block">View note on Substack</span>
                 <span className="block md:hidden">View on Substack</span>{" "}
               </Button>
