@@ -463,11 +463,31 @@
   @apply bg-primary/10 text-primary;
 }
 
+.tiptap code {
+  color: hsl(var(--primary));
+  background-color: hsl(var(--muted)/0.4);
+  border-radius: 8px;
+  border: 1px solid hsl(var(--muted-foreground)/0.2);
+  padding: 0 4px;
+  font-size: 0.9em;
+}
+
 .tiptap blockquote {
-  border-left: 4px solid hsl(var(--primary));
-  padding-left: 1rem;
-  margin: 1.5rem 0;
+  margin: 6px 0;
+  padding-left: 16px;
+  position: relative;
   color: hsl(var(--foreground));
+}
+
+.tiptap blockquote::before {
+  content: "";
+  border-radius: 9999px;
+  left: 0;
+  top: 2px;
+  width: 4px;
+  background-color: hsl(var(--muted));
+  position: absolute;
+  bottom: 0;
 }
 
 .tiptap .pullquote {
