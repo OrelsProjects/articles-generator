@@ -56,6 +56,7 @@ export async function GET(req: NextRequest) {
       id: note.id,
       thumbnail: note.thumbnail || session.user.image || undefined,
       body: note.body,
+      bodyJson: note.bodyJson ? JSON.parse(note.bodyJson) : undefined,
       createdAt: note.createdAt,
       authorId: note.authorId,
       authorName: note.name || session.user.name || "",

@@ -51,7 +51,6 @@ import { useExtension } from "@/lib/hooks/useExtension";
 import { toast } from "react-toastify";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { setNotePostedData } from "@/lib/features/ui/uiSlice";
-import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
 import axiosInstance from "@/lib/axios-instance";
 import {
   CHUNK_SIZE,
@@ -63,6 +62,7 @@ import { AttachmentType } from "@prisma/client";
 import { OpenGraphResponse } from "@/types/og";
 import { getLinks } from "@/lib/utils/note-editor-utils";
 import { compareVersions } from "@/lib/utils/extension";
+import { JSONContent } from "@tiptap/react";
 
 export const MAX_ATTACHMENTS = Math.ceil(MAX_FILE_SIZE / CHUNK_SIZE);
 
@@ -359,6 +359,7 @@ export const useNotes = () => {
   const editNoteBody = async (
     noteId: string | null,
     body: string,
+    json?: JSONContent,
   ): Promise<NoteDraft | null> => {
     if (noteId && cancelUpdateBody.current.includes(noteId)) {
       cancelUpdateBody.current = cancelUpdateBody.current.filter(
@@ -382,6 +383,7 @@ export const useNotes = () => {
     setLoadingEditNote(true);
 
     try {
+      const bodyJson = json ? JSON.stringify(json) : undefined;
       const isEmpty = isEmptyNote(selectedNote);
       const isInspiration = selectedNote?.status === "inspiration";
       const isAiGenerated = selectedNote?.status === "chat-generated";
@@ -392,6 +394,7 @@ export const useNotes = () => {
           const data = await createNoteDraft(
             {
               body,
+              bodyJson,
               status:
                 selectedNote?.status === "inspiration" ||
                 selectedNote?.status === "chat-generated"
@@ -420,12 +423,15 @@ export const useNotes = () => {
         if (!noteId) {
           throw new Error("Note ID is null");
         }
-        const partialNote: Partial<NoteDraftBody> = { body };
+        const partialNote: Partial<NoteDraftBody> = {
+          body,
+          bodyJson,
+        };
         await updateNoteDraft(noteId, partialNote, {
           signal: controller.signal,
         });
         const note = userNotes.find(note => note.id === noteId);
-        dispatch(updateNote({ id: noteId, note: { body } }));
+        dispatch(updateNote({ id: noteId, note: { body, bodyJson } }));
         cancelRef.current = null;
 
         const hasLinkAttachments = note?.attachments?.some(
@@ -473,8 +479,8 @@ export const useNotes = () => {
   };
 
   const updateNoteBodyDebounced = useCallback(
-    debounce((noteId, body) => {
-      editNoteBody(noteId, body);
+    debounce((noteId, body, json) => {
+      editNoteBody(noteId, body, json);
     }, 200),
     [selectedNote],
   );
@@ -482,6 +488,7 @@ export const useNotes = () => {
   const updateNoteBody = (
     noteId: string | null,
     body: string,
+    json?: JSONContent,
     options?: { immediate?: boolean },
   ) => {
     // Abort any existing request
@@ -496,9 +503,9 @@ export const useNotes = () => {
       return;
     }
     if (options?.immediate) {
-      editNoteBody(noteId, body);
+      editNoteBody(noteId, body, json);
     } else {
-      updateNoteBodyDebounced(noteId, body);
+      updateNoteBodyDebounced(noteId, body, json);
     }
   };
 
@@ -764,7 +771,7 @@ export const useNotes = () => {
         setLoadingSendNote(true);
         const note = userNotes.find(note => note.id === noteId);
         if (!note) return;
-        // await axiosInstance.get(`/api/user/notes/${noteId}/should-send`);
+
         Logger.info("Sending note", note);
 
         const attachments: {
@@ -781,10 +788,12 @@ export const useNotes = () => {
           });
         }
         Logger.info("Attachment URLs", attachments);
+
         const body =
           attachments.length > 0
             ? {
                 message: note.body,
+                bodyJson: note.bodyJson,
                 moveNoteToPublished: {
                   noteId,
                 },
@@ -792,6 +801,7 @@ export const useNotes = () => {
               }
             : {
                 message: note.body,
+                bodyJson: note.bodyJson,
                 moveNoteToPublished: {
                   noteId,
                 },

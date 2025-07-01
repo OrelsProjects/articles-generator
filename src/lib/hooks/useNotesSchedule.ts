@@ -102,7 +102,7 @@ export const useNotesSchedule = () => {
         }
         await deleteScheduleExtension(scheduleId);
       } catch (error: any) {
-        debugger;
+        
         Logger.error("Error deleting schedule", { error });
         // If error is 404, throw a schedule not found error
         if (error.response?.status === 404) {

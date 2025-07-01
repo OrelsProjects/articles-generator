@@ -1,5 +1,10 @@
 import { markdownToADF } from "@/lib/utils/adf";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const schema = z.object({
+  markdown: z.string(),
+});
 
 export async function POST(req: NextRequest) {
   try {

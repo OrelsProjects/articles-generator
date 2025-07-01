@@ -46,7 +46,7 @@ export function InstantPostButton({
   useEffect(() => {
     if (loadingSendNote) {
       setLoading(true);
-    } else {
+
       setLoading(false);
     }
   }, [loadingSendNote]);

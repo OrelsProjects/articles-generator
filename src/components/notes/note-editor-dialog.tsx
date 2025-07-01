@@ -213,13 +213,15 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     html: string,
     options?: { immediate?: boolean },
   ): Promise<NoteDraft | null> {
+    if(!editor) return null;
     const newBody = unformatText(html);
+    const json = editor.getJSON();
     if (selectedNote) {
       if (options?.immediate) {
-        const note = await editNoteBody(selectedNote.id, newBody);
+        const note = await editNoteBody(selectedNote.id, newBody, json);
         return note;
       } else {
-        updateNoteBody(selectedNote.id, newBody);
+        updateNoteBody(selectedNote.id, newBody, json);
         return null;
       }
     }

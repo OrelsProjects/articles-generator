@@ -336,7 +336,7 @@ model Note {
   userId String @db.ObjectId
 
   body      String
-  bodyJson  Json?
+  bodyJson  String?
   summary   String
   type      String?
   thumbnail String?

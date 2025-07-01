@@ -81,6 +81,7 @@ export interface NoteDraft {
   scheduledTo?: Date | null;
   wasSentViaSchedule: boolean;
   attachments?: NoteDraftImage[] | null;
+  bodyJson?: string;
 }
 
 export interface NoteDraftBody extends Omit<NoteDraft, "status"> {

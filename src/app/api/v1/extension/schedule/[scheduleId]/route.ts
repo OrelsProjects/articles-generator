@@ -18,7 +18,9 @@ export async function GET(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    const adf = await markdownToADF(note.body);
+    const adf = note.bodyJson
+      ? JSON.parse(note.bodyJson)
+      : await markdownToADF(note.body);
     const attachments = await getNoteAttachments(note.id);
     const attachmentsForResponse: NoteDraftImage[] = attachments.map(
       attachment => ({

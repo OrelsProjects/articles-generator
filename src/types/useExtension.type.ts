@@ -27,6 +27,7 @@ export type CookieName = "substack.sid" | "substack.lli" | "__cf_bm";
 export interface CreatePostParams {
   /** The content of the post */
   message: string;
+  bodyJson?: string;
   /** Optional: Move note to status "published" */
   moveNoteToPublished?: {
     noteId: string;

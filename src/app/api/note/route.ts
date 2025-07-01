@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       body: newNoteDraft?.body || "",
       status: newNoteDraft?.status || NoteStatus.draft,
       name: name,
-      bodyJson: null,
+      bodyJson: newNoteDraft?.bodyJson || null,
       summary: "",
       type: null,
       thumbnail: photoUrl,

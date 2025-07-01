@@ -233,7 +233,7 @@ export default function Pricing({
 
       setCouponDiscounts(nonNullDiscounts);
       setAppliedCoupon(code.toUpperCase());
-      debugger;
+      
       toast.success("Coupon applied successfully!");
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Invalid coupon code");

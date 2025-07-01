@@ -54,7 +54,7 @@ export function StreamingNote({
 
   const handleSelectNote = async () => {
     const author = user?.meta?.author;
-    debugger;
+    
     const draftNote: NoteDraft = {
       id: "-1",
       body: displayedContent,

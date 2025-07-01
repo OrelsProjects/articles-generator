@@ -7,6 +7,7 @@ export async function createNoteDraft(
   note: {
     body: string;
     status: NoteStatus;
+    bodyJson?: string;
   },
   config: AxiosRequestConfig,
 ) {

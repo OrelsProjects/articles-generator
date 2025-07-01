@@ -21,7 +21,7 @@ export const usePublication = () => {
       const res = await axiosInstance.post(`/api/user/analyze/validate`, {
         url,
       });
-      debugger;
+      
       return res.data;
     } catch (error: any) {
       Logger.error(error);

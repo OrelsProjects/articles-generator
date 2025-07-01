@@ -16,8 +16,9 @@ export const isPlagiarism = (
 
   const similarity = compareTwoStrings(unformattedBody, unformattedNoteBody);
 
-  const isSimilar = similarity > 0.90; // tweak this threshold as needed
+  const isSimilar = similarity > 0.95; // tweak this threshold as needed
 
+  console.log("isSimilar", isSimilar, similarity);
   return isSimilar && selectedNote?.status === "inspiration";
 };
 
