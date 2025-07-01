@@ -1,8 +1,6 @@
 import { authOptions } from "@/auth/authOptions";
 import { getNoteByScheduleId } from "@/lib/dal/note";
-import { deleteScheduleById } from "@/lib/dal/schedules";
 import { Logger } from "@/logger";
-import loggerServer from "@/loggerServer";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 

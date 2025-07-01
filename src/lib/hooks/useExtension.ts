@@ -429,17 +429,14 @@ export function useExtension(): UseExtension {
           throw new Error(SubstackError.INVALID_PARAMETERS);
         }
 
-        let adf = params.bodyJson;
-
-        if (!adf) {
-          const adfResponse = await axiosInstance.post("/api/markdown-to-adf", {
-            markdown: params.message,
-          });
-          Logger.info("adf", {
-            data: JSON.stringify(adfResponse.data),
-          });
-          adf = adfResponse.data;
-        }
+        const adfResponse = await axiosInstance.post("/api/markdown-to-adf", {
+          markdown: params.message,
+          noteId: params.noteId,
+        });
+        Logger.info("adf", {
+          data: JSON.stringify(adfResponse.data),
+        });
+        const adf = adfResponse.data;
 
         /**
          * @extension-v1.9.97
@@ -465,7 +462,7 @@ export function useExtension(): UseExtension {
 
         // Send message to extension
         Logger.info("Sending message to extension", message);
-        
+
         const sendMessageResponse =
           await sendExtensionMessage<CreatePostResponse>(message, {
             showDialog: true,

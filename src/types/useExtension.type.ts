@@ -28,6 +28,7 @@ export interface CreatePostParams {
   /** The content of the post */
   message: string;
   bodyJson?: string;
+  noteId: string;
   /** Optional: Move note to status "published" */
   moveNoteToPublished?: {
     noteId: string;

@@ -40,6 +40,16 @@ function formatBlockquotes(markdown: string): string {
 }
 
 export function bodyJsonToSubstackBody(bodyJson: any): any {
+  if (bodyJson.type === "doc" && bodyJson.content) {
+    return {
+      type: "doc",
+      attrs: {
+        schemaVersion: "v1",
+      },
+      content: bodyJson.content, // Use the content array directly
+    };
+  }
+
   return {
     type: "doc",
     attrs: {

@@ -794,6 +794,7 @@ export const useNotes = () => {
             ? {
                 message: note.body,
                 bodyJson: note.bodyJson,
+                noteId,
                 moveNoteToPublished: {
                   noteId,
                 },
@@ -802,6 +803,7 @@ export const useNotes = () => {
             : {
                 message: note.body,
                 bodyJson: note.bodyJson,
+                noteId,
                 moveNoteToPublished: {
                   noteId,
                 },
