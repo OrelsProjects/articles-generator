@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { getActiveSubscription, getActiveSubscriptionByStripeSubId } from "@/lib/dal/subscription";
+import {
+  getActiveSubscription,
+  getActiveSubscriptionByStripeSubId,
+} from "@/lib/dal/subscription";
 import { setFeatureFlagsByPlan } from "@/lib/dal/userMetadata";
 import { addTagToEmail, removeTagFromEmail, sendMail } from "@/lib/mail/mail";
 import {
@@ -202,7 +205,8 @@ export async function handleSubscriptionUpdated(event: any) {
     throw new Error("No plan found for subscription");
   }
 
-  const currentSubscription = await getActiveSubscriptionByStripeSubId(subscriptionId);
+  const currentSubscription =
+    await getActiveSubscriptionByStripeSubId(subscriptionId);
 
   if (!currentSubscription) {
     loggerServer.error("No subscription found for user", {
@@ -581,7 +585,6 @@ export async function handleInvoicePaymentSucceeded(event: any) {
   });
 }
 
-
 export async function handleInvoicePaymentFailed(event: any) {
   const invoice = event.data.object as Stripe.Invoice;
   const customerEmail = invoice.customer_email;
@@ -600,11 +603,11 @@ export async function handleInvoicePaymentFailed(event: any) {
     customerEmail,
   );
   await sendMail({
-    to: "orelsmail@gmail.com",
+    to: customerEmail,
     from: "support",
     subject: emailTemplate.subject,
     template: emailTemplate.body,
-    cc: [],
+    cc: ["orelsmail@gmail.com"],
   });
 }
 
