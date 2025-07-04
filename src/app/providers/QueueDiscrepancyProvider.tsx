@@ -381,21 +381,21 @@ export default function QueueDiscrepancyProvider() {
       });
   }, [shouldReschedule]);
 
-  const shouldShowDiscrepancyBar = useMemo(() => {
-    // If last dismissed more than 10 minutes ago, and showDiscrepancyBar is true, return true
-    if (
-      lastDismissed &&
-      new Date().getTime() - new Date(lastDismissed).getTime() > 10 * 60 * 1000
-    ) {
-      return showDiscrepancyBar;
-    }
-    return false;
-  }, [lastDismissed, showDiscrepancyBar]);
+  // const shouldShowDiscrepancyBar = useMemo(() => {
+  //   // If last dismissed more than 10 minutes ago, and showDiscrepancyBar is true, return true
+  //   if (
+  //     lastDismissed &&
+  //     new Date().getTime() - new Date(lastDismissed).getTime() > 10 * 60 * 1000
+  //   ) {
+  //     return showDiscrepancyBar;
+  //   }
+  //   return false;
+  // }, [lastDismissed, showDiscrepancyBar]);
 
   // Show only the discrepancy bar if dialog is not showing
   return (
     <AnimatePresence>
-      {shouldShowDiscrepancyBar ? (
+      {showDiscrepancyBar ? (
         <motion.div
           initial={{ opacity: 0, y: -100 }}
           animate={{ opacity: 1, y: 0 }}
