@@ -11,6 +11,7 @@ import { getBylineByUserId } from "@/lib/dal/byline";
 import { NotesComments } from "../../../../../prisma/generated/articles";
 import _ from "lodash";
 import { AttachmentType } from "@prisma/client";
+import { getDateRangeFromOption, DateRangeOption } from "@/lib/consts";
 
 const orderParamsForNotesComments = [
   "reactionCount",
@@ -44,6 +45,21 @@ const querySchema = z.object({
     .optional()
     .nullable()
     .transform(val => (val ? parseInt(val) : 30)),
+  dateRange: z
+    .enum(["last_7_days", "last_30_days", "last_90_days", "all_time", "custom"])
+    .optional()
+    .nullable()
+    .default("all_time"),
+  startDate: z
+    .string()
+    .optional()
+    .nullable()
+    .transform(val => val ? new Date(val) : null),
+  endDate: z
+    .string()
+    .optional()
+    .nullable()
+    .transform(val => val ? new Date(val) : null),
 });
 
 export async function GET(request: NextRequest) {
@@ -95,12 +111,18 @@ export async function GET(request: NextRequest) {
     const orderDirection = searchParams.get("orderDirection");
     const page = searchParams.get("page");
     const limit = searchParams.get("limit");
+    const dateRange = searchParams.get("dateRange");
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
 
     const dataParsed = querySchema.safeParse({
       orderBy,
       orderDirection,
       page,
       limit,
+      dateRange,
+      startDate,
+      endDate,
     });
 
     if (dataParsed.error) {
@@ -116,6 +138,18 @@ export async function GET(request: NextRequest) {
     const orderDirectionParam = data.orderDirection || "desc";
     const pageParam = data.page || 1;
     const limitParam = data.limit || 30;
+    
+    // Get date range based on the selected option
+    const dateRangeParam = data.dateRange || "last_30_days";
+    const customDateRange = data.startDate && data.endDate ? {
+      from: data.startDate,
+      to: data.endDate
+    } : undefined;
+    
+    const { startDate: dateRangeStart, endDate: dateRangeEnd } = getDateRangeFromOption(
+      dateRangeParam as DateRangeOption,
+      customDateRange
+    );
 
     // if the orderBy is reactionCount/commentsCount/restacks, we need to pull first from notesComments then get the stats
     const isNotesCommentsOrder =
@@ -126,6 +160,10 @@ export async function GET(request: NextRequest) {
         where: {
           authorId,
           noteIsRestacked: false,
+          date: {
+            gte: dateRangeStart,
+            lte: dateRangeEnd,
+          },
         },
         orderBy: {
           [orderByParam]: orderDirectionParam,
@@ -156,6 +194,12 @@ export async function GET(request: NextRequest) {
       : await prismaArticles.notesCommentsStats.findMany({
           where: {
             authorId,
+            comment: {
+              date: {
+                gte: dateRangeStart,
+                lte: dateRangeEnd,
+              },
+            },
           },
           orderBy: {
             [orderByParam]: orderDirectionParam,

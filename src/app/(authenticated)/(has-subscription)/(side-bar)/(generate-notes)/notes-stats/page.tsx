@@ -14,11 +14,15 @@ export default function MyProfilePage() {
     isLoadingMore,
     isLoadingOrderBy,
     isLoadingOrderDirection,
+    isLoadingDateRange,
     data,
     updateOrderBy,
     updateOrderDirection,
+    updateDateRange,
     orderBy,
     orderDirection,
+    dateRange,
+    customDateRange,
   } = useMePage();
 
   return (
@@ -41,10 +45,14 @@ export default function MyProfilePage() {
         isLoadingMore={isLoadingMore}
         isLoadingOrderBy={isLoadingOrderBy}
         isLoadingOrderDirection={isLoadingOrderDirection}
+        isLoadingDateRange={isLoadingDateRange}
         updateOrderBy={updateOrderBy}
         updateOrderDirection={updateOrderDirection}
+        updateDateRange={updateDateRange}
         orderBy={orderBy}
         orderDirection={orderDirection}
+        dateRange={dateRange}
+        customDateRange={customDateRange}
       />
     </ExtensionNeededWrapper>
   );

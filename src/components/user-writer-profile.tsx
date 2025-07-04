@@ -5,9 +5,7 @@ import {
   ChevronDown,
   RefreshCw,
   ExternalLink,
-  ArrowUpDown,
   ArrowUp,
-  ArrowDown,
   MousePointer,
   Users,
   Heart,
@@ -17,7 +15,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MasonryGrid } from "@/components/ui/masonry-grid";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { UserWriterWithData } from "@/types/writer";
 import { CompactNoteComponent } from "@/components/stats/compact-note-component";
@@ -28,6 +25,9 @@ import {
 import { toast } from "react-toastify";
 import { useNotes } from "@/lib/hooks/useNotes";
 import useMediaQuery from "@/lib/hooks/useMediaQuery";
+import { DateRangeSelector } from "@/components/ui/date-range-selector";
+import { DateRangeOption } from "@/lib/consts";
+import { DateRange } from "react-day-picker";
 
 interface UserWriterProfileProps {
   writer?: UserWriterWithData | null;
@@ -38,10 +38,17 @@ interface UserWriterProfileProps {
   isLoadingMore: boolean;
   updateOrderBy: (orderBy: OrderByNotesEngagement) => void;
   updateOrderDirection: (orderDirection: "asc" | "desc") => void;
+  updateDateRange: (
+    dateRange: DateRangeOption,
+    customDateRange?: DateRange | null,
+  ) => void;
   orderBy: OrderByNotesEngagement;
   orderDirection: "asc" | "desc";
+  dateRange: DateRangeOption;
+  customDateRange: DateRange | null;
   isLoadingOrderBy: boolean;
   isLoadingOrderDirection: boolean;
+  isLoadingDateRange: boolean;
 }
 
 const LoadingNotes = () => (
@@ -92,10 +99,14 @@ export default function UserWriterProfile({
   isLoadingMore,
   updateOrderBy,
   updateOrderDirection,
+  updateDateRange,
   orderBy,
   orderDirection,
+  dateRange,
+  customDateRange,
   isLoadingOrderBy,
   isLoadingOrderDirection,
+  isLoadingDateRange,
 }: UserWriterProfileProps) {
   const isMobileOrTablet = useMediaQuery("(max-width: 1024px)");
   const { selectNote } = useNotes();
@@ -192,83 +203,93 @@ export default function UserWriterProfile({
       <div className="h-full max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Modern Sorting Controls */}
         <div className="sort-controls mb-6">
-          {/* Sort Metrics */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide mr-2">
-              Sort by
-            </span>
-            {[
-              {
-                key: OrderByNotesEngagementEnum.totalFreeSubscriptions,
-                label: "Free Subs",
-                icon: <Users className="h-3.5 w-3.5" />,
-              },
-              {
-                key: OrderByNotesEngagementEnum.totalPaidSubscriptions,
-                label: "Paid Subs",
-                icon: <CoinsIcon className="h-3.5 w-3.5" />,
-              },
-              {
-                key: OrderByNotesEngagementEnum.totalClicks,
-                label: "Clicks",
-                icon: <MousePointer className="h-3.5 w-3.5" />,
-              },
-              {
-                key: OrderByNotesEngagementEnum.reactionCount,
-                label: "Likes",
-                icon: <Heart className="h-3.5 w-3.5" />,
-              },
-              {
-                key: OrderByNotesEngagementEnum.commentsCount,
-                label: "Comments",
-                icon: <MessageCircle className="h-3.5 w-3.5" />,
-              },
-              {
-                key: OrderByNotesEngagementEnum.restacks,
-                label: "Restacks",
-                icon: <RefreshCw className="h-3.5 w-3.5" />,
-              },
-            ].map(metric => (
-              <Button
-                key={metric.key}
-                onClick={() => updateOrderBy(metric.key)}
-                disabled={isLoadingOrderBy || isLoadingOrderDirection}
-                variant={orderBy === metric.key ? "outline-primary" : "ghost"}
-                className="gap-2 bg-transparent"
-              >
-                {isLoadingOrderBy && orderBy === metric.key ? (
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  metric.icon
-                )}
-                {metric.label}
-              </Button>
-            ))}
-          </div>
+          {/* Date Range and Sort Controls */}
+          <div className="w-full flex items-center justify-between">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide mr-2">
+                Sort by
+              </span>
+              {[
+                {
+                  key: OrderByNotesEngagementEnum.totalFreeSubscriptions,
+                  label: "Free Subs",
+                  icon: <Users className="h-3.5 w-3.5" />,
+                },
+                {
+                  key: OrderByNotesEngagementEnum.totalPaidSubscriptions,
+                  label: "Paid Subs",
+                  icon: <CoinsIcon className="h-3.5 w-3.5" />,
+                },
+                {
+                  key: OrderByNotesEngagementEnum.totalClicks,
+                  label: "Clicks",
+                  icon: <MousePointer className="h-3.5 w-3.5" />,
+                },
+                {
+                  key: OrderByNotesEngagementEnum.reactionCount,
+                  label: "Likes",
+                  icon: <Heart className="h-3.5 w-3.5" />,
+                },
+                {
+                  key: OrderByNotesEngagementEnum.commentsCount,
+                  label: "Comments",
+                  icon: <MessageCircle className="h-3.5 w-3.5" />,
+                },
+                {
+                  key: OrderByNotesEngagementEnum.restacks,
+                  label: "Restacks",
+                  icon: <RefreshCw className="h-3.5 w-3.5" />,
+                },
+              ].map(metric => (
+                <Button
+                  key={metric.key}
+                  onClick={() => updateOrderBy(metric.key)}
+                  disabled={isLoadingOrderBy || isLoadingOrderDirection}
+                  variant={orderBy === metric.key ? "outline-primary" : "ghost"}
+                  className="gap-2 bg-transparent"
+                >
+                  {isLoadingOrderBy && orderBy === metric.key ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    metric.icon
+                  )}
+                  {metric.label}
+                </Button>
+              ))}
 
-          {/* Divider */}
-          <div className="w-px h-6 bg-border/50" />
+              {/* Divider */}
+              <div className="w-px h-6 bg-border/50" />
 
-          {/* Sort Direction */}
-          <Button
-            onClick={() =>
-              updateOrderDirection(orderDirection === "asc" ? "desc" : "asc")
-            }
-            disabled={isLoadingOrderBy || isLoadingOrderDirection}
-            title={orderDirection === "desc" ? "Descending" : "Ascending"}
-            className="gap-2 bg-transparent"
-            variant={orderDirection === "desc" ? "outline-primary" : "ghost"}
-          >
-            {isLoadingOrderDirection ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <ArrowUp
-                className={cn("h-4 w-4", {
-                  "rotate-180": orderDirection === "desc",
-                })}
+              {/* Date Range Selector */}
+              <DateRangeSelector
+                value={dateRange}
+                customDateRange={customDateRange}
+                onChange={updateDateRange}
+                isLoading={isLoadingDateRange}
               />
-            )}
-          </Button>
+
+              {/* Sort Direction */}
+            </div>
+            <Button
+              onClick={() =>
+                updateOrderDirection(orderDirection === "asc" ? "desc" : "asc")
+              }
+              disabled={isLoadingOrderBy || isLoadingOrderDirection}
+              title={orderDirection === "desc" ? "Descending" : "Ascending"}
+              className="gap-2 bg-transparent"
+              variant={orderDirection === "desc" ? "outline-primary" : "ghost"}
+            >
+              {isLoadingOrderDirection ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowUp
+                  className={cn("h-4 w-4", {
+                    "rotate-180": orderDirection === "desc",
+                  })}
+                />
+              )}
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

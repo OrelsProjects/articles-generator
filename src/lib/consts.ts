@@ -18,6 +18,65 @@ export const NOTES_STATS_FETCHING_EARLIEST_DATE = new Date(
 
 export const MIN_EXTENSION_TO_UPLOAD_LINK = "1.3.98"
 
+// Date range constants for notes stats
+export const DATE_RANGE_OPTIONS = {
+  LAST_7_DAYS: 'last_7_days',
+  LAST_30_DAYS: 'last_30_days', 
+  LAST_90_DAYS: 'last_90_days',
+  ALL_TIME: 'all_time',
+  CUSTOM: 'custom'
+} as const;
+
+export type DateRangeOption = typeof DATE_RANGE_OPTIONS[keyof typeof DATE_RANGE_OPTIONS];
+
+export const DATE_RANGE_LABELS: Record<DateRangeOption, string> = {
+  [DATE_RANGE_OPTIONS.LAST_7_DAYS]: 'Last 7 days',
+  [DATE_RANGE_OPTIONS.LAST_30_DAYS]: 'Last 30 days',
+  [DATE_RANGE_OPTIONS.LAST_90_DAYS]: 'Last 90 days',
+  [DATE_RANGE_OPTIONS.ALL_TIME]: 'All time',
+  [DATE_RANGE_OPTIONS.CUSTOM]: 'Custom'
+};
+
+// Helper function to get date range based on option
+export const getDateRangeFromOption = (option: DateRangeOption, customRange?: { from: Date; to: Date }) => {
+  const now = new Date();
+  
+  switch (option) {
+    case DATE_RANGE_OPTIONS.LAST_7_DAYS:
+      return {
+        startDate: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+        endDate: now
+      };
+    case DATE_RANGE_OPTIONS.LAST_30_DAYS:
+      return {
+        startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+        endDate: now
+      };
+    case DATE_RANGE_OPTIONS.LAST_90_DAYS:
+      return {
+        startDate: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000),
+        endDate: now
+      };
+    case DATE_RANGE_OPTIONS.ALL_TIME:
+      return {
+        startDate: new Date('2020-01-01'), // Far back date to include all notes
+        endDate: now
+      };
+    case DATE_RANGE_OPTIONS.CUSTOM:
+      return customRange ? {
+        startDate: customRange.from,
+        endDate: customRange.to
+      } : {
+        startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+        endDate: now
+      };
+    default:
+      return {
+        startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+        endDate: now
+      };
+  }
+};
 
 export const testimonials = [
   {
@@ -178,17 +237,17 @@ export const testimonials = [
     url: "https://whiteflag1.substack.com/",
   },
   {
-    quote: `My problem isn’t a lack of ideas—it’s too many.
+    quote: `My problem isn't a lack of ideas—it's too many.
     <br/><br/>
-    Without Writestack, I’d be a hyperactive bunny, constantly posting random thoughts online.
+    Without Writestack, I'd be a hyperactive bunny, constantly posting random thoughts online.
     <br/><br/>
     But it helps me slow down, organize my ideas, and think before I hit publish. 
     <br/><br/>
-    I can schedule posts, improve them, delete the ones that don’t hold up, or revisit them later with fresh eyes. 
+    I can schedule posts, improve them, delete the ones that don't hold up, or revisit them later with fresh eyes. 
     <br/><br/>
     So I get two major wins: a reliable place to save ideas and space to refine my writing before it goes live.
     <br/><br/>
-    Bonus: I'm starting to enjoy the analytics Orel built. I love seeing which notes brought in subscribers—it’s helping me understand what tone, style, and approach work. Loving it so far!
+    Bonus: I'm starting to enjoy the analytics Orel built. I love seeing which notes brought in subscribers—it's helping me understand what tone, style, and approach work. Loving it so far!
     <br/><br/>
     Writestack is pretty intuitive, and Orel is always there to answer any questions.`,
     author: "Parth Shah",
@@ -210,13 +269,13 @@ export const testimonials = [
     url: "https://substack.com/@infolosophy",
   },
   {
-    quote: `I’m loving the experience of reading and writing science fiction and connecting with a growing audience for my work on Substack.
+    quote: `I'm loving the experience of reading and writing science fiction and connecting with a growing audience for my work on Substack.
     <br/><br/>
-    WriteStack already helped me a lot in achieving that, even though I’ve only been using the tool for a few weeks.
+    WriteStack already helped me a lot in achieving that, even though I've only been using the tool for a few weeks.
     <br/><br/>
-    It helped me organise, refine and publish my notes,  to find who might be interested in my work and equally to find authors whose work I’m interested in reading too!
+    It helped me organise, refine and publish my notes,  to find who might be interested in my work and equally to find authors whose work I'm interested in reading too!
     <br/><br/>
-    For the metric lovers, here’s the before and after of my followship on Substack. I’m new to the platform but as you can see my audience is getting larger very quickly now.`,
+    For the metric lovers, here's the before and after of my followship on Substack. I'm new to the platform but as you can see my audience is getting larger very quickly now.`,
     noteImage: "/testimonials/bruno-testimonial.png",
     author: "Bruno Martins",
     image: "/testimonials/bruno.webp",

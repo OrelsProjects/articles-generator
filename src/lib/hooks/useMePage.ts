@@ -8,6 +8,8 @@ import {
   OrderByNotesEngagementEnum,
 } from "@/types/notes-stats";
 import { AxiosError } from "axios";
+import { DateRangeOption, DATE_RANGE_OPTIONS } from "@/lib/consts";
+import { DateRange } from "react-day-picker";
 
 export const useMePage = () => {
   const [data, setData] = useState<UserWriterWithData | null>(null);
@@ -15,11 +17,14 @@ export const useMePage = () => {
     OrderByNotesEngagementEnum.totalFreeSubscriptions,
   );
   const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("desc");
+  const [dateRange, setDateRange] = useState<DateRangeOption>(DATE_RANGE_OPTIONS.ALL_TIME);
+  const [customDateRange, setCustomDateRange] = useState<DateRange | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isLoadingOrderBy, setIsLoadingOrderBy] = useState(false);
   const [isLoadingOrderDirection, setIsLoadingOrderDirection] = useState(false);
+  const [isLoadingDateRange, setIsLoadingDateRange] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -30,6 +35,8 @@ export const useMePage = () => {
     page?: number;
     orderBy?: OrderByNotesEngagement;
     orderDirection?: "asc" | "desc";
+    dateRange?: DateRangeOption;
+    customDateRange?: DateRange | null;
     shouldLoad?: boolean;
   }) => {
     if (!hasMore) return;
@@ -48,6 +55,17 @@ export const useMePage = () => {
         "orderDirection",
         options?.orderDirection || orderDirection,
       );
+      queryParams.set("dateRange", options?.dateRange || dateRange);
+      
+      // Add custom date range if applicable
+      const currentCustomRange = options?.customDateRange || customDateRange;
+      if ((options?.dateRange || dateRange) === DATE_RANGE_OPTIONS.CUSTOM && 
+          currentCustomRange?.from) {
+        queryParams.set("startDate", currentCustomRange.from.toISOString());
+        if (currentCustomRange.to) {
+          queryParams.set("endDate", currentCustomRange.to.toISOString());
+        }
+      }
 
       queryParams.set("limit", "30");
       queryParams.set("page", options?.page?.toString() || "1");
@@ -108,6 +126,8 @@ export const useMePage = () => {
     await fetchData({
       orderBy,
       orderDirection,
+      dateRange,
+      customDateRange,
       page: 1,
     });
     setIsLoadingOrderBy(false);
@@ -121,9 +141,32 @@ export const useMePage = () => {
     await fetchData({
       orderDirection,
       orderBy,
+      dateRange,
+      customDateRange,
       page: 1,
     });
     setIsLoadingOrderDirection(false);
+  };
+
+  const updateDateRange = async (
+    newDateRange: DateRangeOption,
+    newCustomDateRange?: DateRange | null
+  ) => {
+    setIsLoadingDateRange(true);
+    setDateRange(newDateRange);
+    if (newCustomDateRange !== undefined) {
+      setCustomDateRange(newCustomDateRange);
+    }
+    setPage(1);
+    setHasMore(true);
+    await fetchData({
+      orderBy,
+      orderDirection,
+      dateRange: newDateRange,
+      customDateRange: newCustomDateRange !== undefined ? newCustomDateRange : customDateRange,
+      page: 1,
+    });
+    setIsLoadingDateRange(false);
   };
 
   useEffect(() => {
@@ -137,13 +180,17 @@ export const useMePage = () => {
     isLoadingMore,
     isLoadingOrderBy,
     isLoadingOrderDirection,
+    isLoadingDateRange,
     error,
     fetchNextPage,
     hasMore,
     data,
     updateOrderBy,
     updateOrderDirection,
+    updateDateRange,
     orderBy,
     orderDirection,
+    dateRange,
+    customDateRange,
   };
 };
