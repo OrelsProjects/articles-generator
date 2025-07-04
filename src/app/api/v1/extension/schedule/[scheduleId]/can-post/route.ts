@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import loggerServer from "@/loggerServer";
 import { generateScheduleNoteMissedEmail } from "@/lib/mail/templates";
 
-const MAX_MINUTES_TO_POST = 0;
+const MAX_MINUTES_TO_POST = 20;
 
 export async function POST(
   request: NextRequest,
