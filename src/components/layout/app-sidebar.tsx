@@ -305,7 +305,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         {/* Desktop Sidebar */}
         <div
           className={cn(
-            "h-full bg-background border-r border-border flex-col transition-all duration-300 relative z-[99999] hidden md:flex",
+            "h-full bg-background border-r border-border flex-col transition-all duration-300 relative hidden md:flex",
             sidebarCollapsed ? "w-16" : "w-64",
           )}
         >
