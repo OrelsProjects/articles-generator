@@ -117,6 +117,7 @@ export const useMePage = () => {
     setIsLoadingOrderDirection(true);
     setOrderDirection(orderDirection);
     setPage(1);
+    setHasMore(true);
     await fetchData({
       orderDirection,
       orderBy,
