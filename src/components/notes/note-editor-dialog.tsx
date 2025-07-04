@@ -562,12 +562,12 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                         </div>
                       )}
                     </div>
-                    <div className="max-w-xs">
+                    {/* <div className="max-w-xs">
                       <CharacterCountBar
                         characterCount={characterCount}
                         className="text-right"
                       />
-                    </div>
+                    </div> */}
                   </div>
                   {editor && (
                     <NoteEditor
