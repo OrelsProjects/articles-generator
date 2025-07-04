@@ -43,8 +43,16 @@ const logger: () => Logger = () => {
       if (env === "development") {
         return;
       }
+      // Go over all items in data and put them in a string
+      let rawMessage = message;
+      if (data) {
+        Object.keys(data).forEach(key => {
+          rawMessage += ` ${key}: ${data[key]}`;
+        });
+      }
       _logger.log(level, message, {
         data,
+        rawMessage,
         env,
       });
     } catch (error: any) {
