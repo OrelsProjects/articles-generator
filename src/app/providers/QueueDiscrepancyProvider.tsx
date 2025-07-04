@@ -6,7 +6,7 @@ import useMediaQuery from "@/lib/hooks/useMediaQuery";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useNotesSchedule } from "@/lib/hooks/useNotesSchedule";
 import { useQueue } from "@/lib/hooks/useQueue";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { Logger } from "@/logger";
@@ -14,10 +14,15 @@ import { GetSchedulesResponse } from "@/types/useExtension.type";
 import { TriangleAlertIcon } from "lucide-react";
 import { Discrepancy } from "@/types/schedule";
 import { setSchedulesDiscrepancies } from "@/lib/features/notes/notesSlice";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function QueueDiscrepancyProvider() {
   const dispatch = useAppDispatch();
   const { schedulesDiscrepancies } = useAppSelector(state => state.notes);
+  const [lastDismissed, setLastDismissed] = useLocalStorage<string | null>(
+    "last_dismissed_discrepancy_bar",
+    null,
+  );
   const [didResetSchedules, setDidResetSchedules] = useLocalStorage(
     "did_reset_schedules",
     false,
@@ -28,7 +33,6 @@ export default function QueueDiscrepancyProvider() {
   const { scheduledNotes, draftNotes, publishedNotes } = useQueue();
   const isScheduled = useRef(false);
   const [shouldReschedule, setShouldReschedule] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [, setNotesRescheduled] = useState(0);
   const [, setTimesTriedToFix] = useState(0);
@@ -252,9 +256,16 @@ export default function QueueDiscrepancyProvider() {
         discrepancies: newDiscrepancies,
       });
       setShowDiscrepancyBar(true);
-      setShowDialog(true);
     } else {
       Logger.info("No schedule discrepancies found");
+    }
+  };
+
+  const handleCloseDialog = (open: boolean) => {
+    if (!open) {
+      setLastDismissed(new Date().toISOString());
+      setDidResetSchedules(true);
+      setShowDiscrepancyBar(false);
     }
   };
 
@@ -305,6 +316,7 @@ export default function QueueDiscrepancyProvider() {
       const updatedSchedules = await getSchedulesFromExtension();
       checkForDiscrepancies(updatedSchedules);
       setTimesTriedToFix(prev => prev + 1);
+      handleCloseDialog(false);
       Logger.info(`Fixed ${currentIndexFixing} schedule discrepancies`);
     } catch (error: any) {
       Logger.error("Error fixing schedule discrepancies", error);
@@ -325,7 +337,6 @@ export default function QueueDiscrepancyProvider() {
       setDidResetSchedules(true);
       return;
     }
-    setShowDialog(true);
   }, [didResetSchedules, scheduledNotes, draftNotes, publishedNotes]);
 
   const scheduleNotes = async () => {
@@ -357,7 +368,6 @@ export default function QueueDiscrepancyProvider() {
     scheduleNotes()
       .then(() => {
         setDidResetSchedules(true);
-        setShowDialog(false);
         // Check for discrepancies after rescheduling
         return getSchedulesFromExtension();
       })
@@ -371,77 +381,44 @@ export default function QueueDiscrepancyProvider() {
       });
   }, [shouldReschedule]);
 
-  const handleCloseDialog = (open: boolean) => {
-    if (!open) {
-      setShowDialog(false);
-      setDidResetSchedules(true);
+  const shouldShowDiscrepancyBar = useMemo(() => {
+    // If last dismissed more than 10 minutes ago, and showDiscrepancyBar is true, return true
+    if (
+      lastDismissed &&
+      new Date().getTime() - new Date(lastDismissed).getTime() > 10 * 60 * 1000
+    ) {
+      return showDiscrepancyBar;
     }
-  };
+    return false;
+  }, [lastDismissed, showDiscrepancyBar]);
 
-  //   Write a dialog that will show, if the didResetSchedules is false, and the user has not dismissed it.
-  // Tell the user that there's a new system for scheduling notes. use @page-queue.tsx as a reference to see the dialog
-  if (!showDialog) {
-    // Show only the discrepancy bar if dialog is not showing
-    return showDiscrepancyBar ? (
-      <div
-        className="fixed top-0 left-0 right-0 bg-amber-500 dark:bg-amber-600 text-black dark:text-white z-50 shadow-md animate-in fade-in slide-in-from-top duration-300"
-        style={{ backdropFilter: "blur(8px)" }}
-      >
-        <div className="container mx-auto py-2 px-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <TriangleAlertIcon className="w-4 h-4" />
-            <span className="font-medium">
-              Found {schedulesDiscrepancies.length} scheduling discrepancies
-            </span>
-          </div>
-          <div className="flex space-x-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => updateSetShowDiscrepancyBar(false)}
-              className="text-xs"
-            >
-              Dismiss
-            </Button>
-            <Button
-              size="sm"
-              variant="default"
-              onClick={fixAllDiscrepancies}
-              disabled={loading || isCheckingDiscrepancies}
-            >
-              {loading
-                ? "Fixing..." +
-                  currentIndexFixing +
-                  "/" +
-                  schedulesDiscrepancies.length
-                : "Fix Discrepancies"}
-            </Button>
-          </div>
-        </div>
-      </div>
-    ) : null;
-  }
-
+  // Show only the discrepancy bar if dialog is not showing
   return (
-    <Dialog open={showDialog} onOpenChange={handleCloseDialog}>
-      {/* Render the discrepancy bar above the dialog when both should be visible */}
-      {showDiscrepancyBar && (
-        <div
-          className="fixed top-0 left-0 right-0 bg-amber-300 dark:bg-amber-600 text-foreground z-50 shadow-md animate-in fade-in slide-in-from-top duration-300"
+    <AnimatePresence>
+      {shouldShowDiscrepancyBar ? (
+        <motion.div
+          initial={{ opacity: 0, y: -100 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -100 }}
+          transition={{ duration: 0.3 }}
+          className="fixed top-0 left-0 right-0 bg-amber-500 text-black shadow-md animate-in fade-in slide-in-from-top duration-300 z-[51]"
           style={{ backdropFilter: "blur(8px)" }}
         >
           <div className="container mx-auto py-2 px-4 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <TriangleAlertIcon className="w-4 h-4" />
               <span className="font-medium">
-                Found {schedulesDiscrepancies.length} scheduling discrepancies
+                Found {schedulesDiscrepancies.length} scheduling discrepancies{" "}
+                <span className="text-sm text-black/80">
+                  (Schedules without an alarm in the extension)
+                </span>
               </span>
             </div>
             <div className="flex space-x-2">
               <Button
                 size="sm"
-                variant="secondary"
-                onClick={() => updateSetShowDiscrepancyBar(false)}
+                variant="ghost"
+                onClick={() => handleCloseDialog(false)}
                 className="text-xs"
               >
                 Dismiss
@@ -451,16 +428,18 @@ export default function QueueDiscrepancyProvider() {
                 variant="default"
                 onClick={fixAllDiscrepancies}
                 disabled={loading || isCheckingDiscrepancies}
-                className="bg-black text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 text-xs"
               >
                 {loading
-                  ? "Fixing..." + schedulesDiscrepancies.length
-                  : "Fix Discrepancies " + schedulesDiscrepancies.length}
+                  ? "Fixing..." +
+                    currentIndexFixing +
+                    "/" +
+                    schedulesDiscrepancies.length
+                  : "Fix Discrepancies"}
               </Button>
             </div>
           </div>
-        </div>
-      )}
-    </Dialog>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }

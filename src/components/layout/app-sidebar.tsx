@@ -301,11 +301,11 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   return (
     <div className="w-screen h-screen flex flex-col">
       {/* Main content area with sidebar for desktop */}
-      <div className="flex-1 flex w-full h-[calc(100%-64px)] overflow-hidden">
+      <div className="flex-1 flex w-full h-[calc(100%-64px)] overflow-hidden relative">
         {/* Desktop Sidebar */}
         <div
           className={cn(
-            "h-full bg-background border-r border-border flex-col transition-all duration-300 relative z-50 hidden md:flex",
+            "h-full bg-background border-r border-border flex-col transition-all duration-300 relative z-[99999] hidden md:flex",
             sidebarCollapsed ? "w-16" : "w-64",
           )}
         >

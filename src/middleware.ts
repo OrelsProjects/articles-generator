@@ -1,13 +1,53 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+async function shouldPassLog(req: NextRequest): Promise<boolean> {
+  if (!req.nextUrl.pathname.startsWith("/api/v1/extension/log")) return true;
+
+  try {
+    // clone so the downstream route still gets the body
+    const clone = req.clone();
+
+    let payload: any;
+    try {
+      payload = await clone.json();
+    } catch {
+      return false; // bad JSON – drop
+    }
+
+    // bail if it’s an extension log that’s just MetaMask noise
+    if (
+      payload?.source === "extension" &&
+      typeof payload?.message === "string" &&
+      payload.message.toLowerCase().includes("metamask-provider")
+    ) {
+      return false;
+    }
+
+    return true; // everything else OK
+  } catch (error) {
+    console.error("Error checking if should pass log:", error);
+    return false;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   try {
+    if (request.headers.get("x-middleware-subrequest")) {
+      return new Response(null, { status: 403 });
+    }
+
     if (request.nextUrl.pathname.startsWith("/api")) {
+      if (!(await shouldPassLog(request))) {
+        // Didn't pass, fail the request
+        return new Response(null, { status: 403 });
+      }
+
       let body: string | null = null;
       let headers: Record<string, string> | null = null;
       try {
-        body = await request.json();
+        const cloneRequest = request.clone();
+        body = await cloneRequest.json();
       } catch (error) {
         body = null;
       }
@@ -26,9 +66,9 @@ export async function middleware(request: NextRequest) {
         userId: "middleware",
       });
     }
+    return NextResponse.next();
   } catch (error) {
     console.error("Error logging API request:", error);
-  } finally {
     return NextResponse.next();
   }
 }

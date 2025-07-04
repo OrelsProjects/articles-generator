@@ -25,6 +25,7 @@ export type LocalStorageKey =
   | "create_note_dropdown_opened"
   | "did_create_note"
   | "include_articles_checked"
+  | "last_dismissed_discrepancy_bar"
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue

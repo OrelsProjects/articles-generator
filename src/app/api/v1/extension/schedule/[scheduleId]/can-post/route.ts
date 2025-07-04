@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import loggerServer from "@/loggerServer";
 import { generateScheduleNoteMissedEmail } from "@/lib/mail/templates";
-import { sendMailSafe } from "@/lib/mail/mail";
+
+const MAX_MINUTES_TO_POST = 0;
 
 export async function POST(
   request: NextRequest,
@@ -27,7 +28,9 @@ export async function POST(
 
     loggerServer.info("[CAN-POST] schedule: " + JSON.stringify(schedule));
 
-    const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
+    const twentyMinutesAgo = new Date(
+      Date.now() - MAX_MINUTES_TO_POST * 60 * 1000,
+    );
     // If the schedule is in the past, more than 20 minutes ago, return false
     if (schedule.scheduledAt <= twentyMinutesAgo) {
       const user = await prisma.user.findUnique({
