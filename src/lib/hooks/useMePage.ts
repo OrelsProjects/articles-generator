@@ -104,6 +104,7 @@ export const useMePage = () => {
     setIsLoadingOrderBy(true);
     setOrderBy(orderBy);
     setPage(1);
+    setHasMore(true);
     await fetchData({
       orderBy,
       orderDirection,
