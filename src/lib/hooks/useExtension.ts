@@ -733,6 +733,22 @@ export function useExtension(): UseExtension {
     }
   }, []);
 
+  const updateNotesData = useCallback(async () => {
+    const message: ExtensionMessage = {
+      type: "API_REQUEST",
+      action: "getNotes",
+      params: [],
+    };
+    const response = await sendExtensionMessage<NoteDraft[]>(message, {
+      showDialog: false,
+      throwIfNoExtension: false,
+    });
+    if (!response.success) {
+      throw new Error(response.error || SubstackError.UNKNOWN_ERROR);
+    }
+    return response.result;
+  }, []);
+
   return {
     isLoading,
     error,
@@ -752,5 +768,6 @@ export function useExtension(): UseExtension {
     getNotesWithStatsForDate,
     verifyExtensionKey,
     updateExtensionData,
+    updateNotesData,
   };
 }
