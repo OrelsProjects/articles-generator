@@ -23,6 +23,13 @@ export async function POST(request: NextRequest) {
     const { message, data, timestamp, source, level } = payload;
 
     if (source !== "extension") {
+      loggerServer.warn(
+        "Extension log received from non-extension source",
+        {
+          source,
+          userId: "extension",
+        },
+      );
       return NextResponse.json({ success: false }, { status: 403 });
     }
     try {
