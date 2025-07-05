@@ -69,12 +69,15 @@ export const UpdateDataProvider = () => {
   }, [isExtensionKeyValid]);
 
   useEffect(() => {
+    console.log("Notes data updated starting");
     Logger.info("Notes data updated starting");
     updateNotesData()
       .then(() => {
-        Logger.info("Notes data updated done");
+        console.log("Notes data updated done");
+          Logger.info("Notes data updated done");
       })
       .catch(error => {
+        console.log("Error updating notes data", error);
         Logger.error("Error updating notes data", error);
       })
       .finally(() => {
