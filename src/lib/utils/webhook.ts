@@ -574,26 +574,28 @@ export async function handleInvoicePaymentSucceeded(event: any) {
 
   const currentPeriodEnd = new Date(Number(subscription.currentPeriodEnd));
 
-  if (invoice.amount_paid > 0) {
-    const emailTemplate = generatePaymentConfirmationEmail({
-      userName: user.name || "",
-      planName: subscription.plan,
-      amount: invoice.amount_paid / 100,
-      paymentDate: new Date(),
-      nextBillingDate: currentPeriodEnd,
-      invoiceNumber: invoice.number || undefined,
-      currency: invoice.currency || undefined,
-    });
+  // if (invoice.amount_paid > 0) {
+  const emailTemplate = generatePaymentConfirmationEmail({
+    userName: user.name || "",
+    planName: subscription.plan,
+    amount: invoice.amount_paid / 100,
+    paymentDate: new Date(),
+    nextBillingDate: currentPeriodEnd,
+    invoiceNumber: invoice.number || undefined,
+    currency: invoice.currency || undefined,
+  });
 
-    await sendMail({
-      to: userEmail,
-      from: "support",
-      subject: emailTemplate.subject,
-      template: emailTemplate.body,
-      cc: ["orelsmail@gmail.com"],
-    });
-  }
+  const sendTo = invoice.amount_paid > 0 ? userEmail : "orelsmail@gmail.com";
+
+  await sendMail({
+    to: sendTo,
+    from: "support",
+    subject: emailTemplate.subject,
+    template: emailTemplate.body,
+    cc: sendTo === userEmail ? ["orelsmail@gmail.com"] : [],
+  });
 }
+// }
 
 export async function handleInvoicePaymentFailed(event: any) {
   const invoice = event.data.object as Stripe.Invoice;
