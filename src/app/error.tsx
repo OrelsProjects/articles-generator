@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
 import { Logger } from "@/logger";
 import { rootPath } from "@/types/navbar";
+import { usePathname } from "next/navigation";
 
 export default function Error({
   error,
@@ -14,6 +15,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const pathname = usePathname();
+
   // Log the error to console in development
   useEffect(() => {
     const pathHistory = window.history.state.back;
@@ -26,10 +29,23 @@ export default function Error({
           digest: error.digest,
           pathHistory: pathHistory,
           message: "CRITICAL ERROR",
+          pathname: pathname,
+          route: window.location.href,
         },
         null,
         2,
       ),
+      {
+        data: {
+          error: error.message,
+          stack: error.stack,
+          digest: error.digest,
+          pathHistory: pathHistory,
+          message: "CRITICAL ERROR",
+          pathname: pathname,
+          route: window.location.href,
+        },
+      },
     );
   }, [error]);
 

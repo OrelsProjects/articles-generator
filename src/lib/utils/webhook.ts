@@ -581,6 +581,7 @@ export async function handleInvoicePaymentSucceeded(event: any) {
     paymentDate: new Date(),
     nextBillingDate: currentPeriodEnd,
     invoiceNumber: invoice.number || undefined,
+    currency: invoice.currency || undefined,
   });
 
   await sendMail({

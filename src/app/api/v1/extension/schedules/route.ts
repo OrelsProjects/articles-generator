@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { NoteDraft } from "@/types/note";
+import { decodeKey } from "@/lib/dal/extension-key";
+import { getActiveSchedulesByUserId } from "@/lib/dal/schedules";
 
 const schema = z.object({
   scheduleIds: z.array(z.string()),

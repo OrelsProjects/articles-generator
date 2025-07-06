@@ -16,64 +16,70 @@ export const NOTES_STATS_FETCHING_EARLIEST_DATE = new Date(
   Date.now() - 14 * ONE_DAY_IN_MS,
 );
 
-export const MIN_EXTENSION_TO_UPLOAD_LINK = "1.3.98"
+export const MIN_EXTENSION_TO_UPLOAD_LINK = "1.3.98";
 
 // Date range constants for notes stats
 export const DATE_RANGE_OPTIONS = {
-  LAST_7_DAYS: 'last_7_days',
-  LAST_30_DAYS: 'last_30_days', 
-  LAST_90_DAYS: 'last_90_days',
-  ALL_TIME: 'all_time',
-  CUSTOM: 'custom'
+  LAST_7_DAYS: "last_7_days",
+  LAST_30_DAYS: "last_30_days",
+  LAST_90_DAYS: "last_90_days",
+  ALL_TIME: "all_time",
+  CUSTOM: "custom",
 } as const;
 
-export type DateRangeOption = typeof DATE_RANGE_OPTIONS[keyof typeof DATE_RANGE_OPTIONS];
+export type DateRangeOption =
+  (typeof DATE_RANGE_OPTIONS)[keyof typeof DATE_RANGE_OPTIONS];
 
 export const DATE_RANGE_LABELS: Record<DateRangeOption, string> = {
-  [DATE_RANGE_OPTIONS.LAST_7_DAYS]: 'Last 7 days',
-  [DATE_RANGE_OPTIONS.LAST_30_DAYS]: 'Last 30 days',
-  [DATE_RANGE_OPTIONS.LAST_90_DAYS]: 'Last 90 days',
-  [DATE_RANGE_OPTIONS.ALL_TIME]: 'All time',
-  [DATE_RANGE_OPTIONS.CUSTOM]: 'Custom'
+  [DATE_RANGE_OPTIONS.LAST_7_DAYS]: "Last 7 days",
+  [DATE_RANGE_OPTIONS.LAST_30_DAYS]: "Last 30 days",
+  [DATE_RANGE_OPTIONS.LAST_90_DAYS]: "Last 90 days",
+  [DATE_RANGE_OPTIONS.ALL_TIME]: "All time",
+  [DATE_RANGE_OPTIONS.CUSTOM]: "Custom",
 };
 
 // Helper function to get date range based on option
-export const getDateRangeFromOption = (option: DateRangeOption, customRange?: { from: Date; to: Date }) => {
+export const getDateRangeFromOption = (
+  option: DateRangeOption,
+  customRange?: { from: Date; to: Date },
+) => {
   const now = new Date();
-  
+
   switch (option) {
     case DATE_RANGE_OPTIONS.LAST_7_DAYS:
       return {
         startDate: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
-        endDate: now
+        endDate: now,
       };
     case DATE_RANGE_OPTIONS.LAST_30_DAYS:
       return {
         startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
-        endDate: now
+        endDate: now,
       };
     case DATE_RANGE_OPTIONS.LAST_90_DAYS:
       return {
         startDate: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000),
-        endDate: now
+        endDate: now,
       };
     case DATE_RANGE_OPTIONS.ALL_TIME:
       return {
-        startDate: new Date('2020-01-01'), // Far back date to include all notes
-        endDate: now
+        startDate: new Date("2020-01-01"), // Far back date to include all notes
+        endDate: now,
       };
     case DATE_RANGE_OPTIONS.CUSTOM:
-      return customRange ? {
-        startDate: customRange.from,
-        endDate: customRange.to
-      } : {
-        startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
-        endDate: now
-      };
+      return customRange
+        ? {
+            startDate: customRange.from,
+            endDate: customRange.to,
+          }
+        : {
+            startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+            endDate: now,
+          };
     default:
       return {
         startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
-        endDate: now
+        endDate: now,
       };
   }
 };
@@ -296,3 +302,24 @@ And what I like about it is just how easy it is to copy and paste the results in
     url: "https://substack.com/@macdanielchimedza",
   },
 ];
+
+export const currencyToSymbol = (currency: string) => {
+  switch (currency) {
+    case "usd":
+      return "$";
+    case "eur":
+      return "€";
+    case "gbp":
+      return "£";
+    case "cad":
+      return "CA$";
+    case "aud":
+      return "A$";
+    case "chf":
+      return "CHF";
+    case "jpy":
+      return "¥";
+    default:
+      return "";
+  }
+};

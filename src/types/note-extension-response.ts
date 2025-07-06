@@ -3,35 +3,37 @@ import {
   NotesComments,
 } from "../../prisma/generated/articles";
 
-interface ExtensionResponseComment {
+
+export interface ExtensionResponseAttachment {
   id: string;
-  authorId: number;
-  commentId: string;
+  comment_id: string;
+  attachment_id: string;
   type: string;
+  image_url: string;
+}
+
+export interface ExtensionResponseComment {
+  id: string;
+  comment_id: string;
+  type: string;
+  author_id: string;
   body: string;
-  bodyJson: any;
+  body_json: any;
   date: string;
   handle: string;
   name: string;
-  photoUrl: string;
-  reactionCount: number;
+  photo_url: string;
+  reaction_count: number;
   restacks: number;
   restacked: boolean;
   timestamp: string;
-  contextType: string;
-  entityKey: string;
-  noteIsRestacked: boolean;
+  context_type: string;
+  entity_key: string;
+  note_is_restacked: boolean;
   reactions: any;
-  childrenCount: number;
+  children_count: number;
 }
 
-interface ExtensionResponseAttachment {
-  id: string;
-  commentId: string;
-  attachmentId: string;
-  type: string;
-  imageUrl: string;
-}
 
 export interface ExtensionResponseNoteComment {
   note: ExtensionResponseComment | null;
@@ -47,43 +49,46 @@ export function parseToDb(comments: ExtensionResponseNoteComment[]): {
   for (const { note, attachments } of comments) {
     if (!note) continue;
 
-    const dbNote: NotesComments = {
-      id: note.id,
-      entityKey: note.entityKey,
-      type: note.type,
-      timestamp: new Date(note.timestamp),
-      contextType: note.contextType,
-      noteIsRestacked: note.noteIsRestacked,
-      authorId: parseInt(note.authorId.toString()),
-      commentId: note.commentId.toString(),
-      date: new Date(note.date),
-      handle: note.handle,
-      name: note.name,
-      photoUrl: note.photoUrl,
-      reactionCount: note.reactionCount,
-      reactions: note.reactions ? JSON.stringify(note.reactions) : null,
-      commentsCount: note.childrenCount || 0,
-      restacks: note.restacks,
-      restacked: note.restacked,
-      body: note.body,
-    };
+    try {
+      const dbNote: NotesComments = {
+        id: note.id,
+        entityKey: note.entity_key,
+        type: note.type,
+        timestamp: new Date(note.timestamp),
+        contextType: note.context_type,
+        noteIsRestacked: note.note_is_restacked,
+        authorId: parseInt(note.author_id.toString()),
+        commentId: note.comment_id.toString(),
+        date: new Date(note.date),
+        handle: note.handle,
+        name: note.name,
+        photoUrl: note.photo_url,
+        reactionCount: note.reaction_count,
+        reactions: note.reactions ? JSON.stringify(note.reactions) : null,
+        commentsCount: note.children_count || 0,
+        restacks: note.restacks,
+        restacked: note.restacked,
+        body: note.body,
+      };
+      let attachmentsDb: NotesAttachments[] = [];
+      if (attachments) {
+        for (const attachment of attachments) {
+          if (!attachment) continue;
 
-    let attachmentsDb: NotesAttachments[] = [];
-    if (attachments) {
-      for (const attachment of attachments) {
-        if (!attachment) continue;
-
-        const dbAttachment: NotesAttachments = {
-          id: attachment.id,
-          noteId: parseInt(note.commentId),
-          attachmentId: attachment.attachmentId,
-          type: attachment.type,
-          imageUrl: attachment.imageUrl,
-        };
-        attachmentsDb.push(dbAttachment);
+          const dbAttachment: NotesAttachments = {
+            id: attachment.id,
+            noteId: parseInt(note.comment_id),
+            attachmentId: attachment.attachment_id,
+            type: attachment.type,
+            imageUrl: attachment.image_url,
+          };
+          attachmentsDb.push(dbAttachment);
+        }
       }
+      notes.push({ note: dbNote, attachments: attachmentsDb });
+    } catch (error) {
+      console.error("Error parsing note", error);
     }
-    notes.push({ note: dbNote, attachments: attachmentsDb });
   }
 
   return notes;

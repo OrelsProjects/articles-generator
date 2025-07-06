@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getCronExpressionFromDate } from "@/lib/utils/cron";
-import { ScheduledNote } from "@prisma/client";
+import { NoteStatus, ScheduledNote } from "@prisma/client";
 
 export type CreateScheduledNote =
   | Omit<ScheduledNote, "id" | "createdAt" | "updatedAt" | "isDeleted">
@@ -108,4 +108,26 @@ export async function getLatestScheduleForNote(
     orderBy: { createdAt: "desc" },
   });
   return latestSchedule;
+}
+
+export async function getActiveSchedulesByUserId(
+  userId: string,
+): Promise<ScheduledNote[]> {
+  const schedules = await prisma.scheduledNote.findMany({
+    where: { userId, isDeleted: false },
+    include: {
+      note: true,
+    },
+  });
+
+  const notes = schedules.map(schedule => schedule.note);
+  const notesSentIds = notes
+    .filter(note => note.status === NoteStatus.published || note.isArchived)
+    .map(note => note.id);
+
+  const activeSchedules = schedules.filter(schedule =>
+    !notesSentIds.includes(schedule.noteId),
+  );
+
+  return activeSchedules;
 }

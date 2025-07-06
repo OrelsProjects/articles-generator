@@ -155,7 +155,7 @@ model Publication {
 
 model NotesComments {
   id              String   @id
-  commentId       String   @unique @map("comment_id")
+  commentId       String   @map("comment_id")
   type            String   @map("type")
   authorId        Int      @map("user_id")
   body            String   @map("body")

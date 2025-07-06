@@ -10,7 +10,7 @@ import { Metadata, Viewport } from "next";
 import AnimationProvider from "@/app/providers/AnimationProvider";
 import { cn } from "@/lib/utils";
 import { ToastProvider } from "@/app/providers/ToastProvider";
-import { PlusJakartaSans } from "@/lib/utils/fonts";
+import { Inter, PlusJakartaSans } from "@/lib/utils/fonts";
 import Script from "next/script";
 import AffiliateProvider from "@/app/providers/AffiliateProvider";
 import { Analytics } from "@vercel/analytics/react";
@@ -78,7 +78,7 @@ export default function RootLayout({
 
 
   return (
-    <html lang="en" className={cn("antialiased", PlusJakartaSans.className)}>
+    <html lang="en" className={cn("antialiased", Inter.className)}>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

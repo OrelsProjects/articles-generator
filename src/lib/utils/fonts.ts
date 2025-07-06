@@ -4,6 +4,7 @@ import {
   Montserrat,
   Lora as LoraFont,
   Plus_Jakarta_Sans,
+  Inter as InterFont,
 } from "next/font/google";
 
 export const Lora = LoraFont({
@@ -27,6 +28,11 @@ export const MontserratAlternates = Montserrat({
 });
 
 export const PlusJakartaSans = Plus_Jakarta_Sans({
+  weight: ["300", "400", "500", "600", "700"],
+  subsets: ["latin"],
+});
+
+export const Inter = InterFont({
   weight: ["300", "400", "500", "600", "700"],
   subsets: ["latin"],
 });

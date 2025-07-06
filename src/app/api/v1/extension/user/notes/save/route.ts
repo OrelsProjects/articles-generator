@@ -36,38 +36,57 @@ export async function POST(request: NextRequest) {
       userId: "extension",
     });
 
-    for (const item of dbItems) {
-      if (!item.note.commentId || !item.note.authorId) {
-        continue;
-      }
-      try {
-        await prismaArticles.notesComments.upsert({
-          where: {
-            commentId_authorId: {
-              commentId: item.note.commentId,
-              authorId: item.note.authorId,
-            },
-          },
-          update: item.note,
-          create: item.note,
-        });
-      } catch (error: any) {
-        loggerServer.error("Error saving user notes", {
-          error: error.message,
-          stack: error.stack,
-          userId: "extension",
-        });
-      }
+    const batchSize = 20;
+    const maxBatches = dbItems.length / batchSize;
+    let currentBatch = 0;
 
-      for (const attachment of item.attachments) {
-        await prismaArticles.notesAttachments.upsert({
-          where: {
-            id: attachment.id,
-          },
-          update: attachment,
-          create: attachment,
-        });
+    for (let i = 0; i < dbItems.length; i += batchSize) {
+      const batch = dbItems.slice(i, i + batchSize);
+      const promises = [];
+
+      console.log(`Saving batch ${currentBatch + 1} of ${maxBatches}`);
+      currentBatch++;
+
+      for (const item of batch) {
+        if (!item.note.commentId || !item.note.authorId) {
+          continue;
+        }
+        try {
+          promises.push(
+            prismaArticles.notesComments.upsert({
+              where: {
+                commentId_authorId: {
+                  commentId: item.note.commentId,
+                  authorId: item.note.authorId,
+                },
+              },
+              update: item.note,
+              create: item.note,
+            }),
+          );
+        } catch (error: any) {
+          loggerServer.error("Error saving user notes", {
+            error: error.message,
+            stack: error.stack,
+            userId: "extension",
+          });
+        }
+
+        if (!item.attachments) continue;
+        for (const attachment of item.attachments) {
+          promises.push(
+            prismaArticles.notesAttachments.upsert({
+              where: {
+                id: attachment.id,
+              },
+              update: attachment,
+              create: attachment,
+            }),
+          );
+        }
       }
+      const results = await Promise.allSettled(promises);
+      console.log(`Batch ${currentBatch} results`, results);
     }
     loggerServer.info("[SAVING-NOTES] Notes saved successfully", {
       userId: "extension",

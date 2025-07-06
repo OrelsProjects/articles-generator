@@ -1,5 +1,6 @@
 import { Plan } from "@prisma/client";
 import { rootPath } from "@/types/navbar";
+import { currencyToSymbol } from "@/lib/consts";
 
 export interface EmailTemplate {
   body: string;
@@ -294,6 +295,7 @@ export function generatePaymentConfirmationEmail(options: {
   paymentDate?: Date;
   nextBillingDate?: Date;
   invoiceNumber?: string;
+  currency?: string;
 }) {
   const {
     userName,
@@ -302,6 +304,7 @@ export function generatePaymentConfirmationEmail(options: {
     paymentDate,
     nextBillingDate,
     invoiceNumber,
+    currency,
   } = options;
   const formattedPaymentDate = paymentDate
     ? paymentDate.toLocaleDateString("en-US", {
@@ -320,15 +323,19 @@ export function generatePaymentConfirmationEmail(options: {
     : null;
 
   const validAmount = amount !== undefined && amount !== null && amount !== "";
+  const currencySymbol = currencyToSymbol(currency || "") || "";
+  const validAmountString = currency
+    ? `${currencySymbol}${validAmount}`
+    : validAmount;
 
   const content = `
-    <h2>Payment Confirmed! Your WriteStack journey continues</h2>
+    <h2>Payment Confirmed</h2>
     <p>Hi ${userName || "there"},</p>
     <p>Great news! Your payment for WriteStack ${planName || "subscription"} has been successfully processed. Thank you for your continued support of your writing journey with us.</p>
     
     <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
       <h3 style="color: #cc5500; margin-top: 0;">Payment Details</h3>
-      <p><strong>Amount:</strong> ${amount}</p>
+      <p><strong>Amount:</strong> ${validAmountString}</p>
       <p><strong>Date:</strong> ${formattedPaymentDate}</p>
       ${invoiceNumber ? `<p><strong>Invoice Number:</strong> ${invoiceNumber}</p>` : ""}
       ${formattedNextBillingDate ? `<p><strong>Next Billing Date:</strong> ${formattedNextBillingDate}</p>` : ""}
@@ -639,5 +646,24 @@ export function generateRegistrationNotCompletedDiscountEmail(
   return {
     body: baseEmailTemplate(content),
     subject: "50% off your first month with WriteStack",
+  };
+}
+
+export function generateUserSentFeedbackEmail(
+  userName: string,
+  userEmail: string,
+  feedback: string,
+) {
+  const content = `
+    <h2>User Sent Feedback</h2>
+    <p>Hi there,</p>
+    <p>A user has sent feedback:</p>
+    <p>Name: ${userName}</p>
+    <p>Email: ${userEmail}</p>
+    <p>Feedback: ${feedback}</p>
+  `;
+  return {
+    body: baseEmailTemplate(content),
+    subject: "User Sent Feedback",
   };
 }

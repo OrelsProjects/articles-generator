@@ -4,6 +4,8 @@ import { authOptions } from "@/auth/authOptions";
 import { Logger } from "@/logger";
 import { prisma } from "@/lib/prisma";
 import { FeedbackType } from "@prisma/client";
+import { generateUserSentFeedbackEmail } from "@/lib/mail/templates";
+import { sendMailSafe } from "@/lib/mail/mail";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,6 +38,19 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
       feedbackId: feedback.id,
       type: feedback.type,
+    });
+
+    const email = generateUserSentFeedbackEmail(
+      session.user.name || "",
+      session.user.email || "",
+      feedback.message,
+    );
+
+    await sendMailSafe({
+      to: "orelsmail@gmail.com",
+      from: "support",
+      subject: email.subject,
+      template: email.body,
     });
 
     return NextResponse.json(feedback);
