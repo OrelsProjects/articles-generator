@@ -321,12 +321,9 @@ export function generatePaymentConfirmationEmail(options: {
         day: "numeric",
       })
     : null;
-
-  const validAmount = amount !== undefined && amount !== null && amount !== "";
+      
   const currencySymbol = currencyToSymbol(currency || "") || "";
-  const validAmountString = currency
-    ? `${currencySymbol}${validAmount}`
-    : validAmount;
+  const validAmountString = currency ? `${currencySymbol}${amount}` : amount;
 
   const content = `
     <h2>Payment Confirmed</h2>
