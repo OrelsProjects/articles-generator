@@ -42,8 +42,9 @@ import ScheduleNoteModal from "@/components/notes/schedule-note-modal";
 import { Logger } from "@/logger";
 import { MAX_FILE_SIZE } from "@/lib/consts";
 import { EventTracker } from "@/eventTracker";
-import { CharacterCountBar } from "@/components/notes/character-count-bar";
 import { isPlagiarism } from "@/lib/utils/note-editor-utils";
+import { useGhostwriterNotes } from "@/lib/hooks/useGhostwriterNotes";
+import Image from "next/image";
 
 export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const { user } = useAppSelector(selectAuth);
@@ -62,6 +63,16 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     cancelUpdateNoteBody,
     loadingScheduleNote,
   } = useNotes();
+
+  const {
+    scheduleNote: scheduleNoteGhostwriter,
+    selectedClientNote,
+    selectNote: selectGhostwriterNote,
+    editNoteBody: editNoteBodyGhostwriter,
+    updateNoteBody: updateNoteBodyGhostwriter,
+    updateNoteStatus: updateNoteStatusGhostwriter,
+    loadingEditNote: loadingEditGhostwriterNote,
+  } = useGhostwriterNotes();
 
   const editor = useEditor(
     notesTextEditorOptions(html => {
@@ -86,14 +97,27 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [uploadingFilesCount, setUploadingFilesCount] = useState(0);
   const [isSendingNote, setIsSendingNote] = useState(false);
-  const [characterCount, setCharacterCount] = useState(0);
+  const [, setCharacterCount] = useState(0);
 
   // State for drag and drop
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
-  const isInspiration = selectedNote?.status === "inspiration";
-  const isAiGenerated = selectedNote?.status === "chat-generated";
-  const isEmpty = isEmptyNote(selectedNote);
+  const isGhostwriter = useMemo(() => {
+    return (
+      !!selectedClientNote || selectedNote?.ghostwriter?.userId === user?.userId
+    );
+  }, [selectedClientNote]);
+
+  const note = useMemo(() => {
+    if (isGhostwriter) {
+      return selectedClientNote || selectedNote;
+    }
+    return selectedNote;
+  }, [isGhostwriter, selectedClientNote, selectedNote]);
+
+  const isInspiration = note?.status === "inspiration";
+  const isAiGenerated = note?.status === "chat-generated";
+  const isEmpty = isEmptyNote(note);
 
   const updateEditorBody = (body: string) => {
     convertMDToHtml(body).then(html => {
@@ -107,19 +131,24 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   };
 
   const canUploadImages = useMemo(() => {
-    return (selectedNote?.attachments?.length || 0) < MAX_ATTACHMENTS;
-  }, [selectedNote?.attachments?.length]);
+    return (note?.attachments?.length || 0) < MAX_ATTACHMENTS;
+  }, [note?.attachments?.length]);
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
     if (!open) {
       // Reset for next use -
       updateEditorBody("");
-      selectNote(null);
-      cancelUpdateNoteBody(selectedNote?.id || "");
+      if (isGhostwriter) {
+        selectGhostwriterNote(null);
+      } else {
+        selectNote(null);
+      }
+
+      cancelUpdateNoteBody(note?.id || "");
     } else {
-      cancelUpdateNoteBody(selectedNote?.id || "", false);
-      loadContent(selectedNote?.body || "", editor);
+      cancelUpdateNoteBody(note?.id || "", false);
+      loadContent(note?.body || "", editor);
     }
   };
 
@@ -143,7 +172,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
         handlePasteImage as unknown as EventListener,
       );
     };
-  }, [selectedNote, canUploadImages]);
+  }, [note, canUploadImages]);
 
   useEffect(() => {
     setUploadingFilesCount(hookUploadingFilesCount);
@@ -153,28 +182,27 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     if (!editor) return;
     // We check for body empty because selectedNote will change on update and we don't want the cursor the jump around after the update.
     // So we use body as our source of truth.
-    if (selectedNote && !editor?.getText()) {
+    if (note && !editor?.getText()) {
       handleOpenChange(true);
-      const isSelectedNoteBodyEmpty =
-        !selectedNote?.body || selectedNote?.body === "";
+      const isSelectedNoteBodyEmpty = !note?.body || note?.body === "";
       if (isSelectedNoteBodyEmpty && !isInspiration) {
         updateEditorBody("");
       } else {
-        updateEditorBody(selectedNote.body);
+        updateEditorBody(note.body);
       }
-      if (selectedNote.scheduledTo) {
-        const presetDate = new Date(selectedNote.scheduledTo);
+      if (note.scheduledTo) {
+        const presetDate = new Date(note.scheduledTo);
         setScheduledDate(presetDate);
       } else {
         setScheduledDate(undefined);
       }
     }
-  }, [selectedNote, editor]);
+  }, [note, editor]);
 
   const name = useMemo(() => {
-    if (!selectedNote) return "";
-    return selectedNote.authorName;
-  }, [selectedNote]);
+    if (!note) return "";
+    return note.authorName;
+  }, [note]);
 
   const noteAuthorName = useMemo(() => {
     return user?.displayName || name;
@@ -186,17 +214,17 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
 
   const inspirationAuthorName = useMemo(() => {
     if (isInspiration) {
-      return selectedNote.authorName || selectedNote.handle;
+      return note.authorName || note.handle;
     }
     return null;
-  }, [isInspiration, selectedNote?.name, selectedNote?.handle]);
+  }, [isInspiration, note?.name, note?.handle]);
 
   const inspirationThumbnail = useMemo(() => {
     if (isInspiration) {
-      return selectedNote.thumbnail;
+      return note.thumbnail;
     }
     return null;
-  }, [isInspiration, selectedNote?.thumbnail]);
+  }, [isInspiration, note?.thumbnail]);
 
   const userInitials = useMemo(() => {
     let writerName = name || user?.displayName || "";
@@ -213,15 +241,21 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     html: string,
     options?: { immediate?: boolean },
   ): Promise<NoteDraft | null> {
-    if(!editor) return null;
+    if (!editor) return null;
     const newBody = unformatText(html);
     const json = editor.getJSON();
-    if (selectedNote) {
+    if (note) {
       if (options?.immediate) {
-        const note = await editNoteBody(selectedNote.id, newBody, json);
-        return note;
+        const updatedNote = isGhostwriter
+          ? await editNoteBodyGhostwriter(note.id, newBody, json)
+          : await editNoteBody(note.id, newBody, json);
+        return updatedNote;
       } else {
-        updateNoteBody(selectedNote.id, newBody, json);
+        if (isGhostwriter) {
+          updateNoteBodyGhostwriter(note.id, newBody, json);
+        } else {
+          updateNoteBody(note.id, newBody, json);
+        }
         return null;
       }
     }
@@ -231,8 +265,8 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const handleCreateNewDraft = async (): Promise<NoteDraft | null> => {
     const html = editor?.getHTML();
     if (!html) return null;
-    const note = await handleBodyChange(html, { immediate: true });
-    return note;
+    const updatedNote = await handleBodyChange(html, { immediate: true });
+    return updatedNote;
   };
 
   const userName = useMemo(() => {
@@ -249,11 +283,11 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
       closeOnSave: true,
     },
   ): Promise<string | null> => {
-    if (!selectedNote) return null;
+    if (!note) return null;
     if (
       isPlagiarism(
         editor?.getHTML() || "",
-        selectedNote,
+        note,
         user?.meta?.author?.id || null,
       )
     ) {
@@ -263,7 +297,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
 
     const toastId = toast.loading("Saving note...");
     try {
-      const currentNote = { ...selectedNote };
+      const currentNote = { ...note };
       const { schedule, closeOnSave } = options || {};
       const scheduledTo = schedule?.to;
       const shouldSchedule = !!scheduledTo;
@@ -274,10 +308,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
       };
 
       try {
-        const note = await handleBodyChange(editor?.getHTML() || "", {
+        const updatedNote = await handleBodyChange(editor?.getHTML() || "", {
           immediate: true,
         });
-        if (note) {
+        if (updatedNote) {
           if (currentNote.status === "inspiration") {
             if (currentNote.attachments && currentNote.attachments.length > 0) {
               toast.update(toastId, {
@@ -292,14 +326,14 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
               );
               const validFiles = files.filter(file => !!file);
               if (validFiles.length > 0) {
-                await uploadFile(validFiles, note.id);
+                await uploadFile(validFiles, updatedNote.id);
               }
               toast.dismiss(toastId);
             }
           }
           newNote = {
             ...newNote,
-            ...note,
+            ...updatedNote,
             scheduledTo,
           };
         }
@@ -321,9 +355,18 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
             render: "Scheduling note...",
             isLoading: true,
           });
-          await scheduleNote(newNote, scheduledTo, {
-            showToast: true,
-          });
+
+          debugger;
+          if (isGhostwriter) {
+            await scheduleNoteGhostwriter(newNote, scheduledTo, {
+              showToast: true,
+            });
+          } else {
+            await scheduleNote(newNote, scheduledTo, {
+              showToast: true,
+            });
+          }
+
           handleOpenChange(false);
           toast.success(
             "Note scheduled to: " + getScheduleTimeText(scheduledTo, false),
@@ -334,13 +377,17 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
         } catch (e: any) {
           return null;
         }
-      } else if (selectedNote?.status === "scheduled") {
+      } else if (note?.status === "scheduled") {
         try {
           toast.update(toastId, {
             render: "Unscheduling note...",
             isLoading: true,
           });
-          await updateNoteStatus(selectedNote.id, "draft");
+          if (isGhostwriter) {
+            await updateNoteStatusGhostwriter(note.id, "draft");
+          } else {
+            await updateNoteStatus(note.id, "draft");
+          }
           toast.info("Note unscheduled");
         } catch (e: any) {
           if (e instanceof CancelError) {
@@ -392,18 +439,18 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   };
 
   const handleFileUpload = async (files: File[]) => {
-    if (!selectedNote) return;
+    if (!note) return;
     if (!validateFileSize(files)) return;
     try {
-      let noteId = selectedNote.id;
+      let updatedNoteId = note.id;
       if (isEmpty) {
-        const note = await handleCreateNewDraft();
-        if (note) {
-          noteId = note.id;
+        const updatedNote = await handleCreateNewDraft();
+        if (updatedNote) {
+          updatedNoteId = updatedNote.id;
         }
       }
-      if (noteId) {
-        await uploadFile(files, noteId);
+      if (updatedNoteId) {
+        await uploadFile(files, updatedNoteId);
       } else {
         toast.error("Failed to upload image");
       }
@@ -416,17 +463,14 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   // Handle file upload when an image is dropped
   const handleFileDrop = async (files: File[]) => {
     EventTracker.track("note_editor_dialog_file_drop");
-    if (!selectedNote) return;
+    if (!note) return;
     if (!validateFileSize(files)) {
       setIsDraggingOver(false);
       return;
     }
 
     // Check if there's already an image
-    if (
-      selectedNote.attachments &&
-      selectedNote.attachments.length >= MAX_ATTACHMENTS
-    ) {
+    if (note.attachments && note.attachments.length >= MAX_ATTACHMENTS) {
       setIsDraggingOver(false);
       toast.info(`Only ${MAX_ATTACHMENTS} images allowed`);
       return;
@@ -465,11 +509,11 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   }, []);
 
   const handleImageSelect = async (files: File[]) => {
-    if (!selectedNote) return;
+    if (!note) return;
     if (!validateFileSize(files)) return;
 
     // Check if there's already an image
-    if (selectedNote.attachments && selectedNote.attachments.length > 0) {
+    if (note.attachments && note.attachments.length > 0) {
       toast.info(`Only ${MAX_ATTACHMENTS} images allowed`);
       return;
     }
@@ -484,16 +528,16 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
 
   const handleImageDelete = useCallback(
     async (attachment: NoteDraftImage) => {
-      if (!selectedNote) return;
+      if (!note) return;
 
       try {
-        await deleteImage(selectedNote.id, attachment);
+        await deleteImage(note.id, attachment);
       } catch (error) {
         toast.error("Failed to delete image");
         console.error(error);
       }
     },
-    [selectedNote],
+    [note],
   );
 
   const canSendNote = useMemo(() => {
@@ -561,6 +605,23 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                           <span>{inspirationAuthorName})</span>
                         </div>
                       )}
+                      {isGhostwriter && (
+                        <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
+                          <span>Writing for:</span>
+                          {note?.thumbnail ? (
+                            <Image
+                              src={note?.thumbnail || ""}
+                              alt={note?.name || ""}
+                              width={16}
+                              height={16}
+                              className="w-4 h-4 rounded-full"
+                            />
+                          ) : (
+                            <span>{note?.name}</span>
+                          )}
+                          
+                        </div>
+                      )}
                     </div>
                     {/* <div className="max-w-xs">
                       <CharacterCountBar
@@ -577,21 +638,20 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                       textEditorClassName="!px-0"
                     />
                   )}
-                  {selectedNote?.attachments &&
-                    selectedNote.attachments.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {selectedNote.attachments.map(attachment => (
-                          <NoteImageContainer
-                            key={attachment.id || attachment.url}
-                            imageUrl={attachment.url}
-                            onImageSelect={handleImageSelect}
-                            onImageDelete={handleImageDelete}
-                            attachment={attachment}
-                            allowDelete={!isInspiration && attachment.id !== ""}
-                          />
-                        ))}
-                      </div>
-                    )}
+                  {note?.attachments && note.attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {note.attachments.map(attachment => (
+                        <NoteImageContainer
+                          key={attachment.id || attachment.url}
+                          imageUrl={attachment.url}
+                          onImageSelect={handleImageSelect}
+                          onImageDelete={handleImageDelete}
+                          attachment={attachment}
+                          allowDelete={!isInspiration && attachment.id !== ""}
+                        />
+                      ))}
+                    </div>
+                  )}
                   {uploadingFilesCount > 0 && (
                     <div className="max-md:max-h-[96px] max-md:overflow-x-auto max-md:max-w-[260px]">
                       <div className="flex flex-row md:flex-wrap gap-2">
@@ -647,14 +707,14 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                   </TooltipButton>
                   {!free && (
                     <AIToolsDropdown
-                      note={selectedNote}
+                      note={note}
                       onImprovement={handleImprovement}
                     />
                   )}
                   <EmojiPopover onEmojiSelect={handleEmojiSelect} />
                   <TooltipButton
                     tooltipContent={
-                      selectedNote?.attachments?.length
+                      note?.attachments?.length
                         ? `Only ${MAX_ATTACHMENTS} images allowed`
                         : "Add image"
                     }
@@ -697,7 +757,8 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                   {!isInspiration && !free && (
                     <InstantPostButton
                       onSave={() => handleSave({ closeOnSave: false })}
-                      noteId={selectedNote?.id || null}
+                      note={note || null}
+                      isGhostwriter={isGhostwriter}
                       source="note-editor-dialog"
                       onLoadingChange={setIsSendingNote}
                       disabled={!canSendNote}
@@ -722,12 +783,13 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                       }}
                       presetSchedule={scheduledDate}
                       disabled={
-                        loadingEditNote || loadingScheduleNote || isSendingNote
+                        loadingEditNote || loadingEditGhostwriterNote || loadingScheduleNote || isSendingNote
                       }
-                      saving={loadingEditNote}
+                      saving={loadingEditNote || loadingEditGhostwriterNote}
                       isInspiration={isInspiration}
                       isAiGenerated={isAiGenerated}
                       isFree={free}
+                      isGhostwriter={isGhostwriter}
                     />
                   }
                 </div>

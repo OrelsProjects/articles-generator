@@ -21,7 +21,7 @@ import {
 export const useNotesSchedule = () => {
   const { user } = useAppSelector(selectAuth);
   const dispatch = useAppDispatch();
-  const { userNotes, loadingNotes, error, userSchedules } =
+  const { userNotes, loadingNotes, error } =
     useAppSelector(selectNotes);
   const {
     createSchedule,

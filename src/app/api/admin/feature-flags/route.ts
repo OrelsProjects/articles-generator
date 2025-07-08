@@ -79,7 +79,7 @@ export async function GET() {
         latestVisit: latestVisit?.createdAt,
         planEndsAt: userPlan?.currentPeriodEnd,
         isFree,
-        notesPromptVersion: user.userMetadata.notesPromptVersion || 1,
+        notesPromptVersion: user.userMetadata?.notesPromptVersion || 1,
       };
     });
 

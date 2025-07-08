@@ -14,15 +14,10 @@ const generateNotesSchema = z.object({
   topic: z.string().optional(),
   preSelectedPostIds: z.array(z.string()).optional(),
   includeArticleLinks: z.boolean().optional(),
+  clientId: z.string().optional().nullable(),
 });
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
-
-const modelsRequireImprovement = [
-  "anthropic/claude-3.5-haiku",
-  "openai/gpt-4.1",
-  "x-ai/grok-3-beta",
-];
 
 export async function POST(
   req: NextRequest,
@@ -53,6 +48,7 @@ export async function POST(
   const topic = parsedBody.data.topic;
   const preSelectedPostIds = parsedBody.data.preSelectedPostIds;
   const includeArticleLinks = parsedBody.data.includeArticleLinks;
+  const clientId = parsedBody.data.clientId;
 
   loggerServer.time("generate notes");
   const response = await generateNotes({
@@ -61,6 +57,7 @@ export async function POST(
     topic,
     preSelectedPostIds,
     includeArticleLinks,
+    clientId,
   });
 
   loggerServer.timeEnd("generate notes");

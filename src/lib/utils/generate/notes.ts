@@ -8,7 +8,7 @@ import {
   generateNotesWritingStylePrompt_v2,
 } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { Post } from "@/../prisma/generated/articles";
 import { Model, runPrompt } from "@/lib/open-router";
@@ -28,6 +28,7 @@ import { Model429Error } from "@/types/errors/Model429Error";
 import { z } from "zod";
 import { getPublicationByIds } from "@/lib/dal/publication";
 import { formatNote } from "@/lib/utils/notes";
+import { GhostwriterDAL } from "@/lib/dal/ghostwriter";
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 
@@ -256,6 +257,8 @@ export async function generateNotes({
   preSelectedPostIds,
   takeCreditPerNote = true,
   includeArticleLinks = false,
+  clientId,
+  userSession,
 }: {
   notesCount?: number;
   requestedModel?: string;
@@ -263,6 +266,8 @@ export async function generateNotes({
   preSelectedPostIds?: string[];
   takeCreditPerNote?: boolean;
   includeArticleLinks?: boolean;
+  clientId?: string | null;
+  userSession?: Session;
 }): Promise<{
   success: boolean;
   errorMessage?: string;
@@ -271,15 +276,40 @@ export async function generateNotes({
 }> {
   let didConsumeCredits = false;
   let userId: string = "unknown";
+  let ghostwriterUserId: string | undefined;
+  let session: Session | null;
+
   const cost = takeCreditPerNote ? notesCount || 3 : 1;
   try {
     console.time("generate notes");
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      throw new Error("Unauthorized");
+    if (!userSession) {
+      session = await getServerSession(authOptions);
+      if (!session) {
+        throw new Error("Unauthorized");
+      } 
+    } else {
+      session = userSession;
     }
 
     userId = session.user.id;
+
+    if (clientId && userId !== clientId) {
+      const canRun = await GhostwriterDAL.canRunOnBehalfOf({
+        ghostwriterUserId: userId,
+        clientId,
+      });
+      if (!canRun) {
+        return {
+          success: false,
+          errorMessage:
+            "You are not allowed to run this on behalf of this client",
+          status: 403,
+        };
+      } else {
+        ghostwriterUserId = userId;
+        userId = clientId;
+      }
+    }
 
     const userMetadata = await prisma.userMetadata.findUnique({
       where: {
@@ -344,10 +374,12 @@ export async function generateNotes({
       id: index,
     }));
 
+    // Improve notes
     let improvedNotes: { id: number; body: string }[] = [];
     const shouldImprove =
       model !== initialGeneratingModel ||
       modelsRequireImprovement.includes(model);
+
     if (shouldImprove) {
       const improveNoteBody = {
         userMetadata: userMetadata as UserMetadata & {
@@ -368,6 +400,8 @@ export async function generateNotes({
       );
       improvedNotes = await parseJson(improvedNotesResponse);
     }
+    
+    // Save notes
     newNotes = newNotes
       .map((note, index) => {
         const improvedNote = improvedNotes.find(n => n.id === index);
@@ -379,8 +413,20 @@ export async function generateNotes({
 
     const handle = byline?.handle || notesFromAuthor[0]?.handle;
     const name = byline?.name || notesFromAuthor[0]?.name;
-    const thumbnail =
-      byline?.photoUrl || notesFromAuthor[0]?.photoUrl || session.user.image;
+    let thumbnail = byline?.photoUrl || notesFromAuthor[0]?.photoUrl;
+
+    if (!thumbnail) {
+      if (clientId) {
+        const user = await prisma.user.findUnique({
+          where: {
+            id: clientId,
+          },
+        });
+        thumbnail = user?.image || null;
+      } else {
+        thumbnail = session.user.image || null;
+      }
+    }
 
     const notesCreated: Note[] = [];
     for (const note of newNotes) {
@@ -389,7 +435,7 @@ export async function generateNotes({
           body: note.body,
           summary: note.summary,
           topics: note.topics,
-          userId: session.user.id,
+          userId: clientId || session.user.id,
           status: NoteStatus.draft,
           handle,
           thumbnail,
@@ -399,6 +445,7 @@ export async function generateNotes({
           initialGeneratingModel,
           name,
           inspiration: note.inspiration,
+          ghostwriterUserId: ghostwriterUserId,
         },
       });
       notesCreated.push(newNote);
@@ -415,6 +462,7 @@ export async function generateNotes({
       thumbnail: note.thumbnail || undefined,
       scheduledTo: null,
       wasSentViaSchedule: false,
+      ghostwriterUserId: note.ghostwriterUserId || undefined,
     }));
 
     const response: AIUsageResponse<NoteDraft[]> = {

@@ -1,3 +1,4 @@
+import { GhostwriterDAL } from "@/lib/dal/ghostwriter";
 import { maxNotesShceduledPerPlan } from "@/lib/plans-consts";
 import { prisma, prismaArticles } from "@/lib/prisma";
 import { NoteDraft } from "@/types/note";
@@ -17,18 +18,26 @@ export const updateableFields = [
 ] as (keyof NoteDraft)[];
 
 export async function isOwnerOfNote(noteId: string, userId: string) {
-  console.log("About to check owner of note", noteId, userId);
   const note = await prisma.note.findUnique({
     where: {
       id: noteId,
-      userId: userId,
-    },
-    select: {
-      id: true,
     },
   });
+  console.log("[IS OWNER] Note", note);
+  if (note?.userId === userId) {
+    return true;
+  }
 
-  console.log("note", note);
+  if (note?.ghostwriterUserId) {
+    console.log("[IS OWNER] Note ghostwriterUserId", note.ghostwriterUserId);
+    const canRunOnBehalf = await GhostwriterDAL.canRunOnBehalfOf({
+      ghostwriterUserId: note?.ghostwriterUserId,
+      clientId: note.userId,
+    });
+    console.log("[IS OWNER] Can run on behalf of", canRunOnBehalf);
+
+    return canRunOnBehalf;
+  }
 
   return !!note;
 }

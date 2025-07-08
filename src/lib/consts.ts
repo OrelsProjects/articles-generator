@@ -88,7 +88,7 @@ export const testimonials = [
     <br/><br/>
     Seeing top posts is a gamechanger as well.
     <br/><br/>
-    Effortless to get started. I recommend you start with the "queue" page
+    Effortless to get started. I recommend you start with the "notes" page
     `,
     bestSeller: "100",
     author: "Tim Denning",

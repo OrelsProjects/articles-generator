@@ -1,6 +1,4 @@
-import { authOptions } from "@/auth/authOptions";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import loggerServer from "@/loggerServer";
 import { z } from "zod";
 import { prisma, prismaArticles } from "@/lib/prisma";

@@ -194,7 +194,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     isActive(item.href),
   )?.category;
 
-  console.log("categorySelected", categorySelected);
 
   // Group sidebar nav items by category for mobile
   const groupedSidebarNavItems = useMemo(() => {

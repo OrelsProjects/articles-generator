@@ -18,12 +18,14 @@ import {
 } from "@/lib/features/statistics/statisticsSlice";
 import { Logger } from "@/logger";
 import { isValidScheduleTime } from "@/lib/utils/date/schedule";
+import { NoteDraft } from "@/types/note";
 
 export function useQueue() {
   const dispatch = useAppDispatch();
   const { userNotes, userSchedules, loadingFetchingSchedules } = useAppSelector(
     state => state.notes,
   );
+  const {} = useAppSelector(state => state.ghostwriter);
   const { bestTimeToPublish, loadingFetchBestTimeToPublish } = useAppSelector(
     state => state.statistics,
   );
@@ -85,7 +87,10 @@ export function useQueue() {
     }
   };
 
-  const addSchedule = async (schedule: CreateUserSchedule) => {
+  const addSchedule = async (
+    schedule: CreateUserSchedule,
+    clientId: string | null,
+  ) => {
     // check if schedule is already in the queue
     const isAlreadyInQueue = userSchedules.some(
       s =>
@@ -98,7 +103,10 @@ export function useQueue() {
     }
     setLoading(true);
     try {
-      const response = await axiosInstance.post("/api/user/queue", schedule);
+      const response = await axiosInstance.post("/api/user/queue", {
+        ...schedule,
+        clientId,
+      });
       dispatch(addUserSchedule(response.data));
     } catch (error) {
       Logger.error(String(error));
@@ -123,10 +131,7 @@ export function useQueue() {
     }
   };
 
-  const updateSchedule = async (
-    schedule: UserSchedule,
-    day: string | null,
-  ) => {
+  const updateSchedule = async (schedule: UserSchedule, day: string | null) => {
     setLoadingDaySchedule(day);
     setLoading(true);
     const previousSchedule = userSchedules.find(s => s.id === schedule.id);
@@ -149,14 +154,20 @@ export function useQueue() {
     }
   };
 
-  const fetchSchedules = async () => {
+  const fetchSchedules = async (clientId: string | null) => {
     if (loadingFetchingSchedules) {
       return;
     }
     dispatch(setLoadingFetchingSchedules(true));
     try {
-      const response =
-        await axiosInstance.get<UserSchedule[]>("/api/user/queue");
+      const response = await axiosInstance.get<UserSchedule[]>(
+        "/api/user/queue",
+        {
+          params: {
+            clientId,
+          },
+        },
+      );
       dispatch(setUserSchedule(response.data));
     } catch (error) {
       Logger.error(String(error));
@@ -209,7 +220,13 @@ export function useQueue() {
   // Returns the next available schedule in the queue that has no note scheduled to it
   // go over schedules and return the first one that has no note scheduled to it.
   // Doesn't have to be bigger than now
-  const getNextAvailableSchedule = (currentDate?: Date) => {
+  const getNextAvailableSchedule = (
+    currentDate?: Date,
+    schedules?: UserSchedule[],
+    scheduledNotes?: NoteDraft[],
+  ) => {
+    const validScheduledNotes = scheduledNotes || scheduledNotes || [];
+    const validSchedules = schedules || userSchedules;
     // Start from today
     if (currentDate) {
       if (isValidScheduleTime(currentDate)) {
@@ -239,7 +256,7 @@ export function useQueue() {
         .toLowerCase();
 
       // Filter schedules for this day of week
-      const daySchedules = userSchedules.filter(schedule => {
+      const daySchedules = validSchedules.filter(schedule => {
         return schedule[dayOfWeek as keyof UserSchedule];
       });
 
@@ -284,7 +301,7 @@ export function useQueue() {
         scheduleDate.setHours(scheduleHour, schedule.minute, 0, 0);
 
         // Check if there's already a note scheduled at this exact time
-        const hasScheduledNote = scheduledNotes.some(note => {
+        const hasScheduledNote = validScheduledNotes.some(note => {
           if (!note.scheduledTo) return false;
 
           const noteDate = new Date(note.scheduledTo);
@@ -349,7 +366,7 @@ export function useQueue() {
   const fetchQueue = async () => {
     try {
       if (userSchedules.length === 0) {
-        fetchSchedules();
+        fetchSchedules(null);
       }
     } catch (error) {
       Logger.error("Error fetching schedules", {
@@ -388,5 +405,6 @@ export function useQueue() {
     hasQueue,
     loadingFetchingSchedules,
     loadingDaySchedule,
+    userSchedules,
   };
 }

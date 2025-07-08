@@ -29,7 +29,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const lastLogin = localStorage.getItem("lastLogin");
     if (lastLogin) {
-      const isExpired = new Date(lastLogin).getTime() + 1000 * 60 * 60 * 72 < Date.now(); // 72 hours
+      const isExpired = new Date(lastLogin).getTime() + 1000 * 60 * 60 * 144 < Date.now(); // 72 hours
       if (isExpired) {
         localStorage.removeItem("lastLogin");
         setIsAuthorized(false);

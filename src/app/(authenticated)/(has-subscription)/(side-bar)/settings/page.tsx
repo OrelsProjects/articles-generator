@@ -19,11 +19,6 @@ import {
   Settings,
   AlertTriangle,
   FileText,
-  Bell,
-  Shield,
-  Globe,
-  Users,
-  Code,
   ChevronRight,
   UserCheck,
 } from "lucide-react";
@@ -46,6 +41,8 @@ import { PublicationsSection } from "@/components/settings/publications-section"
 import { GhostwriterSection } from "@/components/settings/ghostwriter-section";
 import { GhostwriterDialogs } from "@/components/settings/ghostwriter-dialogs";
 import { DangerSection } from "@/components/settings/danger-section";
+import { useUi } from "@/lib/hooks/useUi";
+import { FeatureFlag } from "@prisma/client";
 
 type SettingsSection =
   | "account"
@@ -61,6 +58,7 @@ interface SettingsNavItem {
   label: string;
   icon: any;
   description: string;
+  featureFlagsRequired?: FeatureFlag[];
 }
 
 interface SettingsCategory {
@@ -117,6 +115,7 @@ const settingsNavItems: SettingsCategory[] = [
         label: "Ghostwriter Access",
         icon: UserCheck,
         description: "Manage ghostwriter profiles and access permissions",
+        featureFlagsRequired: ["ghostwriter"],
       },
     ],
   },
@@ -139,6 +138,7 @@ export default function SettingsPage() {
   const { cancelSubscription, applyRetentionDiscount } = usePayments();
   const { user } = useAppSelector(selectAuth);
   const { shouldShow50PercentOffOnCancel } = useSettings();
+  const { canUseGhostwriter, hasFeatureFlag } = useUi();
 
   const [activeSection, setActiveSection] =
     useState<SettingsSection>("account");
@@ -155,7 +155,7 @@ export default function SettingsPage() {
   const handleSectionChange = (sectionId: SettingsSection) => {
     setActiveSection(sectionId);
     // Update URL hash
-    window.history.replaceState(null, '', `#${sectionId}`);
+    window.history.replaceState(null, "", `#${sectionId}`);
   };
 
   useEffect(() => {
@@ -259,7 +259,7 @@ export default function SettingsPage() {
       case "publications":
         return <PublicationsSection />;
       case "ghostwriter":
-        return <GhostwriterSection />;
+        return canUseGhostwriter ? <GhostwriterSection /> : null;
       case "danger":
         return <DangerSection />;
       default:
@@ -341,6 +341,14 @@ export default function SettingsPage() {
                       {category.items.map(item => {
                         const Icon = item.icon;
                         const isActive = activeSection === item.id;
+                        const isDisabled =
+                          item.featureFlagsRequired &&
+                          !item.featureFlagsRequired.every(flag =>
+                            hasFeatureFlag(flag),
+                          );
+                        if (isDisabled) {
+                          return null;
+                        }
 
                         return (
                           <li key={item.id}>

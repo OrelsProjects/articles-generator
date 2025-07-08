@@ -22,6 +22,7 @@ import { Logger } from "@/logger";
 import { Calendar, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useGhostwriterNotes } from "@/lib/hooks/useGhostwriterNotes";
 
 interface ScheduledNotesListProps {
   days: Date[];
@@ -32,6 +33,7 @@ interface ScheduledNotesListProps {
   lastNoteRef?: RefObject<HTMLDivElement>;
   lastNoteId?: string;
   loading?: boolean;
+  isGhostwriter?: boolean;
 }
 
 export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
@@ -43,8 +45,10 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   lastNoteId,
   onEditQueue,
   loading,
+  isGhostwriter,
 }) => {
   const { updateNoteStatus, createDraftNote, rescheduleNote } = useNotes();
+  const { rescheduleNote: rescheduleGhostwriterNote } = useGhostwriterNotes();
 
   // Configure basic sensors for drag detection
   const sensors = useSensors(
@@ -157,10 +161,15 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       if (!note) {
         throw new Error("Note not found");
       }
-
-      await rescheduleNote(noteId, newTime, {
-        showToast: true,
-      });
+      if (isGhostwriter) {
+        await rescheduleGhostwriterNote(noteId, newTime, {
+          showToast: true,
+        });
+      } else {
+        await rescheduleNote(noteId, newTime, {
+          showToast: true,
+        });
+      }
       toast.update(toastId, {
         render: "Note rescheduled",
         type: "success",
@@ -340,6 +349,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
                 activeDropTarget={activeDropTarget}
                 useDndContext={false} // Don't create another DndContext
                 isPastScheduled={isNotePastScheduled} // Pass function to check past scheduled notes
+                isGhostwriter={isGhostwriter}
               />
             );
           })}
@@ -353,6 +363,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
                 note={activeDragNote}
                 onSelect={() => {}}
                 isDragOverlay
+                isGhostwriter={isGhostwriter}
               />
             </div>
           )}

@@ -12,12 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
-  Settings,
   Users,
   Copy,
   MoreHorizontal,
@@ -27,7 +25,6 @@ import {
   UserPlus,
   Loader2,
   AlertCircle,
-  CheckCircle,
   Eye,
   EyeOff,
   X,
@@ -39,7 +36,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "react-toastify";
-import { GhostwriterClient, MyGhostwriter } from "@/types/ghost-writer";
+import { GhostwriterClient, GhostwriterAccess } from "@/types/ghost-writer";
+import { cn } from "@/lib/utils";
 
 export const GhostwriterSection = () => {
   const {
@@ -67,9 +65,13 @@ export const GhostwriterSection = () => {
   const [activeTab, setActiveTab] = useState<"client" | "ghostwriter">(
     "client",
   );
+  const [didFetchData, setDidFetchData] = useState(false);
 
   useEffect(() => {
     const initializeData = async () => {
+      if (didFetchData) {
+        return;
+      }
       try {
         await Promise.all([
           fetchProfile(),
@@ -80,6 +82,7 @@ export const GhostwriterSection = () => {
         console.error("Error initializing ghostwriter data:", error);
       } finally {
         setIsInitialLoading(false);
+        setDidFetchData(true);
       }
     };
 
@@ -89,7 +92,6 @@ export const GhostwriterSection = () => {
   // Set default tab based on user's data
   useEffect(() => {
     if (!isInitialLoading) {
-      const hasActiveGhostwriters = accessList.some(gw => gw.isActive);
       const hasGhostwriterProfile = !!profile;
 
       if (!hasGhostwriterProfile) {
@@ -105,15 +107,17 @@ export const GhostwriterSection = () => {
     toast.success("Token copied to clipboard!");
   };
 
-  const handleRevokeAccess = async (ghostwriter: MyGhostwriter) => {
+  const handleRevokeAccess = async (ghostwriterAccess: GhostwriterAccess) => {
     if (
       window.confirm(
-        `Are you sure you want to revoke access for ${ghostwriter.name}?`,
+        `Are you sure you want to revoke access for ${ghostwriterAccess.ghostwriter.name}?`,
       )
     ) {
       try {
-        await revokeGhostwriterAccess(ghostwriter.id);
-        toast.success(`Access revoked for ${ghostwriter.name}`);
+        await revokeGhostwriterAccess(ghostwriterAccess.id);
+        toast.success(
+          `Access revoked for ${ghostwriterAccess.ghostwriter.name}`,
+        );
       } catch (error) {
         toast.error("Failed to revoke access");
       }
@@ -307,7 +311,7 @@ export const GhostwriterSection = () => {
                     My Ghostwriting Clients
                   </CardTitle>
                   <CardDescription>
-                    Accounts you're currently ghostwriting for
+                    Accounts you&apos;re currently ghostwriting for
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -341,8 +345,8 @@ export const GhostwriterSection = () => {
                       <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <h3 className="font-semibold mb-2">No Clients Yet</h3>
                       <p className="text-muted-foreground">
-                        When account holders give you access, they'll appear
-                        here
+                        When account holders give you access, they&apos;ll
+                        appear here
                       </p>
                     </div>
                   ) : (
@@ -355,7 +359,12 @@ export const GhostwriterSection = () => {
                         return (
                           <div
                             key={client.id}
-                            className="flex items-center gap-4 p-4 border rounded-lg"
+                            className={cn(
+                              "flex items-center gap-4 p-4 border rounded-lg",
+                              {
+                                "opacity-50": !client.isActive,
+                              },
+                            )}
                           >
                             <Avatar className="h-12 w-12">
                               <AvatarImage
@@ -371,7 +380,7 @@ export const GhostwriterSection = () => {
                               </AvatarFallback>
                             </Avatar>
 
-                            <div className="flex-1">
+                            <div className={cn("flex-1")}>
                               <div className="flex items-center gap-2 mb-1">
                                 <h4 className="font-medium">
                                   {client.accountUserName}
@@ -385,14 +394,6 @@ export const GhostwriterSection = () => {
                                   <AccessIcon className="h-3 w-3 mr-1" />
                                   {client.accessLevel}
                                 </Badge> */}
-                                {!client.isActive && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-muted-foreground"
-                                  >
-                                    Inactive
-                                  </Badge>
-                                )}
                               </div>
                               <p className="text-sm text-muted-foreground">
                                 {client.accountUserEmail}
@@ -405,16 +406,24 @@ export const GhostwriterSection = () => {
                               </p>
                             </div>
 
-                            {client.isActive && (
+                            {client.isActive ? (
                               <Button
-                                variant="outline"
+                                variant="destructive-outline"
                                 size="sm"
                                 onClick={() => handleStopGhostwriting(client)}
-                                className="text-red-600 hover:text-red-700"
                               >
                                 <X className="h-4 w-4 mr-2" />
                                 Stop Ghostwriting
                               </Button>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  variant="outline"
+                                  className="text-muted-foreground text-sm"
+                                >
+                                  Inactive
+                                </Badge>
+                              </div>
                             )}
                           </div>
                         );
@@ -487,14 +496,15 @@ export const GhostwriterSection = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {accessList.map(ghostwriter => {
+                      {accessList.map(access => {
                         const AccessIcon = getAccessLevelIcon(
-                          ghostwriter.accessLevel,
+                          access.accessLevel,
                         );
+                        const ghostwriter = access.ghostwriter;
 
                         return (
                           <div
-                            key={ghostwriter.id}
+                            key={access.id}
                             className="flex items-center gap-4 p-4 border rounded-lg"
                           >
                             <Avatar className="h-12 w-12">
@@ -519,13 +529,13 @@ export const GhostwriterSection = () => {
                                 <Badge
                                   variant="secondary"
                                   className={getAccessLevelColor(
-                                    ghostwriter.accessLevel,
+                                    access.accessLevel,
                                   )}
                                 >
                                   <AccessIcon className="h-3 w-3 mr-1" />
-                                  {ghostwriter.accessLevel}
+                                  {access.accessLevel}
                                 </Badge>
-                                {!ghostwriter.isActive && (
+                                {!access.isActive && (
                                   <Badge
                                     variant="outline"
                                     className="text-muted-foreground"
@@ -535,7 +545,7 @@ export const GhostwriterSection = () => {
                                 )}
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                {ghostwriter.accessLevel === "full"
+                                {access.accessLevel === "full"
                                   ? "Full access to your account"
                                   : "Limited editing access"}
                               </p>
@@ -550,7 +560,7 @@ export const GhostwriterSection = () => {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
                                   onClick={() =>
-                                    openEditAccessDialog(ghostwriter)
+                                    openEditAccessDialog(access)
                                   }
                                 >
                                   <Edit className="h-4 w-4 mr-2" />
@@ -558,7 +568,7 @@ export const GhostwriterSection = () => {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() =>
-                                    handleRevokeAccess(ghostwriter)
+                                    handleRevokeAccess(access)
                                   }
                                   className="text-red-600"
                                 >

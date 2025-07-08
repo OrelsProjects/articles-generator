@@ -22,12 +22,20 @@ import { AttachmentType } from "@prisma/client";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { loadContent, notesTextEditorOptions } from "@/lib/utils/text-editor";
 import { buildNoteUrl } from "@/lib/utils/note";
+import { useGhostwriterNotes } from "@/lib/hooks/useGhostwriterNotes";
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
+} from "@radix-ui/react-tooltip";
 
 export type NoteProps = {
   note: Note | NoteDraft;
   onAuthorClick?: (handle: string) => void;
   onNoteArchived?: () => void;
   isFree?: boolean;
+  isGhostwriterNote?: boolean;
   options?: {
     allowAuthorClick?: boolean;
   };
@@ -70,7 +78,7 @@ const NotesActions = ({
       {/* Replace the Substack posting button with the new component */}
       {!isFree && (
         <InstantPostButton
-          noteId={note.id}
+          note={note as NoteDraft}
           size="sm"
           variant="ghost"
           source="note_component"
@@ -87,9 +95,15 @@ export default function NoteComponent({
   },
   isFree = false,
   onNoteArchived,
+  isGhostwriterNote = false,
 }: NoteProps) {
   const { selectImage, updateNoteStatus, selectNote, selectedNote } =
     useNotes();
+  const {
+    updateNoteStatus: updateGhostwriterNoteStatus,
+    selectNote: selectGhostwriterNote,
+    selectedClientNote,
+  } = useGhostwriterNotes();
   const [isExpanded, setIsExpanded] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [showExpandButton, setShowExpandButton] = useState(false);
@@ -276,6 +290,27 @@ export default function NoteComponent({
           {handle && <p className="text-xs text-muted-foreground">@{handle}</p>}
         </div>
       </div>
+      {!isGhostwriterNote && note.ghostwriter && (
+        <div className="flex items-center gap-2 ml-2">
+          <span className="text-xs text-muted-foreground">By:</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Image
+                  src={note.ghostwriter?.image || ""}
+                  alt={note.ghostwriter?.name || ""}
+                  width={20}
+                  height={20}
+                  className="rounded-full"
+                />
+              </TooltipTrigger>
+              <TooltipContent className="bg-background text-foreground">
+                <p className="text-xs">{note.ghostwriter?.name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      )}
     </div>
   );
 
@@ -287,7 +322,11 @@ export default function NoteComponent({
   const handleArchive = async () => {
     setLoadingArchive(true);
     try {
-      await updateNoteStatus(note.id, "archived");
+      if (isGhostwriterNote) {
+        await updateGhostwriterNoteStatus(note.id, "archived");
+      } else {
+        await updateNoteStatus(note.id, "archived");
+      }
       if (onNoteArchived) {
         onNoteArchived();
       }
@@ -299,10 +338,14 @@ export default function NoteComponent({
   };
 
   const handleSelectNote = () => {
-    selectNote(note, {
-      forceShowEditor: true,
-      isFromInspiration: !isUserNote,
-    });
+    if (isGhostwriterNote) {
+      selectGhostwriterNote(note);
+    } else {
+      selectNote(note, {
+        forceShowEditor: true,
+        isFromInspiration: !isUserNote,
+      });
+    }
   };
 
   useEffect(() => {
@@ -326,7 +369,9 @@ export default function NoteComponent({
       className={cn(
         "h-full flex flex-col relative rounded-xl shadow-md border border-border/60 bg-card",
         {
-          "border-primary/80": note.id === selectedNote?.id,
+          "border-primary/80":
+            note.id === selectedNote?.id ||
+            note.id === selectedClientNote?.id,
         },
       )}
     >
@@ -342,12 +387,24 @@ export default function NoteComponent({
           >
             <Author />
             <div className=" flex items-center gap-2 top-0">
-              {"status" in note && (
+              {"status" in note ? (
                 <StatusBadgeDropdown
                   status={note.status as NoteStatus}
                   isArchived={note.isArchived}
                   scheduledTo={note.scheduledTo}
                 />
+              ) : (
+                note.createdAt && (
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(note.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                )
               )}
             </div>
           </div>
@@ -519,7 +576,7 @@ export default function NoteComponent({
                     },
                   )}
                 >
-                  <ExternalLink className="w-4 h-4 ml-2" />
+                  <ExternalLink className="w-4 h-4 mr-2" />
                   <span className="hidden md:block">View note on Substack</span>
                   <span className="block md:hidden">View on Substack</span>
                 </Button>

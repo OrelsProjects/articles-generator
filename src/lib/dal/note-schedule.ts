@@ -5,7 +5,7 @@ import {
   deleteScheduleById,
   deleteScheduleByName,
   getLatestScheduleForNote,
-} from "@/lib/dal/schedules";
+} from "@/lib/dal/scheduledNote";
 import { getCronExpressionFromDate } from "@/lib/utils/cron";
 import {
   createEventBridgeSchedule,

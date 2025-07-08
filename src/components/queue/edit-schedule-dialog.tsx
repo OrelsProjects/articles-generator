@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  X,
   Plus,
   RefreshCw,
   ChevronDown,
@@ -19,7 +18,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -51,9 +49,8 @@ interface ScheduleEntry {
   };
 }
 
-interface EditScheduleDialogProps {}
-
-export function EditScheduleDialog({}: EditScheduleDialogProps) {
+export function EditScheduleDialog() {
+  const { user } = useAppSelector(state => state.auth);
   const {
     addSchedule,
     removeSchedule,
@@ -62,7 +59,11 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
     loadingBestTimeToPublish,
     loadingDaySchedule,
   } = useQueue();
-  const { showCreateScheduleDialog, updateShowCreateScheduleDialog } = useUi();
+  const {
+    showCreateScheduleDialog,
+    updateShowCreateScheduleDialog,
+    showCreateScheduleDialogClientId,
+  } = useUi();
   const { userSchedules } = useAppSelector(state => state.notes);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
   const [isAddingSlot, setIsAddingSlot] = useState(false);
@@ -73,7 +74,7 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
   const [minutes, setMinutes] = useState(0);
 
   const updateOpen = (open: boolean) => {
-    updateShowCreateScheduleDialog(open);
+    updateShowCreateScheduleDialog(open, showCreateScheduleDialogClientId);
   };
 
   // Convert userSchedules to ScheduleEntries format for the UI
@@ -161,6 +162,9 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
           thursday: updatedEntry.days.thu,
           friday: updatedEntry.days.fri,
           saturday: updatedEntry.days.sat,
+          ghostwriterUserId: showCreateScheduleDialogClientId
+            ? user?.userId || null
+            : null,
         },
         day,
       );
@@ -190,18 +194,24 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
       const ampm = hours >= 12 ? "pm" : "am";
 
       // Use the API with 12-hour format as expected
-      await addSchedule({
-        hour: hour12,
-        minute: minutes,
-        ampm: ampm as "am" | "pm",
-        sunday: true,
-        monday: true,
-        tuesday: true,
-        wednesday: true,
-        thursday: true,
-        friday: true,
-        saturday: true,
-      });
+      await addSchedule(
+        {
+          hour: hour12,
+          minute: minutes,
+          ampm: ampm as "am" | "pm",
+          sunday: true,
+          monday: true,
+          tuesday: true,
+          wednesday: true,
+          thursday: true,
+          friday: true,
+          saturday: true,
+          ghostwriterUserId: showCreateScheduleDialogClientId
+            ? user?.userId || null
+            : null,
+        },
+        showCreateScheduleDialogClientId,
+      );
     } catch (error) {
       if (error instanceof ScheduleExistsError) {
         toast.error("Schedule already exists in the queue");
@@ -287,6 +297,7 @@ export function EditScheduleDialog({}: EditScheduleDialogProps) {
               thursday: entry.days.thu,
               friday: entry.days.fri,
               saturday: entry.days.sat,
+              ghostwriterUserId: null,
             },
             null,
           );

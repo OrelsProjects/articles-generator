@@ -1,6 +1,6 @@
 import { authOptions } from "@/auth/authOptions";
 import { getNoteAttachments, getNoteByScheduleId } from "@/lib/dal/note";
-import { deleteScheduleById } from "@/lib/dal/schedules";
+import { deleteScheduleById } from "@/lib/dal/scheduledNote";
 import { bodyJsonToSubstackBody, markdownToADF } from "@/lib/utils/adf";
 import { Logger } from "@/logger";
 import { NoteDraftImage } from "@/types/note";

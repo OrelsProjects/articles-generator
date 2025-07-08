@@ -1,26 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { format, addDays, startOfToday } from "date-fns";
 import { useQueue } from "@/lib/hooks/useQueue";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useAppSelector, useAppDispatch } from "@/lib/hooks/redux";
-import {
-  LayoutGrid,
-  List,
-  Info,
-  Plus,
-  RefreshCw,
-  Sparkles,
-  StickyNote,
-} from "lucide-react";
+import { LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { cn } from "@/lib/utils";
 import { NoteDraft } from "@/types/note";
 import { UserSchedule } from "@/types/schedule";
-import NoteComponent from "@/components/ui/note-component";
-import { ScheduledNotesList } from "@/components/queue/components";
+
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -32,50 +23,11 @@ import { resetNotification } from "@/lib/features/notes/notesSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import KanbanLoading from "@/components/loading/kanban-loading";
-import { appName } from "@/lib/consts";
+import NotesTabs from "@/components/notes/notes-tabs";
+import { ActionBar } from "@/components/notes/action-bar";
 
 const KANBAN_TITLE = "Your notes";
 const LIST_TITLE = "Your notes";
-
-// Enhanced Empty State Card Component
-const EmptyStateCard = ({
-  onAddNote,
-  onGenerateNotes,
-  loading,
-}: {
-  onAddNote: () => void;
-  onGenerateNotes: () => void;
-  loading?: boolean;
-}) => (
-  <motion.div className="rounded-lg p-6 text-center space-y-4">
-    <p className="text-muted-foreground">You don&apos;t have any drafts.</p>
-    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:justify-center">
-      <Button
-        onClick={onAddNote}
-        disabled={loading}
-        variant="outline"
-        className="flex items-center gap-2"
-      >
-        {loading ? (
-          <RefreshCw className="w-4 h-4 animate-spin" />
-        ) : (
-          <StickyNote className="w-4 h-4" />
-        )}
-        New draft
-      </Button>
-
-      <Button
-        variant="outline"
-        onClick={onGenerateNotes}
-        disabled={loading}
-        className="flex items-center gap-2"
-      >
-        <Sparkles className={cn("w-4 h-4")} />
-        Notes generator
-      </Button>
-    </div>
-  </motion.div>
-);
 
 // Segmented Control Component
 const ViewToggle = ({
@@ -124,17 +76,6 @@ const ViewToggle = ({
       </Button>
     </div>
   </div>
-);
-
-// Enhanced Action Bar Component with first-time drafts support
-const ActionBar = ({ className }: { className?: string }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className={cn("z-50 flex flex-col gap-2 sm:flex-row sm:gap-3", className)}
-  >
-    <CreateNoteButton />
-  </motion.div>
 );
 
 export default function StatusBoardPage() {
@@ -499,31 +440,6 @@ export default function StatusBoardPage() {
     </div>
   );
 
-  const CreateNewNoteInstructions = () => (
-    <div className="text-center text-muted-foreground">
-      <p className="text-lg mb-2">Your {appName} notes will be here.</p>
-      <p className="cursor-default">
-        To create a new note, click{" "}
-        <span
-          className="font-bold"
-          onMouseEnter={() => setHighlightDropdown(true)}
-          onMouseLeave={() => setHighlightDropdown(false)}
-        >
-          New draft
-        </span>{" "}
-        to create an empty note, or{" "}
-        <span
-          className="font-bold"
-          onMouseEnter={() => setHighlightDropdown(true)}
-          onMouseLeave={() => setHighlightDropdown(false)}
-        >
-          Generate notes
-        </span>{" "}
-        to generate a note from your article.
-      </p>
-    </div>
-  );
-
   const Loading = () => {
     return viewMode === "kanban" ? <KanbanLoading /> : <QueueLoading />;
   };
@@ -571,291 +487,32 @@ export default function StatusBoardPage() {
                 className="w-full"
               >
                 <ScrollArea className="w-full">
-                  <div className="space-y-6">
-                    {scheduledNotes.length === 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-red-50 dark:bg-red-950/25 border border-red-200 dark:border-red-900 p-4 rounded-lg mb-6 flex items-center text-red-800 dark:text-red-400"
-                      >
-                        <Info className="h-5 w-5 mr-3 flex-shrink-0" />
-                        <div className="flex-1">
-                          <span>
-                            You have no scheduled notes in your queue.{" "}
-                          </span>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {scheduledNotes.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-green-50 dark:bg-green-950/25 border border-green-200 dark:border-green-900 p-4 rounded-lg mb-6 flex items-center text-green-800 dark:text-green-400"
-                      >
-                        <Info className="h-5 w-5 mr-3 flex-shrink-0" />
-                        <span>
-                          You have {scheduledNotes.length}{" "}
-                          {scheduledNotes.length === 1 ? "note" : "notes"}{" "}
-                          scheduled.{" "}
-                          {scheduledNotes.length === 1 &&
-                          scheduledNotes[0].scheduledTo
-                            ? `It will be published on `
-                            : scheduledNotes.length > 1
-                              ? `The last one will be published on `
-                              : ""}
-                          {scheduledNotes.length === 1 &&
-                          scheduledNotes[0].scheduledTo ? (
-                            <strong
-                              className="underline cursor-pointer hover:no-underline transition-all"
-                              onClick={scrollToLatestNote}
-                            >
-                              {scheduledNotes[0].scheduledTo &&
-                                format(
-                                  new Date(scheduledNotes[0].scheduledTo),
-                                  "EEEE MMMM do, HH:mm",
-                                )}
-                            </strong>
-                          ) : scheduledNotes.length > 1 ? (
-                            (() => {
-                              // Find the latest scheduled note
-                              const latestNote = [...scheduledNotes].sort(
-                                (a, b) =>
-                                  new Date(b.scheduledTo || 0).getTime() -
-                                  new Date(a.scheduledTo || 0).getTime(),
-                              )[0];
-                              return latestNote.scheduledTo ? (
-                                <strong
-                                  className="underline cursor-pointer hover:no-underline transition-all"
-                                  onClick={scrollToLatestNote}
-                                >
-                                  {latestNote.scheduledTo &&
-                                    format(
-                                      new Date(latestNote.scheduledTo),
-                                      "EEEE MMMM do, HH:mm",
-                                    )}
-                                </strong>
-                              ) : null;
-                            })()
-                          ) : null}
-                        </span>
-                      </motion.div>
-                    )}
-
-                    <Tabs
-                      defaultValue="scheduled"
-                      value={activeTab}
-                      onValueChange={handleUpdateActiveTab}
-                      className="w-full"
-                    >
-                      <TabsList className="mb-4 border-b w-full rounded-none bg-transparent p-0 justify-start overflow-x-auto overflow-y-hidden">
-                        <TabsTrigger
-                          value="scheduled"
-                          className={cn(
-                            "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
-                          )}
-                        >
-                          Scheduled ({counters.scheduledCount})
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="drafts"
-                          className={cn(
-                            "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all relative",
-                          )}
-                        >
-                          {/* If has new notes, show a circular badge like a notification 
-                          animation should be smooth, and show a shadow for 2.3 seconds
-                          */}
-                          <AnimatePresence>
-                            {hasNewNotes && (
-                              <motion.div
-                                initial={{ opacity: 0, scale: 0.5 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 1 }}
-                                transition={{ duration: 0.12 }}
-                                className="absolute top-3 right-3 w-2 h-2 bg-red-600 dark:bg-red-500 rounded-full shadow-red-600 dark:shadow-red-500 shadow-md"
-                              />
-                            )}
-                          </AnimatePresence>
-                          Drafts ({counters.draftCount})
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="published"
-                          className={cn(
-                            "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
-                          )}
-                        >
-                          Published ({counters.publishedCount})
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="all"
-                          className={cn(
-                            "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
-                          )}
-                        >
-                          All (
-                          {counters.scheduledCount +
-                            counters.draftCount +
-                            counters.publishedCount}
-                          )
-                        </TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="scheduled" className="mt-0">
-                        <ScheduledNotesList
-                          days={activeDays}
-                          onEditQueue={() =>
-                            updateShowCreateScheduleDialog(true)
-                          }
-                          loading={loadingFetchingSchedules}
-                          groupedNotes={groupedScheduledNotes()}
-                          groupedSchedules={groupedSchedules()}
-                          onSelectNote={handleSelectNote}
-                          lastNoteRef={lastNoteRef}
-                          lastNoteId={latestNoteId}
-                        />
-                      </TabsContent>
-
-                      <TabsContent value="drafts" className="pb-6 md:pb-6">
-                        {draftNotes.length === 0 ? (
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex flex-col items-center justify-center py-16 gap-6"
-                          >
-                            {didCreateNote ? (
-                              <EmptyStateCard
-                                onAddNote={() => {
-                                  createDraftNote();
-                                }}
-                                onGenerateNotes={() => {
-                                  updateShowGenerateNotesDialog(true);
-                                }}
-                                loading={loadingCreateNote}
-                              />
-                            ) : (
-                              <CreateNewNoteInstructions />
-                            )}
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                          >
-                            {draftNotes.map((note, index) => (
-                              <motion.div
-                                key={note.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                              >
-                                <NoteComponent note={note} />
-                              </motion.div>
-                            ))}
-                          </motion.div>
-                        )}
-                      </TabsContent>
-
-                      <TabsContent value="published">
-                        {publishedNotes.length === 0 ? (
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex flex-col items-center justify-center py-16 gap-6"
-                          >
-                            <div className="text-center text-muted-foreground">
-                              <p className="text-lg mb-2">
-                                No published notes yet
-                              </p>
-                              <p className="text-sm">
-                                Notes you publish will appear here
-                              </p>
-                            </div>
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                          >
-                            {publishedNotes.map((note, index) => (
-                              <motion.div
-                                key={note.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                              >
-                                <NoteComponent note={note} />
-                              </motion.div>
-                            ))}
-                          </motion.div>
-                        )}
-                      </TabsContent>
-
-                      <TabsContent value="all">
-                        {scheduledNotes.length === 0 &&
-                        draftNotes.length === 0 &&
-                        publishedNotes.length === 0 ? (
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex flex-col items-center justify-center py-16 gap-6"
-                          >
-                            <div className="text-center text-muted-foreground">
-                              <p className="text-lg mb-2">No notes yet</p>
-                              <CreateNewNoteInstructions />
-                            </div>
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                          >
-                            {/* Combine all notes and sort them as specified */}
-                            {[
-                              ...scheduledNotes,
-                              ...draftNotes,
-                              ...publishedNotes,
-                            ]
-                              .sort((a, b) => {
-                                // Sort by type first: scheduled > drafts > published
-                                const getTypeOrder = (note: NoteDraft) => {
-                                  if (note.scheduledTo) return 0; // Scheduled notes first
-                                  if (note.status !== "published") return 1; // Then drafts
-                                  return 2; // Then published notes
-                                };
-
-                                const typeA = getTypeOrder(a);
-                                const typeB = getTypeOrder(b);
-
-                                if (typeA !== typeB) return typeA - typeB;
-
-                                // If same type, sort by createdAt date (newest first)
-                                const dateA = new Date(
-                                  a.createdAt || 0,
-                                ).getTime();
-                                const dateB = new Date(
-                                  b.createdAt || 0,
-                                ).getTime();
-                                return dateB - dateA;
-                              })
-                              .map((note, index) => (
-                                <motion.div
-                                  key={note.id}
-                                  initial={{ opacity: 0, y: 20 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ delay: index * 0.1 }}
-                                >
-                                  <NoteComponent note={note} />
-                                </motion.div>
-                              ))}
-                          </motion.div>
-                        )}
-                      </TabsContent>
-                    </Tabs>
-                  </div>
+                  <NotesTabs
+                    activeTab={activeTab}
+                    onTabChange={handleUpdateActiveTab}
+                    counters={counters}
+                    scheduledNotes={scheduledNotes}
+                    draftNotes={draftNotes}
+                    publishedNotes={publishedNotes}
+                    activeDays={activeDays}
+                    groupedNotes={groupedScheduledNotes()}
+                    groupedSchedules={groupedSchedules()}
+                    lastNoteRef={lastNoteRef}
+                    lastNoteId={latestNoteId}
+                    loadingFetchingSchedules={loadingFetchingSchedules}
+                    loadingCreateNote={loadingCreateNote}
+                    onSelectNote={handleSelectNote}
+                    onEditQueue={() =>
+                      updateShowCreateScheduleDialog(true, null)
+                    }
+                    onCreateNote={() => createDraftNote()}
+                    onGenerateNotes={() => updateShowGenerateNotesDialog(true)}
+                    hasNewNotes={hasNewNotes}
+                    didCreateNote={didCreateNote}
+                    highlightDropdown={highlightDropdown}
+                    setHighlightDropdown={setHighlightDropdown}
+                    scrollToLatestNote={scrollToLatestNote}
+                  />
                 </ScrollArea>
               </motion.div>
             )}

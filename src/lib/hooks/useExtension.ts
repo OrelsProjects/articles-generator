@@ -564,6 +564,7 @@ export function useExtension(): UseExtension {
         if (error instanceof Error) {
           throw error;
         }
+        debugger;
         throw new Error("Unknown error creating schedule");
       }
     },

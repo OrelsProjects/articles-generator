@@ -58,13 +58,13 @@ export async function middleware(request: NextRequest) {
         headers = null;
       }
 
-      console.log("API Request Log:", {
-        endpoint: request.nextUrl.pathname,
-        method: request.method,
-        headers: JSON.stringify(headers, null, 2),
-        body: JSON.stringify(body, null, 2),
-        userId: "middleware",
-      });
+      // console.log("API Request Log:", {
+      //   endpoint: request.nextUrl.pathname,
+      //   method: request.method,
+      //   headers: JSON.stringify(headers, null, 2),
+      //   body: JSON.stringify(body, null, 2),
+      //   userId: "middleware",
+      // });
     }
     return NextResponse.next();
   } catch (error) {

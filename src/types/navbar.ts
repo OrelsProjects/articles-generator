@@ -8,6 +8,7 @@ import {
   FileChartColumnIncreasing,
   StickyNote,
   BarChart3,
+  Users,
 } from "lucide-react";
 
 export const rootPath = "/notes";
@@ -55,6 +56,15 @@ export const navItems: {
     locationInMobile: "sidebar",
     featureFlagsRequired: ["chat"],
     position: 4,
+  },
+  {
+    name: "Collaboration",
+    mobileName: "Collaboration",
+    href: "/collaboration",
+    icon: Users,
+    locationInMobile: "sidebar",
+    featureFlagsRequired: ["ghostwriter"],
+    position: 5,
   },
   {
     name: "Editor",

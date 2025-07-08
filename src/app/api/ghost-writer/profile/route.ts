@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/auth/authOptions";
-import { prisma } from "@/lib/prisma";
+import { GhostwriterDAL } from "@/lib/dal/ghostwriter";
 import loggerServer from "@/loggerServer";
 
 export async function GET(request: NextRequest) {
@@ -11,9 +11,7 @@ export async function GET(request: NextRequest) {
   }
   
   try {
-    const ghostwriter = await prisma.ghostwriter.findUnique({
-      where: { userId: session.user.id },
-    });
+    const ghostwriter = await GhostwriterDAL.getProfile(session.user.id);
 
     if (!ghostwriter) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });

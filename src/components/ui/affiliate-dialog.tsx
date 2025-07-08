@@ -15,10 +15,13 @@ import { useTheme } from "next-themes";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectUi } from "@/lib/features/ui/uiSlice";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 export function AffiliateDialog() {
   const { resolvedTheme } = useTheme();
   const { sideBarState } = useAppSelector(selectUi);
+
+  const [isHovering, setIsHovering] = useState(false);
 
   const handleAffiliateClick = () => {
     window.open("https://writestack-app.getrewardful.com", "_blank");
@@ -37,17 +40,26 @@ export function AffiliateDialog() {
             variant={resolvedTheme === "dark" ? "default" : "light"}
           />
           <Button
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
             variant="outline"
             size="sm"
             className={cn(
-              "w-full flex items-center gap-2 hover:border-input dark:hover:border-input border-yellow-500 dark:border-yellow-700  shadow-md",
+              "w-full flex items-center gap-2 shadow-none",
               "transition-all duration-300 hover:bg-transparent",
               {
                 "p-0": sideBarState === "collapsed",
               },
             )}
           >
-            <Coins className="h-4 w-4 text-yellow-500" />
+            <Coins
+              className={cn(
+                "h-4 w-4 text-muted-foreground transition-colors",
+                {
+                  "text-yellow-500": isHovering,
+                },
+              )}
+            />
             <span
               className={cn("text-sm", {
                 hidden: sideBarState === "collapsed",

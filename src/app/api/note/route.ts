@@ -1,20 +1,35 @@
 import { authOptions } from "@/auth/authOptions";
 import { createNote, CreateNote } from "@/lib/dal/note";
 import { getAuthorId, getHandleDetails } from "@/lib/dal/publication";
-import { NoteDraft, NoteDraftBody } from "@/types/note";
+import { NoteDraft } from "@/types/note";
 import { NoteStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const schema = z.object({
+  body: z.string().optional(),
+  status: z.string().optional(),
+  bodyJson: z.string().optional().nullable(),
+});
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const userId = session.user.id;
+  let userId = session.user.id;
   try {
-    const newNoteDraft: Partial<NoteDraftBody> | undefined =
-      await request.json();
+    const requestBody = await request.json();
+    const parsedBody = schema.safeParse(requestBody);
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      );
+    }
+    const { body, status, bodyJson } = parsedBody.data;
+
     const authorId = await getAuthorId(userId);
     let handle = "",
       name = "",
@@ -25,17 +40,20 @@ export async function POST(request: NextRequest) {
         name: nameFromDb,
         photoUrl: photoUrlFromDb,
       } = await getHandleDetails(authorId);
+
       handle = handleFromDb;
       name = nameFromDb;
       photoUrl = photoUrlFromDb;
     }
 
+    const ghostwriterUserId = null;
+
     const createNoteBody: CreateNote = {
       userId,
-      body: newNoteDraft?.body || "",
-      status: newNoteDraft?.status || NoteStatus.draft,
+      body: body || "",
+      status: status ? (status as NoteStatus) : "draft",
       name: name,
-      bodyJson: newNoteDraft?.bodyJson || null,
+      bodyJson: bodyJson || null,
       summary: "",
       type: null,
       thumbnail: photoUrl,
@@ -47,12 +65,12 @@ export async function POST(request: NextRequest) {
       generatingModel: null,
       initialGeneratingModel: null,
       isArchived: false,
-      ...newNoteDraft,
-      authorId: newNoteDraft?.authorId || authorId || 0,
-      scheduledTo: newNoteDraft?.scheduledTo || null,
+      authorId: authorId || 0,
+      scheduledTo: null,
       sentViaScheduleAt: null,
       sendFailedAt: null,
       substackNoteId: null,
+      ghostwriterUserId,
     };
     const note = await createNote(createNoteBody);
 
@@ -66,8 +84,9 @@ export async function POST(request: NextRequest) {
       handle,
       thumbnail: photoUrl,
       name,
-      scheduledTo: newNoteDraft?.scheduledTo || undefined,
+      scheduledTo: null,
       wasSentViaSchedule: false,
+      ghostwriter: null,
     };
 
     return NextResponse.json(noteDraft);

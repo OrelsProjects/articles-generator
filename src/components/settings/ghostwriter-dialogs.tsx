@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGhostwriter } from "@/lib/hooks/useGhostwriter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
   DialogContent,
@@ -17,22 +15,41 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Upload, AlertCircle, Shield, Edit } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { CreateGhostwriterProfileData } from "@/types/ghost-writer";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
 export const GhostwriterDialogs = () => {
-  useGhostwriter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useCustomRouter();
+  const { openCreateProfileDialog, openAddAccessDialog } = useGhostwriter();
+
+  const isCreateProfileDialogOpen =
+    searchParams.get("createProfile") === "true";
+  const isAddAccessDialogOpen = searchParams.get("addAccess") === "true";
+
+  useEffect(() => {
+    if (isCreateProfileDialogOpen) {
+      openCreateProfileDialog();
+      router.push(`${pathname}#ghostwriter`, {
+        paramsToRemove: ["createProfile"],
+      });
+    }
+  }, [isCreateProfileDialogOpen]);
+
+  useEffect(() => {
+    if (isAddAccessDialogOpen) {
+      openAddAccessDialog();
+      router.push(`${pathname}#ghostwriter`, {
+        paramsToRemove: ["addAccess"],
+      });
+    }
+  }, [isAddAccessDialogOpen]);
 
   return (
     <>
@@ -326,7 +343,7 @@ const EditAccessDialog = () => {
     try {
       setIsSubmitting(true);
       await updateGhostwriterAccess({
-        ghostwriterId: editingAccess.id,
+        ghostwriterUserId: editingAccess.id,
         accessLevel: formData.accessLevel,
         isActive: formData.isActive,
       });
@@ -394,7 +411,7 @@ const EditAccessDialog = () => {
             <div className="space-y-0.5">
               <Label htmlFor="active">Active Access</Label>
               <p className="text-sm text-muted-foreground">
-                Enable or disable this ghostwriter's access
+                Enable or disable this ghostwriter&apos;s access
               </p>
             </div>
             <Switch

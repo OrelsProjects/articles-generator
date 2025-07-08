@@ -37,16 +37,19 @@ export function useUi() {
     dispatch(setShowScheduleModal(show));
   };
 
-  const updateShowCreateScheduleDialog = (show: boolean) => {
-    dispatch(setShowCreateScheduleDialog(show));
+  const updateShowCreateScheduleDialog = (
+    show: boolean,
+    clientId: string | null,
+  ) => {
+    dispatch(setShowCreateScheduleDialog({ show, clientId }));
   };
 
-  const updateShowGenerateNotesDialog = (show: boolean) => {
-    dispatch(setShowGenerateNotesDialog(show));
+  const updateShowGenerateNotesDialog = (show: boolean, clientId?: string | null) => {
+    dispatch(setShowGenerateNotesDialog({ show, clientId }));
   };
 
-
-  const showGenerateNotesDialog = useAppSelector(selectUi).showGenerateNotesDialog;
+  const showGenerateNotesDialog =
+    useAppSelector(selectUi).showGenerateNotesDialog;
 
   const hasAdvancedGPT = user?.meta?.featureFlags.includes(
     FeatureFlag.advancedGPT,
@@ -68,19 +71,27 @@ export function useUi() {
 
   const showScheduleModal = useAppSelector(selectUi).showScheduleModal;
 
-  const showCreateScheduleDialog = useAppSelector(selectUi).showCreateScheduleDialog;
+  const showCreateScheduleDialog =
+    useAppSelector(selectUi).showCreateScheduleDialog.show;
+
+  const showCreateScheduleDialogClientId =
+    useAppSelector(selectUi).showCreateScheduleDialog.clientId;
 
   const canScheduleNotes = user?.meta?.featureFlags.includes(
     FeatureFlag.scheduleNotes,
   );
 
-  const canAutoDM = user?.meta?.featureFlags.includes(
-    FeatureFlag.canAutoDM,
+  const canAutoDM = user?.meta?.featureFlags.includes(FeatureFlag.canAutoDM);
+
+  const canUseChat = user?.meta?.featureFlags.includes(FeatureFlag.chat);
+
+  const canUseGhostwriter = user?.meta?.featureFlags.includes(
+    FeatureFlag.ghostwriter,
   );
 
-  const canUseChat = user?.meta?.featureFlags.includes(
-    FeatureFlag.chat,
-  );
+  const hasFeatureFlag = (flag: FeatureFlag) => {
+    return user?.meta?.featureFlags.includes(flag);
+  };
 
   return {
     setState,
@@ -102,5 +113,8 @@ export function useUi() {
     hasViewWriter,
     showGenerateNotesDialog,
     updateShowGenerateNotesDialog,
+    canUseGhostwriter,
+    hasFeatureFlag,
+    showCreateScheduleDialogClientId,
   };
 }

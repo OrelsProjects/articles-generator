@@ -130,6 +130,9 @@ export const authOptions: AuthOptions = {
         session.user.publicationId = userMetadata?.publicationId || "";
         return session;
       } catch (error) {
+        if (process.env.NODE_ENV === "development") {
+          debugger;
+        }
         loggerServer.error("Error in session callback", {
           error,
           userId: token.sub as string,

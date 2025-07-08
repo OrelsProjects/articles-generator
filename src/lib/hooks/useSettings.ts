@@ -7,7 +7,7 @@ import { useAppDispatch } from "@/lib/hooks/redux";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "../features/auth/authSlice";
 import { creditCosts } from "@/lib/plans-consts";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import axiosInstance from "@/lib/axios-instance";
 import { selectPublications } from "@/lib/features/publications/publicationSlice";
@@ -25,6 +25,7 @@ export const useSettings = () => {
   const { user } = useAppSelector(selectAuth);
   const { publications } = useAppSelector(selectPublications);
   const { credits } = useAppSelector(selectSettings);
+  const loadingInit = useRef(false);
 
   const didExceedLimit = useMemo(() => {
     return credits.remaining <= 0;
@@ -39,6 +40,10 @@ export const useSettings = () => {
 
   const init = async () => {
     try {
+      if (loadingInit.current) {
+        return;
+      }
+      loadingInit.current = true;
       axiosInstance
         .post("/api/user/analyze/notes", {
           userTriggered: false,
@@ -46,6 +51,7 @@ export const useSettings = () => {
         .catch(error => {
           Logger.error(error);
         });
+
 
       const response = await axiosInstance.get<{
         usages: AllUsages;
@@ -59,6 +65,8 @@ export const useSettings = () => {
       dispatch(setGeneratingDescription(settings.generatingDescription));
     } catch (error: any) {
       Logger.error("Error initializing settings", { error });
+    } finally {
+      loadingInit.current = false;
     }
   };
 

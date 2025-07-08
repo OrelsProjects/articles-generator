@@ -345,15 +345,17 @@ export default function InspirationNoteComponent({
             </div>
             {/* <div className="flex items-center gap-2" /> */}
 
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-muted-foreground">
-                {new Date(note.createdAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
+            {note.createdAt && (
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-muted-foreground">
+                  {new Date(note.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+            )}
           </div>
           <div
             className={cn(

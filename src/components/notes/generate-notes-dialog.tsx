@@ -10,11 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogTrigger } from "@radix-ui/react-dialog";
-import { ChevronDown, Sparkles, X } from "lucide-react";
-import { TooltipButton } from "@/components/ui/tooltip-button";
+import { ChevronDown, X } from "lucide-react";
 import { useNotes } from "@/lib/hooks/useNotes";
 import {
   AiModelsDropdown,
@@ -96,10 +94,8 @@ export function GenerateNotesDialog({
   const [showArticleDialog, setShowArticleDialog] = useState(false);
   const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
   const [hoveredArticle, setHoveredArticle] = useState<Article | null>(null);
-  const [includeArticleLinks, setIncludeArticleLinks] = useLocalStorage<boolean>(
-    "include_articles_checked",
-    true,
-  );
+  const [includeArticleLinks, setIncludeArticleLinks] =
+    useLocalStorage<boolean>("include_articles_checked", true);
 
   useEffect(() => {
     if (errorGenerateNotes) {
@@ -123,6 +119,7 @@ export function GenerateNotesDialog({
       if (selectedSource === "description") {
         await generateNewNotes(selectedModel, {
           topic,
+          clientId: showGenerateNotesDialog.clientId,
         });
       } else {
         // Using articles
@@ -130,6 +127,7 @@ export function GenerateNotesDialog({
           topic,
           preSelectedPostIds: selectedArticles.map(article => article.id),
           includeArticleLinks,
+          clientId: showGenerateNotesDialog.clientId,
         });
       }
     } catch (e: any) {
@@ -164,9 +162,9 @@ export function GenerateNotesDialog({
   return (
     <>
       <Dialog
-        open={showGenerateNotesDialog}
+        open={showGenerateNotesDialog.show}
         onOpenChange={open => {
-          updateShowGenerateNotesDialog(open);
+          updateShowGenerateNotesDialog(open, showGenerateNotesDialog.clientId);
         }}
       >
         <DialogContent className="overflow-auto sm:max-w-[625px] max-h-[88vh]">

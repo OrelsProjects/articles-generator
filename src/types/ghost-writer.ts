@@ -1,12 +1,3 @@
-export interface MyGhostwriter {
-  id: string;
-  name: string;
-  image: string;
-  accessLevel: "full" | "editor";
-  isActive: boolean;
-  token: string;
-}
-
 export interface GhostwriterProfile {
   id: string;
   name: string;
@@ -20,12 +11,14 @@ export interface GhostwriterProfile {
 export interface GhostwriterAccess {
   id: string;
   accountUserId: string;
-  ghostwriterId: string;
   accessLevel: "full" | "editor";
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  ghostWriter: GhostwriterProfile;
+  ghostwriter: Omit<
+    GhostwriterProfile,
+    "createdAt" | "updatedAt" | "token" | "userId"
+  >;
 }
 
 // New interface for client accounts the user is ghostwriting for
@@ -52,7 +45,7 @@ export interface AddGhostwriterAccessData {
 }
 
 export interface UpdateGhostwriterAccessData {
-  ghostwriterId: string;
+  ghostwriterUserId: string;
   accessLevel: "full" | "editor";
   isActive: boolean;
 }

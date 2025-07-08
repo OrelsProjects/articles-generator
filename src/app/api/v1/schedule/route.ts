@@ -4,7 +4,7 @@ import {
   deleteLatestScheduleByNoteId,
   deleteScheduleById,
   getLatestScheduleForNote,
-} from "@/lib/dal/schedules";
+} from "@/lib/dal/scheduledNote";
 import {
   isValidScheduleTime,
   MIN_SCHEDULE_MINUTES,
