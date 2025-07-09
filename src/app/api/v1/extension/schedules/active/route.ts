@@ -1,7 +1,7 @@
 import loggerServer from "@/loggerServer";
 import { NextRequest, NextResponse } from "next/server";
 import { decodeKey } from "@/lib/dal/extension-key";
-import { getActiveSchedulesByUserId } from "@/lib/dal/schedules";
+import { getActiveSchedulesByUserId } from "@/lib/dal/scheduledNote";
 
 export async function GET(request: NextRequest) {
   let userId: string | undefined;
