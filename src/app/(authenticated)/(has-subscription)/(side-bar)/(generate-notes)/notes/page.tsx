@@ -512,6 +512,7 @@ export default function StatusBoardPage() {
                     highlightDropdown={highlightDropdown}
                     setHighlightDropdown={setHighlightDropdown}
                     scrollToLatestNote={scrollToLatestNote}
+                    isGhostwriter={false}
                   />
                 </ScrollArea>
               </motion.div>
