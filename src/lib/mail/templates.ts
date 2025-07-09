@@ -650,6 +650,7 @@ export function generateUserSentFeedbackEmail(
   userName: string,
   userEmail: string,
   feedback: string,
+  publicationUrl?: string,
 ) {
   const content = `
     <h2>User Sent Feedback</h2>
@@ -658,6 +659,7 @@ export function generateUserSentFeedbackEmail(
     <p>Name: ${userName}</p>
     <p>Email: ${userEmail}</p>
     <p>Feedback: ${feedback}</p>
+    ${publicationUrl ? `<p>Publication URL: ${publicationUrl}</p>` : ""}
   `;
   return {
     body: baseEmailTemplate(content),

@@ -40,10 +40,22 @@ export async function POST(request: NextRequest) {
       type: feedback.type,
     });
 
+    const responseMetadata = await prisma.userMetadata.findFirst({
+      where: {
+        userId: session.user.id,
+      },
+      select: {
+        publication: true,
+      },
+    });
+
+    const publicationUrl = responseMetadata?.publication?.publicationUrl;
+
     const email = generateUserSentFeedbackEmail(
       session.user.name || "",
       session.user.email || "",
       feedback.message,
+      publicationUrl,
     );
 
     await sendMailSafe({
