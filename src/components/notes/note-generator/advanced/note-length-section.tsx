@@ -32,7 +32,7 @@ export function NoteLengthSection({
     >
       <div className="flex items-center justify-between">
         <Label className="text-sm text-muted-foreground">
-          Length: {value} words
+          Length: {value} characters
         </Label>
       </div>
       <Slider
