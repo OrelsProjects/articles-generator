@@ -12,6 +12,10 @@ import {
   setSelectedClientNote,
   setClientSchedules,
   setClientSchedulesError,
+  setClientSchedulesLoading,
+  addClientSchedule,
+  removeClientSchedule,
+  updateClientSchedule,
 } from "@/lib/features/ghostwriter/ghostwriterSlice";
 import {
   isEmptyNote,
@@ -43,8 +47,9 @@ import { CHUNK_SIZE, MAX_FILE_SIZE } from "@/lib/consts";
 import { NoteWithEngagementStats } from "@/types/notes-stats";
 import { AttachmentType } from "@prisma/client";
 import { OpenGraphResponse } from "@/types/og";
-import { setClientSchedulesLoading } from "@/lib/features/ghostwriter/ghostwriterSlice";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { CreateUserSchedule, UserSchedule } from "@/types/schedule";
+import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
 
 export const MAX_ATTACHMENTS = Math.ceil(MAX_FILE_SIZE / CHUNK_SIZE);
 
@@ -75,6 +80,12 @@ export const useGhostwriterNotes = () => {
   );
   const [uploadingFilesCount, setUploadingFilesCount] = useState(0);
   const [loadingScheduleNote, setLoadingScheduleNote] = useState(false);
+
+  const [loadingScheduleDay, setLoadingScheduleDay] = useState<string | null>(
+    null,
+  );
+  const [loadingSchedule, setLoadingSchedule] = useState(false);
+  const [loadingAddSchedule, setLoadingAddSchedule] = useState(false);
 
   const cancelUpdateBody = useRef<NoteId[]>([]);
 
@@ -173,7 +184,6 @@ export const useGhostwriterNotes = () => {
   // Set selected client and fetch their notes and schedules
   const selectClient = useCallback(
     (clientUserId: string | null) => {
-      debugger;
       dispatch(setSelectedClientId(clientUserId));
       if (clientUserId) {
         setLastSelectedClientId(clientUserId);
@@ -928,6 +938,128 @@ export const useGhostwriterNotes = () => {
     [selectedClientId, user?.userId],
   );
 
+  const activeClient = useMemo(() => {
+    return activeClientList.find(
+      client => client.accountUserId === selectedClientId,
+    );
+  }, [activeClientList, selectedClientId]);
+
+  // Get schedules for the selected client
+  const currentClientSchedules = useMemo(() => {
+    return clientSchedules || [];
+  }, [clientSchedules]);
+
+  // Add schedule for selected client
+  const addSchedule = useCallback(
+    async (schedule: CreateUserSchedule) => {
+      if (!selectedClientId) {
+        throw new Error("No client selected");
+      }
+
+      const schedules = currentClientSchedules;
+
+      // check if schedule is already in the queue
+      const isAlreadyInQueue = schedules.some(
+        (s: UserSchedule) =>
+          s.hour === schedule.hour &&
+          s.minute === schedule.minute &&
+          s.ampm === schedule.ampm,
+      );
+      if (isAlreadyInQueue) {
+        throw new ScheduleExistsError("Schedule already exists in the queue");
+      }
+
+      if (loadingAddSchedule) {
+        return;
+      }
+
+      setLoadingAddSchedule(true);
+
+      try {
+        const response = await axiosInstance.post("/api/user/queue", {
+          ...schedule,
+          clientId: selectedClientId,
+        });
+        dispatch(addClientSchedule(response.data));
+      } catch (error) {
+        Logger.error("Error adding client schedule:", { error: String(error) });
+        throw error;
+      } finally {
+        setLoadingAddSchedule(false);
+      }
+    },
+    [selectedClientId, currentClientSchedules],
+  );
+
+  // Remove schedule for selected client
+  const removeSchedule = useCallback(
+    async (id: string) => {
+      if (!selectedClientId) {
+        throw new Error("No client selected");
+      }
+
+      const schedules = currentClientSchedules;
+      const previousSchedule = schedules.find((s: UserSchedule) => s.id === id);
+      if (!previousSchedule) {
+        return;
+      }
+      try {
+        dispatch(removeClientSchedule(id));
+        await axiosInstance.delete(`/api/user/queue/${id}`);
+      } catch (error) {
+        dispatch(addClientSchedule(previousSchedule));
+        Logger.error("Error removing client schedule:", {
+          error: String(error),
+        });
+        throw error;
+      }
+    },
+    [selectedClientId, currentClientSchedules],
+  );
+
+  // Update schedule for selected client
+  const updateSchedule = useCallback(
+    async (schedule: UserSchedule, day: string | null) => {
+      if (!selectedClientId) {
+        throw new Error("No client selected");
+      }
+
+      if (loadingScheduleDay === day) {
+        return;
+      }
+
+      setLoadingScheduleDay(day);
+      setLoadingSchedule(true);
+
+      const schedules = currentClientSchedules;
+      const previousSchedule = schedules.find(
+        (s: UserSchedule) => s.id === schedule.id,
+      );
+      if (!previousSchedule) {
+        return;
+      }
+
+      // optimistic update
+      dispatch(updateClientSchedule({ ...previousSchedule, ...schedule }));
+
+      try {
+        await axiosInstance.patch(`/api/user/queue/${schedule.id}`, schedule);
+        dispatch(updateClientSchedule(schedule));
+      } catch (error) {
+        // revert optimistic update
+        dispatch(updateClientSchedule(previousSchedule));
+        Logger.error("Error updating client schedule:", {
+          error: String(error),
+        });
+        throw error;
+      } finally {
+        setLoadingScheduleDay(null);
+        setLoadingSchedule(false);
+      }
+    },
+    [selectedClientId, currentClientSchedules],
+  );
+
   return {
     // State
     clientNotes: currentClientNotes,
@@ -935,9 +1067,10 @@ export const useGhostwriterNotes = () => {
     selectedClientNote,
     clientNotesLoading,
     clientNotesError,
-    clientSchedules,
+    clientSchedules: currentClientSchedules,
     clientSchedulesLoading,
     activeClientList,
+    activeClient,
 
     // Categorized notes
     scheduledNotes,
@@ -951,6 +1084,9 @@ export const useGhostwriterNotes = () => {
     selectNote,
     fetchClientNotes,
     fetchClientSchedules,
+    addSchedule,
+    removeSchedule,
+    updateSchedule,
     createDraftNote,
     updateNoteStatus,
     updateNoteFeedback,
@@ -976,5 +1112,8 @@ export const useGhostwriterNotes = () => {
     errorGenerateNotes,
     uploadingFilesCount,
     loadingScheduleNote,
+    loadingAddSchedule,
+    loadingScheduleDay,
+    loadingSchedule,
   };
 };

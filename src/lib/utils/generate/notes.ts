@@ -2,14 +2,12 @@ import { prisma, prismaArticles } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import { Filter, searchSimilarNotes } from "@/lib/dal/milvus";
 import {
-  generateNotesPrompt_v1,
   generateNotesPrompt_v2,
-  generateNotesWritingStylePrompt_v1,
+  GenerateNotesPromptBody,
   generateNotesWritingStylePrompt_v2,
 } from "@/lib/prompts";
 import loggerServer from "@/loggerServer";
 import { getServerSession, Session } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
 import { Post } from "@/../prisma/generated/articles";
 import { Model, runPrompt } from "@/lib/open-router";
 import { parseJson } from "@/lib/utils/json";
@@ -25,7 +23,6 @@ import { canUseAI, undoUseCredits, useCredits } from "@/lib/utils/credits";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
 import { getByline } from "@/lib/dal/byline";
 import { Model429Error } from "@/types/errors/Model429Error";
-import { z } from "zod";
 import { getPublicationByIds } from "@/lib/dal/publication";
 import { formatNote } from "@/lib/utils/notes";
 import { GhostwriterDAL } from "@/lib/dal/ghostwriter";
@@ -45,6 +42,7 @@ export async function generateNotesPrompt({
   preSelectedPostIds,
   userMetadata,
   includeArticleLinks = false,
+  length,
 }: {
   userMetadata: UserMetadata & { publication: PublicationMetadata };
   notesCount?: number;
@@ -52,6 +50,10 @@ export async function generateNotesPrompt({
   topic?: string;
   preSelectedPostIds?: string[];
   includeArticleLinks?: boolean;
+  length?: {
+    min: number;
+    max: number;
+  };
 }) {
   const userId = userMetadata.userId;
   const featureFlags = userMetadata.featureFlags || [];
@@ -223,15 +225,15 @@ export async function generateNotesPrompt({
   if (preSelectedPostIds && preSelectedPostIds.length > 0) {
     preSelectedArticles = await getPublicationByIds(preSelectedPostIds);
   }
-  const promptBody = {
+  const promptBody: GenerateNotesPromptBody = {
     userMetadata,
     publication: userMetadata.publication,
     inspirationNotes: [],
-    userPastNotes: notesFromAuthor.map(note => note.body),
+    postedOnSubstackNotes: notesFromAuthor.map(note => note.body),
     userNotes: userNotesNoDuplicates,
     options: {
       noteCount: count,
-      maxLength: 280,
+      length,
       topic,
       preSelectedArticles,
       language: userMetadata.preferredLanguage || undefined,
@@ -259,6 +261,7 @@ export async function generateNotes({
   includeArticleLinks = false,
   clientId,
   userSession,
+  length,
 }: {
   notesCount?: number;
   requestedModel?: string;
@@ -268,6 +271,10 @@ export async function generateNotes({
   includeArticleLinks?: boolean;
   clientId?: string | null;
   userSession?: Session;
+  length?: {
+    min: number;
+    max: number;
+  };
 }): Promise<{
   success: boolean;
   errorMessage?: string;
@@ -347,6 +354,7 @@ export async function generateNotes({
           publication: PublicationMetadata;
         },
         includeArticleLinks,
+        length,
       });
 
     if (!messages) {

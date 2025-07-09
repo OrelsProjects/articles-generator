@@ -1,5 +1,5 @@
-import React, { useState, RefObject, useMemo } from "react";
-import { format, isBefore, isToday } from "date-fns";
+import React, { RefObject, useMemo } from "react";
+import { format, isBefore } from "date-fns";
 import { NoteDraft } from "@/types/note";
 import { UserSchedule } from "@/types/schedule";
 import { DaySchedule } from "./day-schedule";
@@ -19,7 +19,7 @@ import { useNotes } from "@/lib/hooks/useNotes";
 import { CustomDragOverlay } from "./custom-drag-overlay";
 import { useDragOverlay } from "../hooks/useDragOverlay";
 import { Logger } from "@/logger";
-import { Calendar, Loader2, Pencil } from "lucide-react";
+import { Calendar, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useGhostwriterNotes } from "@/lib/hooks/useGhostwriterNotes";
@@ -48,7 +48,10 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   isGhostwriter,
 }) => {
   const { updateNoteStatus, createDraftNote, rescheduleNote } = useNotes();
-  const { rescheduleNote: rescheduleGhostwriterNote } = useGhostwriterNotes();
+  const {
+    rescheduleNote: rescheduleGhostwriterNote,
+    updateNoteStatus: updateNoteStatusGhostwriter,
+  } = useGhostwriterNotes();
 
   // Configure basic sensors for drag detection
   const sensors = useSensors(
@@ -241,7 +244,11 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
 
   const handleUnscheduleNote = async (note: NoteDraft) => {
     try {
-      await updateNoteStatus(note.id, "draft");
+      if (isGhostwriter) {
+        await updateNoteStatusGhostwriter(note.id, "draft");
+      } else {
+        await updateNoteStatus(note.id, "draft");
+      }
     } catch (error) {
       toast.error("Failed to unschedule note");
       Logger.error("Failed to unschedule note", {

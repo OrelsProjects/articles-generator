@@ -247,7 +247,6 @@ export const useGhostwriter = () => {
         await axiosInstance.delete(
           `/api/ghost-writer/access?accessId=${accessId}`,
         );
-        debugger;
         dispatch(removeAccess(accessId));
       } catch (error: any) {
         Logger.error("Error revoking ghostwriter access", { error });

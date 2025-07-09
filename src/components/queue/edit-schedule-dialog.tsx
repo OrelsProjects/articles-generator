@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Plus,
   RefreshCw,
@@ -34,6 +34,11 @@ import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
 import { FollowerActivityChart } from "@/components/analytics/follower-activity-chart";
 import { useUi } from "@/lib/hooks/useUi";
 import { cn } from "@/lib/utils";
+import { useGhostwriterNotes } from "@/lib/hooks/useGhostwriterNotes";
+import { useNotes } from "@/lib/hooks/useNotes";
+import { useGhostwriter } from "@/lib/hooks/useGhostwriter";
+import Image from "next/image";
+import { ClientImage } from "@/app/(authenticated)/(has-subscription)/(side-bar)/(generate-notes)/collaboration/page";
 
 interface ScheduleEntry {
   id: string;
@@ -59,12 +64,27 @@ export function EditScheduleDialog() {
     loadingBestTimeToPublish,
     loadingDaySchedule,
   } = useQueue();
+
+  const { selectedNote } = useNotes();
+
+  const {
+    selectedClientNote,
+    clientSchedules,
+    addSchedule: addClientSchedule,
+    removeSchedule: removeClientSchedule,
+    updateSchedule: updateClientSchedule,
+    loadingAddSchedule,
+    activeClient,
+  } = useGhostwriterNotes();
+  const { selectedClientId } = useGhostwriter();
+
   const {
     showCreateScheduleDialog,
     updateShowCreateScheduleDialog,
     showCreateScheduleDialogClientId,
   } = useUi();
   const { userSchedules } = useAppSelector(state => state.notes);
+
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
   const [isAddingSlot, setIsAddingSlot] = useState(false);
   const [didChangeSlotViaChart, setDidChangeSlotViaChart] = useState(false);
@@ -73,14 +93,28 @@ export function EditScheduleDialog() {
   const [hours, setHours] = useState(12);
   const [minutes, setMinutes] = useState(0);
 
+  const isGhostwriter = useMemo(() => {
+    return (
+      !!selectedClientNote ||
+      selectedNote?.ghostwriter?.userId === user?.userId ||
+      !!selectedClientId
+    );
+  }, [selectedClientNote, selectedNote, selectedClientId, user?.userId]);
+
+  const validSchedules = useMemo(() => {
+    if (isGhostwriter) {
+      return clientSchedules;
+    }
+    return userSchedules;
+  }, [isGhostwriter, clientSchedules, userSchedules]);
+
   const updateOpen = (open: boolean) => {
     updateShowCreateScheduleDialog(open, showCreateScheduleDialogClientId);
   };
 
-  // Convert userSchedules to ScheduleEntries format for the UI
   useEffect(() => {
-    if (userSchedules && userSchedules.length > 0) {
-      const formattedSchedule = userSchedules.map(userSchedule => {
+    if (validSchedules && validSchedules.length > 0) {
+      const formattedSchedule = validSchedules.map(userSchedule => {
         // Convert to 24-hour format
         let hour24 = userSchedule.hour;
         if (userSchedule.ampm === "pm" && hour24 < 12) hour24 += 12;
@@ -112,7 +146,7 @@ export function EditScheduleDialog() {
       // The user will explicitly add new slots when needed
       setSchedule([]);
     }
-  }, [userSchedules, schedule.length]);
+  }, [validSchedules, schedule.length]);
 
   // Helper function to parse time string to hour and minute
   const parseTimeString = (timeString: string) => {
@@ -148,26 +182,30 @@ export function EditScheduleDialog() {
       // Convert to the format expected by the API
       const { hour, minute, ampm } = parseTimeString(updatedEntry.time);
 
+      const updateBody = {
+        id: updatedEntry.id,
+        hour,
+        minute,
+        ampm,
+        sunday: updatedEntry.days.sun,
+        monday: updatedEntry.days.mon,
+        tuesday: updatedEntry.days.tue,
+        wednesday: updatedEntry.days.wed,
+        thursday: updatedEntry.days.thu,
+        friday: updatedEntry.days.fri,
+        saturday: updatedEntry.days.sat,
+        ghostwriterUserId: showCreateScheduleDialogClientId
+          ? user?.userId || null
+          : null,
+      };
+
+      if (showCreateScheduleDialogClientId) {
+        await updateClientSchedule(updateBody, day);
+      } else {
+        await updateSchedule(updateBody, day);
+      }
+
       // This is an existing entry, so we need to update it
-      await updateSchedule(
-        {
-          id: updatedEntry.id,
-          hour,
-          minute,
-          ampm,
-          sunday: updatedEntry.days.sun,
-          monday: updatedEntry.days.mon,
-          tuesday: updatedEntry.days.tue,
-          wednesday: updatedEntry.days.wed,
-          thursday: updatedEntry.days.thu,
-          friday: updatedEntry.days.fri,
-          saturday: updatedEntry.days.sat,
-          ghostwriterUserId: showCreateScheduleDialogClientId
-            ? user?.userId || null
-            : null,
-        },
-        day,
-      );
     } catch (error) {
       // Revert the optimistic update
       toast.error("Failed to update schedule");
@@ -178,7 +216,11 @@ export function EditScheduleDialog() {
   const handleRemoveEntry = async (entryId: string) => {
     try {
       // Call API first
-      await removeSchedule(entryId);
+      if (showCreateScheduleDialogClientId) {
+        await removeClientSchedule(entryId);
+      } else {
+        await removeSchedule(entryId);
+      }
 
       setSchedule(prev => prev.filter(entry => entry.id !== entryId));
     } catch (error) {
@@ -192,26 +234,27 @@ export function EditScheduleDialog() {
       // Convert from 24-hour to 12-hour format for API
       const hour12 = hours % 12 === 0 ? 12 : hours % 12;
       const ampm = hours >= 12 ? "pm" : "am";
+      const schedule = {
+        hour: hour12,
+        minute: minutes,
+        ampm: ampm as "am" | "pm",
+        sunday: true,
+        monday: true,
+        tuesday: true,
+        wednesday: true,
+        thursday: true,
+        friday: true,
+        saturday: true,
+        ghostwriterUserId: showCreateScheduleDialogClientId
+          ? user?.userId || null
+          : null,
+      };
 
-      // Use the API with 12-hour format as expected
-      await addSchedule(
-        {
-          hour: hour12,
-          minute: minutes,
-          ampm: ampm as "am" | "pm",
-          sunday: true,
-          monday: true,
-          tuesday: true,
-          wednesday: true,
-          thursday: true,
-          friday: true,
-          saturday: true,
-          ghostwriterUserId: showCreateScheduleDialogClientId
-            ? user?.userId || null
-            : null,
-        },
-        showCreateScheduleDialogClientId,
-      );
+      if (showCreateScheduleDialogClientId) {
+        await addClientSchedule(schedule);
+      } else {
+        await addSchedule(schedule);
+      }
     } catch (error) {
       if (error instanceof ScheduleExistsError) {
         toast.error("Schedule already exists in the queue");
@@ -283,24 +326,25 @@ export function EditScheduleDialog() {
       const updatePromises = newSchedule.map(entry => {
         if (!entry.id.startsWith("temp-")) {
           const { hour, minute, ampm } = parseTimeString(entry.time);
+          const schedule = {
+            id: entry.id,
+            hour,
+            minute,
+            ampm,
+            sunday: entry.days.sun,
+            monday: entry.days.mon,
+            tuesday: entry.days.tue,
+            wednesday: entry.days.wed,
+            thursday: entry.days.thu,
+            friday: entry.days.fri,
+            saturday: entry.days.sat,
+            ghostwriterUserId: null,
+          };
 
-          return updateSchedule(
-            {
-              id: entry.id,
-              hour,
-              minute,
-              ampm,
-              sunday: entry.days.sun,
-              monday: entry.days.mon,
-              tuesday: entry.days.tue,
-              wednesday: entry.days.wed,
-              thursday: entry.days.thu,
-              friday: entry.days.fri,
-              saturday: entry.days.sat,
-              ghostwriterUserId: null,
-            },
-            null,
-          );
+          if (showCreateScheduleDialogClientId) {
+            return updateClientSchedule(schedule, null);
+          }
+          return updateSchedule(schedule, null);
         }
         return Promise.resolve();
       });
@@ -367,7 +411,16 @@ export function EditScheduleDialog() {
             times.
           </p>
         </DialogDescription>
-        <div className="overflow-x-auto ">
+        <div className="overflow-x-auto">
+          {isGhostwriter && activeClient && (
+            <div className="flex justify-start items-center text-sm text-muted-foreground text-start mb-6 gap-2">
+              Schedule is built for{" "}
+              <ClientImage
+                image={activeClient.accountUserImage || undefined}
+                name={activeClient.accountUserName || ""}
+              />
+            </div>
+          )}
           <table className="w-full">
             <thead>
               <tr className="text-left text-sm font-medium text-zinc-400">
@@ -610,7 +663,9 @@ export function EditScheduleDialog() {
                     >
                       <Button
                         onClick={handleAddNewSlot}
-                        disabled={loading || isTimeAlreadyUsed()}
+                        disabled={
+                          loading || isTimeAlreadyUsed() || loadingAddSchedule
+                        }
                         className="px-5 py-2"
                       >
                         <Save className="mr-2 h-4 w-4" />
@@ -624,23 +679,29 @@ export function EditScheduleDialog() {
           </Collapsible>
         </div>
 
-        {/* Follower Activity Chart */}
-        <div className="mt-8 border-t border-border pt-4">
-          {loadingBestTimeToPublish ? (
-            <div className="flex justify-center items-center h-[200px]">
-              <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+        {!isGhostwriter && (
+          <>
+            {/* Follower Activity Chart */}
+            <div className="mt-8 border-t border-border pt-4">
+              {loadingBestTimeToPublish ? (
+                <div className="flex justify-center items-center h-[200px]">
+                  <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <FollowerActivityChart onTimeClicked={handleTimeClicked} />
+              )}
             </div>
-          ) : (
-            <FollowerActivityChart onTimeClicked={handleTimeClicked} />
-          )}
-        </div>
-        <div className="w-full flex items-center justify-center mt-4 text-sm text-muted-foreground">
-          <Globe className="h-4 w-4 mr-2" />
-          <span>
-            Timezone:{" "}
-            {Intl.DateTimeFormat().resolvedOptions().timeZone.replace("_", "/")}
-          </span>
-        </div>
+            <div className="w-full flex items-center justify-center mt-4 text-sm text-muted-foreground">
+              <Globe className="h-4 w-4 mr-2" />
+              <span>
+                Timezone:{" "}
+                {Intl.DateTimeFormat()
+                  .resolvedOptions()
+                  .timeZone.replace("_", "/")}
+              </span>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

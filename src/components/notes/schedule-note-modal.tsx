@@ -44,6 +44,7 @@ interface ScheduleNoteProps {
   onOpenChange?: (open: boolean) => void;
   initialScheduledDate?: Date | null;
   onScheduleConfirm: (date: Date) => Promise<unknown>;
+  clientId?: string | null;
   className?: string;
 }
 
@@ -52,6 +53,7 @@ export function ScheduleNoteModal({
   onOpenChange,
   initialScheduledDate,
   onScheduleConfirm,
+  clientId,
   className,
 }: ScheduleNoteProps) {
   const { hasQueue } = useQueue();
@@ -226,7 +228,7 @@ export function ScheduleNoteModal({
                     variant="link"
                     className="p-0 pr-1"
                     onClick={() => {
-                      updateShowCreateScheduleDialog(true);
+                      updateShowCreateScheduleDialog(true, clientId || null);
                       handleOpenChange(false);
                     }}
                   >

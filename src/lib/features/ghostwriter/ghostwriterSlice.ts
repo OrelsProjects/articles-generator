@@ -40,7 +40,7 @@ export interface GhostwriterState {
   showCreateProfileDialog: boolean;
   showAddAccessDialog: boolean;
   showEditAccessDialog: boolean;
-  editingAccess: GhostwriterAccess   | null;
+  editingAccess: GhostwriterAccess | null;
 }
 
 const initialState: GhostwriterState = {
@@ -104,7 +104,7 @@ const ghostwriterSlice = createSlice({
     addAccess: (state, action: PayloadAction<GhostwriterAccess>) => {
       state.accessList.push(action.payload);
     },
-  updateAccess: (state, action: PayloadAction<GhostwriterAccess>) => {
+    updateAccess: (state, action: PayloadAction<GhostwriterAccess>) => {
       const index = state.accessList.findIndex(
         access => access.id === action.payload.id,
       );
@@ -130,7 +130,10 @@ const ghostwriterSlice = createSlice({
       state.clientLoading = false;
       state.clientError = null;
     },
-    updateClient: (state, action: PayloadAction<Partial<GhostwriterClient>>) => {
+    updateClient: (
+      state,
+      action: PayloadAction<Partial<GhostwriterClient>>,
+    ) => {
       const index = state.clientList.findIndex(
         client => client.id === action.payload.id,
       );
@@ -231,6 +234,25 @@ const ghostwriterSlice = createSlice({
       state.clientSchedulesError = null;
     },
 
+    addClientSchedule: (state, action: PayloadAction<UserSchedule>) => {
+      state.clientSchedules.push(action.payload);
+    },
+
+    removeClientSchedule: (state, action: PayloadAction<string>) => {
+      state.clientSchedules = state.clientSchedules.filter(
+        schedule => schedule.id !== action.payload,
+      );
+    },
+
+    updateClientSchedule: (state, action: PayloadAction<UserSchedule>) => {
+      const index = state.clientSchedules.findIndex(
+        schedule => schedule.id === action.payload.id,
+      );
+      if (index !== -1) {
+        state.clientSchedules[index] = action.payload;
+      }
+    },
+
     // UI actions
     setShowCreateProfileDialog: (state, action: PayloadAction<boolean>) => {
       state.showCreateProfileDialog = action.payload;
@@ -283,6 +305,9 @@ export const {
   setClientSchedulesLoading,
   setClientSchedulesError,
   setClientSchedules,
+  addClientSchedule,
+  removeClientSchedule,
+  updateClientSchedule,
   setShowCreateProfileDialog,
   setShowAddAccessDialog,
   setShowEditAccessDialog,

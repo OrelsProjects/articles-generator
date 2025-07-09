@@ -75,22 +75,7 @@ export function useQueue() {
     return { scheduledCount, draftCount, publishedCount };
   }, [scheduledNotes, userNotes]);
 
-  const initQueue = async () => {
-    try {
-      const response = await axiosInstance.post<UserSchedule[]>(
-        "/api/user/queue/init",
-      );
-      dispatch(setUserSchedule(response.data));
-    } catch (error) {
-      Logger.error(String(error));
-      throw error;
-    }
-  };
-
-  const addSchedule = async (
-    schedule: CreateUserSchedule,
-    clientId: string | null,
-  ) => {
+  const addSchedule = async (schedule: CreateUserSchedule) => {
     // check if schedule is already in the queue
     const isAlreadyInQueue = userSchedules.some(
       s =>
@@ -103,10 +88,7 @@ export function useQueue() {
     }
     setLoading(true);
     try {
-      const response = await axiosInstance.post("/api/user/queue", {
-        ...schedule,
-        clientId,
-      });
+      const response = await axiosInstance.post("/api/user/queue", schedule);
       dispatch(addUserSchedule(response.data));
     } catch (error) {
       Logger.error(String(error));
@@ -143,6 +125,7 @@ export function useQueue() {
 
     try {
       await axiosInstance.patch(`/api/user/queue/${schedule.id}`, schedule);
+      dispatch(updateUserSchedule(schedule));
     } catch (error) {
       // revert optimistic update
       dispatch(updateUserSchedule(previousSchedule));
@@ -154,20 +137,14 @@ export function useQueue() {
     }
   };
 
-  const fetchSchedules = async (clientId: string | null) => {
+  const fetchSchedules = async () => {
     if (loadingFetchingSchedules) {
       return;
     }
     dispatch(setLoadingFetchingSchedules(true));
     try {
-      const response = await axiosInstance.get<UserSchedule[]>(
-        "/api/user/queue",
-        {
-          params: {
-            clientId,
-          },
-        },
-      );
+      const response =
+        await axiosInstance.get<UserSchedule[]>("/api/user/queue");
       dispatch(setUserSchedule(response.data));
     } catch (error) {
       Logger.error(String(error));
@@ -366,7 +343,7 @@ export function useQueue() {
   const fetchQueue = async () => {
     try {
       if (userSchedules.length === 0) {
-        fetchSchedules(null);
+        fetchSchedules();
       }
     } catch (error) {
       Logger.error("Error fetching schedules", {
@@ -393,7 +370,6 @@ export function useQueue() {
     removeSchedule,
     updateSchedule,
     rescheduleNote,
-    initQueue,
     loading,
     getNextAvailableSchedule,
     loadingBestTimeToPublish: loadingFetchBestTimeToPublish,

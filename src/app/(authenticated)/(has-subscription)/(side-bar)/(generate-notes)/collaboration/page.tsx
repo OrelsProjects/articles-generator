@@ -31,7 +31,7 @@ import {
 } from "@/lib/utils/collaboration";
 import { ActionBar } from "@/components/notes/action-bar";
 
-const ClientImage = ({
+export const ClientImage = ({
   image,
   name,
 }: {

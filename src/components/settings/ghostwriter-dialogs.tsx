@@ -363,7 +363,7 @@ const EditAccessDialog = () => {
         <DialogHeader>
           <DialogTitle>Edit Ghostwriter Access</DialogTitle>
           <DialogDescription>
-            Update access settings for {editingAccess.name}
+            Update access settings for {editingAccess.ghostwriter.name}
           </DialogDescription>
         </DialogHeader>
 

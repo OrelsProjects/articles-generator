@@ -324,7 +324,7 @@ ${userContext.recentNotes.map((note: any) => `- ${note.preview}`).join("\n")}`
       : "";
 
   const { lenFloor, lenCeil, emojiRatio } = getNotesPromptNoteMeta(
-    userNotes,
+    userNotes.map(note => note.body || ""),
     280,
   );
 

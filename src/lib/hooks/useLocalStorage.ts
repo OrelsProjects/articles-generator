@@ -27,6 +27,7 @@ export type LocalStorageKey =
   | "include_articles_checked"
   | "last_dismissed_discrepancy_bar"
   | "last_selected_client_id"
+  | "note_generation_options"
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue

@@ -45,6 +45,7 @@ import { EventTracker } from "@/eventTracker";
 import { isPlagiarism } from "@/lib/utils/note-editor-utils";
 import { useGhostwriterNotes } from "@/lib/hooks/useGhostwriterNotes";
 import Image from "next/image";
+import { useGhostwriter } from "@/lib/hooks/useGhostwriter";
 
 export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const { user } = useAppSelector(selectAuth);
@@ -73,6 +74,8 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     updateNoteStatus: updateNoteStatusGhostwriter,
     loadingEditNote: loadingEditGhostwriterNote,
   } = useGhostwriterNotes();
+
+  const { selectedClientId } = useGhostwriter();
 
   const editor = useEditor(
     notesTextEditorOptions(html => {
@@ -619,7 +622,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                           ) : (
                             <span>{note?.name}</span>
                           )}
-                          
                         </div>
                       )}
                     </div>
@@ -783,7 +785,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                       }}
                       presetSchedule={scheduledDate}
                       disabled={
-                        loadingEditNote || loadingEditGhostwriterNote || loadingScheduleNote || isSendingNote
+                        loadingEditNote ||
+                        loadingEditGhostwriterNote ||
+                        loadingScheduleNote ||
+                        isSendingNote
                       }
                       saving={loadingEditNote || loadingEditGhostwriterNote}
                       isInspiration={isInspiration}
@@ -815,6 +820,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
             },
           });
         }}
+        clientId={selectedClientId}
       />
     </>
   );
