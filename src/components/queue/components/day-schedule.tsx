@@ -27,6 +27,7 @@ interface DayScheduleProps {
   activeDropTarget?: string | null;
   useDndContext?: boolean;
   isPastScheduled?: (note: NoteDraft) => boolean;
+  isGhostwriter?: boolean;
 }
 
 // Helper type for combined items
@@ -52,6 +53,7 @@ export const DaySchedule = ({
   activeDropTarget,
   useDndContext = true, // Default to true for backward compatibility
   isPastScheduled,
+  isGhostwriter,
 }: DayScheduleProps) => {
   const now = new Date();
   const currentMinutes = startOfDay(now).getHours() * 60;
@@ -278,6 +280,7 @@ export const DaySchedule = ({
               isPastScheduled={
                 isPastScheduled ? isPastScheduled(item.note) : false
               }
+              isGhostwriter={isGhostwriter}
             />
           </div>
         )}

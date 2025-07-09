@@ -8,14 +8,20 @@ export interface UiState {
   showGenerateNotesSidebar: boolean;
   showAnalyzePublicationDialog: boolean;
   showGenerateIdeasDialog: boolean;
-  showGenerateNotesDialog: boolean;
+  showGenerateNotesDialog: {
+    show: boolean;
+    clientId: string | null;
+  };
   sideBarState: "collapsed" | "expanded";
   didShowSaveTooltip: boolean;
   showScheduleModal: boolean;
   showExtensionDialog: boolean;
   showExtensionDisabledDialog: boolean;
   showNoSubstackCookiesDialog: boolean;
-  showCreateScheduleDialog: boolean;
+  showCreateScheduleDialog: {
+    show: boolean;
+    clientId: string | null;
+  };
   notePostedData: CreatePostResponse | null;
   hideFeedbackFab: boolean;
 }
@@ -26,14 +32,20 @@ export const initialState: UiState = {
   showGenerateNotesSidebar: false,
   showAnalyzePublicationDialog: false,
   showGenerateIdeasDialog: false,
-  showGenerateNotesDialog: false,
+  showGenerateNotesDialog: {
+    show: false,
+    clientId: null,
+  },
   sideBarState: "expanded",
   didShowSaveTooltip: false,
   showScheduleModal: false,
   showExtensionDialog: false,
   showExtensionDisabledDialog: false,
   showNoSubstackCookiesDialog: false,
-  showCreateScheduleDialog: false,
+  showCreateScheduleDialog: {
+    show: false,
+    clientId: null,
+  },
   notePostedData: null,
   hideFeedbackFab: false,
 };
@@ -58,7 +70,8 @@ const uiSlice = createSlice({
       state.showGenerateNotesSidebar = action.payload;
     },
     setShowGenerateNotesDialog: (state, action) => {
-      state.showGenerateNotesDialog = action.payload;
+      state.showGenerateNotesDialog.show = action.payload.show;
+      state.showGenerateNotesDialog.clientId = action.payload.clientId;
     },
     setSideBarState: (state, action) => {
       state.sideBarState = action.payload;
@@ -79,7 +92,8 @@ const uiSlice = createSlice({
       state.showNoSubstackCookiesDialog = action.payload;
     },
     setShowCreateScheduleDialog: (state, action) => {
-      state.showCreateScheduleDialog = action.payload;
+      state.showCreateScheduleDialog.show = action.payload.show;
+      state.showCreateScheduleDialog.clientId = action.payload.clientId;
     },
     setNotePostedData: (state, action) => {
       state.notePostedData = action.payload;

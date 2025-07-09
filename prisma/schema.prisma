@@ -75,6 +75,7 @@ enum FeatureFlag {
   canUseRadar
   canAutoDM
   chat
+  ghostwriter
 }
 
 enum CookieName {
@@ -342,6 +343,8 @@ model Note {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @db.ObjectId
 
+  ghostwriterUserId String? @db.ObjectId
+
   body      String
   bodyJson  String?
   summary   String
@@ -377,6 +380,8 @@ model Note {
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   substackImage SubstackImage[]
   S3Attachment  S3Attachment[]
+
+  ghostwriter Ghostwriter? @relation(fields: [ghostwriterUserId], references: [userId], onDelete: Cascade)
 
   @@map("note")
 }
@@ -633,6 +638,8 @@ model UserSchedule {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @db.ObjectId
 
+  ghostwriterUserId String? @db.ObjectId
+
   sunday    Boolean @default(true)
   monday    Boolean @default(true)
   tuesday   Boolean @default(true)
@@ -648,7 +655,8 @@ model UserSchedule {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ghostwriter Ghostwriter? @relation("ghostWriterSchedules", fields: [ghostwriterUserId], references: [id], onDelete: Cascade)
 
   @@unique([hour, minute, ampm, userId])
   @@map("userSchedules")
@@ -968,7 +976,7 @@ enum GhostwriterAccessLevel {
 model Ghostwriter {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId String @db.ObjectId
+  userId String @db.ObjectId @unique
   name   String
   image  String
 
@@ -977,10 +985,11 @@ model Ghostwriter {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ghostwriterAccess GhostwriterAccess[] @relation("ghostWriter")
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ghostwriterAccess    GhostwriterAccess[] @relation("ghostWriter")
+  ghostwriterSchedules UserSchedule[]      @relation("ghostWriterSchedules")
+  notes                Note[]
 
-  @@unique([userId])
   @@map("ghostwriters")
 }
 
@@ -988,9 +997,11 @@ model GhostwriterAccess {
   id            String @id @default(auto()) @map("_id") @db.ObjectId
   accountUserId String @db.ObjectId
 
-  ghostwriterId String                 @db.ObjectId
-  accessLevel   GhostwriterAccessLevel @default(full)
-  isActive      Boolean                @default(true)
+  ghostwriterId String @db.ObjectId
+  ghostwriterUserId String                 @db.ObjectId
+  accessLevel       GhostwriterAccessLevel @default(full)
+
+  isActive          Boolean                @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -999,5 +1010,6 @@ model GhostwriterAccess {
   ghostWriter Ghostwriter @relation(name: "ghostWriter", fields: [ghostwriterId], references: [id], onDelete: Cascade)
 
   @@unique([accountUserId, ghostwriterId])
+  @@unique([accountUserId, ghostwriterUserId])
   @@map("ghostwriterAccess")
 }

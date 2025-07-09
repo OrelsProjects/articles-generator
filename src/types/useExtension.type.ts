@@ -104,7 +104,8 @@ export interface ExtensionMessage {
     | "getNotesStats"
     | "getNotesWithStatsForDate"
     | "verifyKey"
-    | "updateExtensionDataInDB";
+    | "updateExtensionDataInDB"
+    | "getNotes";
   params?: any[];
 }
 
@@ -152,6 +153,7 @@ export interface UseExtension {
     date?: number;
   }>;
   updateNotesStatistics: () => Promise<any>;
+  updateNotesData: () => Promise<any>;
   getNotesStatistics: (interval: ReactionInterval) => Promise<NoteStats | null>;
   getNotesWithStatsForDate: (
     date: string,

@@ -19,12 +19,8 @@ import {
   Settings,
   AlertTriangle,
   FileText,
-  Bell,
-  Shield,
-  Globe,
-  Users,
-  Code,
   ChevronRight,
+  UserCheck,
 } from "lucide-react";
 import {
   Dialog,
@@ -42,7 +38,11 @@ import { BillingSection } from "@/components/settings/billing-section";
 import { AccountSection } from "@/components/settings/account-section";
 import { AppearanceSection } from "@/components/settings/appearance-section";
 import { PublicationsSection } from "@/components/settings/publications-section";
+import { GhostwriterSection } from "@/components/settings/ghostwriter-section";
+import { GhostwriterDialogs } from "@/components/settings/ghostwriter-dialogs";
 import { DangerSection } from "@/components/settings/danger-section";
+import { useUi } from "@/lib/hooks/useUi";
+import { FeatureFlag } from "@prisma/client";
 
 type SettingsSection =
   | "account"
@@ -50,6 +50,7 @@ type SettingsSection =
   | "credits"
   | "appearance"
   | "publications"
+  | "ghostwriter"
   | "danger";
 
 interface SettingsNavItem {
@@ -57,6 +58,7 @@ interface SettingsNavItem {
   label: string;
   icon: any;
   description: string;
+  featureFlagsRequired?: FeatureFlag[];
 }
 
 interface SettingsCategory {
@@ -108,6 +110,13 @@ const settingsNavItems: SettingsCategory[] = [
         icon: Settings,
         description: "Manage your publication settings and preferences",
       },
+      {
+        id: "ghostwriter",
+        label: "Ghostwriter Access",
+        icon: UserCheck,
+        description: "Manage ghostwriter profiles and access permissions",
+        featureFlagsRequired: ["ghostwriter"],
+      },
     ],
   },
   {
@@ -129,6 +138,7 @@ export default function SettingsPage() {
   const { cancelSubscription, applyRetentionDiscount } = usePayments();
   const { user } = useAppSelector(selectAuth);
   const { shouldShow50PercentOffOnCancel } = useSettings();
+  const { canUseGhostwriter, hasFeatureFlag } = useUi();
 
   const [activeSection, setActiveSection] =
     useState<SettingsSection>("account");
@@ -140,6 +150,13 @@ export default function SettingsPage() {
 
   const error = searchParams.get("error");
   const succeeded = searchParams.get("succeeded");
+
+  // Function to handle section change with URL hash update
+  const handleSectionChange = (sectionId: SettingsSection) => {
+    setActiveSection(sectionId);
+    // Update URL hash
+    window.history.replaceState(null, "", `#${sectionId}`);
+  };
 
   useEffect(() => {
     if (error) {
@@ -241,6 +258,8 @@ export default function SettingsPage() {
         return <AppearanceSection />;
       case "publications":
         return <PublicationsSection />;
+      case "ghostwriter":
+        return canUseGhostwriter ? <GhostwriterSection /> : null;
       case "danger":
         return <DangerSection />;
       default:
@@ -289,7 +308,7 @@ export default function SettingsPage() {
                           return (
                             <button
                               key={item.id}
-                              onClick={() => setActiveSection(item.id)}
+                              onClick={() => handleSectionChange(item.id)}
                               className={cn(
                                 "flex flex-col items-center gap-2 p-3 rounded-lg whitespace-nowrap transition-all duration-200 min-w-[80px]",
                                 isActive
@@ -322,11 +341,19 @@ export default function SettingsPage() {
                       {category.items.map(item => {
                         const Icon = item.icon;
                         const isActive = activeSection === item.id;
+                        const isDisabled =
+                          item.featureFlagsRequired &&
+                          !item.featureFlagsRequired.every(flag =>
+                            hasFeatureFlag(flag),
+                          );
+                        if (isDisabled) {
+                          return null;
+                        }
 
                         return (
                           <li key={item.id}>
                             <button
-                              onClick={() => setActiveSection(item.id)}
+                              onClick={() => handleSectionChange(item.id)}
                               className={cn(
                                 "w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-200 group",
                                 isActive
@@ -413,6 +440,9 @@ export default function SettingsPage() {
           </Button>
         </div>
       </div>
+
+      {/* Ghostwriter Dialogs */}
+      <GhostwriterDialogs />
 
       {/* Cancel Subscription Confirmation Dialog */}
       <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>

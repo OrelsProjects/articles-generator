@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Send, RefreshCw } from "lucide-react";
 import { TooltipButton } from "@/components/ui/tooltip-button";
 import { useExtension } from "@/lib/hooks/useExtension";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { EventTracker } from "@/eventTracker";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
-import { useAppDispatch } from "@/lib/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { setNotePostedData } from "@/lib/features/ui/uiSlice";
 import { Logger } from "@/logger";
 
@@ -16,7 +16,7 @@ interface SubstackPostButtonProps {
   onSave?: () => Promise<string | null> | string | null;
   onNoteSent?: () => void;
   onLoadingChange?: (loading: boolean) => void;
-  noteId: string | null;
+  note: NoteDraft | null;
   size?: "sm" | "lg" | "default" | "icon";
   variant?: "ghost" | "default" | "outline";
   disabled?: boolean;
@@ -24,10 +24,11 @@ interface SubstackPostButtonProps {
   showText?: boolean;
   className?: string;
   children?: React.ReactNode;
+  isGhostwriter?: boolean;
 }
 
 export function InstantPostButton({
-  noteId,
+  note,
   onSave,
   onLoadingChange,
   onNoteSent,
@@ -38,7 +39,9 @@ export function InstantPostButton({
   className,
   disabled,
   children,
+  isGhostwriter,
 }: SubstackPostButtonProps) {
+  const { user } = useAppSelector(state => state.auth);
   const { updateNoteStatus, sendNote, loadingSendNote } = useNotes();
   const [loading, setLoading] = useState(false);
   const dispatch = useAppDispatch();
@@ -51,6 +54,7 @@ export function InstantPostButton({
     }
   }, [loadingSendNote]);
 
+
   const updateLoading = (loading: boolean) => {
     setLoading(loading);
     onLoadingChange?.(loading);
@@ -58,7 +62,7 @@ export function InstantPostButton({
 
   const handleSendNote = async () => {
     EventTracker.track("note_post_button_clicked_" + source);
-    let sendNoteId = noteId;
+    let sendNoteId = note?.id;
     try {
       updateLoading(true);
       const customNoteId = await onSave?.();
@@ -77,11 +81,19 @@ export function InstantPostButton({
       }
       updateLoading(false);
     } catch (error) {
-      Logger.error("Error sending post:", { error, sendNoteId, noteId });
+      Logger.error("Error sending post:", {
+        error,
+        sendNoteId,
+        noteId: note?.id,
+      });
       toast.error("Error sending post");
       updateLoading(false);
     }
   };
+
+  if (isGhostwriter) {
+    return null;
+  }
 
   return (
     <div className="hidden lg:flex">

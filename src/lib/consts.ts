@@ -1,5 +1,16 @@
 export const appName = process.env.NEXT_PUBLIC_APP_NAME;
 
+// NOTES GENERATION //
+
+export const MIN_NOTES_COUNT = 3;
+export const MAX_NOTES_COUNT = 10;
+
+export const MIN_NOTES_LENGTH = 30;
+export const MAX_NOTES_LENGTH = 500;
+
+// LENGTH //
+
+
 const ONE_HOUR_IN_MS = 1000 * 60 * 60;
 const ONE_DAY_IN_MS = 24 * ONE_HOUR_IN_MS;
 
@@ -94,7 +105,7 @@ export const testimonials = [
     <br/><br/>
     Seeing top posts is a gamechanger as well.
     <br/><br/>
-    Effortless to get started. I recommend you start with the "queue" page
+    Effortless to get started. I recommend you start with the "notes" page
     `,
     bestSeller: "100",
     author: "Tim Denning",

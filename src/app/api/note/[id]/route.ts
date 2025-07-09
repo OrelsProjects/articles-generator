@@ -30,7 +30,14 @@ export async function PATCH(
     const isOwner = await isOwnerOfNote(id, session.user.id);
 
     if (!isOwner) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      // TODO: Change before push
+      return NextResponse.json(
+        {
+          error: `Unauthorized: ${isOwner} , ${note.ghostwriter}, ${note} ${session.user.id}`,
+        },
+        { status: 401 },
+      );
+      // TODO: Change before push
     }
 
     // If timestamp is provided, ensure it's a Date object
@@ -38,7 +45,7 @@ export async function PATCH(
       note.scheduledTo = new Date(note.scheduledTo);
     }
 
-    const currentNote = await  getNoteById(id);
+    const currentNote = await getNoteById(id);
 
     const existingSchedule = await getEventBridgeSchedule({
       id,

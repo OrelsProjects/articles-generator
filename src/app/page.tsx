@@ -77,7 +77,7 @@ const faq = [
     <br/><br/>
     Go to Settings->Account Information->Preferred Language.
     <br/><br/>
-    You can choose: English, Español, Français, Deutsch, Italiano, Português, Русский, 中文, 日本語, 한국어.
+    You can choose: English(American), English(British), Español, Français, Deutsch, Italiano, Português, Русский, 中文, 日本語, 한국어.
     <br/><br/>
     Feel free to request more languages.
     `,

@@ -1,0 +1,6 @@
+Bugs:
+    ✔ Moving notes between rows doesn't work @done(25-07-08 12:29)
+    ✔ Schedule Next button doesn't show the next available slot if the first one is taken @done(25-07-08 12:29)
+    ☐ Ghostwriter Client is allowed even without feature flag. Ghostwriter profile + 
+    ☐ Add loading to drafts/published etc. when fetching new client data
+    ☐ Hide scheduled notes bar when loading

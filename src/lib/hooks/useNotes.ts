@@ -63,6 +63,11 @@ import { OpenGraphResponse } from "@/types/og";
 import { getLinks } from "@/lib/utils/note-editor-utils";
 import { compareVersions } from "@/lib/utils/extension";
 import { JSONContent } from "@tiptap/react";
+import {
+  addClientNote,
+  addClientNotes,
+  selectGhostwriter,
+} from "@/lib/features/ghostwriter/ghostwriterSlice";
 
 export const MAX_ATTACHMENTS = Math.ceil(MAX_FILE_SIZE / CHUNK_SIZE);
 
@@ -189,6 +194,7 @@ export const useNotes = () => {
         topic?: string;
         preSelectedPostIds?: string[];
         includeArticleLinks?: boolean;
+        clientId?: string | null;
       },
     ) => {
       try {
@@ -199,6 +205,7 @@ export const useNotes = () => {
           model: hasAdvancedGPT ? model : undefined,
           preSelectedPostIds: options?.preSelectedPostIds || [],
           includeArticleLinks: options?.includeArticleLinks || false,
+          clientId: options?.clientId || undefined,
         };
 
         EventTracker.track("notes_generate_new_notes", { model });
@@ -227,6 +234,14 @@ export const useNotes = () => {
             options: { toStart: true, notification: true },
           }),
         );
+        if (options?.clientId) {
+          dispatch(
+            addClientNotes({
+              clientId: options.clientId,
+              notes: body,
+            }),
+          );
+        }
       } catch (error) {
         // if error is 429, set errorGenerateNotes
         if (error instanceof AxiosError) {
@@ -519,25 +534,41 @@ export const useNotes = () => {
     }
   };
 
-  const createDraftNote = async (draft?: Partial<NoteDraft>): Promise<void> => {
+  const createDraftNote = async (
+    draft?: Partial<NoteDraft>,
+    options?: {
+      clientId?: string | null;
+    },
+  ): Promise<void> => {
     EventTracker.track("notes_create_draft_note");
     if (loadingCreateNoteRef.current) return;
     try {
       loadingCreateNoteRef.current = true;
       setLoadingCreateNote(true);
-      const response = await axiosInstance.post<NoteDraft>("/api/note", {
-        ...draft,
+      const response = await createNoteDraft({
+        body: draft?.body || "",
+        status: draft?.status as NoteStatus,
+        bodyJson: draft?.bodyJson || undefined,
+        clientId: options?.clientId || undefined,
       });
       dispatch(
         addNotes({
-          items: [response.data],
+          items: [response],
           nextCursor: null,
           options: {
             notification: true,
           },
         }),
       );
-      selectNote(response.data);
+      selectNote(response);
+      if (options?.clientId) {
+        dispatch(
+          addClientNote({
+            clientId: options.clientId,
+            note: response,
+          }),
+        );
+      }
     } catch (error: any) {
       Logger.error("Error creating draft note:", error);
       throw error;

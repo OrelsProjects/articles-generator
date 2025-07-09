@@ -6,6 +6,7 @@ import { NoteDraft } from "@/types/note";
 import { AIUsageResponse } from "@/types/aiUsageResponse";
 import { z } from "zod";
 import { generateNotes } from "@/lib/utils/generate/notes";
+import { MIN_NOTES_COUNT } from "@/lib/consts";
 
 const generateNotesSchema = z.object({
   count: z.number().or(z.string()).optional(),
@@ -14,15 +15,11 @@ const generateNotesSchema = z.object({
   topic: z.string().optional(),
   preSelectedPostIds: z.array(z.string()).optional(),
   includeArticleLinks: z.boolean().optional(),
+  clientId: z.string().optional().nullable(),
+  length: z.number().optional(),
 });
 
 export const maxDuration = 300; // This function can run for a maximum of 5 minutes
-
-const modelsRequireImprovement = [
-  "anthropic/claude-3.5-haiku",
-  "openai/gpt-4.1",
-  "x-ai/grok-3-beta",
-];
 
 export async function POST(
   req: NextRequest,
@@ -46,13 +43,18 @@ export async function POST(
     );
   }
 
-  const notesCount = parsedBody.data.count
-    ? parseInt(parsedBody.data.count.toString())
-    : undefined;
-  const requestedModel = parsedBody.data.model;
-  const topic = parsedBody.data.topic;
-  const preSelectedPostIds = parsedBody.data.preSelectedPostIds;
-  const includeArticleLinks = parsedBody.data.includeArticleLinks;
+  const {
+    count,
+    model: requestedModel,
+    topic,
+    preSelectedPostIds,
+    includeArticleLinks,
+    clientId,
+    length: noteLength,
+  } = parsedBody.data;
+
+  let notesCount = count ? parseInt(count.toString()) : undefined;
+  if (notesCount && notesCount < MIN_NOTES_COUNT) notesCount = MIN_NOTES_COUNT;
 
   loggerServer.time("generate notes");
   const response = await generateNotes({
@@ -61,6 +63,8 @@ export async function POST(
     topic,
     preSelectedPostIds,
     includeArticleLinks,
+    clientId,
+    length: noteLength ? { min: noteLength, max: noteLength } : undefined,
   });
 
   loggerServer.timeEnd("generate notes");

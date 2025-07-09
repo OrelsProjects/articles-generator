@@ -7,25 +7,42 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useUi } from "@/lib/hooks/useUi";
+import { useGhostwriterNotes } from "@/lib/hooks/useGhostwriterNotes";
 
-export function CreateNoteButton() {
+export function CreateNoteButton({ clientId }: { clientId?: string | null }) {
   const { createDraftNote, loadingCreateNote } = useNotes();
+  const { createDraftNote: createGhostwriterNote, loadingCreateNote: loadingCreateGhostwriterNote } = useGhostwriterNotes();
   const { updateShowGenerateNotesDialog } = useUi();
   const [open, setOpen] = useState(false);
 
-  return (
+
+  const loadingCreate = useMemo(() => {
+    if (clientId) {
+      return loadingCreateGhostwriterNote;
+    }
+    return loadingCreateNote;
+  }, [clientId, loadingCreateGhostwriterNote, loadingCreateNote]);
+
+  const createDraft = useMemo(() => {
+    if (clientId) {
+      return createGhostwriterNote;
+    }
+    return createDraftNote;
+  }, [clientId, createGhostwriterNote, createDraftNote]);
+
+  return ( 
     <>
       {/* Desktop: Two buttons side by side */}
       <div className="hidden md:flex items-center gap-2">
         <Button
           variant="outline"
-          onClick={() => createDraftNote()}
-          disabled={loadingCreateNote}
+          onClick={() => createDraft(undefined, { clientId })}
+          disabled={loadingCreate}
           className="items-center gap-2"
         >
-          {loadingCreateNote ? (
+          {loadingCreate ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <StickyNote className="h-4 w-4" />
@@ -34,7 +51,7 @@ export function CreateNoteButton() {
         </Button>
         <Button
           variant="outline"
-          onClick={() => updateShowGenerateNotesDialog(true)}
+          onClick={() => updateShowGenerateNotesDialog(true,clientId)}
           className="items-center gap-2"
         >
           <Sparkles className="h-4 w-4" />
@@ -59,11 +76,11 @@ export function CreateNoteButton() {
           <DropdownMenuContent align="end">
             <Button
               variant="ghost"
-              onClick={() => createDraftNote().finally(() => setOpen(false))}
-              disabled={loadingCreateNote}
+              onClick={() => createDraftNote(undefined, { clientId }).finally(() => setOpen(false))}
+              disabled={loadingCreate}
               className="w-full cursor-pointer p-1.5 hover flex justify-start"
             >
-              {loadingCreateNote ? (
+              {loadingCreate ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
                 <StickyNote className="h-4 w-4 mr-2" />
@@ -74,7 +91,7 @@ export function CreateNoteButton() {
               variant="ghost"
               className="flex cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
               onClick={() => {
-                updateShowGenerateNotesDialog(true);
+                updateShowGenerateNotesDialog(true, clientId  );
                 setOpen(false);
               }}
             >

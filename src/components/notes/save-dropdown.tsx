@@ -15,6 +15,7 @@ import { NoteDraft } from "@/types/note";
 import { cn } from "@/lib/utils";
 import { Logger } from "@/logger";
 import useMediaQuery from "@/lib/hooks/useMediaQuery";
+import { useGhostwriterNotes } from "@/lib/hooks/useGhostwriterNotes";
 
 interface SaveDropdownProps {
   selectedNote?: NoteDraft | null;
@@ -28,6 +29,7 @@ interface SaveDropdownProps {
   isInspiration?: boolean;
   isAiGenerated?: boolean;
   isFree?: boolean;
+  isGhostwriter?: boolean;
 }
 
 export function SaveDropdown({
@@ -40,8 +42,15 @@ export function SaveDropdown({
   isInspiration = false,
   isAiGenerated = false,
   isFree = false,
+  isGhostwriter = false,
 }: SaveDropdownProps) {
-  const { getNextAvailableSchedule, loading: queueLoading } = useQueue();
+  const {
+    getNextAvailableSchedule,
+    loading: queueLoading,
+    userSchedules,
+  } = useQueue();
+  const { clientSchedules, scheduledNotes: ghostwriterScheduledNotes } =
+    useGhostwriterNotes();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [loading, setLoading] = useState(false);
 
@@ -49,7 +58,13 @@ export function SaveDropdown({
     if (saving) {
       return <span className="font-semibold">Saving...</span>;
     }
-    const nextAvailableSlot = getNextAvailableSchedule(presetSchedule);
+    const schedules = isGhostwriter ? clientSchedules : userSchedules;
+    const scheduledNotes = isGhostwriter ? ghostwriterScheduledNotes : undefined;
+    const nextAvailableSlot = getNextAvailableSchedule(
+      presetSchedule,
+      schedules,
+      scheduledNotes,
+    );
     let text = null;
     const date = nextAvailableSlot;
 
@@ -71,8 +86,20 @@ export function SaveDropdown({
       Logger.info("ADDING-SCHEDULE: handleAddToQueue", {
         options,
       });
-      const nextAvailableSlot = getNextAvailableSchedule(presetSchedule);
-      const nextAvailableSlotNoPreset = getNextAvailableSchedule();
+      const schedules = isGhostwriter ? clientSchedules : userSchedules;
+      const scheduledNotes = isGhostwriter
+        ? ghostwriterScheduledNotes
+        : undefined;
+      const nextAvailableSlot = getNextAvailableSchedule(
+        presetSchedule,
+        schedules,
+        scheduledNotes,
+      );
+      const nextAvailableSlotNoPreset = getNextAvailableSchedule(
+        undefined,
+        schedules,
+        scheduledNotes,
+      );
 
       setLoading(true);
       const date = options.forceNextDate

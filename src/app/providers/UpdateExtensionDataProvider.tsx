@@ -8,12 +8,17 @@ import { useEffect, useRef, useState } from "react";
 
 export const UpdateDataProvider = () => {
   const dispatch = useAppDispatch();
-  const { updateNotesStatistics, verifyExtensionKey, updateExtensionData } =
-    useExtension();
+  const {
+    updateNotesStatistics,
+    verifyExtensionKey,
+    updateExtensionData,
+    updateNotesData,
+  } = useExtension();
   const [isExtensionKeyValid, setIsExtensionKeyValid] = useState(false);
   const loadingVerify = useRef(false);
   const loadingUpdate = useRef(false);
   const loadingUpdateExtensionData = useRef(false);
+  const loadingUpdateNoteData = useRef(false);
 
   useEffect(() => {
     if (loadingVerify.current) return;
@@ -62,6 +67,23 @@ export const UpdateDataProvider = () => {
         dispatch(setIsFetchingNotesStats(false));
       });
   }, [isExtensionKeyValid]);
+
+  useEffect(() => {
+    console.log("Notes data updated starting");
+    Logger.info("Notes data updated starting");
+    updateNotesData()
+      .then(() => {
+        console.log("Notes data updated done");
+          Logger.info("Notes data updated done");
+      })
+      .catch(error => {
+        console.log("Error updating notes data", error);
+        Logger.error("Error updating notes data", error);
+      })
+      .finally(() => {
+        loadingUpdateNoteData.current = false;
+      });
+  }, []);
 
   return null;
 };

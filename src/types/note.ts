@@ -1,4 +1,4 @@
-import { AttachmentType } from "@prisma/client";
+import { AttachmentType, Ghostwriter } from "@prisma/client";
 import { marked } from "marked";
 import { DateRange } from "react-day-picker";
 
@@ -82,10 +82,12 @@ export interface NoteDraft {
   wasSentViaSchedule: boolean;
   attachments?: NoteDraftImage[] | null;
   bodyJson?: string;
+  ghostwriter?: Ghostwriter | null;
 }
 
 export interface NoteDraftBody extends Omit<NoteDraft, "status"> {
   status: NoteStatus;
+  clientId?: string | null;
 }
 
 export interface Note {
@@ -108,6 +110,7 @@ export interface Note {
   }[];
   scheduledTo?: Date | null;
   sentViaScheduleAt?: boolean;
+  ghostwriter?: Ghostwriter  | null;
 }
 
 export interface DBNote {
@@ -225,6 +228,7 @@ export function inspirationNoteToNoteDraft(
     wasSentViaSchedule: !!note.sentViaScheduleAt,
     handle: note.handle,
     attachments: note.attachments,
+    ghostwriter: note.ghostwriter || undefined,
   };
 }
 

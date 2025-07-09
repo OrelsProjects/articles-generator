@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,11 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogTrigger } from "@radix-ui/react-dialog";
-import { ChevronDown, Sparkles, X } from "lucide-react";
-import { TooltipButton } from "@/components/ui/tooltip-button";
+import { ChevronDown, X } from "lucide-react";
 import { useNotes } from "@/lib/hooks/useNotes";
 import {
   AiModelsDropdown,
@@ -44,6 +42,14 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { NoteLengthSection, NoteCountSection } from "./note-generator/advanced";
+import { NotesGenerateOptions } from "@/types/notes-generate-options";
 
 const ideaLoadingStates = [
   { text: "Finding relevant notes..." },
@@ -74,6 +80,12 @@ export function GenerateNotesDialog({
     updateShowGenerateNotesDialog,
   } = useUi();
 
+  const [noteGenerationOptions, setNoteGenerationOptions] =
+    useLocalStorage<NotesGenerateOptions | null>(
+      "note_generation_options",
+      null,
+    );
+
   const [topic, setTopic] = useState("");
   const {
     generateNewNotes,
@@ -96,16 +108,29 @@ export function GenerateNotesDialog({
   const [showArticleDialog, setShowArticleDialog] = useState(false);
   const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
   const [hoveredArticle, setHoveredArticle] = useState<Article | null>(null);
-  const [includeArticleLinks, setIncludeArticleLinks] = useLocalStorage<boolean>(
-    "include_articles_checked",
-    true,
-  );
+  const [includeArticleLinks, setIncludeArticleLinks] =
+    useLocalStorage<boolean>("include_articles_checked", true);
+
+  // Advanced options state
+  const [noteLengthEnabled, setNoteLengthEnabled] = useState(false);
+  const [noteLength, setNoteLength] = useState<number | null>(null);
+  const [noteCountEnabled, setNoteCountEnabled] = useState(false);
+  const [noteCount, setNoteCount] = useState(notesToGenerate);
 
   useEffect(() => {
     if (errorGenerateNotes) {
       toast.error(errorGenerateNotes);
     }
   }, [errorGenerateNotes]);
+
+  useEffect(() => {
+    if (noteGenerationOptions) {
+      setNoteLength(noteGenerationOptions.noteLength || null);
+      setNoteCount(noteGenerationOptions.noteCount || notesToGenerate);
+      setNoteLengthEnabled(noteGenerationOptions.noteLengthEnabled || false);
+      setNoteCountEnabled(noteGenerationOptions.noteCountEnabled || false);
+    }
+  }, [noteGenerationOptions, notesToGenerate]);
 
   // Load articles when needed
   useEffect(() => {
@@ -119,15 +144,28 @@ export function GenerateNotesDialog({
       return;
     }
     try {
+      // Build options object with advanced settings
+      const options: any = {
+        topic,
+        clientId: showGenerateNotesDialog.clientId,
+      };
+
+      // Add advanced options if enabled
+      if (noteLengthEnabled && noteLength) {
+        options.length = noteLength;
+      }
+
+      if (noteCountEnabled && noteCount) {
+        options.count = noteCount;
+      }
+
       // Different logic based on source
       if (selectedSource === "description") {
-        await generateNewNotes(selectedModel, {
-          topic,
-        });
+        await generateNewNotes(selectedModel, options);
       } else {
         // Using articles
         await generateNewNotes(selectedModel, {
-          topic,
+          ...options,
           preSelectedPostIds: selectedArticles.map(article => article.id),
           includeArticleLinks,
         });
@@ -136,6 +174,10 @@ export function GenerateNotesDialog({
       toast.error(e.message);
     }
   };
+
+  const hasAdvancedOptions = useMemo(() => {
+    return noteLengthEnabled || noteCountEnabled;
+  }, [noteLengthEnabled, noteCountEnabled]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,12 +203,44 @@ export function GenerateNotesDialog({
     );
   };
 
+  const handleNotesCountEnabledChange = (enabled: boolean) => {
+    setNoteGenerationOptions({
+      ...noteGenerationOptions,
+      noteCountEnabled: enabled,
+    });
+    setNoteCountEnabled(enabled);
+  };
+
+  const handleNotesLengthEnabledChange = (enabled: boolean) => {
+    setNoteGenerationOptions({
+      ...noteGenerationOptions,
+      noteLengthEnabled: enabled,
+    });
+    setNoteLengthEnabled(enabled);
+  };
+
+  const handleNotesCountChange = (count: number) => {
+    setNoteGenerationOptions({
+      ...noteGenerationOptions,
+      noteCount: count,
+    });
+    setNoteCount(count);
+  };
+
+  const handleNotesLengthChange = (noteLength: number) => {
+    setNoteGenerationOptions({
+      ...noteGenerationOptions,
+      noteLength,
+    });
+    setNoteLength(noteLength);
+  };
+
   return (
     <>
       <Dialog
-        open={showGenerateNotesDialog}
+        open={showGenerateNotesDialog.show}
         onOpenChange={open => {
-          updateShowGenerateNotesDialog(open);
+          updateShowGenerateNotesDialog(open, showGenerateNotesDialog.clientId);
         }}
       >
         <DialogContent className="overflow-auto sm:max-w-[625px] max-h-[88vh]">
@@ -337,6 +411,45 @@ export function GenerateNotesDialog({
                 </div>
               )}
             </div>
+
+            {/* Advanced Options Accordion */}
+            <Accordion type="single" collapsible className="w-full mt-4">
+              <AccordionItem value="advanced" className="border rounded-lg">
+                <AccordionTrigger
+                  className={cn("px-4 hover:no-underline", {
+                    "border-primary/10": hasAdvancedOptions,
+                  })}
+                  chevronClassName={cn({
+                    "text-primary": hasAdvancedOptions,
+                  })}
+                >
+                  <span
+                    className={cn("text-sm font-medium", {
+                      "text-primary": hasAdvancedOptions,
+                    })}
+                  >
+                    Advanced Options
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pt-4 pb-6 space-y-6">
+                  <NoteLengthSection
+                    enabled={noteLengthEnabled}
+                    value={noteLength || null}
+                    onEnabledChange={handleNotesLengthEnabledChange}
+                    onValueChange={handleNotesLengthChange}
+                  />
+
+                  <NoteCountSection
+                    enabled={noteCountEnabled}
+                    value={noteCount}
+                    defaultValue={notesToGenerate}
+                    onEnabledChange={handleNotesCountEnabledChange}
+                    onValueChange={handleNotesCountChange}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
             <DialogFooter className="mt-4">
               <div className="flex flex-row gap-0.5">
                 <DialogTrigger asChild>
@@ -353,9 +466,9 @@ export function GenerateNotesDialog({
                       ? "Generating..."
                       : selectedSource === "description"
                         ? topic
-                          ? `Generate based on your topic (${notesToGenerate})`
-                          : `Generate personalized notes (${notesToGenerate})`
-                        : `Generate based on selected articles (${notesToGenerate})`}
+                          ? `Generate based on your topic (${noteCountEnabled ? noteCount : notesToGenerate})`
+                          : `Generate personalized notes (${noteCountEnabled ? noteCount : notesToGenerate})`
+                        : `Generate based on selected articles (${noteCountEnabled ? Math.min(noteCount, selectedArticles.length) : Math.min(notesToGenerate, selectedArticles.length)})`}
                   </Button>
                 </DialogTrigger>
 

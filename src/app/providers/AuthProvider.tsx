@@ -149,9 +149,10 @@ export default function AuthProvider({
       case "loading":
         break;
 
+      case "unauthenticated":
         setUser(undefined);
         handleNavigation("unauthenticated", false);
-        break;
+
       default:
         break;
     }

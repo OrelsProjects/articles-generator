@@ -9,6 +9,7 @@ import inspirationReducer from "@/lib/features/inspiration/inspirationSlice";
 import statisticsReducer from "@/lib/features/statistics/statisticsSlice";
 import writerReducer from "@/lib/features/writer/writerSlice";
 import autoDMReducer from "@/lib/features/auto-dm/auto-dm-slice";
+import ghostwriterReducer from "@/lib/features/ghostwriter/ghostwriterSlice";
 // Load UI state from localStorage
 // const loadUiState = () => {
 //   if (typeof window === "undefined") return undefined;
@@ -46,6 +47,7 @@ export const makeStore = () => {
       statistics: statisticsReducer,
       writer: writerReducer,
       autoDM: autoDMReducer,
+      ghostwriter: ghostwriterReducer,
     },
     // preloadedState: {
     //   ui: loadUiState(),

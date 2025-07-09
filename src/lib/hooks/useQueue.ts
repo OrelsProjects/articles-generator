@@ -18,12 +18,14 @@ import {
 } from "@/lib/features/statistics/statisticsSlice";
 import { Logger } from "@/logger";
 import { isValidScheduleTime } from "@/lib/utils/date/schedule";
+import { NoteDraft } from "@/types/note";
 
 export function useQueue() {
   const dispatch = useAppDispatch();
   const { userNotes, userSchedules, loadingFetchingSchedules } = useAppSelector(
     state => state.notes,
   );
+  const {} = useAppSelector(state => state.ghostwriter);
   const { bestTimeToPublish, loadingFetchBestTimeToPublish } = useAppSelector(
     state => state.statistics,
   );
@@ -73,18 +75,6 @@ export function useQueue() {
     return { scheduledCount, draftCount, publishedCount };
   }, [scheduledNotes, userNotes]);
 
-  const initQueue = async () => {
-    try {
-      const response = await axiosInstance.post<UserSchedule[]>(
-        "/api/user/queue/init",
-      );
-      dispatch(setUserSchedule(response.data));
-    } catch (error) {
-      Logger.error(String(error));
-      throw error;
-    }
-  };
-
   const addSchedule = async (schedule: CreateUserSchedule) => {
     // check if schedule is already in the queue
     const isAlreadyInQueue = userSchedules.some(
@@ -123,10 +113,7 @@ export function useQueue() {
     }
   };
 
-  const updateSchedule = async (
-    schedule: UserSchedule,
-    day: string | null,
-  ) => {
+  const updateSchedule = async (schedule: UserSchedule, day: string | null) => {
     setLoadingDaySchedule(day);
     setLoading(true);
     const previousSchedule = userSchedules.find(s => s.id === schedule.id);
@@ -138,6 +125,7 @@ export function useQueue() {
 
     try {
       await axiosInstance.patch(`/api/user/queue/${schedule.id}`, schedule);
+      dispatch(updateUserSchedule(schedule));
     } catch (error) {
       // revert optimistic update
       dispatch(updateUserSchedule(previousSchedule));
@@ -209,7 +197,13 @@ export function useQueue() {
   // Returns the next available schedule in the queue that has no note scheduled to it
   // go over schedules and return the first one that has no note scheduled to it.
   // Doesn't have to be bigger than now
-  const getNextAvailableSchedule = (currentDate?: Date) => {
+  const getNextAvailableSchedule = (
+    currentDate?: Date,
+    schedules?: UserSchedule[],
+    scheduledNotes?: NoteDraft[],
+  ) => {
+    const validScheduledNotes = scheduledNotes || scheduledNotes || [];
+    const validSchedules = schedules || userSchedules;
     // Start from today
     if (currentDate) {
       if (isValidScheduleTime(currentDate)) {
@@ -239,7 +233,7 @@ export function useQueue() {
         .toLowerCase();
 
       // Filter schedules for this day of week
-      const daySchedules = userSchedules.filter(schedule => {
+      const daySchedules = validSchedules.filter(schedule => {
         return schedule[dayOfWeek as keyof UserSchedule];
       });
 
@@ -284,7 +278,7 @@ export function useQueue() {
         scheduleDate.setHours(scheduleHour, schedule.minute, 0, 0);
 
         // Check if there's already a note scheduled at this exact time
-        const hasScheduledNote = scheduledNotes.some(note => {
+        const hasScheduledNote = validScheduledNotes.some(note => {
           if (!note.scheduledTo) return false;
 
           const noteDate = new Date(note.scheduledTo);
@@ -376,7 +370,6 @@ export function useQueue() {
     removeSchedule,
     updateSchedule,
     rescheduleNote,
-    initQueue,
     loading,
     getNextAvailableSchedule,
     loadingBestTimeToPublish: loadingFetchBestTimeToPublish,
@@ -388,5 +381,6 @@ export function useQueue() {
     hasQueue,
     loadingFetchingSchedules,
     loadingDaySchedule,
+    userSchedules,
   };
 }

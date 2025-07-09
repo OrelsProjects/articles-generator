@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth/authOptions";
 import {
   getMaxScheduledNotes,
@@ -15,7 +14,7 @@ import { NoteStatus, Plan } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getLatestScheduleForNote } from "@/lib/dal/schedules";
+import { getLatestScheduleForNote } from "@/lib/dal/scheduledNote";
 
 const schema = z.object({
   date: z.date().or(z.string()),

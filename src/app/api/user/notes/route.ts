@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
             type: true,
           },
         },
+        ghostwriter: true,
       },
     });
 
@@ -66,6 +67,7 @@ export async function GET(req: NextRequest) {
       handle: note.handle || undefined,
       scheduledTo: note.scheduledTo,
       wasSentViaSchedule: !!note.sentViaScheduleAt,
+      ghostwriter: note.ghostwriter,
       attachments: note.S3Attachment.map(attachment => ({
         id: attachment.id,
         url: attachment.s3Url,

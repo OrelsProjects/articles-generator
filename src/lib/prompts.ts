@@ -4,6 +4,11 @@ import { ArticleWithBody } from "@/types/article";
 import { Idea } from "@/types/idea";
 import { Note, PublicationMetadata, UserMetadata } from "@prisma/client";
 import { Post, Publication } from "../../prisma/generated/articles";
+import {
+  MAX_NOTES_LENGTH,
+  MIN_NOTES_COUNT,
+  MIN_NOTES_LENGTH,
+} from "@/lib/consts";
 
 export type ImprovementType = keyof typeof improvementPromptTemplates;
 
@@ -22,6 +27,26 @@ export type IdeaLLM = {
 export type IdeasLLMResponse = {
   ideas: IdeaLLM[];
 };
+
+export interface GenerateNotesPromptBody {
+  userMetadata: UserMetadata;
+  publication: PublicationMetadata;
+  inspirationNotes: string[];
+  postedOnSubstackNotes: string[];
+  userNotes: Note[];
+  options: {
+    noteCount?: number;
+    length?: {
+      min: number;
+      max: number;
+    };
+    noteTemplates?: { description: string }[];
+    topic?: string;
+    preSelectedArticles?: Post[];
+    language?: string;
+    includeArticleLinks?: boolean;
+  };
+}
 
 const avoidWordsPrompt = `
 - Don't use the words or any form of them: embrace, emerge
@@ -644,11 +669,12 @@ export const generateImprovementPromptNote = (
 } => {
   const { note, userNotes, maxLength, language } = options;
   const shouldShowNotePrompt = note && note.body !== text;
-  let validMaxLength = maxLength || 280;
+
+  let validMaxLength = maxLength || text.length;
   if (type === "elaborate") {
-    validMaxLength =
-      validMaxLength >= text.length ? validMaxLength * 2 : validMaxLength;
+    validMaxLength = validMaxLength * 2;
   }
+
   const { systemMessage, model } = improvementPromptSystemNote(type, {
     maxLength: validMaxLength,
   });
@@ -804,26 +830,28 @@ export const generateImproveNoteTextPrompt = (
 };
 
 export const getNotesPromptNoteMeta = (
-  userNotes: Note[],
-  maxLength: number,
+  userNotes: string[],
+  maxLength?: number,
 ) => {
-  const userPastNotes = userNotes.map(n => n.body);
-  const avgLen = userPastNotes.length
-    ? Math.round(
-        userPastNotes.reduce((s, n) => s + n.length, 0) / userPastNotes.length,
-      )
+  const avgLen = userNotes.length
+    ? Math.round(userNotes.reduce((s, n) => s + n.length, 0) / userNotes.length)
     : 160;
+  const longestNote = userNotes.reduce(
+    (longest, note) => (note.length > longest.length ? note : longest),
+    "",
+  );
 
+  const maxLengthValid = maxLength || longestNote.length * 1.2;
   // ±20 % band but never under 30 chars.
   const lenFloor = Math.max(20, Math.round(avgLen * 0.2));
-  const lenCeil = Math.min(maxLength, Math.round(avgLen * 1.4));
+  const lenCeil = Math.min(maxLengthValid, Math.round(avgLen * 1.4));
   const emojiRegex = /(\p{Extended_Pictographic}|\p{Emoji_Component})/gu;
 
-  const emojiHits = userPastNotes.reduce(
+  const emojiHits = userNotes.reduce(
     (c, n) => c + (emojiRegex.test(n) ? 1 : 0),
     0,
   );
-  const emojiRatio = emojiHits / Math.max(1, userPastNotes.length);
+  const emojiRatio = emojiHits / Math.max(1, userNotes.length);
 
   return {
     lenFloor,
@@ -844,36 +872,19 @@ export const generateNotesPrompt_v2 = ({
   userMetadata,
   publication,
   inspirationNotes,
-  userPastNotes,
+  postedOnSubstackNotes,
   userNotes,
   options = {
-    noteCount: 3,
-    maxLength: 280,
+    noteCount: MIN_NOTES_COUNT,
     noteTemplates: [],
     topic: "",
     preSelectedArticles: [],
     includeArticleLinks: false,
   },
-}: {
-  userMetadata: UserMetadata;
-  publication: PublicationMetadata;
-  inspirationNotes: string[];
-  userPastNotes: string[];
-  userNotes: Note[];
-  options: {
-    noteCount?: number;
-    maxLength?: number;
-    noteTemplates?: { description: string }[];
-    topic?: string;
-    preSelectedArticles?: Post[];
-    language?: string;
-    includeArticleLinks?: boolean;
-  };
-}) => {
+}: GenerateNotesPromptBody) => {
   // ───────────────────────── Defaults ──────────────────────────
   const {
-    noteCount = 3,
-    maxLength = 280,
+    noteCount = MIN_NOTES_COUNT,
     noteTemplates = [],
     topic = "",
     preSelectedArticles = [],
@@ -888,17 +899,32 @@ export const generateNotesPrompt_v2 = ({
     return acc;
   }, {});
 
-  const avgLen = userPastNotes.length
-    ? Math.round(
-        userPastNotes.reduce((s, n) => s + n.length, 0) / userPastNotes.length,
-      )
-    : 160;
-
   // ±20 % band but never under 30 chars.
-  const { lenFloor, lenCeil, emojiRatio } = getNotesPromptNoteMeta(
-    userNotes,
-    maxLength,
+  let { lenFloor, lenCeil, emojiRatio } = getNotesPromptNoteMeta(
+    postedOnSubstackNotes,
   );
+
+  if (options.length) {
+    lenFloor = options.length.min;
+    lenCeil = options.length.max;
+    if (lenFloor === lenCeil) {
+      lenFloor = Math.round(lenFloor * 0.9);
+      lenCeil = Math.round(lenCeil * 1.1);
+    }
+
+    if (lenFloor > lenCeil) {
+      const tempLenFloor = lenFloor;
+      lenFloor = lenCeil;
+      lenCeil = tempLenFloor;
+    }
+
+    if (lenFloor < MIN_NOTES_LENGTH) lenFloor = MIN_NOTES_LENGTH;
+    if (lenCeil > MAX_NOTES_LENGTH) lenCeil = MAX_NOTES_LENGTH;
+
+    // Add more margin for markdown language
+    lenFloor = Math.round(lenFloor * 1.25);
+    lenCeil = Math.round(lenCeil * 1.25);
+  }
 
   const rareTopics = Object.entries(topicsCount)
     .sort(([, a], [, b]) => a - b)
@@ -911,7 +937,6 @@ export const generateNotesPrompt_v2 = ({
   // ────────────────────── Style Snapshot ───────────────────────
   const styleSnapshot = `
 User style snapshot:
-- Avg length ${lenFloor}-${lenCeil} chars
 - Emoji ratio ${emojiRatio.toFixed(2)}
 - Preferred structures: ${
     noteTemplates.length
@@ -937,7 +962,7 @@ ${styleSnapshot}
 
 Rules:
 1. Return exactly ${noteCount} notes.
-2. Each note must be ${lenFloor}-${lenCeil} characters.
+2. Each note must be ${lenFloor}-${lenCeil} characters (inclusive). Even if the user's notes are shorter or longer, you MUST follow the length rules. This rule overrides the user's notes.
 3. NO hashtags, colons in hooks, or em dashes.
 4. If emojiRatio ≤ 0.20, do not use emojis. Otherwise, match user ratio.
 5. Use "\\n\\n" for **every** line break. Never output a single newline.
@@ -958,9 +983,8 @@ You must generate ${noteCount} notes, all focused entirely on the topic: **${top
 
 ${includeArticleLinks ? `8. Add links to the articles in the end of the note, with a new line before it. (Crucial)` : ""}
 
-⚠️ IMPORTANT – HARD LIMIT  
-Any note > ${lenCeil} chars (spaces *included*) is invalid.  
-Regenerate it until it fits.
+⚠️ HARD LIMIT
+- Any note shorter than ${lenFloor} or longer than ${lenCeil} is invalid.
 
 Favor these under‑used topics for freshness: ${rareTopics.join(", ")}
 ${shouldAddNewTopic ? `Write a note with a completely new topic. It has to be different from ${Object.keys(topicsCount).join(", ")}. Preferably related, okay if not.` : ""}
@@ -985,7 +1009,7 @@ ${publication.personalDescription ? `Here's my preffered way of writing. Give it
 
 Preferred topics: ${userMetadata.noteTopics || publication.preferredTopics}
 
-Previously written notes:\n${userPastNotes.map((n, i) => `(${i + 1}) ${n}`).join("\n")}
+Previously written notes:\n${postedOnSubstackNotes.map((n, i) => `(${i + 1}) ${n}`).join("\n")}
 
 Inspiration notes:\n${inspirationNotes.map((n, i) => `(${i + 1}) ${n}`).join("\n")}
 
@@ -1003,7 +1027,7 @@ export const generateNotesPrompt_v1 = ({
   userMetadata,
   publication,
   inspirationNotes,
-  userPastNotes,
+  postedOnSubstackNotes,
   userNotes,
   options = {
     noteCount: 3,
@@ -1016,7 +1040,7 @@ export const generateNotesPrompt_v1 = ({
   userMetadata: UserMetadata;
   publication: PublicationMetadata;
   inspirationNotes: string[];
-  userPastNotes: string[];
+  postedOnSubstackNotes: string[];
   userNotes: Note[];
   options: {
     noteCount?: number;
@@ -1140,7 +1164,7 @@ export const generateNotesPrompt_v1 = ({
           ${publication.preferredTopics.length > 0 ? `Here are my preferred topics. Use them to generate notes about me: ${publication.preferredTopics.join(", ")}` : ""}
 
           ${userNotes.length > 0 ? `Here are my previously written notes:` : ""}
-          ${userPastNotes.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}
+          ${postedOnSubstackNotes.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}
           
           ${inspirationNotes.length > 0 ? `Here are some inspiration notes I liked.` : ""}
           ${inspirationNotes.map((note, index) => `(${index + 1}) ${note}`).join("\\n")}

@@ -11,18 +11,9 @@ interface LogPayload {
   level: "info" | "error" | "warn";
 }
 
-export async function PATCH(request: NextRequest) {
+export async function POST(request: NextRequest) {
   // Verify authentication
   let session: Session | null = null;
-  try {
-    session = await getServerSession(authOptions);
-  } catch (error) {
-    console.error("Error processing extension log:", error);
-    return NextResponse.json(
-      { error: "Failed to process log" },
-      { status: 500 },
-    );
-  }
   try {
     const headers = request.headers;
     // Parse the request body
@@ -30,6 +21,26 @@ export async function PATCH(request: NextRequest) {
 
     // Extract the log information
     const { message, data, timestamp, source, level } = payload;
+
+    if (source !== "extension") {
+      loggerServer.warn(
+        "Extension log received from non-extension source",
+        {
+          source,
+          userId: "extension",
+        },
+      );
+      return NextResponse.json({ success: false }, { status: 403 });
+    }
+    try {
+      session = await getServerSession(authOptions);
+    } catch (error) {
+      console.error("Error processing extension log:", error);
+      return NextResponse.json(
+        { error: "Failed to process log" },
+        { status: 500 },
+      );
+    }
 
     // Format log message with timestamp and user info
     const logPrefix = `[${timestamp}] [${source}] [${session?.user.name || session?.user.email || "unknown"}]`;

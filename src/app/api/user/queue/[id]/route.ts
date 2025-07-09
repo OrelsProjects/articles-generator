@@ -5,6 +5,8 @@ import { UserSchedule } from "@/types/schedule";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { GhostwriterDAL } from "@/lib/dal/ghostwriter";
+import { isOwnerOfSchedule, updateUserSchedule } from "@/lib/dal/queue";
 
 const scheduleSchema = z.object({
   sunday: z.boolean(),
@@ -17,6 +19,7 @@ const scheduleSchema = z.object({
   hour: z.number(),
   minute: z.number(),
   ampm: z.enum(["am", "pm"]),
+  ghostwriterUserId: z.string().nullable().optional(),
 });
 
 export async function PATCH(
@@ -30,16 +33,20 @@ export async function PATCH(
 
   try {
     const schedule = scheduleSchema.safeParse(await request.json());
-
+  
     if (!schedule.success) {
       return NextResponse.json({ error: "Invalid schedule" }, { status: 400 });
     }
 
-    const updatedSchedule = await prisma.userSchedule.update({
-      where: {
-        id: params.id,
-      },
-      data: schedule.data,
+    const isOwner = await isOwnerOfSchedule(params.id, session.user.id);
+    if (!isOwner) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    const updatedSchedule = await updateUserSchedule({
+      ...schedule.data,
+      id: params.id,
+      ghostwriterUserId: schedule.data.ghostwriterUserId || null,
     });
 
     return NextResponse.json(updatedSchedule);
@@ -65,6 +72,10 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
+    const isOwner = await isOwnerOfSchedule(params.id, session.user.id);
+    if (!isOwner) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
     await prisma.userSchedule.delete({
       where: {
         id: params.id,

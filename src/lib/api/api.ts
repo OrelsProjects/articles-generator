@@ -3,13 +3,15 @@ import { AxiosRequestConfig, AxiosResponse } from "axios";
 import { z } from "zod";
 import { Logger } from "@/logger";
 import axiosInstance from "@/lib/axios-instance";
+
 export async function createNoteDraft(
   note: {
     body: string;
     status: NoteStatus;
     bodyJson?: string;
+    clientId?: string;
   },
-  config: AxiosRequestConfig,
+  config?: AxiosRequestConfig,
 ) {
   const response = await axiosInstance.post<NoteDraft>("/api/note", note, {
     ...config,
