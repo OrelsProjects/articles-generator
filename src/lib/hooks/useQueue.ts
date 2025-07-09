@@ -200,9 +200,9 @@ export function useQueue() {
   const getNextAvailableSchedule = (
     currentDate?: Date,
     schedules?: UserSchedule[],
-    scheduledNotes?: NoteDraft[],
+    scheduledNotesProp?: NoteDraft[],
   ) => {
-    const validScheduledNotes = scheduledNotes || scheduledNotes || [];
+    const validScheduledNotes = scheduledNotesProp || scheduledNotes || [];
     const validSchedules = schedules || userSchedules;
     // Start from today
     if (currentDate) {
