@@ -51,6 +51,7 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   const {
     rescheduleNote: rescheduleGhostwriterNote,
     updateNoteStatus: updateNoteStatusGhostwriter,
+    createDraftNote: createDraftNoteGhostwriter,
   } = useGhostwriterNotes();
 
   // Configure basic sensors for drag detection
@@ -259,7 +260,11 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
 
   const handleCreateDraftNote = async (date: Date) => {
     try {
-      await createDraftNote({ scheduledTo: date });
+      if (isGhostwriter) {
+        await createDraftNoteGhostwriter({ scheduledTo: date });
+      } else {
+        await createDraftNote({ scheduledTo: date });
+      }
     } catch (error) {
       toast.error("Failed to create note");
     }
