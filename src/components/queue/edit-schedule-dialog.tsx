@@ -37,8 +37,7 @@ import { cn } from "@/lib/utils";
 import { useGhostwriterNotes } from "@/lib/hooks/useGhostwriterNotes";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useGhostwriter } from "@/lib/hooks/useGhostwriter";
-import Image from "next/image";
-import { ClientImage } from "@/app/(authenticated)/(has-subscription)/(side-bar)/(generate-notes)/collaboration/page";
+import { ClientImage } from "@/components/collaboration/client-image";
 
 interface ScheduleEntry {
   id: string;

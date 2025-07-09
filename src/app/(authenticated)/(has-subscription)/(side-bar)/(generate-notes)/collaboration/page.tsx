@@ -30,40 +30,7 @@ import {
   buildGroupedSchedules,
 } from "@/lib/utils/collaboration";
 import { ActionBar } from "@/components/notes/action-bar";
-
-export const ClientImage = ({
-  image,
-  name,
-}: {
-  image?: string | null;
-  name: string;
-}) => {
-  const Fallback = () => (
-    <AvatarFallback className="text-xs">
-      {name
-        .split(" ")
-        .map(n => n[0])
-        .join("")
-        .toUpperCase()}
-    </AvatarFallback>
-  );
-
-  return image ? (
-    <Avatar className="h-8 w-8">
-      <AvatarImage
-        src={image}
-        onError={e => {
-          console.log("error", e);
-        }}
-      />
-      <Fallback />
-    </Avatar>
-  ) : (
-    <Avatar>
-      <Fallback />
-    </Avatar>
-  );
-};
+import { ClientImage } from "@/components/collaboration/client-image";
 
 export default function CollaborationPage() {
   const { profile, profileLoading, accessLoading, fetchAll, fetchClientNotes } =
