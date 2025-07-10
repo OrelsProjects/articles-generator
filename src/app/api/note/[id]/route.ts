@@ -47,21 +47,21 @@ export async function PATCH(
 
     const currentNote = await getNoteById(id);
 
-    const existingSchedule = await getEventBridgeSchedule({
-      id,
-    });
+    // const existingSchedule = await getEventBridgeSchedule({
+    //   id,
+    // });
 
     const isChangingFromScheduled =
       note.status &&
       currentNote?.status === "scheduled" &&
       note.status !== "scheduled";
 
-    if (isChangingFromScheduled) {
+    // if (isChangingFromScheduled) {
       // If we change from scheduled to not scheduled, the existing schedule has to be null.
-      if (existingSchedule) {
-        throw new Error("Can't change from scheduled to not scheduled");
-      }
-    }
+      // if (existingSchedule) {
+      //   throw new Error("Can't change from scheduled to not scheduled");
+      // }
+    // }
 
     await updateNote(id, note);
 
