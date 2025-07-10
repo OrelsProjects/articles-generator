@@ -47,9 +47,9 @@ const schema = z.object({
     .optional(),
 });
 
-export const maxDuration = 600; // This function can run for a maximum of 10 minutes
+export const maxDuration = 900; // This function can run for a maximum of 10 minutes
 
-const MAX_ARTICLES_TO_GET_BODY = 60;
+const MAX_ARTICLES_TO_GET_BODY = 40;
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
