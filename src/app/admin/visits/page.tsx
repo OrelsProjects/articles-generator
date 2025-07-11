@@ -12,6 +12,7 @@ interface Visit {
   creditsPerPeriod: number;
   creditsRemaining: number;
   extensionVersion: string | null;
+  publicationUrl: string | null;
 }
 
 export default function AdminVisitsPage() {
@@ -62,6 +63,9 @@ export default function AdminVisitsPage() {
             <thead className="bg-muted/50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Action
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   User
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -84,6 +88,20 @@ export default function AdminVisitsPage() {
             <tbody className="bg-card divide-y divide-border">
               {visits.map((visit) => (
                 <tr key={visit.userId}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {visit.publicationUrl ? (
+                      <a
+                        href={visit.publicationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                      >
+                        Go to publication
+                      </a>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">No publication</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-foreground">
                       {visit.name}

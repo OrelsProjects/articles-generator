@@ -49,6 +49,17 @@ export async function GET() {
       },
     });
 
+    const usersPublications = await prisma.userMetadata.findMany({
+      where: {
+        userId: {
+          in: visits.map(visit => visit.userId),
+        },
+      },
+      include: {
+        publication: true,
+      },
+    });
+
     // Group visits by userId
     const groupedVisits = visits.reduce(
       (acc, visit) => {
@@ -60,6 +71,9 @@ export async function GET() {
           const extensionDetails = userExtensionDetails.find(
             extension => extension.userId === visit.userId,
           );
+          const userPublication = usersPublications.find(
+            pub => (pub.userId = visit.userId),
+          );
           acc[visit.userId] = {
             userId: visit.userId,
             name: visit.name || user?.email || "Unknown",
@@ -67,6 +81,8 @@ export async function GET() {
             creditsPerPeriod: userCredit?.creditsPerPeriod || 0,
             creditsRemaining: userCredit?.creditsRemaining || 0,
             extensionVersion: extensionDetails?.versionInstalled || null,
+            publicationUrl:
+              userPublication?.publication?.publicationUrl || null,
           };
         }
         acc[visit.userId].visits.push(visit);
@@ -81,6 +97,7 @@ export async function GET() {
           creditsPerPeriod: number;
           creditsRemaining: number;
           extensionVersion: string | null;
+          publicationUrl: string | null;
         }
       >,
     );
@@ -95,6 +112,7 @@ export async function GET() {
         creditsPerPeriod: group.creditsPerPeriod,
         creditsRemaining: group.creditsRemaining,
         extensionVersion: group.extensionVersion,
+        publicationUrl: group.publicationUrl,
       }))
       .sort((a, b) => b.lastVisit.getTime() - a.lastVisit.getTime());
 
