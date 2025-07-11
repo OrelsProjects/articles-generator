@@ -273,7 +273,7 @@ export async function populatePublications(
 
   for (let i = 0; i < 300; i += STEP) {
     const subUrl = getArticleEndpoint(url, i, STEP);
-    const data = await fetchWithHeaders(subUrl);
+    const data = await fetchWithHeaders(subUrl, 2);
     if (!data || data.length === 0) {
       loggerServer.error(`No data for ${subUrl}`);
       break;

@@ -387,18 +387,15 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // if (didConsumeCredits) {
-    // The user has requested a refresh, update notes as well.
-    // }
-
     try {
+      
       await getUserNotesDescription(
         {
           userId,
           notesDescription: userMetadata?.notesDescription || null,
         },
         byline.authorId,
-        publicationFromDb?.id.toString(),
+        publication.id,
         {
           setIfNonExistent: true,
         },

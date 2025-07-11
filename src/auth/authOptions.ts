@@ -136,7 +136,7 @@ export const authOptions: AuthOptions = {
         return session;
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          debugger;
+          
         }
         loggerServer.error("Error in session callback", {
           error,

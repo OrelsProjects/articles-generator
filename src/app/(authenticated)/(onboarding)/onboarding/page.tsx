@@ -153,7 +153,7 @@ export default function OnboardingPage() {
         setupData: setupData.current,
         setupCompleted,
       });
-      debugger;
+      
       try {
         // Save the onboarding data
         if (
