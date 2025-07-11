@@ -514,9 +514,10 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
   const handleImageSelect = async (files: File[]) => {
     if (!note) return;
     if (!validateFileSize(files)) return;
-
+    const attachmentsLength = note.attachments?.length || 0;
+    const newAttachmentsLength = attachmentsLength + files.length;
     // Check if there's already an image
-    if (note.attachments && note.attachments.length > 0) {
+    if (newAttachmentsLength > MAX_ATTACHMENTS) {
       toast.info(`Only ${MAX_ATTACHMENTS} images allowed`);
       return;
     }

@@ -23,6 +23,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "substack-post-media.s3.amazonaws.com",
       },
+      {
+        protocol: "https",
+        hostname: "writeroom-app-dev.s3.us-east-1.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "writeroom-app.s3.us-east-1.amazonaws.com",
+      },
     ],
   },
 };
