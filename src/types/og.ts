@@ -22,7 +22,7 @@ export type OpenGraphResponse = {
     url: string;
   }[];
   ogLocale: string;
-  favicon: string;
+  favicon?: string;
   charset: string;
   jsonLD: {
     "@context": string;

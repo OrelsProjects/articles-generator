@@ -86,7 +86,7 @@ const logger: () => Logger = () => {
     critical: async (message: string, data?: LogItem) => {
       log("error", message, data);
       await sendMailSafe({
-        to: "ore@writestack.io",
+        to: "orel@writestack.io",
         subject: "Critical error",
         template: `<p>${message}, <br/> data: ${JSON.stringify(data)}</p>`,
         from: "support",
