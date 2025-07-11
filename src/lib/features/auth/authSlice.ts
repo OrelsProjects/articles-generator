@@ -69,6 +69,8 @@ const authSlice = createSlice({
           preferredLanguage: state.user.meta?.preferredLanguage || "en",
           extensionVersion: state.user.meta?.extensionVersion || null,
           author: state.user.meta?.author || null,
+          iAmA: state.user.meta?.iAmA || null,
+          usuallyPostAbout: state.user.meta?.usuallyPostAbout || null,
         };
       }
     },
