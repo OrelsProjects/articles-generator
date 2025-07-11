@@ -4,7 +4,6 @@ import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSettings } from "@/lib/hooks/useSettings";
 import {
   Dialog,
   DialogContent,

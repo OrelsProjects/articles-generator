@@ -51,13 +51,14 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async session({ session, token }) {
+      const userId = token.sub as string;
       try {
-        session.user.id = token.sub as string;
+        session.user.id = userId;
 
         const promises = [
           prisma.userMetadata.findUnique({
             where: {
-              userId: token.sub as string,
+              userId: userId,
             },
             include: {
               publication: {
@@ -67,19 +68,19 @@ export const authOptions: AuthOptions = {
               },
             },
           }),
-          getActiveSubscription(token.sub as string),
+          getActiveSubscription(userId),
           prisma.user.findUnique({
             where: {
-              id: token.sub as string,
+              id: userId,
             },
           }),
           prisma.extensionDetails.findUnique({
             where: {
-              userId: token.sub as string,
+              userId: userId,
             },
           }),
         ];
-        const byline = await getBylineByUserId(token.sub as string);
+        const byline = await getBylineByUserId(userId);
         const [userMetadata, activeSubscription, user, extensionDetails] =
           (await Promise.all(promises)) as [
             {
@@ -135,7 +136,7 @@ export const authOptions: AuthOptions = {
         }
         loggerServer.error("Error in session callback", {
           error,
-          userId: token.sub as string,
+          userId: userId,
         });
         throw error;
       }

@@ -12,7 +12,7 @@ import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-pu
 import Logo from "@/components/ui/logo";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import {  RefreshCcw } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
 
@@ -26,20 +26,7 @@ export function PublicationOnboarding({
   loadingAnalyzed?: boolean;
 }) {
   return (
-    <div className="w-screen h-screen flex flex-col items-center justify-center min-h-screen bg-background p-4 relative">
-      <Image
-        src="/home-dark.png"
-        alt="Home"
-        fill
-        className="absolute inset-0 object-fill hidden dark:block z-10"
-      />
-      <Image
-        src="/home-light.png"
-        alt="Home"
-        fill
-        className="absolute inset-0 object-fill block dark:hidden z-10"
-      />
-      <div className="absolute inset-0 bg-foreground/70 dark:bg-background/50 backdrop-blur-sm z-20" />
+    <div className="w-screen h-screen flex flex-col items-center justify-center min-h-screen p-4 relative bg-transparent">
       <Card className="w-full max-w-md z-30">
         <CardHeader>
           <Logo className="w-10 h-10" />
@@ -54,7 +41,8 @@ export function PublicationOnboarding({
             create better notes and ideas.
           </p>
           <p className="text-sm text-muted-foreground font-semibold">
-            Make sure to connect the publication you&apos;re logged into to be able to use all the features.
+            Make sure to connect the publication you&apos;re logged into to be
+            able to use all the features.
           </p>
         </CardContent>
         <CardFooter className="w-full">

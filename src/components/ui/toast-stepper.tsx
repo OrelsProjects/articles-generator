@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // Utility function to combine class names
 const cn = (...classes: (string | undefined)[]) =>
@@ -51,8 +51,39 @@ const LoaderCore = ({
   loadingStates: LoadingState[];
   value?: number;
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (containerRef.current && itemRefs.current[value]) {
+      const container = containerRef.current;
+      const currentItem = itemRefs.current[value];
+      
+      if (currentItem) {
+        const containerHeight = container.clientHeight;
+        const itemTop = currentItem.offsetTop;
+        const itemHeight = currentItem.clientHeight;
+        
+        // Calculate scroll position to center the current item
+        const scrollTop = itemTop - (containerHeight / 2) + (itemHeight / 2);
+        
+        container.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [value]);
+
   return (
-    <div className="flex flex-col gap-2">
+    <div 
+      ref={containerRef}
+      className="flex flex-col gap-2 max-h-[230px] overflow-y-auto pointer-events-none"
+      style={{
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+      }}
+    >
       {loadingStates.map((loadingState, index) => {
         const distance = Math.abs(index - value);
         const opacityDistance = Math.max(1 - distance * 0.3, 0);
@@ -65,6 +96,9 @@ const LoaderCore = ({
         return (
           <motion.div
             key={index}
+            ref={(el) => {
+              itemRefs.current[index] = el;
+            }}
             className={cn("text-left flex items-center gap-2")}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: opacity, x: 0 }}
@@ -153,11 +187,13 @@ export const ToastStepper = ({
           className={cn(
             "fixed z-50 bg-background rounded-lg shadow-lg p-4 min-w-[300px] max-w-md",
             "border border-border",
+            "[&>div::-webkit-scrollbar]:hidden",
             positionClasses[position],
             className,
           )}
         >
-          <LoaderCore value={currentState} loadingStates={loadingStates} />
+          <LoaderCore value={currentState} loadingStates={loadingStates} 
+          />
         </motion.div>
       )}
     </AnimatePresence>

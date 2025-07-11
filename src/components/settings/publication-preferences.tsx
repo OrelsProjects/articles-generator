@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, X, InfoIcon, RefreshCcw } from "lucide-react";
+import { Loader2, Plus, X, InfoIcon } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Tooltip,
@@ -22,9 +22,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import { useAppSelector } from "@/lib/hooks/redux";
-import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import RefreshPublicationData from "@/components/settings/refresh-publication-data";
 
 export function PublicationPreferences() {

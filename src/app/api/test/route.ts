@@ -16,7 +16,7 @@ import {
   generateSubstackDownEmail,
   generateWelcomeTemplateTrial,
 } from "@/lib/mail/templates";
-import { prisma, prismaArticles } from "@/lib/prisma";
+import { prisma, prismaArticles, prismaProd } from "@/lib/prisma";
 import { searchSimilarArticles } from "@/lib/dal/milvus";
 import { Note, NoteStatus, User } from "@prisma/client";
 import { getStripeInstance, shouldApplyRetentionCoupon } from "@/lib/stripe";
@@ -31,6 +31,7 @@ import { fetchAuthor } from "@/lib/utils/lambda";
 //   SLACK_COOKIES=utm=%7B%7D; b=...; d=....   (everything after “cookie:” in your own request)
 
 import fs from "node:fs/promises";
+import { addTopics } from "@/lib/dal/topics";
 
 const WORKSPACE_ID = "T05NYCU89K4"; // leave as-is unless you’re on another org
 const CHANNEL_ID = "C05NVFBU077"; // change to the channel you care about
@@ -152,29 +153,245 @@ async function dumpSlackEmails() {
 // }
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  // const session = await getServerSession(authOptions);
 
-  const subscription = await prisma.subscription.findMany({
-    where: {
-      stripeSubId: "sub_1RTJ5xRxhYQDfRYGstLlP9tU",
+  // const subscription = await prisma.subscription.findMany({
+  //   where: {
+  //     stripeSubId: "sub_1RTJ5xRxhYQDfRYGstLlP9tU",
+  //   },
+  // });
+  // const usersApplied: Record<string, Partial<User> & { applied: boolean }> = {};
+  // for (const sub of subscription) {
+  //   const apply = await shouldApplyRetentionCoupon(sub.userId);
+  //   usersApplied[sub.userId] = {
+  //     ...sub,
+  //     applied: apply,
+  //   };
+  // }
+  // await fs.writeFile(
+  //   "usersApplied.json",
+  //   JSON.stringify(usersApplied, null, 2),
+  // );
+  // console.log(
+  //   `Saved ${Object.keys(usersApplied).length} users to usersApplied.json`,
+  // );
+
+  const topics = await  prismaProd.publicationMetadata.findMany({
+    select: {
+      topics: true,
+      preferredTopics: true,
     },
   });
-  const usersApplied: Record<string, Partial<User> & { applied: boolean }> = {};
-  for (const sub of subscription) {
-    const apply = await shouldApplyRetentionCoupon(sub.userId);
-    usersApplied[sub.userId] = {
-      ...sub,
-      applied: apply,
-    };
+
+  const topicsToAdd = topics.map(topic => topic.topics).join(",");
+  const preferredTopicsToAdd = topics
+    .map(topic => topic.preferredTopics)
+    .join(",");
+
+  // remove emptys, then join by comma
+  const allTopics = [topicsToAdd, preferredTopicsToAdd]
+    .flat()
+    .filter(topic => topic !== "")
+    .map(topic => topic.trim())
+    .join(",")
+    // remove consecutive commas
+    .replace(/,+/g, ",")
+    // remove duplicates by name.toLowerCase()
+    .split(",")
+    .map(topic => topic.trim())
+    .join(",");
+
+  const topicsByOccurence: Record<string, number> = {};
+  for (const topic of allTopics.split(",")) {
+    topicsByOccurence[topic.toLowerCase()] =
+      (topicsByOccurence[topic.toLowerCase()] || 0) + 1;
   }
-  await fs.writeFile(
-    "usersApplied.json",
-    JSON.stringify(usersApplied, null, 2),
-  );
-  console.log(
-    `Saved ${Object.keys(usersApplied).length} users to usersApplied.json`,
-  );
-  return NextResponse.json({ success: true });
+
+  const sortedTopics = Object.entries(topicsByOccurence)
+    .sort((a, b) => b[1] - a[1])
+    .map(([topic, count]) => ({
+      topic: topic.replace(/\b\w/g, char => char.toUpperCase()),
+      count,
+    }))
+    .slice(0, 300);
+  // Uppercase first letter of each word
+
+  // await addTopics(allTopics);
+
+  // const TOPICS = [
+  //   "Productivity",
+  //   "Mindset",
+  //   "Leadership",
+  //   "Startups",
+  //   "Freelancing",
+  //   "Writing",
+  //   "Fitness",
+  //   "Nutrition",
+  //   "Sleep",
+  //   "Habits",
+  //   "Discipline",
+  //   "Focus",
+  //   "Creativity",
+  //   "Branding",
+  //   "Sales",
+  //   "Marketing",
+  //   "Copywriting",
+  //   "Negotiation",
+  //   "Cold Outreach",
+  //   "SaaS",
+  //   "Bootstrapping",
+  //   "Solopreneurship",
+  //   "Investing",
+  //   "Crypto",
+  //   "Real Estate",
+  //   "Coding",
+  //   "AI Tools",
+  //   "UX Design",
+  //   "Web Design",
+  //   "Psychology",
+  //   "Philosophy",
+  //   "Relationships",
+  //   "Dating",
+  //   "Networking",
+  //   "Public Speaking",
+  //   "Storytelling",
+  //   "Education",
+  //   "Parenting",
+  //   "Remote Work",
+  //   "Side Hustles",
+  //   "Passive Income",
+  //   "Burnout",
+  //   "Mental Health",
+  //   "Journaling",
+  //   "Note-taking",
+  //   "Second Brain",
+  //   "Learning",
+  //   "Reading",
+  //   "Books",
+  //   "Newsletters",
+  //   "SEO",
+  //   "Email Marketing",
+  //   "Paid Ads",
+  //   "Automation",
+  //   "Delegation",
+  //   "Time Management",
+  //   "Calendars",
+  //   "Frameworks",
+  //   "Prioritization",
+  //   "Decision Making",
+  //   "Data Science",
+  //   "Machine Learning",
+  //   "APIs",
+  //   "Open Source",
+  //   "Indie Hacking",
+  //   "Career Advice",
+  //   "Job Hunting",
+  //   "Interviewing",
+  //   "Resume Tips",
+  //   "Online Courses",
+  //   "Community Building",
+  //   "Monetization",
+  //   "Subscriptions",
+  //   "Personal Finance",
+  //   "Budgeting",
+  //   "Productivity Tools",
+  //   "Health Tech",
+  //   "Biohacking",
+  //   "Supplements",
+  //   "Minimalism",
+  //   "Stoicism",
+  //   "Religion",
+  //   "Politics",
+  //   "Current Events",
+  //   "War",
+  //   "Culture",
+  //   "Travel",
+  //   "Immigration",
+  //   "Language Learning",
+  //   "Content Creation",
+  //   "YouTube",
+  //   "Podcasting",
+  //   "Substack",
+  //   "Design Systems",
+  //   "Fashion",
+  //   "Tech Reviews",
+  //   "Hardware",
+  //   "Software",
+  //   "Digital Nomads",
+  //   "Israel",
+  //   "U.S. Politics",
+  //   "Risk-Taking",
+  //   "Goal Setting",
+  //   "Mindfulness",
+  //   "Meditation",
+  //   "Self Awareness",
+  //   "Life Lessons",
+  //   "Growth Hacks",
+  //   "Analytics",
+  //   "Finance Tools",
+  //   "Sales Funnels",
+  //   "Funnel Building",
+  //   "Customer Support",
+  //   "User Feedback",
+  //   "Early Users",
+  //   "Launch Strategy",
+  //   "Pricing Strategy",
+  //   "Pitching",
+  //   "Fundraising",
+  //   "Venture Capital",
+  //   "Angel Investing",
+  //   "No-Code",
+  //   "Low-Code",
+  //   "JavaScript",
+  //   "TypeScript",
+  //   "React",
+  //   "Next.js",
+  //   "TailwindCSS",
+  //   "Design Thinking",
+  //   "Product Design",
+  //   "Product Strategy",
+  //   "Startup Ideas",
+  //   "Idea Validation",
+  //   "Pain Points",
+  //   "Problem Solving",
+  //   "Rapid Prototyping",
+  //   "Daily Routines",
+  //   "Motivation",
+  //   "Willpower",
+  //   "Learning Models",
+  //   "Attention Span",
+  //   "Distractions",
+  //   "Focus Tools",
+  //   "Cold Emails",
+  //   "Landing Pages",
+  //   "Conversion Rates",
+  //   "Affiliate Marketing",
+  //   "Networking Events",
+  //   "Solo Travel",
+  //   "Tech Stacks",
+  //   "Side Projects",
+  //   "Remote Teams",
+  //   "Hiring",
+  //   "Firing",
+  //   "Scaling Up",
+  //   "Downsizing",
+  //   "Recession",
+  //   "Product Launches",
+  //   "Weekly Planning",
+  //   "Burn Rate",
+  //   "Profit Margins",
+  //   "User Retention",
+  //   "Feedback Loops",
+  //   "Community Growth",
+  //   "Virality",
+  //   "Churn Rate",
+  //   "Niche Audiences",
+  //   "Content Strategy",
+  // ];
+
+  // await addTopics(sortedTopics);
+
+  return NextResponse.json({ success: true, sortedTopics });
 
   // if (!session || !session.user || !session.user.meta) {
   //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

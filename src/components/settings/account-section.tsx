@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import LanguageDropdown from "@/components/settings/ui/language-dropdown";
 
 export function AccountSection() {
   const { user } = useAppSelector(selectAuth);
@@ -130,49 +131,11 @@ export function AccountSection() {
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="language">Preferred Language</Label>
-            <Select
-              value={selectedLanguage}
-              onValueChange={handleLanguageChange}
-              disabled={savingLanguage}
-            >
-              <SelectTrigger id="language" className="w-full">
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">
-                  English{" "}
-                  <span className="text-muted-foreground">(American)</span>
-                </SelectItem>
-                <SelectItem value="en-GB">
-                  English{" "}
-                  <span className="text-muted-foreground">(British)</span>
-                </SelectItem>
-                <SelectItem value="es">Español</SelectItem>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="de">Deutsch</SelectItem>
-                <SelectItem value="it">Italiano</SelectItem>
-                <SelectItem value="pt">Português</SelectItem>
-                <SelectItem value="ru">Русский</SelectItem>
-                <SelectItem value="zh">中文</SelectItem>
-                <SelectItem value="ja">日本語</SelectItem>
-                <SelectItem value="ko">한국어</SelectItem>
-              </SelectContent>
-            </Select>
-            {savingLanguage && (
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Saving language preference...
-              </p>
-            )}
-            <div className="mt-4 text-sm text-muted-foreground">
-              <p>
-                Note: The language preference affects the AI-generated content
-                only, not the application interface.
-              </p>
-            </div>
-          </div>
+          <LanguageDropdown
+            selectedLanguage={selectedLanguage}
+            handleLanguageChange={handleLanguageChange}
+            savingLanguage={savingLanguage}
+          />
         </CardContent>
       </Card>
     </div>

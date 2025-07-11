@@ -292,7 +292,7 @@ export default function NoteComponent({
       </div>
       {!isGhostwriterNote && note.ghostwriter && (
         <div className="flex items-center gap-2 ml-2">
-          <span className="text-xs text-muted-foreground">By:</span>
+          <span className="text-xs text-muted-foreground"></span>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -370,8 +370,7 @@ export default function NoteComponent({
         "h-full flex flex-col relative rounded-xl shadow-md border border-border/60 bg-card",
         {
           "border-primary/80":
-            note.id === selectedNote?.id ||
-            note.id === selectedClientNote?.id,
+            note.id === selectedNote?.id || note.id === selectedClientNote?.id,
         },
       )}
     >
