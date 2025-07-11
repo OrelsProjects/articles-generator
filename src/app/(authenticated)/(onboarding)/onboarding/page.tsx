@@ -6,7 +6,7 @@ import OnboardingSetup, {
 } from "@/components/onboarding/onboarding-setup";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSettings } from "@/lib/hooks/useSettings";
 import {
@@ -62,6 +62,7 @@ export default function OnboardingPage() {
   const searchParams = useSearchParams();
 
   const setupData = useRef<OnboardingFormData | null>(null);
+  const setupCompletedRef = useRef(false);
 
   const plan = searchParams.get("plan");
   const interval = searchParams.get("interval");
@@ -90,6 +91,14 @@ export default function OnboardingPage() {
       }
     }
   }, [onboardingSetupData]);
+
+  const updateSetupCompleted = useCallback(
+    (completed: boolean) => {
+      setSetupCompleted(completed);
+      setupCompletedRef.current = completed;
+    },
+    [setSetupCompleted, setupCompletedRef],
+  );
 
   const handleNavigateNext = () => {
     if (user?.meta?.plan) {
@@ -144,16 +153,21 @@ export default function OnboardingPage() {
         setupData: setupData.current,
         setupCompleted,
       });
+      debugger;
       try {
         // Save the onboarding data
-        if ((setupData.current && setupCompleted) || data || forceSave) {
+        if (
+          (setupData.current && setupCompletedRef.current) ||
+          data ||
+          forceSave
+        ) {
           await axiosInstance.post(
             "/api/onboarding/save",
             data || setupData.current,
           );
           // clear local storage
           setShowPaymentDialog(true);
-          setSetupCompleted(true);
+          updateSetupCompleted(true);
           setShowSetup(false);
         } else {
           setCompletedAnalysisNoSetup(true);
@@ -165,13 +179,13 @@ export default function OnboardingPage() {
         throw error;
       }
     },
-    [setupData.current],
+    [setupData.current, setupCompletedRef.current],
   );
 
   const handleSetupComplete = async (data: OnboardingFormData) => {
     setupData.current = data;
     if (analysisFailed) {
-      setSetupCompleted(true);
+      updateSetupCompleted(true);
       setShowSetup(false);
       dispatch(setGeneratingDescription(false));
       toast.info("Something went wrong.. Try again (Your data was saved).", {
@@ -188,11 +202,11 @@ export default function OnboardingPage() {
         })
         .finally(() => {
           setLoadingCompleteSetup(false);
-          setSetupCompleted(true);
+          updateSetupCompleted(true);
         });
     } else {
       setShowSetup(false);
-      setSetupCompleted(true);
+      updateSetupCompleted(true);
     }
   };
 
@@ -237,12 +251,17 @@ export default function OnboardingPage() {
       transition: { duration: 0.1, ease: "easeInOut" },
     },
   };
+
+  const isSetupCompleted = useMemo(() => {
+    return setupCompletedRef.current || setupCompleted;
+  }, [setupCompletedRef.current, setupCompleted]);
+
   return (
     <div className="relative">
       <div className="min-h-screen bg-transparent flex items-center justify-center p-4 z-50">
         {/* Always render PublicationOnboarding but control visibility */}
         <AnimatePresence mode="wait">
-          {!showSetup || setupCompleted ? (
+          {!showSetup || isSetupCompleted ? (
             <motion.div
               key="publication-onboarding"
               variants={fadeVariants}
@@ -260,7 +279,7 @@ export default function OnboardingPage() {
               />
             </motion.div>
           ) : (
-            !setupCompleted && (
+            !isSetupCompleted && (
               <motion.div
                 key="onboarding-setup"
                 variants={fadeVariants}
