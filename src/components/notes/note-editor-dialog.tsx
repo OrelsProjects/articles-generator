@@ -359,7 +359,7 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
             isLoading: true,
           });
 
-          debugger;
+          
           if (isGhostwriter) {
             await scheduleNoteGhostwriter(newNote, scheduledTo, {
               showToast: true,

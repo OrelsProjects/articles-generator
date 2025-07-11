@@ -40,8 +40,10 @@ export default function OnboardingPage() {
     "onboarding_setup_completed",
     false,
   );
-  const [onboardingSetupData] =
-    useLocalStorage<OnboardingFormData | null>("onboarding_setup_data", null);
+  const [onboardingSetupData] = useLocalStorage<OnboardingFormData | null>(
+    "onboarding_setup_data",
+    null,
+  );
 
   const [completedAnalysisNoSetup, setCompletedAnalysisNoSetup] =
     useState(false);
@@ -118,7 +120,7 @@ export default function OnboardingPage() {
       setIsAnalysisCompleted(true);
       try {
         // Save the onboarding data
-        if (setupData.current || data || forceSave) {
+        if ((setupData.current && setupCompleted) || data || forceSave) {
           await axiosInstance.post(
             "/api/onboarding/save",
             data || setupData.current,

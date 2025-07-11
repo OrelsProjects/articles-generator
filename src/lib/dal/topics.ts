@@ -34,8 +34,15 @@ export async function addTopicsString(topics: string | string[]) {
   );
 
   if (newTopics.length > 0) {
+    // Capitalize every first letter of every word in the topic (Divided by spaces)
+    const capitalizedTopics = newTopics.map(topic => ({
+      topic: topic
+        .split(" ")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" "),
+    }));
     await prisma.publicationTopics.createMany({
-      data: newTopics.map(topic => ({ topic })),
+      data: capitalizedTopics,
     });
   }
 

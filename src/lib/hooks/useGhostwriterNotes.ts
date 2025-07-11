@@ -215,7 +215,7 @@ export const useGhostwriterNotes = () => {
   // Select a note
   const selectNote = useCallback(
     (note: Note | NoteDraft | string | null) => {
-      debugger;
+      
       EventTracker.track("ghostwriter_notes_select_note");
       let noteToUpdate: NoteDraft | Note | null = null;
 
@@ -276,7 +276,7 @@ export const useGhostwriterNotes = () => {
       status: NoteStatus | "archived",
       scheduledTo?: Date,
     ) => {
-      debugger;
+      
       if (!selectedClientId) return;
 
       EventTracker.track("ghostwriter_notes_update_note_status_" + status);

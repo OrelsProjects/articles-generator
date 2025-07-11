@@ -101,7 +101,7 @@ export function AnalyzePublicationDialog({
 
   useEffect(() => {
     if (showAnalyzePublicationDialog) {
-      debugger;
+      
       setIsOpen(true);
       dispatch(setShowAnalyzePublicationDialog(false));
     }
@@ -156,7 +156,7 @@ export function AnalyzePublicationDialog({
     dispatch(setAnalysisError(null));
     setLoading(true);
     loadingAnalyze.current = true;
-    debugger;
+    
     setIsOpen(false);
     setShowConfirmationDialog(false);
 
@@ -164,7 +164,7 @@ export function AnalyzePublicationDialog({
       handleBylineSelect(byline);
       onAnalyzing?.(true);
       dispatch(setGeneratingDescription(true));
-      debugger;
+      
       setIsOpen(false);
       await analyzePublication(url, byline);
       await onAnalyzed?.();
@@ -191,7 +191,7 @@ export function AnalyzePublicationDialog({
       onAnalyzing?.(false);
       onAnalysisFailed?.();
       dispatch(setGeneratingDescription(false));
-      debugger;
+      
       setIsOpen(true);
     } finally {
       setLoading(false);
@@ -209,7 +209,7 @@ export function AnalyzePublicationDialog({
       <Dialog
         open={isOpen}
         onOpenChange={open => {
-          debugger;
+          
           onOpenChange?.(open);
           setIsOpen(open);
         }}

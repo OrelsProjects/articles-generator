@@ -291,6 +291,7 @@ export default function TopicsSearchInput({
                   initial="initial"
                   animate="animate"
                   exit="exit"
+                  className="my-auto"
                 >
                   <Button
                     type="button"
@@ -301,7 +302,7 @@ export default function TopicsSearchInput({
                     }}
                     variant="ghost"
                     title="Clear all topics"
-                    className="my-auto p-2.5 rounded-full"
+                    className="p-2.5 rounded-full"
                   >
                     <X className="w-4 h-4" />
                   </Button>
