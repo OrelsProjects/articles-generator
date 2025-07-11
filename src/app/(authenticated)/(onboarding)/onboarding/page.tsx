@@ -171,8 +171,8 @@ export default function OnboardingPage() {
   const handleSetupComplete = async (data: OnboardingFormData) => {
     setupData.current = data;
     if (analysisFailed) {
-      setShowSetup(false);
       setSetupCompleted(true);
+      setShowSetup(false);
       dispatch(setGeneratingDescription(false));
       toast.info("Something went wrong.. Try again (Your data was saved).", {
         autoClose: 3000,
@@ -188,9 +188,11 @@ export default function OnboardingPage() {
         })
         .finally(() => {
           setLoadingCompleteSetup(false);
+          setSetupCompleted(true);
         });
     } else {
       setShowSetup(false);
+      setSetupCompleted(true);
     }
   };
 
