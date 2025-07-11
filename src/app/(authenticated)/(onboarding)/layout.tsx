@@ -1,4 +1,3 @@
-import OnboardingLoaderProvider from "@/app/providers/OnboardingLoaderProvider";
 import { Metadata } from "next";
 import Image from "next/image";
 
@@ -17,7 +16,6 @@ export default function HeatmapLayout({
 }) {
   return (
     <>
-      <OnboardingLoaderProvider />
       <div className="absolute inset-0 bg-foreground/70 dark:bg-background/50 backdrop-blur-sm z-20" />
       <Image
         src="/home-dark.png"

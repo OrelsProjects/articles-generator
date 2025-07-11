@@ -1,6 +1,7 @@
 import {
   setCancelAt,
   setGeneratingDescription,
+  setOnboardingSetupCompleted,
   setUsages,
 } from "@/lib/features/settings/settingsSlice";
 import { useAppDispatch } from "@/lib/hooks/redux";
@@ -63,6 +64,7 @@ export const useSettings = () => {
       dispatch(setUsages(usages));
       dispatch(setCancelAt(subscriptionInfo.cancelAt));
       dispatch(setGeneratingDescription(settings.generatingDescription));
+      dispatch(setOnboardingSetupCompleted(settings.onboardingSetupCompleted));
     } catch (error: any) {
       Logger.error("Error initializing settings", { error });
     } finally {

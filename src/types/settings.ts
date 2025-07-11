@@ -23,4 +23,5 @@ export type CreditType = "article" | "regular";
 
 export interface Settings {
   generatingDescription: boolean;
+  onboardingSetupCompleted: boolean;
 }

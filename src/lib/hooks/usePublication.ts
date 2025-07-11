@@ -21,7 +21,7 @@ export const usePublication = () => {
       const res = await axiosInstance.post(`/api/user/analyze/validate`, {
         url,
       });
-      
+
       return res.data;
     } catch (error: any) {
       Logger.error(error);
@@ -48,8 +48,8 @@ export const usePublication = () => {
       try {
         // Sometimes there's an error, but the publication analysis is still created
         await axiosInstance.post("/api/user/publications/validate-analysis");
-      } catch (error: any) {
-        Logger.error(error);
+      } catch (errorValidate: any) {
+        Logger.error(errorValidate);
         throw error;
       }
     } finally {

@@ -28,6 +28,8 @@ export type LocalStorageKey =
   | "last_dismissed_discrepancy_bar"
   | "last_selected_client_id"
   | "note_generation_options"
+  | "onboarding_setup_data"
+  | "onboarding_setup_completed"
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue

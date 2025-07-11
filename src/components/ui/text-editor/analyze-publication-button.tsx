@@ -8,35 +8,27 @@ export function AnalyzePublicationButton({
   variant = "default",
   className,
   onAnalyzed,
+  onAnalyzing,
+  onAnalysisFailed,
+  hide = false,
 }: {
   variant?: "default" | "ghost";
   className?: string;
-  onAnalyzed?: () => void;
+  onAnalyzed?: () => Promise<unknown>;
+  onAnalyzing?: (analyzing: boolean) => void;
+  onAnalysisFailed?: () => void;
+  hide?: boolean;
 }) {
-  const { publications } = useAppSelector(state => state.publications);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [showLoader, setShowLoader] = useState(false);
+  const { publications } = useAppSelector(
+    state => state.publications,
+  );
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (publications.length > 0) {
       setOpen(false);
-      setShowLoader(false);
     }
   }, [publications]);
-
-  // Handle the analyzing state change from the dialog
-  const handleAnalyzing = (isAnalyzing: boolean) => {
-    // Only show the loader after a short delay
-    if (isAnalyzing) {
-      // Show the loader once processing starts
-      setShowLoader(true);
-      setAnalyzing(true);
-    } else {
-      setShowLoader(false);
-      setAnalyzing(false);
-    }
-  };
 
   return (
     <div id="create-publication-button">
@@ -52,8 +44,10 @@ export function AnalyzePublicationButton({
       <AnalyzePublicationDialog
         open={open}
         onOpenChange={setOpen}
-        onAnalyzing={handleAnalyzing}
         onAnalyzed={onAnalyzed}
+        onAnalyzing={onAnalyzing}
+        onAnalysisFailed={onAnalysisFailed}
+        hide={hide}
       />
     </div>
   );

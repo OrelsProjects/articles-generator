@@ -231,6 +231,10 @@ model UserMetadata {
   noteWritingStyle String?
   noteTopics       String?
 
+  // Onboarding data
+  iAmA             String?
+  usuallyPostAbout String?
+
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   plan         Plan?
@@ -262,6 +266,7 @@ model Settings {
   updatedAt DateTime @updatedAt
 
   generatingDescription Boolean @default(false)
+  onboardingSetupCompleted Boolean @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

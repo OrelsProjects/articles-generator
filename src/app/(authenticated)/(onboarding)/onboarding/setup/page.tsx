@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useFormik } from "formik";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +20,11 @@ import Logo from "@/components/ui/logo";
 import { appName } from "@/lib/consts";
 import LanguageDropdown from "@/components/settings/ui/language-dropdown";
 import TopicsSearchInput from "@/components/settings/ui/topics-search-input";
+import { useAppSelector } from "@/lib/hooks/redux";
+import { useSession } from "next-auth/react";
+import axiosInstance from "@/lib/axios-instance";
+import { Logger } from "@/logger";
+import { Topic } from "@/types/topic";
 
 interface OnboardingFormData {
   // Stage 1 - Basics
@@ -34,7 +40,6 @@ interface OnboardingFormData {
   // Stage 3 - More improvements
   customPrompt: string;
 }
-
 
 type Stage = "basics" | "ai-improvements" | "more-improvements";
 
@@ -59,12 +64,18 @@ const STAGES: { key: Stage; title: string; subtitle: string }[] = [
 export default function OnboardingSetupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentStage = (searchParams.get("stage") as Stage) || "basics";
+  const { data: session } = useSession();
+  const { settings } = useAppSelector(state => state.settings);
+
+  const [popularTopics, setPopularTopics] = useState<string[]>([]);
+  const [isLoadingPopularTopics, setIsLoadingPopularTopics] = useState(true);
   const [direction, setDirection] = useState<"left" | "right">("left");
+
+  const currentStage = (searchParams.get("stage") as Stage) || "basics";
 
   const formik = useFormik<OnboardingFormData>({
     initialValues: {
-      name: "",
+      name: session?.user.name || "",
       iAmA: "",
       usuallyPostAbout: "",
       writeInLanguage: "en",
@@ -78,6 +89,35 @@ export default function OnboardingSetupPage() {
       router.push("/"); // Navigate to home after completion
     },
   });
+
+  useEffect(() => {
+    if (session?.user.name) {
+      formik.setFieldValue("name", session.user.name);
+    }
+  }, [session?.user.name]);
+
+  useEffect(() => {
+    getPopularTopics();
+  }, []);
+
+  const getPopularTopics = async () => {
+    try {
+      setIsLoadingPopularTopics(true);
+      const topics = await axiosInstance.get<Topic[]>("/api/v1/topics/popular");
+      setPopularTopics(topics.data.map(topic => topic.topic));
+    } catch (error) {
+      Logger.error("Error getting popular topics:", {
+        error: error,
+        userId: session?.user.id,
+      });
+    } finally {
+      setIsLoadingPopularTopics(false);
+    }
+  };
+
+  const isLoadingAnalysis = useMemo(() => {
+    return settings.generatingDescription;
+  }, [settings.generatingDescription]);
 
   const currentStageIndex = STAGES.findIndex(
     stage => stage.key === currentStage,
@@ -107,8 +147,6 @@ export default function OnboardingSetupPage() {
       goToStage(prevStage.key, "right");
     }
   };
-
-
 
   const slideVariants = {
     enter: (direction: string) => ({
@@ -182,16 +220,13 @@ export default function OnboardingSetupPage() {
 
         <TopicsSearchInput
           selectedTopics={formik.values.topics}
-          onTopicsChange={(topics) => formik.setFieldValue("topics", topics)}
+          onTopicsChange={topics => formik.setFieldValue("topics", topics)}
           placeholder="Search for topics or type your own..."
           label="Select topics"
-          maxTopics={15}
+          popularTopics={popularTopics}
+          isLoadingPopularTopics={isLoadingPopularTopics}
         />
       </div>
-
-      <p className="text-sm text-muted-foreground">
-        💡 You can always update your topics later in settings.
-      </p>
     </div>
   );
 
@@ -218,10 +253,6 @@ export default function OnboardingSetupPage() {
           </p>
         </div>
       </div>
-
-      <p className="text-sm text-muted-foreground">
-        💡 You can modify your custom prompt anytime in settings.
-      </p>
     </div>
   );
 
@@ -317,6 +348,11 @@ export default function OnboardingSetupPage() {
             </div>
           </div>
         </CardContent>
+        <CardFooter>
+          <p className="text-xs text-muted-foreground">
+            💡 You can always update your topics later in settings.
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );

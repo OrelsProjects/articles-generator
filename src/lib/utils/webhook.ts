@@ -587,10 +587,12 @@ export async function handleInvoicePaymentSucceeded(event: any) {
 
   const sendTo = invoice.amount_paid > 0 ? userEmail : "orelsmail@gmail.com";
 
+  let subject = invoice.amount_paid > 0 ? emailTemplate.subject : emailTemplate.subject + " - " + " OREL";
+
   await sendMail({
     to: sendTo,
     from: "support",
-    subject: emailTemplate.subject,
+    subject,
     template: emailTemplate.body,
     cc: sendTo === userEmail ? ["orelsmail@gmail.com"] : [],
   });

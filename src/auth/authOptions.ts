@@ -90,6 +90,8 @@ export const authOptions: AuthOptions = {
               tempAuthorId: string | null;
               notesToGenerateCount: number;
               preferredLanguage: string;
+              iAmA: string | null;
+              usuallyPostAbout: string | null;
               publication: {
                 authorId: number | null;
               } | null;
@@ -118,6 +120,8 @@ export const authOptions: AuthOptions = {
           tempAuthorId: userMetadata?.tempAuthorId || null,
           notesToGenerateCount: userMetadata?.notesToGenerateCount || 3,
           preferredLanguage: userMetadata?.preferredLanguage || "en",
+          iAmA: userMetadata?.iAmA || null,
+          usuallyPostAbout: userMetadata?.usuallyPostAbout || null,
           extensionVersion: extensionDetails?.versionInstalled || null,
           author: {
             id: byline?.id || userMetadata?.publication?.authorId || 0,

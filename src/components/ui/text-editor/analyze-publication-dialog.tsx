@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import { AlertCircle, AlertTriangle, HelpCircle } from "lucide-react";
 import { AlertDescription } from "@/components/ui/alert";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
@@ -32,6 +31,8 @@ import { toast } from "react-toastify";
 import { AuthorSelectionDialog } from "@/components/onboarding/author-selection-dialog";
 import axiosInstance from "@/lib/axios-instance";
 import HowToFindNewsletterUrlDialog from "@/components/ui/how-to-find-newsletter-url-dialog";
+import { setGeneratingDescription } from "@/lib/features/settings/settingsSlice";
+import { setAnalysisError } from "@/lib/features/publications/publicationSlice";
 
 const ERRORS = {
   INVALID_URL: {
@@ -58,17 +59,13 @@ const ERRORS = {
   },
 };
 
-interface ErrorState {
-  value: string;
-  type: "error" | "warn";
-  explanation: string;
-}
-
 interface AnalyzePublicationDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onAnalyzing?: (analyzing: boolean) => void;
-  onAnalyzed?: () => void;
+  onAnalyzed?: () => Promise<unknown>;
+  onAnalysisFailed?: () => void;
+  hide?: boolean;
 }
 
 export function AnalyzePublicationDialog({
@@ -76,16 +73,18 @@ export function AnalyzePublicationDialog({
   onOpenChange,
   onAnalyzing,
   onAnalyzed,
+  onAnalysisFailed,
+  hide = false,
 }: AnalyzePublicationDialogProps) {
   const dispatch = useAppDispatch();
   const { analyzePublication, validatePublication } = usePublication();
-  const { publications } = useAppSelector(state => state.publications);
+  const { analysisError } = useAppSelector(state => state.publications);
   const { showAnalyzePublicationDialog } = useAppSelector(state => state.ui);
+  const { settings } = useAppSelector(state => state.settings);
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingBylines, setLoadingBylines] = useState(false);
-  const [error, setError] = useState<ErrorState | null>(null);
   const [openAuthorSelectionDialog, setOpenAuthorSelectionDialog] =
     useState(false);
   const [bylines, setBylines] = useState<Byline[]>([]);
@@ -102,25 +101,20 @@ export function AnalyzePublicationDialog({
 
   useEffect(() => {
     if (showAnalyzePublicationDialog) {
+      debugger;
       setIsOpen(true);
       dispatch(setShowAnalyzePublicationDialog(false));
     }
   }, [showAnalyzePublicationDialog]);
 
-  useEffect(() => {
-    if (publications.length > 0) {
-      setIsOpen(false);
-    }
-  }, [publications]);
-
   const getBylines = async () => {
     if (loading) return;
     try {
       setLoadingBylines(true);
-      setError(null);
+      dispatch(setAnalysisError(null));
       const { valid, validUrl } = await validatePublication(url);
       if (!valid) {
-        setError(ERRORS.INVALID_SUBSTACK_URL);
+        dispatch(setAnalysisError(ERRORS.INVALID_SUBSTACK_URL));
         return;
       }
       if (validUrl) {
@@ -136,7 +130,7 @@ export function AnalyzePublicationDialog({
       console.error(error);
       toast.error("Failed to fetch bylines");
       setBylines([]);
-      setError(ERRORS.GENERAL_ERROR);
+      dispatch(setAnalysisError(ERRORS.GENERAL_ERROR));
     } finally {
       setLoadingBylines(false);
     }
@@ -145,47 +139,59 @@ export function AnalyzePublicationDialog({
   const handleBylineSelect = (byline: Byline) => {
     setSelectedByline(byline);
     setOpenAuthorSelectionDialog(false);
-    setShowConfirmationDialog(true);
+    // setShowConfirmationDialog(true);
   };
 
   const handleSubmit = async (byline: Byline) => {
     if (loadingAnalyze.current) return;
     if (loading) return;
     if (!validateUrl(url)) {
-      setError(ERRORS.INVALID_URL);
+      dispatch(setAnalysisError(ERRORS.INVALID_URL));
       return;
     }
     if (!validateSubstackUrl(url)) {
-      setError(ERRORS.INVALID_SUBSTACK_URL);
+      dispatch(setAnalysisError(ERRORS.INVALID_SUBSTACK_URL));
       return;
     }
-    setError(null);
+    dispatch(setAnalysisError(null));
     setLoading(true);
     loadingAnalyze.current = true;
-
+    debugger;
     setIsOpen(false);
     setShowConfirmationDialog(false);
 
     try {
       handleBylineSelect(byline);
+      onAnalyzing?.(true);
+      dispatch(setGeneratingDescription(true));
+      debugger;
+      setIsOpen(false);
       await analyzePublication(url, byline);
-      onAnalyzed?.();
+      await onAnalyzed?.();
+      dispatch(setGeneratingDescription(false));
     } catch (error: any) {
       Logger.error("Error analyzing publication:", error);
       if (error.response?.status === 404) {
-        setError({
-          ...ERRORS.PUBLICATION_NOT_FOUND,
-          value: error.response?.data?.error,
-        });
+        dispatch(
+          setAnalysisError({
+            ...ERRORS.PUBLICATION_NOT_FOUND,
+            value: error.response?.data?.error,
+          }),
+        );
       } else {
         const errorMessage =
           error instanceof Error ? error.message : ERRORS.GENERAL_ERROR.value;
-        setError({
-          ...ERRORS.GENERAL_ERROR,
-          value: errorMessage,
-        });
+        dispatch(
+          setAnalysisError({
+            ...ERRORS.GENERAL_ERROR,
+            value: errorMessage,
+          }),
+        );
       }
       onAnalyzing?.(false);
+      onAnalysisFailed?.();
+      dispatch(setGeneratingDescription(false));
+      debugger;
       setIsOpen(true);
     } finally {
       setLoading(false);
@@ -203,6 +209,7 @@ export function AnalyzePublicationDialog({
       <Dialog
         open={isOpen}
         onOpenChange={open => {
+          debugger;
           onOpenChange?.(open);
           setIsOpen(open);
         }}
@@ -224,41 +231,43 @@ export function AnalyzePublicationDialog({
 
           <div className="grid gap-4 py-4">
             <div className="flex flex-col gap-1">
-            <Input
-              id="substackUrl"
-              placeholder="your-newsletter.substack.com"
-              className="col-span-4"
-              value={url}
-              onChange={e => setUrl(e.target.value)}
-              // disabled={loading}
-              autoFocus
-              onKeyDown={e => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  getBylines();
-                }
-              }}
-            />
+              <Input
+                id="substackUrl"
+                placeholder="your-newsletter.substack.com"
+                className="col-span-4"
+                value={url}
+                onChange={e => setUrl(e.target.value)}
+                // disabled={loading}
+                autoFocus
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    getBylines();
+                  }
+                }}
+              />
               <p className="text-xs text-muted-foreground">
                 Can also be custom domain
               </p>
             </div>
 
-            {error?.value && (
+            {analysisError?.value && (
               <div className="flex flex-col items-start">
                 <AnimatePresence mode="popLayout">
                   <MotionAlert
-                    key={error.value}
-                    variant={error.type === "error" ? "destructive" : "warning"}
+                    key={analysisError.value}
+                    variant={
+                      analysisError.type === "error" ? "destructive" : "warning"
+                    }
                     className="flex flex-row items-center pb-1.5 pr-2"
                   >
-                    {error.type === "error" ? (
+                    {analysisError.type === "error" ? (
                       <AlertCircle className="h-4 w-4" />
                     ) : (
                       <AlertTriangle className="h-4 w-4" />
                     )}
                     <AlertDescription className="flex-1 leading-7">
-                      {error.value}
+                      {analysisError.value}
                     </AlertDescription>
                     <TooltipProvider delayDuration={350}>
                       <Tooltip>
@@ -276,7 +285,7 @@ export function AnalyzePublicationDialog({
                           <p
                             className="text-sm"
                             dangerouslySetInnerHTML={{
-                              __html: error.explanation,
+                              __html: analysisError.explanation,
                             }}
                           />
                         </TooltipContent>

@@ -9,7 +9,15 @@ export interface PublicationState {
   ideas: Idea[];
   selectedIdea: Idea | null;
   loadingNewIdeas: boolean;
+  analysisError: ErrorState | null;
 }
+
+export interface ErrorState {
+  value: string;
+  type: "error" | "warn";
+  explanation: string;
+}
+
 
 const getFirstIdea = (ideas: Idea[]) => {
   const newIdeas = ideas.filter(idea => idea.status === "new");
@@ -21,6 +29,7 @@ export const initialState: PublicationState = {
   ideas: [],
   selectedIdea: null,
   loadingNewIdeas: false,
+  analysisError: null,
 };
 
 const publicationSlice = createSlice({
@@ -113,6 +122,9 @@ const publicationSlice = createSlice({
     setLoadingNewIdeas: (state, action: PayloadAction<boolean>) => {
       state.loadingNewIdeas = action.payload;
     },
+    setAnalysisError: (state, action: PayloadAction<ErrorState | null>) => {
+      state.analysisError = action.payload;
+    },
   },
 });
 
@@ -127,6 +139,7 @@ export const {
   setLoadingNewIdeas,
   replaceTempIdea,
   removeTempIdea,
+  setAnalysisError,
 } = publicationSlice.actions;
 
 export const selectPublications = (state: RootState) => state.publications;

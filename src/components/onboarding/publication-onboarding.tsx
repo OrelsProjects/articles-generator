@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { AnalyzePublicationButton } from "@/components/ui/text-editor/analyze-publication-button";
 import Logo from "@/components/ui/logo";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
 
@@ -18,12 +17,18 @@ const appName = process.env.NEXT_PUBLIC_APP_NAME || "WriteStack";
 
 export function PublicationOnboarding({
   onAnalyzed,
+  onAnalyzing,
   onAlreadyAnalyzed,
   loadingAnalyzed = false,
+  onAnalysisFailed,
+  hide = false,
 }: {
-  onAnalyzed?: () => void;
+  onAnalyzed?: () => Promise<unknown>;
+  onAnalyzing?: (analyzing: boolean) => void;
   onAlreadyAnalyzed?: () => void;
   loadingAnalyzed?: boolean;
+  onAnalysisFailed?: () => void;
+  hide?: boolean;
 }) {
   return (
     <div className="w-screen h-screen flex flex-col items-center justify-center min-h-screen p-4 relative bg-transparent">
@@ -51,6 +56,9 @@ export function PublicationOnboarding({
               variant="default"
               className="w-full"
               onAnalyzed={onAnalyzed}
+              onAnalyzing={onAnalyzing}
+              onAnalysisFailed={onAnalysisFailed}
+              hide={hide}
             />
             <Button
               variant="ghost"

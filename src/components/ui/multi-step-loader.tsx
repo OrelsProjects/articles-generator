@@ -49,7 +49,7 @@ const LoaderCore = ({
   value?: number;
 }) => {
   return (
-    <div className="flex relative justify-start max-w-xl mx-auto flex-col mt-40">
+    <div className="flex relative justify-start max-w-xl mx-auto flex-col mt-40 lg:ml-48">
       {loadingStates.map((loadingState, index) => {
         const distance = Math.abs(index - value);
         const opacity = Math.max(1 - distance * 0.3, 0); // Minimum opacity is 0, keep it 0.2 if you're sane.
@@ -140,7 +140,7 @@ export const MultiStepLoader = ({
           }}
           className="w-full h-full fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md bottom-0 bg-gray-100/40 dark:bg-black/60 "
         >
-          <div className="h-96 relative">
+          <div className="h-96 relative flex">
             <LoaderCore value={currentState} loadingStates={loadingStates} />
           </div>
           <div className="bg-gradient-to-t inset-x-0 z-20 bottom-0 bg-background h-full absolute [mask-image:radial-gradient(900px_at_center,transparent_30%,white)]" />

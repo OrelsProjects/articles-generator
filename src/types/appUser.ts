@@ -12,6 +12,8 @@ export interface AppUserMeta {
   tempAuthorId: string | null;
   notesToGenerateCount: number;
   preferredLanguage: string | null;
+  iAmA: string | null;
+  usuallyPostAbout: string | null;
   author: {
     id: number;
     handle: string;

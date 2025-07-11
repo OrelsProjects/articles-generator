@@ -1,9 +1,12 @@
 "use client";
 
 import { PublicationOnboarding } from "@/components/onboarding/publication-onboarding";
-import { useAppSelector } from "@/lib/hooks/redux";
+import OnboardingSetup, {
+  OnboardingFormData,
+} from "@/components/onboarding/onboarding-setup";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSettings } from "@/lib/hooks/useSettings";
 import {
@@ -15,25 +18,56 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import usePayments from "@/lib/hooks/usePayments";
 import axiosInstance from "@/lib/axios-instance";
 import { toast } from "react-toastify";
 import { Logger } from "@/logger";
 import { rootPath } from "@/types/navbar";
+import { motion, AnimatePresence } from "framer-motion";
+import Logo from "@/components/ui/logo";
+import OnboardingLoader from "@/components/onboarding/onboarding-loader";
+import { cn } from "@/lib/utils";
+import { setGeneratingDescription } from "@/lib/features/settings/settingsSlice";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 
 export default function OnboardingPage() {
   const router = useCustomRouter();
+  const dispatch = useAppDispatch();
   const [loadingAnalyzed, setLoadingAnalyzed] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
+  const [setupCompleted, setSetupCompleted] = useLocalStorage<boolean>(
+    "onboarding_setup_completed",
+    false,
+  );
+  const [onboardingSetupData] =
+    useLocalStorage<OnboardingFormData | null>("onboarding_setup_data", null);
+
+  const [completedAnalysisNoSetup, setCompletedAnalysisNoSetup] =
+    useState(false);
+  const [isAnalysisCompleted, setIsAnalysisCompleted] = useState(false);
+  const [loadingCompleteSetup, setLoadingCompleteSetup] = useState(false);
+  const [analysisFailed, setAnalysisFailed] = useState(false);
+
   const { user } = useAppSelector(state => state.auth);
+  const { settings } = useAppSelector(state => state.settings);
   const { hasPublication } = useSettings();
   const { goToCheckout } = usePayments();
   const searchParams = useSearchParams();
+
+  const setupData = useRef<OnboardingFormData | null>(null);
 
   const plan = searchParams.get("plan");
   const interval = searchParams.get("interval");
   const coupon = searchParams.get("coupon");
 
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+
+  useEffect(() => {
+    if (onboardingSetupData) {
+      setupData.current = onboardingSetupData;
+    }
+  }, [onboardingSetupData]);
 
   const handleNavigateNext = () => {
     if (user?.meta?.plan) {
@@ -79,18 +113,159 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleAnalyzed = () => {
-    setShowPaymentDialog(true);
+  const handleAnalyzed = useCallback(
+    async (forceSave = false, data?: OnboardingFormData) => {
+      setIsAnalysisCompleted(true);
+      try {
+        // Save the onboarding data
+        if (setupData.current || data || forceSave) {
+          await axiosInstance.post(
+            "/api/onboarding/save",
+            data || setupData.current,
+          );
+          // clear local storage
+          setShowPaymentDialog(true);
+          setSetupCompleted(true);
+          setShowSetup(false);
+        } else {
+          setCompletedAnalysisNoSetup(true);
+        }
+        // Analysis will be completed automatically and handled by the loader provider
+      } catch (error) {
+        Logger.error("Error saving onboarding data", { error });
+        toast.error("Failed to save setup data. Please try again.");
+        throw error;
+      }
+    },
+    [setupData.current],
+  );
+
+  const handleSetupComplete = async (data: OnboardingFormData) => {
+    setupData.current = data;
+    if (analysisFailed) {
+      setShowSetup(false);
+      setSetupCompleted(true);
+      dispatch(setGeneratingDescription(false));
+      toast.info("Something went wrong.. Try again (Your data was saved).", {
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    if (completedAnalysisNoSetup) {
+      setLoadingCompleteSetup(true);
+      handleAnalyzed(true, data)
+        .catch(() => {
+          // do nothing
+        })
+        .finally(() => {
+          setLoadingCompleteSetup(false);
+        });
+    } else {
+      setShowSetup(false);
+    }
   };
 
+  const handleAnalysisStarted = async () => {
+    setShowSetup(true);
+    setIsAnalysisCompleted(false);
+    setAnalysisFailed(false);
+    dispatch(setGeneratingDescription(true));
+  };
+
+  const handleAnalysisFailed = () => {
+    setAnalysisFailed(true);
+    if (!showSetup) {
+      dispatch(setGeneratingDescription(false));
+      toast.info("Something went wrong.. Try again (Your data was saved).", {
+        autoClose: 3000,
+      });
+    }
+  };
+
+  // Check if we should show the analysis completion
+  useEffect(() => {
+    if (
+      settings.onboardingSetupCompleted &&
+      !settings.generatingDescription &&
+      hasPublication
+    ) {
+      handleNavigateNext();
+    }
+  }, [
+    settings.onboardingSetupCompleted,
+    settings.generatingDescription,
+    hasPublication,
+  ]);
+
+  const fadeVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: {
+      opacity: 0,
+      y: -20,
+      transition: { duration: 0.1, ease: "easeInOut" },
+    },
+  };
   return (
-    <>
-      <PublicationOnboarding
-        onAnalyzed={handleAnalyzed}
-        onAlreadyAnalyzed={handleAlreadyAnalyzed}
-        loadingAnalyzed={loadingAnalyzed}
-      />
-      <Dialog open={showPaymentDialog} onOpenChange={handlePaymentDialogChange}>
+    <div className="relative">
+      <div className="min-h-screen bg-transparent flex items-center justify-center p-4 z-50">
+        {/* Always render PublicationOnboarding but control visibility */}
+        <AnimatePresence mode="wait">
+          {!showSetup || setupCompleted ? (
+            <motion.div
+              key="publication-onboarding"
+              variants={fadeVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              <PublicationOnboarding
+                onAnalyzed={handleAnalyzed}
+                onAlreadyAnalyzed={handleAlreadyAnalyzed}
+                loadingAnalyzed={loadingAnalyzed}
+                onAnalyzing={handleAnalysisStarted}
+                onAnalysisFailed={handleAnalysisFailed}
+              />
+            </motion.div>
+          ) : (
+            !setupCompleted && (
+              <motion.div
+                key="onboarding-setup"
+                variants={fadeVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="w-full z-50"
+              >
+                <Card className="w-full max-w-4xl mx-auto">
+                  <CardHeader className="text-center">
+                    <div className="flex justify-center mb-4">
+                      <Logo />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="min-h-[600px] flex items-center justify-center">
+                    <OnboardingSetup
+                      onComplete={handleSetupComplete}
+                      loadingCompleteSetup={loadingCompleteSetup}
+                      loadingAnalysis={settings.generatingDescription}
+                      isAnalysisCompleted={isAnalysisCompleted}
+                      isAnalysisFailed={analysisFailed}
+                    />
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )
+          )}
+        </AnimatePresence>
+      </div>
+
+      <Dialog
+        open={showPaymentDialog && setupCompleted}
+        onOpenChange={handlePaymentDialogChange}
+      >
         <DialogContent closeOnOutsideClick={false}>
           <DialogHeader>
             <DialogTitle aria-label="Almost done!">Almost done!</DialogTitle>
@@ -112,6 +287,12 @@ export default function OnboardingPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+      <OnboardingLoader
+        className={cn({
+          "z-[-1] opacity-0": showSetup,
+          "z-50 opacity-100": !showSetup || setupCompleted,
+        })}
+      />
+    </div>
   );
 }

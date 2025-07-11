@@ -17,6 +17,7 @@ const initialState: {
   cancelAt: undefined,
   settings: {
     generatingDescription: false,
+    onboardingSetupCompleted: false,
   },
 };
 
@@ -46,6 +47,9 @@ export const settingsSlice = createSlice({
     setGeneratingDescription: (state, action: PayloadAction<boolean>) => {
       state.settings.generatingDescription = action.payload;
     },
+    setOnboardingSetupCompleted: (state, action: PayloadAction<boolean>) => {
+      state.settings.onboardingSetupCompleted = action.payload;
+    },
   },
 });
 
@@ -55,6 +59,7 @@ export const {
   decrementUsage,
   setCancelAt,
   setGeneratingDescription,
+  setOnboardingSetupCompleted,
 } = settingsSlice.actions;
 
 export const selectSettings = (state: RootState) => state.settings;

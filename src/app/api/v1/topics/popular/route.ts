@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const topics = await getPopularTopics({ limit: 100 });
+    const topics = await getPopularTopics({ limit: 10 });
     return NextResponse.json(topics);
   } catch (error) {
     loggerServer.error("Error getting popular topics:", {

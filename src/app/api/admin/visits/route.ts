@@ -72,7 +72,7 @@ export async function GET() {
             extension => extension.userId === visit.userId,
           );
           const userPublication = usersPublications.find(
-            pub => (pub.userId = visit.userId),
+            pub => pub.userId === visit.userId,
           );
           acc[visit.userId] = {
             userId: visit.userId,
@@ -83,6 +83,9 @@ export async function GET() {
             extensionVersion: extensionDetails?.versionInstalled || null,
             publicationUrl:
               userPublication?.publication?.publicationUrl || null,
+            publicationCreatedAt:
+              userPublication?.publication?.createdAt || null,
+            isCancelAtPeriodEnd: userCredit?.cancelAtPeriodEnd || false,
           };
         }
         acc[visit.userId].visits.push(visit);
@@ -98,11 +101,13 @@ export async function GET() {
           creditsRemaining: number;
           extensionVersion: string | null;
           publicationUrl: string | null;
+          publicationCreatedAt: Date | null;
+          isCancelAtPeriodEnd: boolean;
         }
       >,
     );
 
-    // Convert to array and sort by last visit date
+    // Convert to array and sort by publication creation date
     const result = Object.values(groupedVisits)
       .map(group => ({
         userId: group.userId,
@@ -113,8 +118,18 @@ export async function GET() {
         creditsRemaining: group.creditsRemaining,
         extensionVersion: group.extensionVersion,
         publicationUrl: group.publicationUrl,
+        publicationCreatedAt: group.publicationCreatedAt,
+        isCancelAtPeriodEnd: group.isCancelAtPeriodEnd,
       }))
-      .sort((a, b) => b.lastVisit.getTime() - a.lastVisit.getTime());
+      .sort((a, b) => {
+        // Sort by publication creation date, with null values last
+        if (!a.publicationCreatedAt && !b.publicationCreatedAt) return 0;
+        if (!a.publicationCreatedAt) return 1;
+        if (!b.publicationCreatedAt) return -1;
+        return (
+          b.publicationCreatedAt.getTime() - a.publicationCreatedAt.getTime()
+        );
+      });
 
     return NextResponse.json(result);
   } catch (error) {

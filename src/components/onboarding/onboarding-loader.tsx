@@ -5,6 +5,8 @@ import { selectSettings } from "@/lib/features/settings/settingsSlice";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
+import { motion } from "framer-motion";
+import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 
 const loadingStatesConst = [
   { text: "Validating publication in our databases..." },
@@ -30,7 +32,7 @@ const loadingStatesConst = [
   { text: "Well, this is awkward... Hope it finishes soon...🤦", delay: 3000 },
 ];
 
-export default function OnboardingLoaderProvider({
+export default function OnboardingLoader({
   className,
 }: {
   className?: string;
@@ -42,16 +44,16 @@ export default function OnboardingLoaderProvider({
   }, [settings.generatingDescription]);
 
   return (
-    <ToastStepper
-      loadingStates={loadingStatesConst}
-      loading={showLoader}
-      duration={7000}
-      loop={false}
-      position="bottom-left"
-      className={cn(
-        "!opacity-40 hover:!opacity-100 transition-opacity",
-        className,
-      )}
-    />
+    <motion.div
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+      className={cn(className)}
+    >
+      <MultiStepLoader
+        loadingStates={loadingStatesConst}
+        loading={showLoader}
+        duration={7000}
+        loop={false}
+      />
+    </motion.div>
   );
 }

@@ -84,7 +84,7 @@ export const getPopularTopics = async (options: { limit: number }) => {
     take: options.limit,
   });
 
-  return topics.map(topic => topic.topic);
+  return topics;
 };
 
 export const searchTopics = async (options: {

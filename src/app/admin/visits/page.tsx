@@ -13,6 +13,8 @@ interface Visit {
   creditsRemaining: number;
   extensionVersion: string | null;
   publicationUrl: string | null;
+  publicationCreatedAt: string | null;
+  isCancelAtPeriodEnd: boolean;
 }
 
 export default function AdminVisitsPage() {
@@ -86,20 +88,23 @@ export default function AdminVisitsPage() {
               </tr>
             </thead>
             <tbody className="bg-card divide-y divide-border">
-              {visits.map((visit) => (
+              {visits.map(visit => (
                 <tr key={visit.userId}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {visit.publicationUrl ? (
                       <a
-                        href={visit.publicationUrl}
+                        href={`${visit.publicationUrl.includes("https://") ? visit.publicationUrl : `https://${visit.publicationUrl}`}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                       >
-                        Go to publication
+                        Go to publication{" "}
+                        {visit.isCancelAtPeriodEnd ? " (Canceled)" : ""}
                       </a>
                     ) : (
-                      <span className="text-sm text-muted-foreground">No publication</span>
+                      <span className="text-sm text-muted-foreground">
+                        No publication
+                      </span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -143,4 +148,4 @@ export default function AdminVisitsPage() {
       </div>
     </div>
   );
-} 
+}

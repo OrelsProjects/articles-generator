@@ -73,9 +73,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
-    // console.log("%c🔥 layout rendered", "color: orange; font-size: 20px");
-
+  // console.log("%c🔥 layout rendered", "color: orange; font-size: 20px");
 
   return (
     <html lang="en" className={cn("antialiased", Inter.className)}>
@@ -107,7 +105,7 @@ export default function RootLayout({
               <TopLoaderProvider />
               <ToastProvider />
               <Analytics />
-              <AnimationProvider className="max-h-screen">
+              <AnimationProvider className="max-h-screen overflow-hidden">
                 {children}
               </AnimationProvider>
               <ClientTrackersProvider />
