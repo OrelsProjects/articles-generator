@@ -30,10 +30,14 @@ import OnboardingLoader from "@/components/onboarding/onboarding-loader";
 import { cn } from "@/lib/utils";
 import { setGeneratingDescription } from "@/lib/features/settings/settingsSlice";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { useSession } from "next-auth/react";
+import { usePublicationSettings } from "@/lib/hooks/usePublicationSettings";
 
 export default function OnboardingPage() {
   const router = useCustomRouter();
   const dispatch = useAppDispatch();
+  const { publicationSettings } = usePublicationSettings();
+  const { data: session } = useSession();
   const [loadingAnalyzed, setLoadingAnalyzed] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
   const [setupCompleted, setSetupCompleted] = useLocalStorage<boolean>(
@@ -69,6 +73,22 @@ export default function OnboardingPage() {
     if (onboardingSetupData) {
       setupData.current = onboardingSetupData;
     }
+    if (session?.user) {
+      const meta = session.user.meta;
+      if (meta) {
+        const newSetupData = {
+          ...onboardingSetupData,
+          iAmA: meta.iAmA || "",
+          usuallyPostAbout: meta.usuallyPostAbout || "",
+          writeInLanguage: meta.preferredLanguage || "",
+          topics: publicationSettings?.preferredTopics || [],
+          customPrompt: publicationSettings?.personalDescription || "",
+          name: session.user.name || onboardingSetupData?.name || "",
+          customTopics: onboardingSetupData?.customTopics || "",
+        };
+        setupData.current = newSetupData;
+      }
+    }
   }, [onboardingSetupData]);
 
   const handleNavigateNext = () => {
@@ -98,7 +118,7 @@ export default function OnboardingPage() {
     if (!user) {
       router.push("/");
     }
-    if (hasPublication) {
+    if (hasPublication && setupCompleted) {
       handleNavigateNext();
     }
   }, [user, hasPublication, handleNavigateNext]);
