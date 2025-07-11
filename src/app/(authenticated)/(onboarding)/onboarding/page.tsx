@@ -118,6 +118,12 @@ export default function OnboardingPage() {
   const handleAnalyzed = useCallback(
     async (forceSave = false, data?: OnboardingFormData) => {
       setIsAnalysisCompleted(true);
+      Logger.info("handleAnalyzed", {
+        forceSave,
+        data,
+        setupData: setupData.current,
+        setupCompleted,
+      });
       try {
         // Save the onboarding data
         if ((setupData.current && setupCompleted) || data || forceSave) {

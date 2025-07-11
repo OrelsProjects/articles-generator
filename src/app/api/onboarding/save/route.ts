@@ -27,6 +27,10 @@ export async function POST(req: NextRequest) {
   try {
     const bodyText = await req.text();
     const body = JSON.parse(bodyText || "{}");
+    loggerServer.info("Onboarding data", {
+      body,
+      userId: session.user.id,
+    });
     const validatedData = onboardingDataSchema.parse(body);
 
     // Update user name if provided
@@ -65,6 +69,11 @@ export async function POST(req: NextRequest) {
         include: { publication: true },
       });
     }
+
+    loggerServer.info("Onboarding data", {
+      userMetadata,
+      userId: session.user.id,
+    });
 
     await addTopicsString(validatedData.topics);
 
