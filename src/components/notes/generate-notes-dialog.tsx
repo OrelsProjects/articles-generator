@@ -506,7 +506,7 @@ export function GenerateNotesDialog({
         maxSelectedArticles={notesToGenerate}
         reloadArticles={() => {
           try {
-            fetchPosts(1, true);
+          fetchPosts(1, true);
           } catch (e: any) {
             toast.error(e.message);
           }
