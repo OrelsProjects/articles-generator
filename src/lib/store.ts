@@ -10,29 +10,7 @@ import statisticsReducer from "@/lib/features/statistics/statisticsSlice";
 import writerReducer from "@/lib/features/writer/writerSlice";
 import autoDMReducer from "@/lib/features/auto-dm/auto-dm-slice";
 import ghostwriterReducer from "@/lib/features/ghostwriter/ghostwriterSlice";
-// Load UI state from localStorage
-// const loadUiState = () => {
-//   if (typeof window === "undefined") return undefined;
-//   try {
-//     const serializedState = localStorage.getItem("uiState");
-//     if (serializedState === null) return undefined;
-//     return JSON.parse(serializedState);
-//   } catch (err) {
-//     console.error("Error loading UI state from localStorage:", err);
-//     return undefined;
-//   }
-// };
-
-// // Save UI state to localStorage
-// const saveUiState = (state: any) => {
-//   if (typeof window === "undefined") return;
-//   try {
-//     const serializedState = JSON.stringify(state);
-//     localStorage.setItem("uiState", serializedState);
-//   } catch (err) {
-//     console.error("Error saving UI state to localStorage:", err);
-//   }
-// };
+import realTimeReducer from "@/lib/features/real-time/realTimeSlice";
 
 export const makeStore = () => {
   const store = configureStore({
@@ -48,19 +26,9 @@ export const makeStore = () => {
       writer: writerReducer,
       autoDM: autoDMReducer,
       ghostwriter: ghostwriterReducer,
+      realTime: realTimeReducer,
     },
-    // preloadedState: {
-    //   ui: loadUiState(),
-    // },
   });
-
-  // // Subscribe to store changes to save UI state
-  // if (typeof window !== "undefined") {
-  //   store.subscribe(() => {
-  //     const state = store.getState();
-  //     saveUiState(state.ui);
-  //   });
-  // }
 
   return store;
 };

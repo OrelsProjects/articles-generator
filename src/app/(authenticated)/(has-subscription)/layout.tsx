@@ -2,6 +2,7 @@ import { DataFetchProvider } from "@/app/providers/DataFetchProvider";
 import DialogProvider from "@/app/providers/DialogProvider";
 import { ExtensionProvider } from "@/app/providers/ExtensionProvider";
 import FreeSubscriptionProvider from "@/app/providers/FreeSubscriptionProvider";
+import GhostwriteClientProvider from "@/app/providers/GhostwriteClientProvider";
 import NewSubscriptionDialog from "@/app/providers/NewSubscriptionDialog";
 import QueueDiscrepancyProvider from "@/app/providers/QueueDiscrepancyProvider";
 import ShowNoteFromUrlProvider from "@/app/providers/ShowNoteFromUrlProvider";
@@ -31,6 +32,8 @@ export default function ContentLayout({
               <DialogProvider />
               <QueueDiscrepancyProvider />
               <UpdateDataProvider />
+              <GhostwriteClientProvider />
+
               {children}
               {/* </SubstackCookiesProvider> */}
             </DataFetchProvider>

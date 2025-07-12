@@ -87,10 +87,14 @@ export async function generateNotesPrompt({
         break;
       case "auto":
         // model = "openrouter/auto";
-        model = "anthropic/claude-3.7-sonnet";
+        // model = "anthropic/claude-3.7-sonnet";
+        model = "x-ai/grok-4";
         break;
       case "gpt-4.1":
         model = "openai/gpt-4.1";
+        break;
+      case "grok-4":
+        model = "x-ai/grok-4";
         break;
       case "deepseek-r1":
         model = "deepseek/deepseek-r1";
@@ -101,7 +105,7 @@ export async function generateNotesPrompt({
       initialGeneratingModel = model;
     }
   }
-
+  
   const publicationId = userMetadata?.publication?.idInArticlesDb;
 
   if (!publicationId || !userMetadata.publication) {
@@ -293,7 +297,7 @@ export async function generateNotes({
       session = await getServerSession(authOptions);
       if (!session) {
         throw new Error("Unauthorized");
-      } 
+      }
     } else {
       session = userSession;
     }
@@ -408,7 +412,7 @@ export async function generateNotes({
       );
       improvedNotes = await parseJson(improvedNotesResponse);
     }
-    
+
     // Save notes
     newNotes = newNotes
       .map((note, index) => {

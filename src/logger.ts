@@ -70,7 +70,7 @@ const printLog = (
     return;
   }
   const logText = `${`${type || ""}: `}${message ?? ""} ${
-    logItem?.data ? JSON.stringify(logItem.data) : ""
+    logItem ? JSON.stringify(logItem) : ""
   } ${logItem?.error ? JSON.stringify(logItem.error) : ""}
   }`;
   switch (type) {

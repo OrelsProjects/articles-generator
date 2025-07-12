@@ -162,7 +162,6 @@ export const useNotes = () => {
         showScheduleModal?: boolean;
       },
     ) => {
-      EventTracker.track("notes_select_note");
       let noteToUpdate: NoteDraft | Note | null = null;
       if (typeof note === "string") {
         noteToUpdate = userNotes.find(userNote => userNote.id === note) || null;
@@ -962,6 +961,34 @@ export const useNotes = () => {
     [],
   );
 
+  // For realtime ghostwriter
+  const deleteNoteLocally = useCallback(
+    (noteId: string) => {
+      dispatch(removeNote(noteId));
+    },
+    [userNotes],
+  );
+
+  const scheduleNoteLocally = useCallback(
+    async (noteId: string, scheduledTo: Date) => {
+      const note = userNotes.find(note => note.id === noteId);
+      if (!note) {
+        throw new Error("Note not found");
+      }
+      const noteWithScheduledTo: NoteDraft = {
+        ...note,
+        status: "scheduled",
+        scheduledTo,
+      };
+      // create schedule in external service
+      await createSchedule(noteWithScheduledTo, {
+        showToast: false,
+      });
+      dispatch(updateNote({ id: noteId, note: noteWithScheduledTo }));
+    },
+    [userNotes],
+  );
+
   return {
     userNotes,
     selectedNote,
@@ -1000,5 +1027,9 @@ export const useNotes = () => {
     uploadLink,
     getOgData,
     firstLoadingNotes,
+
+    // For realtime ghostwriter
+    deleteNoteLocally,
+    scheduleNoteLocally,
   };
 };

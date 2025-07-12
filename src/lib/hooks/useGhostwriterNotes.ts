@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import {
   selectGhostwriter,
@@ -50,6 +50,9 @@ import { OpenGraphResponse } from "@/types/og";
 import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { CreateUserSchedule, UserSchedule } from "@/types/schedule";
 import { ScheduleExistsError } from "@/lib/errors/ScheduleExistsError";
+import { useRealTimeMessage } from "@/lib/hooks/useRealTimeRoom";
+import { useRealTime } from "@/lib/hooks/useRealTime";
+import { realTimeService } from "@/lib/services/realtime.service";
 
 export const MAX_ATTACHMENTS = Math.ceil(MAX_FILE_SIZE / CHUNK_SIZE);
 
@@ -86,6 +89,8 @@ export const useGhostwriterNotes = () => {
   );
   const [loadingSchedule, setLoadingSchedule] = useState(false);
   const [loadingAddSchedule, setLoadingAddSchedule] = useState(false);
+
+  const { sendMessage, connectionState } = useRealTime();
 
   const cancelUpdateBody = useRef<NoteId[]>([]);
 
@@ -128,6 +133,12 @@ export const useGhostwriterNotes = () => {
     }),
     [scheduledNotes.length, draftNotes.length, publishedNotes.length],
   );
+
+  useEffect(() => {
+    if (connectionState === "connected" && selectedClientId) {
+      realTimeService.connectToRoom(selectedClientId);
+    }
+  }, [connectionState]);
 
   // Fetch notes for a specific client
   const fetchClientNotes = useCallback(async (clientId: string) => {
@@ -186,6 +197,7 @@ export const useGhostwriterNotes = () => {
     (clientUserId: string | null) => {
       dispatch(setSelectedClientId(clientUserId));
       if (clientUserId) {
+        realTimeService.connectToRoom(clientUserId);
         setLastSelectedClientId(clientUserId);
         fetchClientNotes(clientUserId);
         fetchClientSchedules(clientUserId);
@@ -215,7 +227,6 @@ export const useGhostwriterNotes = () => {
   // Select a note
   const selectNote = useCallback(
     (note: Note | NoteDraft | string | null) => {
-      debugger;
       EventTracker.track("ghostwriter_notes_select_note");
       let noteToUpdate: NoteDraft | Note | null = null;
 
@@ -238,7 +249,7 @@ export const useGhostwriterNotes = () => {
 
   // Create a new draft note for the selected client
   const createDraftNote = useCallback(
-    async (draft?: Partial<NoteDraft>): Promise<void> => {
+    async (draft?: Partial<NoteDraft>) => {
       if (!selectedClientId) {
         throw new Error("No client selected");
       }
@@ -259,6 +270,13 @@ export const useGhostwriterNotes = () => {
 
         dispatch(addClientNote({ clientId: selectedClientId, note: response }));
         dispatch(setSelectedClientNote(response));
+        sendMessage(
+          selectedClientId,
+          {
+            type: "note_created",
+          },
+          { subscribeIfNotConnected: true },
+        );
       } catch (error: any) {
         Logger.error("Error creating ghostwriter draft note:", error);
         throw error;
@@ -276,7 +294,6 @@ export const useGhostwriterNotes = () => {
       status: NoteStatus | "archived",
       scheduledTo?: Date,
     ) => {
-      debugger;
       if (!selectedClientId) return;
 
       EventTracker.track("ghostwriter_notes_update_note_status_" + status);
@@ -298,7 +315,6 @@ export const useGhostwriterNotes = () => {
         if (scheduledTo) {
           body.scheduledTo = scheduledTo;
         }
-
         await axiosInstance.patch<NoteDraft[]>(`/api/note/${noteId}`, body);
 
         if (status === "archived") {
@@ -306,6 +322,10 @@ export const useGhostwriterNotes = () => {
           if (selectedClientNote?.id === noteId) {
             dispatch(setSelectedClientNote(null));
           }
+          sendMessage(selectedClientId, {
+            type: "note_deleted",
+            noteId,
+          });
         } else {
           dispatch(
             updateClientNote({
@@ -314,6 +334,13 @@ export const useGhostwriterNotes = () => {
               note: { ...body },
             }),
           );
+          if (scheduledTo) {
+            sendMessage(selectedClientId, {
+              type: "note_scheduled",
+              noteId,
+              scheduledTo,
+            });
+          }
         }
       } catch (error: any) {
         Logger.error("Error updating status:", error);
