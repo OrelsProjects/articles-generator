@@ -22,12 +22,12 @@ export const sendMail = async ({
   isMagicLink = false,
 }: SendEmailOptions) => {
   const env = process.env.NODE_ENV;
-  if (!isMagicLink && env !== "production" && !sendInDevelopment) {
-    console.log(
-      `[MAIL] Not sending mail in development: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,
-    );
-    return;
-  }
+  // if (!isMagicLink && env !== "production" && !sendInDevelopment) {
+  //   console.log(
+  //     `[MAIL] Not sending mail in development: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,
+  //   );
+  //   return;
+  // }
 
   loggerServer.info(
     `Sending mail: ${subject}, to: ${to}, from: ${from}, cc: ${cc}, template: ${template}`,
@@ -41,6 +41,7 @@ export const sendMail = async ({
   } else if (from === "welcome") {
     fromApp = `Orel from WriteStack <welcome@writestack.io>`;
   }
+  
   const response = await client.sendEmail({
     to,
     from: fromApp,
@@ -48,6 +49,7 @@ export const sendMail = async ({
     template,
     cc: ccArray,
   });
+
   loggerServer.info(`Mail sent successfully: ${subject}, to: ${to}`);
   if (!response) {
     throw new Error(`Failed to send mail: ${subject}, to: ${to}`);

@@ -14,7 +14,7 @@ import {
   generateSubscriptionTrialEndingEmail,
 } from "@/lib/mail/templates";
 import { creditsPerPlan } from "@/lib/plans-consts";
-import { getCoupon, getStripeInstance } from "@/lib/stripe";
+import { getCardLast4, getCoupon, getStripeInstance } from "@/lib/stripe";
 import { calculateNewPlanCreditsLeft } from "@/lib/utils/credits";
 import loggerServer from "@/loggerServer";
 import { Interval, Payment, Plan, Subscription } from "@prisma/client";
@@ -512,16 +512,16 @@ export async function handleSubscriptionTrialEnding(event: any) {
 
 //
 export async function handleInvoicePaymentSucceeded(event: any) {
+  const stripe = getStripeInstance();
   const invoice = event.data.object as Stripe.Invoice;
+  const invoiceDownloadUrl = invoice.invoice_pdf;
   const customerEmail = invoice.customer_email;
   const customerId = invoice.customer as string;
 
-  const customer = await getStripeInstance().customers.retrieve(
-    invoice.customer as string,
-  );
+  const customer = await stripe.customers.retrieve(invoice.customer as string);
   const userEmail = (customer as any).email || customerEmail;
   if (!userEmail) {
-    loggerServer.error(
+    loggerServer.critical(
       "No email found for customer" +
         " " +
         customerId +
@@ -536,7 +536,7 @@ export async function handleInvoicePaymentSucceeded(event: any) {
     },
   });
   if (!user) {
-    loggerServer.error(
+    loggerServer.critical(
       "No user found for customer" +
         " " +
         customerId +
@@ -548,7 +548,7 @@ export async function handleInvoicePaymentSucceeded(event: any) {
   const subscription = await getActiveSubscription(user.id);
 
   if (!subscription) {
-    loggerServer.error(
+    loggerServer.critical(
       "No active subscription found for user" +
         " " +
         user.id +
@@ -557,41 +557,37 @@ export async function handleInvoicePaymentSucceeded(event: any) {
     return;
   }
 
-  const newCredits = subscription.isTrialing
-    ? subscription.creditsRemaining
-    : subscription.creditsPerPeriod + subscription.creditsRemaining;
+  if (!invoiceDownloadUrl) {
+    loggerServer.critical(
+      "No invoice download URL found for invoice" +
+        " " +
+        invoice.id +
+        " In handleInvoicePaymentSucceeded",
+    );
+  }
 
-  await prisma.subscription.update({
-    where: {
-      id: subscription.id,
-    },
-    data: {
-      creditsRemaining: newCredits,
-      isTrialing: false,
-      lastCreditReset: new Date(),
-    },
-  });
+  const charge = invoice.charge;
+  const cardLast4 = await getCardLast4(charge);
 
-  const currentPeriodEnd = new Date(Number(subscription.currentPeriodEnd));
-
-  // if (invoice.amount_paid > 0) {
   const emailTemplate = generatePaymentConfirmationEmail({
     userName: user.name || "",
     planName: subscription.plan,
     amount: invoice.amount_paid / 100,
-    paymentDate: new Date(),
-    nextBillingDate: currentPeriodEnd,
-    invoiceNumber: invoice.number || undefined,
     currency: invoice.currency || undefined,
+    cardLast4: cardLast4 || undefined,
+    invoiceDownloadUrl: invoiceDownloadUrl || null,
   });
 
   const sendTo = invoice.amount_paid > 0 ? userEmail : "orelsmail@gmail.com";
 
-  let subject = invoice.amount_paid > 0 ? emailTemplate.subject : emailTemplate.subject + " - " + " OREL";
+  let subject =
+    invoice.amount_paid > 0
+      ? emailTemplate.subject
+      : emailTemplate.subject + " - " + " OREL";
 
   await sendMail({
     to: sendTo,
-    from: "support",
+    from: "billing",
     subject,
     template: emailTemplate.body,
     cc: sendTo === userEmail ? ["orelsmail@gmail.com"] : [],
@@ -632,6 +628,9 @@ export async function handleInvoicePaymentFailed(event: any) {
 
 export async function handleCheckoutSessionCompleted(event: any) {
   const session = event.data.object as Stripe.Checkout.Session;
+  const subscriptionId = session.subscription as string;
+  const subscription =
+    await getStripeInstance().subscriptions.retrieve(subscriptionId);
 
   // get userId and credits from metadata
   const userId = session.metadata?.userId as string;
@@ -648,7 +647,6 @@ export async function handleCheckoutSessionCompleted(event: any) {
     return;
   }
 
-  const subscription = await getActiveSubscription(userId);
   if (!subscription) {
     loggerServer.error(
       "No subscription found for user" +
@@ -664,7 +662,7 @@ export async function handleCheckoutSessionCompleted(event: any) {
       id: subscription.id,
     },
     data: {
-      creditsRemaining: subscription.creditsRemaining + credits,
+      status: subscription.status,
     },
   });
 }

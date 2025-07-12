@@ -7,7 +7,7 @@ export type Tag =
 export interface SendEmailOptions {
   to: string | string[];
   subject: string;
-  from: "support" | "noreply" | "welcome" | "team";
+  from: "support" | "noreply" | "welcome" | "team" | "empty" | "billing" | "welcome";
   template: string;
   cc?: string | string[];
   sendInDevelopment?: boolean;

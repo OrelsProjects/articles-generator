@@ -17,84 +17,162 @@ export function baseEmailTemplate(content: string) {
       <title>WriteStack Notification</title>
       <style>
         body {
-          font-family: Arial, sans-serif;
-          line-height: 1.6;
-          background-color: hsl(0, 0%, 98%);
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          line-height: 1.5;
+          background-color: #f5f5f5;
           margin: 0;
           padding: 0;
+          color: #000000;
         }
-        .container {
-          max-width: 600px;
-          margin: 20px auto;
+        .email-wrapper {
+          width: 100%;
+          background-color: #f5f5f5;
+          padding: 40px 20px;
+        }
+        .email-container {
+          max-width: 700px;
+          margin: 0 auto;
           background-color: #ffffff;
-          border: 1px solid hsl(0, 0%, 89.8%);
-          border-radius: 0.5rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          border: 1px solid #808080;
+        }
+        .top-bar {
+          height: 8px;
+          background-color: #ff661a;
         }
         .header {
-          background-color: #ff661a; /* Deep burnt orange */
-          color: #ffffff;
-          padding: 20px;
+          padding: 40px 50px 30px 50px;
           text-align: center;
-          border-top-left-radius: 0.5rem;
-          border-top-right-radius: 0.5rem;
+          border-bottom: 1px solid #e8e8e8;
         }
-        .header h1 {
+        .logo-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+        }
+        .logo {
+          width: 40px;
+          height: 40px;
+          margin-right: 12px;
+        }
+        .logo::before {
+          content: "W";
+          color: #ffffff;
+          font-weight: bold;
+          font-size: 20px;
+        }
+        .brand-name {
+          color: #000000;
+          font-size: 28px;
+          font-weight: 700;
           margin: 0;
+          letter-spacing: -0.5px;
         }
         .content {
-          padding: 20px;
+          padding: 40px 50px 50px 50px;
         }
-        .center-button-container {
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
+        .content h1 {
+          color: #000000;
+          font-size: 24px;
+          font-weight: 600;
+          margin: 0 0 24px 0;
+          line-height: 1.3;
         }
-        .title {
-            font-size: 18px;
-            color: #ff661a; /* Deep burnt orange */
+        .content p {
+          color: #000000;
+          font-size: 16px;
+          margin: 0 0 16px 0;
+          line-height: 1.6;
+        }
+        .content a {
+          color: #ff661a;
+          text-decoration: none;
+        }
+        .content a:hover {
+          text-decoration: underline;
         }
         .button-container {
-            text-align: center;
+          margin: 30px 0;
         }
         .button {
-            display: inline-block;
-            padding: 10px 20px;
-            color: #ffffff !important;
-            background-color: #ff661a; /* Deep burnt orange */
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 15px;
-            font-weight: bold;
+          display: inline-block;
+          padding: 14px 32px;
+          background-color: #ff661a;
+          color: #ffffff !important;
+          text-decoration: none !important;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 16px;
+          transition: background-color 0.2s ease;
+        }
+        .button:hover {
+          background-color: #e55a17;
+          text-decoration: none !important;
         }
         .footer {
-            font-size: 12px;
-            color: #777777;
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 10px;
+          padding: 30px 50px 40px 50px;
+          text-align: center;
         }
-        .divider {
-            margin-top: 30px;
-            border-top: 1px solid #dddddd;
-            margin-bottom: 20px;
+        .footer p {
+          color: #888888;
+          font-size: 14px;
+          margin: 0 0 4px 0;
+          line-height: 1.6;
         }
-        a {
-            color: #ffffff;
-            text-decoration: none;
-            cursor: pointer;
+        .footer a {
+          color: #888888;
+          text-decoration: underline;
+        }
+        .footer a:hover {
+          color: #666666;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 600px) {
+          .email-wrapper {
+            padding: 20px 10px;
+          }
+          .header, .content, .footer {
+            padding-left: 30px;
+            padding-right: 30px;
+          }
+          .header {
+            padding-top: 30px;
+            padding-bottom: 20px;
+          }
+          .content {
+            padding-top: 30px;
+            padding-bottom: 30px;
+          }
+          .content h1 {
+            font-size: 20px;
+          }
+          .brand-name {
+            font-size: 24px;
+          }
         }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <h1>WriteStack</h1>
-        </div>
-        <div class="content">
-          ${content}
-        </div>
+      <div class="email-wrapper">
+        <div class="email-container">
+          <div class="top-bar"></div>
+          <div class="header">
+            <div class="logo-container">
+              <img src="https://writestack-og-images.s3.us-east-1.amazonaws.com/logo.png" alt="WriteStack Logo" class="logo" />
+              <h1 class="brand-name">WriteStack</h1>
+            </div>
+          </div>
+          <div class="content">
+            ${content}
+          </div>
+          </div>
+          <div class="footer">
+            <p>Copyright ${new Date().getFullYear()} WriteStack. All rights reserved.</p>
+          </div>
       </div>
     </body>
     </html>
@@ -292,74 +370,47 @@ export function generatePaymentConfirmationEmail(options: {
   userName: string;
   planName: string;
   amount: string | number;
-  paymentDate?: Date;
-  nextBillingDate?: Date;
-  invoiceNumber?: string;
   currency?: string;
+  cardLast4?: string;
+  invoiceDownloadUrl: string | null;
 }) {
   const {
     userName,
     planName,
     amount,
-    paymentDate,
-    nextBillingDate,
-    invoiceNumber,
     currency,
+    cardLast4,
+    invoiceDownloadUrl,
   } = options;
-  const formattedPaymentDate = paymentDate
-    ? paymentDate.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "today";
 
-  const formattedNextBillingDate = nextBillingDate
-    ? nextBillingDate.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : null;
-      
   const currencySymbol = currencyToSymbol(currency || "") || "";
   const validAmountString = currency ? `${currencySymbol}${amount}` : amount;
+  const capitalizedPlanName =
+    planName.charAt(0).toUpperCase() + planName.slice(1);
 
   const content = `
-    <h2>Payment Confirmed</h2>
-    <p>Hi ${userName || "there"},</p>
-    <p>Great news! Your payment for WriteStack ${planName || "subscription"} has been successfully processed. Thank you for your continued support of your writing journey with us.</p>
+    <p><strong>Thank you for your payment</strong></p>
     
-    <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
-      <h3 style="color: #cc5500; margin-top: 0;">Payment Details</h3>
-      <p><strong>Amount:</strong> ${validAmountString}</p>
-      <p><strong>Date:</strong> ${formattedPaymentDate}</p>
-      ${invoiceNumber ? `<p><strong>Invoice Number:</strong> ${invoiceNumber}</p>` : ""}
-      ${formattedNextBillingDate ? `<p><strong>Next Billing Date:</strong> ${formattedNextBillingDate}</p>` : ""}
+    <p>Your account, <strong>${userName || "Your Account"}</strong>, has been charged <strong>${validAmountString}</strong> to card ending in <strong>${cardLast4 || "****"}</strong> 
+    for your WriteStack ${capitalizedPlanName} subscription. To view detailed charges you can either visit your <a href="https://writestack.io/settings#billing">Billing & Invoices</a> or download a copy of your invoice below.</p>
+    
+    <p>Happy Writing!</p>
+    ${
+      invoiceDownloadUrl
+        ? `
+    <div class="button-container">
+      <a href="${invoiceDownloadUrl}" class="button">Download invoice</a>
     </div>
+    `
+        : ""
+    }
     
-    <p>Your subscription is active and you have full access to all WriteStack features to help elevate your writing:</p>
-    <ul>
-      <li>Smart, powerful notes outline and writer</li>
-      <li>Easy notes scheduling</li>
-      <li>Publication analytics and insights</li>
-    </ul>
-    
-    <p>Need to review your subscription details or download your invoice? You can access your account settings at any time:</p>
-    
-    <div class="center-button-container">
-      <a href="https://writestack.io/settings" class="button">Manage Subscription</a>
-    </div>
-    
-    <p style="margin-top: 20px;">If you have any questions about your payment or subscription, please don't hesitate to reach out. We're here to help!</p>
-    
-    <p>Happy writing,<br>
-    The WriteStack Team</p>
+    <p style="margin-top: 30px; color: #666666; font-size: 14px;">If the link above has expired, please visit your <a href="https://writestack.io/settings#billing">Billing & Invoices</a> to download a copy of your invoice or receipt.</p>
   `;
 
   return {
     body: baseEmailTemplate(content),
-    subject: `Payment Confirmed: Your WriteStack ${planName || "subscription"} is active`,
+    subject: `Thank you for your payment`,
   };
 }
 

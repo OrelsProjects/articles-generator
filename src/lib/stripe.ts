@@ -319,3 +319,32 @@ export const getRetentionCoupon = async (
   const coupon = await getCoupon(stripe, promoCode, interval);
   return coupon;
 };
+
+export async function getCardLast4(chargeId: string | Stripe.Charge | null) {
+  if (!chargeId) {
+    return null;
+  }
+  const stripe = getStripeInstance();
+  try {
+    let charge: Stripe.Charge;
+    if (typeof chargeId === "string") {
+      charge = await stripe.charges.retrieve(chargeId);
+    } else {
+      charge = chargeId;
+    }
+
+    if (
+      charge.payment_method_details &&
+      charge.payment_method_details.type === "card" &&
+      charge.payment_method_details.card
+    ) {
+      const last4 = charge.payment_method_details.card.last4;
+      return last4;
+    } else {
+      return null;
+    }
+  } catch (err) {
+    console.error("Error retrieving charge:", err);
+    return null;
+  }
+}
