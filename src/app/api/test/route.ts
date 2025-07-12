@@ -176,49 +176,49 @@ export async function GET(request: NextRequest) {
   //   `Saved ${Object.keys(usersApplied).length} users to usersApplied.json`,
   // );
 
-  const topics = await prismaProd.publicationMetadata.findMany({
-    select: {
-      topics: true,
-      preferredTopics: true,
-    },
-  });
+  // const topics = await prismaProd.publicationMetadata.findMany({
+  //   select: {
+  //     topics: true,
+  //     preferredTopics: true,
+  //   },
+  // });
 
-  const topicsToAdd = topics.map(topic => topic.topics).join(",");
-  const preferredTopicsToAdd = topics
-    .map(topic => topic.preferredTopics)
-    .join(",");
+  // const topicsToAdd = topics.map(topic => topic.topics).join(",");
+  // const preferredTopicsToAdd = topics
+  //   .map(topic => topic.preferredTopics)
+  //   .join(",");
 
-  // remove emptys, then join by comma
-  const allTopics = [topicsToAdd, preferredTopicsToAdd]
-    .flat()
-    .filter(topic => topic !== "")
-    .map(topic => topic.trim())
-    .join(",")
-    // remove consecutive commas
-    .replace(/,+/g, ",")
-    // remove duplicates by name.toLowerCase()
-    .split(",")
-    .map(topic => topic.trim())
-    .join(",");
+  // // remove emptys, then join by comma
+  // const allTopics = [topicsToAdd, preferredTopicsToAdd]
+  //   .flat()
+  //   .filter(topic => topic !== "")
+  //   .map(topic => topic.trim())
+  //   .join(",")
+  //   // remove consecutive commas
+  //   .replace(/,+/g, ",")
+  //   // remove duplicates by name.toLowerCase()
+  //   .split(",")
+  //   .map(topic => topic.trim())
+  //   .join(",");
 
-  const topicsByOccurence: Record<string, number> = {};
-  for (const topic of allTopics.split(",")) {
-    topicsByOccurence[topic.toLowerCase()] =
-      (topicsByOccurence[topic.toLowerCase()] || 0) + 1;
-  }
+  // const topicsByOccurence: Record<string, number> = {};
+  // for (const topic of allTopics.split(",")) {
+  //   topicsByOccurence[topic.toLowerCase()] =
+  //     (topicsByOccurence[topic.toLowerCase()] || 0) + 1;
+  // }
 
-  const sortedTopics = Object.entries(topicsByOccurence)
-    .sort((a, b) => b[1] - a[1])
-    .map(([topic, count]) => ({
-      topic: topic.replace(/\b\w/g, char => char.toUpperCase()),
-      count,
-    }))
-    .slice(0, 300);
-  // Uppercase first letter of each word
+  // const sortedTopics = Object.entries(topicsByOccurence)
+  //   .sort((a, b) => b[1] - a[1])
+  //   .map(([topic, count]) => ({
+  //     topic: topic.replace(/\b\w/g, char => char.toUpperCase()),
+  //     count,
+  //   }))
+  //   .slice(0, 300);
+  // // Uppercase first letter of each word
 
-  // await addTopics(allTopics);
+  // // await addTopics(allTopics);
 
-  // const TOPICS = [
+  // // const TOPICS = [
   //   "Productivity",
   //   "Mindset",
   //   "Leadership",
@@ -391,15 +391,15 @@ export async function GET(request: NextRequest) {
 
   // await addTopics(sortedTopics);
 
-  const template = generateWelcomeTemplateTrial("Orel");
-  await sendMailSafe({
-    to: "orelsmail@gmail.com",
-    from: "welcome",
-    subject: template.subject,
-    template: template.body,
-  });
+  // const template = generateWelcomeTemplateTrial("Orel");
+  // await sendMailSafe({
+  //   to: "orelsmail@gmail.com",
+  //   from: "welcome",
+  //   subject: template.subject,
+  //   template: template.body,
+  // });
 
-  return NextResponse.json({ success: true, sortedTopics });
+  // return NextResponse.json({ success: true, sortedTopics });
 
   // if (!session || !session.user || !session.user.meta) {
   //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
