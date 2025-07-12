@@ -29,14 +29,13 @@ const buttonVariants = cva(baseClassName, {
         "text-foreground/90 underline-offset-4 hover:underline hover:text-foreground hover:underline",
       "neumorphic-primary":
         "rounded-md bg-gradient-to-b from-primary via-primary/80 to-primary/60 text-primary-foreground shadow-md border !border-primary px-4 py-2 transition-colors font-semibold",
-      clean: "",
+      clean: "!p-0",
     },
     size: {
       default: "h-9 px-4 py-2",
       sm: "h-8 rounded-md px-3 text-xs",
       lg: "h-10 rounded-md px-8",
       icon: "h-9 w-9",
-      clean: "",
     },
   },
   defaultVariants: {

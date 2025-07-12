@@ -203,7 +203,7 @@ export function CompactNoteComponent({
           showMore ? "max-h-none" : "max-h-[260px]",
         )}
         onClick={() => {
-          debugger;
+          
           const noteDraft = noteWithEngagementStatsToNoteDraft(note);
           selectNote(noteDraft, {
             isFromInspiration: true,

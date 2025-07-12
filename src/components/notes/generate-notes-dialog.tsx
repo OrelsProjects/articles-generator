@@ -53,6 +53,7 @@ import { NotesGenerateOptions } from "@/types/notes-generate-options";
 import { useAppSelector } from "@/lib/hooks/redux";
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { languageValueToLabel } from "@/components/settings/consts";
+import { TooltipButton } from "@/components/ui/tooltip-button";
 
 const ideaLoadingStates = [
   { text: "Finding relevant notes..." },
@@ -326,20 +327,29 @@ export function GenerateNotesDialog({
                         Selected Articles ({selectedArticles.length}/
                         {notesToGenerate})
                       </Label>
-                      <TooltipProvider delayDuration={50}>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <div className="flex flex-row items-center gap-2">
-                              <Checkbox
-                                checked={includeArticleLinks}
-                                onCheckedChange={() =>
-                                  setIncludeArticleLinks(!includeArticleLinks)
-                                }
-                                className="w-4 h-4"
-                              />
-                              <Label className="text-sm">Include links</Label>
-                            </div>
-                          </TooltipTrigger>
+                      <TooltipButton variant="clean">
+                        <div className="flex flex-row items-center gap-2 px-2">
+                          <Checkbox
+                            type="button"
+                            checked={includeArticleLinks}
+                            onCheckedChange={() =>
+                              setIncludeArticleLinks(!includeArticleLinks)
+                            }
+                            className="w-4 h-4"
+                          />
+                          <Label
+                            className="text-sm cursor-pointer"
+                            onClick={e => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setIncludeArticleLinks(!includeArticleLinks);
+                            }}
+                          >
+                            Include links
+                          </Label>
+                        </div>
+                      </TooltipButton>
+                      {/* </TooltipTrigger>
                           <TooltipContent>
                             <p>
                               Include links to the articles at the bottom of the
@@ -347,7 +357,7 @@ export function GenerateNotesDialog({
                             </p>
                           </TooltipContent>
                         </Tooltip>
-                      </TooltipProvider>
+                      </TooltipProvider> */}
                     </div>
                     <div className="col-span-4 mb-6">
                       {selectedArticles.length > 0 ? (
@@ -506,7 +516,7 @@ export function GenerateNotesDialog({
         maxSelectedArticles={notesToGenerate}
         reloadArticles={() => {
           try {
-          fetchPosts(1, true);
+            fetchPosts(1, true);
           } catch (e: any) {
             toast.error(e.message);
           }
