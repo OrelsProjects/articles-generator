@@ -47,3 +47,7 @@ export const LANGUAGES: { value: string; label: string; sublabel?: string }[] =
       label: "한국어",
     },
   ];
+
+export const languageValueToLabel = (value: string) => {
+  return LANGUAGES.find(language => language.value === value)?.label;
+};

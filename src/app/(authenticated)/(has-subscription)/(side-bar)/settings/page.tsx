@@ -33,9 +33,9 @@ import { useSearchParams } from "next/navigation";
 import { useCustomRouter } from "@/lib/hooks/useCustomRouter";
 
 // Section Components
+import { AccountSection } from "@/components/settings/account-section";
 import { CreditsSection } from "@/components/settings/credits-section";
 import { BillingSection } from "@/components/settings/billing-section";
-import { AccountSection } from "@/components/settings/account-section";
 import { AppearanceSection } from "@/components/settings/appearance-section";
 import { PublicationsSection } from "@/components/settings/publications-section";
 import { GhostwriterSection } from "@/components/settings/ghostwriter-section";

@@ -240,12 +240,12 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
 
   const userInitials = useMemo(() => {
     let writerName = name || user?.displayName || "";
-    if (!writerName) return "OZ";
+    if (!writerName) return "WS";
     return (
       writerName
         ?.split(" ")
         .map(name => name[0])
-        .join("") || "OZ"
+        .join("") || "WS"
     );
   }, [name, user?.displayName]);
 

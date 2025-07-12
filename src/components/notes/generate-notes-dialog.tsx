@@ -50,6 +50,9 @@ import {
 } from "@/components/ui/accordion";
 import { NoteLengthSection, NoteCountSection } from "./note-generator/advanced";
 import { NotesGenerateOptions } from "@/types/notes-generate-options";
+import { useAppSelector } from "@/lib/hooks/redux";
+import { selectAuth } from "@/lib/features/auth/authSlice";
+import { languageValueToLabel } from "@/components/settings/consts";
 
 const ideaLoadingStates = [
   { text: "Finding relevant notes..." },
@@ -74,6 +77,7 @@ export function GenerateNotesDialog({
 }: GenerateNotesDialogProps) {
   const params = useParams();
   const handle = params?.handle as string;
+  const { user } = useAppSelector(selectAuth);
   const {
     hasAdvancedGPT,
     showGenerateNotesDialog,
@@ -235,6 +239,10 @@ export function GenerateNotesDialog({
     setNoteLength(noteLength);
   };
 
+  const language = useMemo(() => {
+    return user?.meta?.preferredLanguage || "en";
+  }, [user]);
+
   return (
     <>
       <Dialog
@@ -246,7 +254,7 @@ export function GenerateNotesDialog({
         <DialogContent className="overflow-auto sm:max-w-[625px] max-h-[88vh]">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>Generate new notes</DialogTitle>
+              <DialogTitle>Notes Generator</DialogTitle>
               <DialogDescription>
                 {selectedSource === "description" ? (
                   <span>
@@ -450,34 +458,40 @@ export function GenerateNotesDialog({
               </AccordionItem>
             </Accordion>
 
-            <DialogFooter className="mt-4">
-              <div className="flex flex-row gap-0.5">
-                <DialogTrigger asChild>
-                  <Button
-                    type="submit"
-                    className={cn({ "rounded-r-none": hasAdvancedGPT })}
-                    disabled={
-                      isLoadingGenerateNotes ||
-                      (selectedSource === "posts" &&
-                        selectedArticles.length === 0)
-                    }
-                  >
-                    {isLoadingGenerateNotes
-                      ? "Generating..."
-                      : selectedSource === "description"
-                        ? topic
-                          ? `Generate based on your topic (${noteCountEnabled ? noteCount : notesToGenerate})`
-                          : `Generate personalized notes (${noteCountEnabled ? noteCount : notesToGenerate})`
-                        : `Generate based on selected articles (${noteCountEnabled ? Math.min(noteCount, selectedArticles.length) : Math.min(notesToGenerate, selectedArticles.length)})`}
-                  </Button>
-                </DialogTrigger>
+            <div className="flex flex-row gap-0.5 mt-4 justify-end">
+              <DialogTrigger asChild>
+                <Button
+                  type="submit"
+                  className={cn({ "rounded-r-none": hasAdvancedGPT })}
+                  disabled={
+                    isLoadingGenerateNotes ||
+                    (selectedSource === "posts" &&
+                      selectedArticles.length === 0)
+                  }
+                >
+                  {isLoadingGenerateNotes
+                    ? "Generating..."
+                    : selectedSource === "description"
+                      ? topic
+                        ? `Generate based on your topic (${noteCountEnabled ? noteCount : notesToGenerate})`
+                        : `Generate personalized notes (${noteCountEnabled ? noteCount : notesToGenerate})`
+                      : `Generate based on selected articles (${noteCountEnabled ? Math.min(noteCount, selectedArticles.length) : Math.min(notesToGenerate, selectedArticles.length)})`}
+                </Button>
+              </DialogTrigger>
 
-                <AiModelsDropdown
-                  onModelChange={setSelectedModel}
-                  className="rounded-none bg-primary rounded-r-md"
-                  classNameTrigger="text-primary-foreground font-normal"
-                />
-              </div>
+              <AiModelsDropdown
+                onModelChange={setSelectedModel}
+                className="rounded-none bg-primary rounded-r-md"
+                classNameTrigger="text-primary-foreground font-normal"
+              />
+            </div>
+            <DialogFooter className="mt-4">
+              <p className="text-[1px] text-muted-foreground absolute left-8 font-extralight">
+                Notes will be generated in{" "}
+                <span className="font-normal">
+                  {languageValueToLabel(language)}
+                </span>
+              </p>
             </DialogFooter>
           </form>
         </DialogContent>

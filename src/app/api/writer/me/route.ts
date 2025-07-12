@@ -264,6 +264,7 @@ export async function GET(request: NextRequest) {
             }));
           return {
             id: note.commentId,
+            commentId: note.commentId,
             body: note.body,
             date: new Date(note.date),
             handle: note.handle || "",

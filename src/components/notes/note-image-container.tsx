@@ -151,18 +151,16 @@ export function NoteImageContainer({
             </div>
           </div>
           {onImageDelete && allowDelete && (
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-              <TooltipButton
-                tooltipContent="Remove link"
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 bg-background/20 hover:bg-background/40 rounded-lg px-0"
-                onClick={() => attachment && onImageDelete?.(attachment)}
-                disabled={disabled}
-              >
-                <X className="h-6 w-6 text-white" />
-              </TooltipButton>
-            </div>
+            <TooltipButton
+              tooltipContent="Remove link"
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 bg-muted-foreground/15 hover:bg-muted-foreground/40 rounded-full px-0 absolute top-2 right-2 shadow-md"
+              onClick={() => attachment && onImageDelete?.(attachment)}
+              disabled={disabled}
+            >
+              <X className="h-5 w-5 text-white" />
+            </TooltipButton>
           )}
         </div>
       );

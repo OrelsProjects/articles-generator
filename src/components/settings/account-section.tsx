@@ -17,13 +17,7 @@ import { toast } from "react-toastify";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { Logger } from "@/logger";
 import { Loader2 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import * as select from "@/components/ui/select";
 import LanguageDropdown from "@/components/settings/ui/language-dropdown";
 
 export function AccountSection() {
