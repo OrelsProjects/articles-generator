@@ -75,6 +75,7 @@ export function TopNotesTabs({ isLoading }: TopNotesTabsProps) {
       .slice(0, 10)
       .map(note => ({
         id: note.id,
+        commentId: note.commentId,
         body: note.body,
         date: note.createdAt,
         handle: note.handle,
@@ -105,6 +106,7 @@ export function TopNotesTabs({ isLoading }: TopNotesTabsProps) {
       .slice(0, 10)
       .map(note => ({
         id: note.id,
+        commentId: note.commentId,
         body: note.body,
         date: note.createdAt,
         handle: note.handle,

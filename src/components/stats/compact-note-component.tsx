@@ -21,7 +21,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { convertMDToHtml, NoteDraft } from "@/types/note";
+import {
+  convertMDToHtml,
+  NoteDraft,
+  noteWithEngagementStatsToNoteDraft,
+} from "@/types/note";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { loadContent, notesTextEditorOptions } from "@/lib/utils/text-editor";
 import {
@@ -31,6 +35,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { buildNoteUrl } from "@/lib/utils/note";
+import { useNotes } from "@/lib/hooks/useNotes";
 
 interface CompactNoteComponentProps {
   note: NoteWithEngagementStats;
@@ -62,12 +67,13 @@ export function CompactNoteComponent({
   note,
   loading,
   onNoteClick,
-  className,
 }: CompactNoteComponentProps) {
   const [showMore, setShowMore] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [hasShowMore, setHasShowMore] = useState(false);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
+
+  const { selectNote } = useNotes();
 
   const editor = useEditor(
     notesTextEditorOptions(
@@ -173,7 +179,7 @@ export function CompactNoteComponent({
                   window.open(
                     buildNoteUrl({
                       handle: note.handle,
-                      noteId: note.id,
+                      noteId: note.commentId,
                       isComment: true,
                     }),
                     "_blank",
@@ -196,6 +202,13 @@ export function CompactNoteComponent({
           "overflow-hidden relative cursor-pointer",
           showMore ? "max-h-none" : "max-h-[260px]",
         )}
+        onClick={() => {
+          debugger;
+          const noteDraft = noteWithEngagementStatsToNoteDraft(note);
+          selectNote(noteDraft, {
+            isFromInspiration: true,
+          });
+        }}
       >
         <div className="text-sm text-foreground leading-relaxed">
           <EditorContent disabled editor={editor} />

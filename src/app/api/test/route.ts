@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
   //   `Saved ${Object.keys(usersApplied).length} users to usersApplied.json`,
   // );
 
-  const topics = await  prismaProd.publicationMetadata.findMany({
+  const topics = await prismaProd.publicationMetadata.findMany({
     select: {
       topics: true,
       preferredTopics: true,
@@ -390,6 +390,14 @@ export async function GET(request: NextRequest) {
   // ];
 
   // await addTopics(sortedTopics);
+
+  const template = generateWelcomeTemplateTrial("Orel");
+  await sendMailSafe({
+    to: "orelsmail@gmail.com",
+    from: "welcome",
+    subject: template.subject,
+    template: template.body,
+  });
 
   return NextResponse.json({ success: true, sortedTopics });
 

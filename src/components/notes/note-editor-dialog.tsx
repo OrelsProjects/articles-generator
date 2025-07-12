@@ -229,6 +229,15 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
     return null;
   }, [isInspiration, note?.thumbnail]);
 
+  const isInspirationBelongsToUser = useMemo(() => {
+    return (
+      isInspiration &&
+      (note?.authorId === user?.meta?.author?.id ||
+        note?.handle === user?.meta?.author?.handle) &&
+      !isAiGenerated
+    );
+  }, [isInspiration, note?.authorId, user?.meta?.author?.id, isAiGenerated]);
+
   const userInitials = useMemo(() => {
     let writerName = name || user?.displayName || "";
     if (!writerName) return "OZ";
@@ -359,7 +368,6 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
             isLoading: true,
           });
 
-          
           if (isGhostwriter) {
             await scheduleNoteGhostwriter(newNote, scheduledTo, {
               showToast: true,
@@ -596,19 +604,21 @@ export function NotesEditorDialog({ free = false }: { free?: boolean }) {
                       <h3 className="font-medium text-foreground">
                         {noteAuthorName || userName}
                       </h3>
-                      {isInspiration && inspirationAuthorName && (
-                        <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
-                          <span>(Inspired by:</span>
-                          {inspirationThumbnail && (
-                            <img
-                              src={inspirationThumbnail}
-                              alt={inspirationAuthorName}
-                              className="w-4 h-4 rounded-full"
-                            />
-                          )}
-                          <span>{inspirationAuthorName})</span>
-                        </div>
-                      )}
+                      {isInspiration &&
+                        inspirationAuthorName &&
+                        !isInspirationBelongsToUser && (
+                          <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
+                            <span>(Inspired by:</span>
+                            {inspirationThumbnail && (
+                              <img
+                                src={inspirationThumbnail}
+                                alt={inspirationAuthorName}
+                                className="w-4 h-4 rounded-full"
+                              />
+                            )}
+                            <span>{inspirationAuthorName})</span>
+                          </div>
+                        )}
                       {isGhostwriter && (
                         <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
                           <span>Writing for:</span>

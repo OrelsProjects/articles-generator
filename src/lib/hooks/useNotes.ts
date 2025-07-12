@@ -162,7 +162,7 @@ export const useNotes = () => {
         showScheduleModal?: boolean;
       },
     ) => {
-      EventTracker.track("notes_select_note");
+      debugger;
       let noteToUpdate: NoteDraft | Note | null = null;
       if (typeof note === "string") {
         noteToUpdate = userNotes.find(userNote => userNote.id === note) || null;
