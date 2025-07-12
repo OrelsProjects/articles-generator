@@ -486,7 +486,7 @@ export function GenerateNotesDialog({
               />
             </div>
             <DialogFooter className="mt-4">
-              <p className="text-[1px] text-muted-foreground absolute left-8 font-extralight">
+              <p className="text-[11px] text-muted-foreground absolute left-8 font-extralight">
                 Notes will be generated in{" "}
                 <span className="font-normal">
                   {languageValueToLabel(language)}
