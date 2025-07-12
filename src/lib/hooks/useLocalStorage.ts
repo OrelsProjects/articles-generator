@@ -30,6 +30,7 @@ export type LocalStorageKey =
   | "note_generation_options"
   | "onboarding_setup_data"
   | "onboarding_setup_completed"
+  | "schedule_onboarding";
 
 function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
   // Get stored value from localStorage or use initialValue
@@ -40,7 +41,9 @@ function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
       const storedValue = localStorage.getItem(key);
       return storedValue ? (JSON.parse(storedValue) as T) : initialValue;
     } catch (error) {
-      Logger.error(`Error reading localStorage key “${key}”:`, { error: String(error) });
+      Logger.error(`Error reading localStorage key “${key}”:`, {
+        error: String(error),
+      });
       return initialValue;
     }
   };
@@ -56,7 +59,9 @@ function useLocalStorage<T>(key: LocalStorageKey, initialValue: T) {
         localStorage.setItem(key, JSON.stringify(newValue));
       }
     } catch (error) {
-      Logger.error(`Error setting localStorage key “${key}”:`, { error: String(error) });
+      Logger.error(`Error setting localStorage key “${key}”:`, {
+        error: String(error),
+      });
     }
   };
 

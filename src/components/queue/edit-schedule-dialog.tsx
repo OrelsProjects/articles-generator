@@ -667,7 +667,11 @@ export function EditScheduleDialog() {
                         }
                         className="px-5 py-2"
                       >
-                        <Save className="mr-2 h-4 w-4" />
+                        {loadingAddSchedule || loading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Save className="mr-2 h-4 w-4" />
+                        )}
                         {isTimeAlreadyUsed() ? "Time used" : "Save slot"}
                       </Button>
                     </motion.div>

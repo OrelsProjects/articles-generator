@@ -19,13 +19,14 @@ import {
 import { Logger } from "@/logger";
 import { isValidScheduleTime } from "@/lib/utils/date/schedule";
 import { NoteDraft } from "@/types/note";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
+import { setShowHighlightEditQueueButton } from "@/lib/features/ui/uiSlice";
 
 export function useQueue() {
   const dispatch = useAppDispatch();
   const { userNotes, userSchedules, loadingFetchingSchedules } = useAppSelector(
     state => state.notes,
   );
-  const {} = useAppSelector(state => state.ghostwriter);
   const { bestTimeToPublish, loadingFetchBestTimeToPublish } = useAppSelector(
     state => state.statistics,
   );
@@ -35,12 +36,30 @@ export function useQueue() {
     null,
   );
 
+  const [shouldHighlightEditQueueButton, setShouldHighlightEditQueueButton] =
+    useLocalStorage("schedule_onboarding", {
+      didCreateQueue: false,
+      shouldHighlightEditQueueButton: false,
+    });
+
   const [page, setPage] = useState(1);
   const [pageSize] = useState(30);
 
   const pageRef = useRef(1);
 
   const loadingBestNotesRef = useRef(false);
+
+  const updateShouldHighlightEditQueueButton = (options: {
+    shouldHighlight: boolean;
+    didCreateQueue: boolean;
+  }) => {
+    setShouldHighlightEditQueueButton({
+      didCreateQueue: options.didCreateQueue,
+      shouldHighlightEditQueueButton: options.shouldHighlight,
+    });
+
+    dispatch(setShowHighlightEditQueueButton(options.shouldHighlight));
+  };
 
   const scheduledNotes = useMemo(() => {
     // We want to show all scheduled notes, regardless of date
@@ -89,6 +108,15 @@ export function useQueue() {
     setLoading(true);
     try {
       const response = await axiosInstance.post("/api/user/queue", schedule);
+      if (
+        !shouldHighlightEditQueueButton.didCreateQueue &&
+        userSchedules.length === 0
+      ) {
+        updateShouldHighlightEditQueueButton({
+          didCreateQueue: true,
+          shouldHighlight: true,
+        });
+      }
       dispatch(addUserSchedule(response.data));
     } catch (error) {
       Logger.error(String(error));
@@ -146,6 +174,12 @@ export function useQueue() {
       const response =
         await axiosInstance.get<UserSchedule[]>("/api/user/queue");
       dispatch(setUserSchedule(response.data));
+      if (response.data.length > 0) {
+        updateShouldHighlightEditQueueButton({
+          didCreateQueue: true,
+          shouldHighlight: false,
+        });
+      }
     } catch (error) {
       Logger.error(String(error));
       throw error;

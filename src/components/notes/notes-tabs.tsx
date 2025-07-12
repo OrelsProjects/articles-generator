@@ -90,42 +90,42 @@ interface NotesTabsProps {
   // Tab state
   activeTab: string;
   onTabChange: (tab: string) => void;
-  
+
   // Counters
   counters: {
     scheduledCount: number;
     draftCount: number;
     publishedCount: number;
   };
-  
+
   // Notes data
   scheduledNotes: NoteDraft[];
   draftNotes: NoteDraft[];
   publishedNotes: NoteDraft[];
-  
+
   // Scheduled notes specific data
   activeDays: Date[];
   groupedNotes: Record<string, NoteDraft[]>;
   groupedSchedules: Record<string, UserSchedule[]>;
   lastNoteRef: React.RefObject<HTMLDivElement>;
   lastNoteId?: string;
-  
+
   // Loading states
   loadingFetchingSchedules: boolean;
   loadingCreateNote: boolean;
-  
+
   // Handlers
   onSelectNote: (note: NoteDraft) => void;
   onEditQueue: () => void;
   onCreateNote: () => void;
   onGenerateNotes: () => void;
-  
+
   // State for UI
   hasNewNotes: boolean;
   didCreateNote: boolean;
   highlightDropdown: boolean;
   setHighlightDropdown: (value: boolean) => void;
-  
+
   // Latest note scroll handler
   scrollToLatestNote: () => void;
 
@@ -238,8 +238,28 @@ export default function NotesTabs({
               "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
             )}
           >
-            Scheduled ({counters.scheduledCount})
+            Scheduled notes ({counters.scheduledCount})
           </TabsTrigger>
+          <TabsTrigger
+            value="published"
+            className={cn(
+              "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
+            )}
+          >
+            Published notes ({counters.publishedCount})
+          </TabsTrigger>
+          {/* <TabsTrigger
+            value="all"
+            className={cn(
+              "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
+            )}
+          >
+            All notes (
+            {counters.scheduledCount +
+              counters.draftCount +
+              counters.publishedCount}
+            )
+          </TabsTrigger> */}
           <TabsTrigger
             value="drafts"
             className={cn(
@@ -258,26 +278,6 @@ export default function NotesTabs({
               )}
             </AnimatePresence>
             Drafts ({counters.draftCount})
-          </TabsTrigger>
-          <TabsTrigger
-            value="published"
-            className={cn(
-              "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
-            )}
-          >
-            Published ({counters.publishedCount})
-          </TabsTrigger>
-          <TabsTrigger
-            value="all"
-            className={cn(
-              "rounded-none border-b-2 border-transparent px-6 py-3 font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary transition-all",
-            )}
-          >
-            All (
-            {counters.scheduledCount +
-              counters.draftCount +
-              counters.publishedCount}
-            )
           </TabsTrigger>
         </TabsList>
 
@@ -328,7 +328,10 @@ export default function NotesTabs({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <NoteComponent note={note} isGhostwriterNote={isGhostwriter} />
+                  <NoteComponent
+                    note={note}
+                    isGhostwriterNote={isGhostwriter}
+                  />
                 </motion.div>
               ))}
             </motion.div>
@@ -360,7 +363,10 @@ export default function NotesTabs({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <NoteComponent note={note} isGhostwriterNote={isGhostwriter} />
+                  <NoteComponent
+                    note={note}
+                    isGhostwriterNote={isGhostwriter}
+                  />
                 </motion.div>
               ))}
             </motion.div>
@@ -417,7 +423,10 @@ export default function NotesTabs({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <NoteComponent note={note} isGhostwriterNote={isGhostwriter} />
+                    <NoteComponent
+                      note={note}
+                      isGhostwriterNote={isGhostwriter}
+                    />
                   </motion.div>
                 ))}
             </motion.div>
@@ -426,4 +435,4 @@ export default function NotesTabs({
       </Tabs>
     </div>
   );
-} 
+}

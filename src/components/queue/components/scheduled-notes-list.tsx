@@ -21,8 +21,10 @@ import { useDragOverlay } from "../hooks/useDragOverlay";
 import { Logger } from "@/logger";
 import { Calendar, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useGhostwriterNotes } from "@/lib/hooks/useGhostwriterNotes";
+import { useUi } from "@/lib/hooks/useUi";
+import { cn } from "@/lib/utils";
 
 interface ScheduledNotesListProps {
   days: Date[];
@@ -47,6 +49,8 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
   loading,
   isGhostwriter,
 }) => {
+  const { highlightEditQueueButton, updateShouldHighlightEditQueueButton } =
+    useUi();
   const { updateNoteStatus, createDraftNote, rescheduleNote } = useNotes();
   const {
     rescheduleNote: rescheduleGhostwriterNote,
@@ -300,19 +304,19 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col items-center justify-center gap-6 py-16 text-center"
       >
-        <h3 className="text-2xl font-bold text-foreground">No schedule yet</h3>
+        <h3 className="text-2xl font-bold text-foreground">No queue yet</h3>
 
         <p className="max-w-md text-base leading-relaxed text-muted-foreground">
           Set your posting times once. Every new note can be scheduled into the
-          next slot with one click.
+          next slot in the queue with one click.
         </p>
         <p className="max-w-md text-base leading-relaxed text-muted-foreground">
-          You can edit your schedule anytime.
+          You can edit your queue anytime.
         </p>
 
         <Button onClick={onEditQueue}>
           <Calendar className="mr-2 h-4 w-4" />
-          Create schedule
+          Create queue
         </Button>
       </motion.div>
     );
@@ -326,20 +330,84 @@ export const ScheduledNotesList: React.FC<ScheduledNotesListProps> = ({
       sensors={sensors}
       collisionDetection={closestCenter}
     >
+      {/* Dark overlay for highlighting Edit Queue button */}
+      <AnimatePresence>
+        {highlightEditQueueButton && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-black/60 z-40"
+            style={{ pointerEvents: "none" }}
+          />
+        )}
+      </AnimatePresence>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="relative"
       >
         <div className="absolute top-0 right-0 flex justify-end">
-          <Button
-            variant="link-foreground"
-            className="py-0 items-start"
-            onClick={onEditQueue}
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            Edit Queue
-          </Button>
+          <div className="relative">
+            {/* A cover to prevent the button from being clicked when the tooltip is open */}
+            <div
+              className={cn(
+                "absolute inset-0 cursor-pointer z-[999]",
+                highlightEditQueueButton ? "block" : "hidden",
+              )}
+              onClick={() => {
+                if (highlightEditQueueButton) {
+                  updateShouldHighlightEditQueueButton({
+                    shouldHighlight: false,
+                    didCreateQueue: true,
+                  });
+                }
+              }}
+            />
+
+            <Button
+              variant="link-foreground"
+              className={`py-0 items-start relative transition-all duration-300 ${
+                highlightEditQueueButton
+                  ? "z-50 bg-background/90 backdrop-blur-sm border border-border rounded-md p-2 shadow-lg ring-2 ring-primary/50"
+                  : ""
+              }`}
+              onClick={() => {
+                updateShouldHighlightEditQueueButton({
+                  shouldHighlight: false,
+                  didCreateQueue: true,
+                });
+                onEditQueue();
+              }}
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Edit Queue
+            </Button>
+
+            {/* Tooltip for highlighted button */}
+            <AnimatePresence>
+              {highlightEditQueueButton && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="absolute top-full mt-2 right-0 bg-background border border-border rounded-lg shadow-lg p-3 z-50 whitespace-nowrap"
+                >
+                  <div className="text-sm font-medium text-foreground">
+                    Edit your notes queue
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    This is where you can edit your queue
+                  </div>
+                  {/* Arrow pointing up */}
+                  <div className="absolute -top-1 right-4 w-2 h-2 bg-background border-l border-t border-border transform rotate-45"></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
         <div className="space-y-8">
           {days.map(day => {

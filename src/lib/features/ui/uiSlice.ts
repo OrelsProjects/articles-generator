@@ -24,6 +24,7 @@ export interface UiState {
   };
   notePostedData: CreatePostResponse | null;
   hideFeedbackFab: boolean;
+  showHighlightEditQueueButton: boolean;
 }
 
 export const initialState: UiState = {
@@ -48,6 +49,7 @@ export const initialState: UiState = {
   },
   notePostedData: null,
   hideFeedbackFab: false,
+  showHighlightEditQueueButton: false,
 };
 
 const uiSlice = createSlice({
@@ -101,6 +103,9 @@ const uiSlice = createSlice({
     setHideFeedbackFab: (state, action) => {
       state.hideFeedbackFab = action.payload;
     },
+    setShowHighlightEditQueueButton: (state, action) => {
+      state.showHighlightEditQueueButton = action.payload;
+    },
   },
 });
 
@@ -120,6 +125,7 @@ export const {
   setShowCreateScheduleDialog,
   setNotePostedData,
   setHideFeedbackFab,
+  setShowHighlightEditQueueButton,
 } = uiSlice.actions;
 
 export const selectUi = (state: RootState): UiState => state.ui;

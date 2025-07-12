@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { selectNotes, updateNote } from "@/lib/features/notes/notesSlice";
 import { NoteDraft } from "@/types/note";
@@ -10,7 +10,6 @@ import { ScheduleLimitExceededError } from "@/types/errors/ScheduleLimitExceeded
 import { selectAuth } from "@/lib/features/auth/authSlice";
 import { GetSchedulesResponse, Schedule } from "@/types/useExtension.type";
 import { ScheduleNotFoundError } from "@/types/errors/ScheduleNotFoundError";
-import { ScheduleInPastError } from "@/types/errors/ScheduleInPastError";
 import { toast } from "react-toastify";
 import { humanMessage } from "@/lib/utils/human-message";
 import {
@@ -21,8 +20,7 @@ import {
 export const useNotesSchedule = () => {
   const { user } = useAppSelector(selectAuth);
   const dispatch = useAppDispatch();
-  const { userNotes, loadingNotes, error } =
-    useAppSelector(selectNotes);
+  const { userNotes, loadingNotes, error } = useAppSelector(selectNotes);
   const {
     createSchedule,
     getSchedules,
@@ -34,6 +32,7 @@ export const useNotesSchedule = () => {
   const [isIntervalRunning, setIsIntervalRunning] = useState(false);
   const checkScheduleInterval = useRef<NodeJS.Timeout | null>(null);
   const loadingGetSchedules = useRef(false);
+
 
   const canSchedule = async (options: { setCookiesIfVerified: boolean }) => {
     try {
@@ -102,7 +101,6 @@ export const useNotesSchedule = () => {
         }
         await deleteScheduleExtension(scheduleId);
       } catch (error: any) {
-        
         Logger.error("Error deleting schedule", { error });
         // If error is 404, throw a schedule not found error
         if (error.response?.status === 404) {
@@ -173,7 +171,7 @@ export const useNotesSchedule = () => {
         if (deletedScheduleId) {
           await deleteScheduleExtension(deletedScheduleId);
         }
-        
+
         Logger.info(
           "ADDING-SCHEDULE: scheduleNote: deleted existing schedule",
           {

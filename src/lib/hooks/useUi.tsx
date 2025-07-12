@@ -8,14 +8,24 @@ import {
   setShowScheduleModal,
   setSideBarState,
   setUiState,
+  setShowHighlightEditQueueButton,
 } from "@/lib/features/ui/uiSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { FeatureFlag } from "@prisma/client";
+import { useMemo } from "react";
 
 export function useUi() {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(selectAuth);
-  const { showGenerateNotesSidebar } = useAppSelector(selectUi);
+  const { showGenerateNotesSidebar, showHighlightEditQueueButton } =
+    useAppSelector(selectUi);
+
+  const [shouldHighlightEditQueueButton, setShouldHighlightEditQueueButton] =
+    useLocalStorage("schedule_onboarding", {
+      didCreateQueue: false,
+      shouldHighlightEditQueueButton: false,
+    });
 
   const setState = (state: "full" | "writing-mode") => {
     dispatch(setUiState(state));
@@ -44,8 +54,25 @@ export function useUi() {
     dispatch(setShowCreateScheduleDialog({ show, clientId }));
   };
 
-  const updateShowGenerateNotesDialog = (show: boolean, clientId?: string | null) => {
+  const updateShowGenerateNotesDialog = (
+    show: boolean,
+    clientId?: string | null,
+  ) => {
     dispatch(setShowGenerateNotesDialog({ show, clientId }));
+  };
+
+  const updateShouldHighlightEditQueueButton = ({
+    shouldHighlight,
+    didCreateQueue,
+  }: {
+    shouldHighlight: boolean;
+    didCreateQueue: boolean;
+  }) => {
+    dispatch(setShowHighlightEditQueueButton(shouldHighlight));
+    setShouldHighlightEditQueueButton({
+      didCreateQueue,
+      shouldHighlightEditQueueButton: shouldHighlight,
+    });
   };
 
   const showGenerateNotesDialog =
@@ -76,6 +103,9 @@ export function useUi() {
 
   const showCreateScheduleDialogClientId =
     useAppSelector(selectUi).showCreateScheduleDialog.clientId;
+
+  const highlightEditQueueButton =
+    showHighlightEditQueueButton && !showCreateScheduleDialog;
 
   const canScheduleNotes = user?.meta?.featureFlags.includes(
     FeatureFlag.scheduleNotes,
@@ -116,5 +146,7 @@ export function useUi() {
     canUseGhostwriter,
     hasFeatureFlag,
     showCreateScheduleDialogClientId,
+    updateShouldHighlightEditQueueButton,
+    highlightEditQueueButton,
   };
 }
